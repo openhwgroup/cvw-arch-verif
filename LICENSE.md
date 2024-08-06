@@ -14,17 +14,17 @@ taken into account in interpretation.
 1. The definitions set out in the Apache License are modified as follows:
 
    Copyright any reference to ‘copyright’ (whether capitalised or not) includes ‘Rights’ (as defined below).
-<br>
+
    Contribution also includes any _design_, as well as any work of authorship.
-<br>
+
    Derivative Works shall not include works that remain _reversibly_ separable from, or merely link (or bind by name) or _physically connect to or interoperate with_ the interfaces of the Work and Derivative Works thereof.
-<br>
+
    Object form shall mean any form resulting from mechanical transformation or translation of a Source form or the application of a Source form to physical material, including but not limited to compiled object code, generated documentation, _the instantiation of a hardware design or physical object and conversions to other media types, including intermediate forms such as bytecodes, FPGA bitstreams, moulds, artwork and semiconductor topographies (mask works)_.
-<br>
+
    Rights means copyright and any similar right including design right (whether registered or unregistered), semiconductor topography (mask) rights and database rights (but excluding Patents and Trademarks).
-<br>
+
    Source form shall mean the preferred form for making modifications, including but not limited to source code, _net lists, board layouts, CAD files_, documentation source, and configuration files.
-<br>
+
    Work also includes a _design_ or work of authorship, whether in Source form or _other_ Object form.
 
 2. Grant of Licence
