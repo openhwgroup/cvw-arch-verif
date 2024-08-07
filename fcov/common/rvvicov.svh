@@ -1,0 +1,5 @@
+    `include "test_vm39_coverage.sv"
+    `include "test_vm48_coverage.sv"
+    `include "test_zicbom_coverage.sv"
+    `include "test_zicntr_coverage.sv"
+    `include "test_zihpm_coverage.sv"
