@@ -29,3 +29,4 @@ transcript
 ucli.key
 vcs.cmd
 riscof_work
+fcov/RV*
