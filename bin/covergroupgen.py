@@ -107,4 +107,9 @@ testPlans = readTestplans()
 covergroupTemplates = readCovergroupTemplates()
 writeCovergroups(testPlans, covergroupTemplates)
 
+# TODO:
+Complete missing templates
+Review .csv testplans
+
+
 
