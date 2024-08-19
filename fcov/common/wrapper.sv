@@ -1,7 +1,7 @@
 module wrapper import cvw::*; #(parameter cvw_t P) (input clk);
-    test_vm39_coverage #(P) vm39_inst(clk);
-    test_vm48_coverage #(P) vm48_inst(clk);
-    test_zicbom_coverage #(P) zicbom_inst(clk);
-    test_zicntr_coverage #(P) zicntr_inst(clk);
-    test_zihpm_coverage #(P) zihpm_inst(clk);
+    RV64VM_coverage #(P) vm_inst(clk);
+    RV64VM_PMP_coverage #(P) vm_pmp_inst(clk);
+    RV64Zicbom_coverage #(P) zicbom_inst(clk);
+    RV64Zicntr_coverage #(P) zicntr_inst(clk);
+    RV64Zihpm_coverage #(P) zihpm_inst(clk);
 endmodule
