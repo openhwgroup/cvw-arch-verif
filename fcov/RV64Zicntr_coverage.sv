@@ -1,4 +1,4 @@
-module test_zicntr_coverage import cvw::*; #(parameter cvw_t P) (input clk);
+module RV64Zicntr_coverage import cvw::*; #(parameter cvw_t P) (input clk);
 
     rvviTrace #(.XLEN(P.XLEN), .FLEN(P.FLEN)) rvvi();
     wallyTracer #(P) wallyTracer(rvvi);
@@ -17,17 +17,17 @@ module test_zicntr_coverage import cvw::*; #(parameter cvw_t P) (input clk);
         Mcause: coverpoint  rvvi.csr[0][0][12'h342] {
             bins illegal_ins = {2'b10};
         }
-        zicntr_support: coverpoint P.ZICNTR_SUPPORTED {
+        zicsr_support: coverpoint P.ZICSR_SUPPORTED {
             bins set = {1'b1};
             bins not_set = {1'b0};
         }
-        lower_priv_mode: cross priv_mode, zicntr_support, ins {
+        lower_priv_mode: cross priv_mode, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdcycle_incr);
-            ignore_bins ig2 = binsof(zicntr_support.not_set);
+            ignore_bins ig2 = binsof(zicsr_support.not_set);
         }
-        zicntr_not_support : cross Mcause, zicntr_support, ins {
+        zicsr_not_support : cross Mcause, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdcycle_incr);
-            ignore_bins ig2 = binsof(zicntr_support.set);
+            ignore_bins ig2 = binsof(zicsr_support.set);
         }
        
     endgroup
@@ -45,17 +45,17 @@ module test_zicntr_coverage import cvw::*; #(parameter cvw_t P) (input clk);
         Mcause: coverpoint  rvvi.csr[0][0][12'h342] {
             bins illegal_ins = {2'b10};
         }
-        zicntr_support: coverpoint P.ZICNTR_SUPPORTED {
+        zicsr_support: coverpoint P.ZICSR_SUPPORTED {
             bins set = {1'b1};
             bins not_set = {1'b0};
         }
-        lower_priv_mode: cross priv_mode, zicntr_support, ins {
+        lower_priv_mode: cross priv_mode, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdtime_incr);
-            ignore_bins ig2 = binsof(zicntr_support.not_set);
+            ignore_bins ig2 = binsof(zicsr_support.not_set);
         }
-        zicntr_not_support : cross Mcause, zicntr_support, ins {
+        zicsr_not_support : cross Mcause, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdtime_incr);
-            ignore_bins ig2 = binsof(zicntr_support.set);
+            ignore_bins ig2 = binsof(zicsr_support.set);
         }
     endgroup
 
@@ -74,21 +74,21 @@ module test_zicntr_coverage import cvw::*; #(parameter cvw_t P) (input clk);
         Mcause: coverpoint  rvvi.csr[0][0][12'h342] {
             bins illegal_ins = {2'b10};
         }
-        zicntr_support: coverpoint P.ZICNTR_SUPPORTED {
+        zicsr_support: coverpoint P.ZICSR_SUPPORTED {
             bins set = {1'b1};
             bins not_set = {1'b0};
         }
-        lower_priv_mode: cross priv_mode, zicntr_support, ins {
+        lower_priv_mode: cross priv_mode, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdinstret_incr_any);
             ignore_bins ig2 = binsof(ins.rdinstret_incr_count_incr);
             ignore_bins ig3 = binsof(ins.rdinstret_incr_count_notincr);
-            ignore_bins ig4 = binsof(zicntr_support.not_set);
+            ignore_bins ig4 = binsof(zicsr_support.not_set);
         }
-        zicntr_not_support : cross Mcause, zicntr_support, ins {
+        zicsr_not_support : cross Mcause, zicsr_support, ins {
             ignore_bins ig1 = binsof(ins.rdinstret_incr_any);
             ignore_bins ig2 = binsof(ins.rdinstret_incr_count_incr);
             ignore_bins ig3 = binsof(ins.rdinstret_incr_count_notincr);
-            ignore_bins ig4 = binsof(zicntr_support.set);
+            ignore_bins ig4 = binsof(zicsr_support.set);
         }
     endgroup
 

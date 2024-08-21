@@ -1,4 +1,4 @@
-module test_zihpm_coverage import cvw::*; #(parameter cvw_t P) (input clk);
+module RV64Zihpm_coverage import cvw::*; #(parameter cvw_t P) (input clk);
 
     rvviTrace #(.XLEN(P.XLEN), .FLEN(P.FLEN)) rvvi();
     wallyTracer #(P) wallyTracer(rvvi);

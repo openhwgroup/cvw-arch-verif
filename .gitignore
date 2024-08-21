@@ -22,12 +22,9 @@ waves.shm/
 *.log
 .vscode
 work*
-riscof_work
 *.wlf
 transcript
 .lib-rtl
 .opt-rtl
 ucli.key
 vcs.cmd
-riscof_work
-fcov/RV*
