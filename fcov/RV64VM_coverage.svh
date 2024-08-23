@@ -969,7 +969,7 @@ module RV64VM_coverage import cvw::*; #(parameter cvw_t P) (input clk);
         svnapot_support: coverpoint P.SVNAPOT_SUPPORTED {
             bins not_set = {1'b0};
         } 
-        svpbmt_support: coverpoint P.SVPBMT_SUPPORTED {
+        svpbmt_support: coverpoint rvvi.csr[0][0][12'h30A][62] {
             bins not_set = {1'b0};
         }  
         mode: coverpoint  rvvi.csr[0][0][12'h180][63:60] {
@@ -1000,14 +1000,14 @@ module RV64VM_coverage import cvw::*; #(parameter cvw_t P) (input clk);
             ignore_bins ig4 = binsof(PTE_d.all_zeros);
             ignore_bins ig5 = binsof(PTE_d.svpbmt);
         }
-        svnapot_write_fault: cross PTE_d, Mcause, write_acc, svnapot_support {
+        svnapot_write_fault: cross PTE_d, Mcause, write_acc, mode, svnapot_support {
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.no_page_fault);
             ignore_bins ig4 = binsof(PTE_d.all_zeros);
             ignore_bins ig5 = binsof(PTE_d.svpbmt);
         }
-        svnapot_exec_fault: cross PTE_i, Mcause, exec_acc, svnapot_support {
+        svnapot_exec_fault: cross PTE_i, Mcause, exec_acc, mode, svnapot_support {
             ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.no_page_fault);
@@ -1023,14 +1023,14 @@ module RV64VM_coverage import cvw::*; #(parameter cvw_t P) (input clk);
             ignore_bins ig4 = binsof(PTE_d.all_zeros);
             ignore_bins ig5 = binsof(PTE_d.svnapot);
         }
-        svpbmt_write_fault: cross PTE_d, Mcause, write_acc, svpbmt_support {
+        svpbmt_write_fault: cross PTE_d, Mcause, write_acc, mode, svpbmt_support {
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.no_page_fault);
             ignore_bins ig4 = binsof(PTE_d.all_zeros);
             ignore_bins ig5 = binsof(PTE_d.svnapot);
         }
-        svpbmt_exec_fault: cross PTE_i, Mcause, exec_acc, svpbmt_support {
+        svpbmt_exec_fault: cross PTE_i, Mcause, exec_acc, mode, svpbmt_support {
             ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.no_page_fault);
@@ -1047,7 +1047,7 @@ module RV64VM_coverage import cvw::*; #(parameter cvw_t P) (input clk);
             ignore_bins ig5 = binsof(PTE_d.svpbmt); 
             ignore_bins ig6 = binsof(PTE_d.reserved); 
         }
-        write_nofault: cross PTE_d, Mcause, write_acc {
+        write_nofault: cross PTE_d, Mcause, write_acc, mode{
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.load_page_fault);
@@ -1055,7 +1055,7 @@ module RV64VM_coverage import cvw::*; #(parameter cvw_t P) (input clk);
             ignore_bins ig5 = binsof(PTE_d.svpbmt); 
             ignore_bins ig6 = binsof(PTE_d.reserved); 
         }
-        exec_nofault: cross PTE_i, Mcause, exec_acc {
+        exec_nofault: cross PTE_i, Mcause, exec_acc, mode {
             ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(Mcause.load_page_fault);

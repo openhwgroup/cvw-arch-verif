@@ -1,5 +1,3 @@
-    `include "RV64VM_coverage.sv"
-    `include "RV64VM_PMP_coverage.sv"
-    `include "RV64Zicbom_coverage.sv"
-    `include "RV64Zicntr_coverage.sv"
-    `include "RV64Zihpm_coverage.sv"
+    `include "RV64VM_coverage.svh"
+    `include "RV64VM_PMP_coverage.svh"
+    `include "RV64Zicbom_coverage.svh"
