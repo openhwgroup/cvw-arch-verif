@@ -108,8 +108,8 @@ covergroupTemplates = readCovergroupTemplates()
 writeCovergroups(testPlans, covergroupTemplates)
 
 # TODO:
-Complete missing templates
-Review .csv testplans
+#Complete missing templates
+#Review .csv testplans
 
 
 
