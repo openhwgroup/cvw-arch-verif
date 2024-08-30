@@ -1,3 +1,3 @@
-covergroup INSTR with function sample(ins_ARCH_t ins);
+covergroup INSTR_cg with function sample(ins_ARCH_t ins);
     option.per_instance = 1; 
     option.comment = "INSTR";
