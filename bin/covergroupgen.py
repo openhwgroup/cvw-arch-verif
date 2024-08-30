@@ -31,13 +31,18 @@ def readTestplans():
             with open(os.path.join(coverplanDir, file)) as csvfile:
                 reader = csv.DictReader(csvfile)
                 tp = dict()
+                print(f"reader = {reader}")
                 for row in reader:
+                    print(f"row = {row}")
                     instr = row["Instruction"]
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
+                        print(f"key = {key}, value = {value}")
                         if (value != ''):
-                            cps.append(key)
+                            if(key == "Type"):
+                                cps.append("sample_" + value)
+                            else: cps.append(key)
                     tp[instr] = cps
             testplans[arch] = tp
 #    print(testplans)
@@ -59,8 +64,8 @@ def readCovergroupTemplates():
 # and picks from RV32/RV64 as necessary
 
 def customizeTemplate(covergroupTemplates, name, arch, instr):
-    # Select customaizied template for RV32/RV64 if necessary, else use the generic one
-    #print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
+    # Select customized template for RV32/RV64 if necessary, else use the generic one
+    print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
     prefixName = re.search("(RV..)", arch).group(1) + "_" + name
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
@@ -94,8 +99,17 @@ def writeCovergroups(testPlans, covergroupTemplates):
                 cps = tp[instr]
                 f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
                 for cp in cps:
-                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                    if(not cp.startswith("sample_")):
+                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
                 f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+            f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
+            for instr in k:
+                for cp in cps:
+                    if(cp.startswith("sample_")):
+                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+            f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
+
+    
 
 ##################################
 # Main Python Script
