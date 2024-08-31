@@ -9,3 +9,4 @@ make
 cd ../work
 Look at covhtmlreport reports
 
+Corey Hickson chickson@hmc.edu
