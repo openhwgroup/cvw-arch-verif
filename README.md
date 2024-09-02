@@ -131,7 +131,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 **Harvey Mudd College:**
 
-* Add your names here
+* Vikram Krishna
 
 **Habib University:**
 
