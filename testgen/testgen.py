@@ -170,6 +170,18 @@ def make_rs1_rs2(test, xlen):
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
+        wildcard bins one  =     {32'b00000000000000000000000000000001};
+        wildcard bins two  =     {32'b00000000000000000000000000000010};
+        wildcard bins min  =     {32'b10000000000000000000000000000000};
+        wildcard bins minp1  =   {32'b10000000000000000000000000000001};
+        wildcard bins max  =     {32'b01111111111111111111111111111111};
+        wildcard bins maxm1  =   {32'b01111111111111111111111111111110};
+        wildcard bins ones  =    {32'b11111111111111111111111111111111};
+        wildcard bins onesm1  =  {32'b11111111111111111111111111111110};
+        wildcard bins walkeodd = {32'b10101010101010101010101010101010};
+        wildcard bins walkeven = {32'b01010101010101010101010101010101};
+        wildcard bins random   = {32'b01011011101111001000100001110111};
+
 def make_rs1_maxvals(test, xlen):
    for v in [0, 2**(xlen-1), 2**(xlen-1)-1, 2**xlen-1, 1, 2**(xlen-1)+1]:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -408,9 +420,7 @@ def getcovergroups(coverdefdir, coverfiles):
 
 # change these to suite your tests
 WALLY = os.environ.get('WALLY')
-coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv64"
 #coverfiles = ["RV64I", "RV64M", "RV64A", "RV64C", "RV64F", "RV64D"] # add more later
-coverfiles = ["RV64I"] # add more later
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
           "addw", "subw", "sllw", "srlw", "sraw"
           "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
@@ -426,10 +436,9 @@ jalrtype = ["jalr"]
 utype = ["lui", "auipc"]
 # TODO: auipc missing, check whatelse is missing in ^these^ types
 
-coverpoints = getcovergroups(coverdefdir, coverfiles)
 
 author = "David_Harris@hmc.edu"
-xlens = [64]
+xlens = [32, 64]
 numrand = 3
 
 # setup
@@ -437,6 +446,9 @@ seed(0) # make tests reproducible
 
 # generate files for each test
 for xlen in xlens:
+  coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
+  coverfiles = ["RV"+str(xlen)+"I"] # add more later
+  coverpoints = getcovergroups(coverdefdir, coverfiles)
   formatstrlen = str(int(xlen/4))
   formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
   formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
