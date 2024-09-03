@@ -1,4 +1,4 @@
-    c_rs1_corners : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
+    cp_rs1_corners : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
         option.comment = "RS1 Corners";
         wildcard bins zero  =    {0};
         wildcard bins one  =     {32'b00000000000000000000000000000001};
