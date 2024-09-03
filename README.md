@@ -135,7 +135,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 **Habib University:**
 
-* Add your names here
+* Muhammad Shaheer
 
 **UET:**
 
