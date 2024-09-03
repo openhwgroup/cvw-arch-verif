@@ -31,14 +31,13 @@ def readTestplans():
             with open(os.path.join(coverplanDir, file)) as csvfile:
                 reader = csv.DictReader(csvfile)
                 tp = dict()
-                print(f"reader = {reader}")
                 for row in reader:
-                    print(f"row = {row}")
+                    #print(f"row = {row}")
                     instr = row["Instruction"]
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
-                        print(f"key = {key}, value = {value}")
+                        #print(f"key = {key}, value = {value}")
                         if (value != ''):
                             if(key == "Type"):
                                 cps.append("sample_" + value)
@@ -65,7 +64,7 @@ def readCovergroupTemplates():
 
 def customizeTemplate(covergroupTemplates, name, arch, instr):
     # Select customized template for RV32/RV64 if necessary, else use the generic one
-    print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
+    #print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
     prefixName = re.search("(RV..)", arch).group(1) + "_" + name
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
@@ -86,7 +85,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
 def writeCovergroups(testPlans, covergroupTemplates):
     covergroupDir = WALLY+'/addins/cvw-arch-verif/fcov'
     for arch, tp in testPlans.items():
-        subdir = re.search("(RV..)", arch).group(1)
+        subdir = re.search("(RV..)", arch).group(1).lower()
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
         print("***** Writing " + file)

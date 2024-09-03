@@ -28,3 +28,8 @@ transcript
 .opt-rtl
 ucli.key
 vcs.cmd
+fcov/rv32
+fcov/rv64
+tests/rv32
+tests/rv64
+
