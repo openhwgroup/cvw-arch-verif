@@ -133,6 +133,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 * Vikram Krishna
 * David Harris
+* Corey Hickson
 * Ahlyssa Santillana
 * Add your names here
 
@@ -147,5 +148,3 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * Muhammad Ahmad
 * Muhammad Abdullah
 * Hamza Ali 
-
-
