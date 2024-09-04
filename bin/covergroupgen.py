@@ -44,7 +44,7 @@ def readTestplans():
                             else: cps.append(key)
                     tp[instr] = cps
             testplans[arch] = tp
-#    print(testplans)
+    #print(testplans["RV32I"])
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
@@ -76,7 +76,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
             missingTemplates.append(name)
         return ""
     template = template.replace("INSTR", instr)
-    template = template.replace("ARCH", arch)
+    template = template.replace("ARCH", arch.lower())
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
@@ -102,8 +102,11 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     if(not cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
                 f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+            #archlower = arch.lower()
+            #print(" Writing sample_header ARCH = " + archlower + " INSTR = " + instr)
             f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
             for instr in k:
+                cps = tp[instr]
                 for cp in cps:
                     if(cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))

@@ -170,31 +170,31 @@ def make_rs1_rs2(test, xlen):
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_maxvals(test, xlen):
-   for v in [0, 2**(xlen-1), 2**(xlen-1)-1, 2**xlen-1, 1, 2**(xlen-1)+1]:
+def make_rs1_corners(test, xlen):
+   for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs1_maxvals (Test source rs1 value = " + hex(v) + ")"
+    desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
-def make_rs2_maxvals(test, xlen):
-   for v in [0, 2**(xlen-1), 2**(xlen-1)-1, 2**xlen-1, 1, 2**(xlen-1)+1]:
+def make_rs2_corners(test, xlen):
+   for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs2_maxvals (Test source rs2 value = " + hex(v) + ")"
+    desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_maxvals(test, xlen):
-   for v in [0, 2**(xlen-1), 2**(xlen-1)-1, 2**xlen-1, 1, 2**(xlen-1)+1]:
+def make_rd_corners(test, xlen):
+   for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_maxvals (Test rd value = " + hex(v) + ")"
+    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
     # rs1, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_maxvals (Test rd value = " + hex(v) + ")"
+    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
     # rs1 = all 1s, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_maxvals (Test rd value = " + hex(v) + ")"
+    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, -1, -1, rdval, test, xlen)
 
 def make_rd_rs1_eqval(test, xlen):
@@ -330,12 +330,12 @@ def write_tests(coverpoints, test, xlen):
       pass # duplicate of cmp_rd_rs2
     elif (coverpoint == "cmp_rs1_rs2_eq"):
       make_rs1_rs2(test, xlen)
-    elif (coverpoint == "cp_rs1_maxvals"):
-      make_rs1_maxvals(test, xlen)
-    elif (coverpoint == "cp_rs2_maxvals"):
-      make_rs2_maxvals(test, xlen)
-    elif (coverpoint == "cp_rd_maxvals"):
-      make_rd_maxvals(test, xlen)
+    elif (coverpoint == "cp_rs1_corners"):
+      make_rs1_corners(test, xlen)
+    elif (coverpoint == "cp_rs2_corners"):
+      make_rs2_corners(test, xlen)
+    elif (coverpoint == "cp_rd_corners"):
+      make_rd_corners(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):
@@ -347,7 +347,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_sign"):
       make_rs2_sign(test, xlen)
     elif (coverpoint == "cp_rd_sign"):
-      pass #TODO hope already covered by rd_maxvals
+      pass #TODO hope already covered by rd_corners
     elif (coverpoint == "cr_rs1_rs2"):
       make_cr_rs1_rs2_sign(test, xlen)
     elif (coverpoint == "cp_gpr_hazard"):
@@ -407,10 +407,8 @@ def getcovergroups(coverdefdir, coverfiles):
 ##################################
 
 # change these to suite your tests
-riscv = os.environ.get("RISCV")
-coverdefdir = riscv+"/ImperasDV-OpenHW/Imperas/ImpProprietary/source/host/riscvISACOV/source/coverage";
+WALLY = os.environ.get('WALLY')
 #coverfiles = ["RV64I", "RV64M", "RV64A", "RV64C", "RV64F", "RV64D"] # add more later
-coverfiles = ["RV64I"] # add more later
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
           "addw", "subw", "sllw", "srlw", "sraw"
           "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
@@ -426,17 +424,20 @@ jalrtype = ["jalr"]
 utype = ["lui", "auipc"]
 # TODO: auipc missing, check whatelse is missing in ^these^ types
 
-coverpoints = getcovergroups(coverdefdir, coverfiles)
 
 author = "David_Harris@hmc.edu"
-xlens = [64]
+xlens = [32, 64]
 numrand = 3
+corners = []
 
 # setup
 seed(0) # make tests reproducible
 
 # generate files for each test
 for xlen in xlens:
+  coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
+  coverfiles = ["RV"+str(xlen)+"I"] # add more later
+  coverpoints = getcovergroups(coverdefdir, coverfiles)
   formatstrlen = str(int(xlen/4))
   formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
   formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
@@ -446,8 +447,11 @@ for xlen in xlens:
   else:
     storecmd = "sd"
     wordsize = 8
+    corners = [0, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**xlen-1, 2**xlen-2, 1, 2, 2**(xlen-1)+1, 
+             0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+
   WALLY = os.environ.get('WALLY')
-  pathname = WALLY+"/tests/functcov/rv" + str(xlen) + "/I/"
+  pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"
   cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
   os.system(cmd)
   for test in coverpoints.keys():
@@ -464,7 +468,7 @@ for xlen in xlens:
     f.write(line)
 
     # insert generic header
-    h = open("testgen_header.S", "r")
+    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
     for line in h:  
       f.write(line)
 
@@ -479,7 +483,7 @@ for xlen in xlens:
     # print footer
     line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
     f.write(line)
-    h = open("testgen_footer.S", "r")
+    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
     for line in h:  
       f.write(line)
 
