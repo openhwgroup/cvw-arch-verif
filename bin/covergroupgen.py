@@ -102,6 +102,8 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     if(not cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
                 f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+            #archlower = arch.lower()
+            #print(" Writing sample_header ARCH = " + archlower + " INSTR = " + instr)
             f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
             for instr in k:
                 for cp in cps:

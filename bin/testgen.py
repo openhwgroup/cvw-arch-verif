@@ -468,7 +468,7 @@ for xlen in xlens:
     f.write(line)
 
     # insert generic header
-    h = open("testgen_header.S", "r")
+    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
     for line in h:  
       f.write(line)
 
@@ -483,7 +483,7 @@ for xlen in xlens:
     # print footer
     line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
     f.write(line)
-    h = open("testgen_footer.S", "r")
+    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
     for line in h:  
       f.write(line)
 
