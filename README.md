@@ -142,6 +142,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 **UET:**
 
+* Muhammad Zain
 * Muhammad Ahmad
 * Muhammad Abdullah
 
