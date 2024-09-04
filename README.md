@@ -147,6 +147,3 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * Muhammad Ahmad
 * Muhammad Abdullah
 * Hamza Ali 
-
-
-Corey Hickson chickson@hmc.edu
