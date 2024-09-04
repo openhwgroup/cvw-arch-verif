@@ -283,22 +283,18 @@ def make_mem_hazard(test, xlen):
   lines = lines + test + " x2, 0(x1)\n"
   f.write(lines)
 
-def make_cr_rs1_imm(test, xlen):
-  desc = "cp_cr_rs1_imm"
+def make_cp_imm12_corners(test, xlen):
+  desc = "cp_imm12_corners"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  for s1 in range(2):
-    for s2 in range(3):
-      if (s1):
-        rs1v = -abs(rs1val)
-      else:
-        rs1v = abs(rs1val)
-      if (s2 == 0):
-        immv = 0
-      elif (s2 == 1):
-        immv = abs(immval)
-      else:
-        immv = -abs(immval)
-      writeCovVector(desc, rs1, rs2, rd, rs1v, rs2val, immv, rdval, test, xlen)
+  for v1 in corners_imm:
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v1, rdval, test, xlen)
+
+def make_cr_rs1_imm_corners(test, xlen):
+  desc = "cr_rs1_imm_corners"
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+  for v1 in corners:
+    for v2 in corners_imm:
+      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
@@ -344,6 +340,10 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by rd_corners
     elif (coverpoint == "cr_rs1_rs2_corners"):
       make_cr_rs1_rs2_corners(test, xlen)
+    elif (coverpoint == "cp_imm12_corners"):
+      make_cp_imm12_corners(test, xlen)
+    elif (coverpoint == "cr_rs1_imm_corners"):
+      make_cr_rs1_imm_corners(test, xlen)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
@@ -356,8 +356,6 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
-    elif (coverpoint == "cr_rs1_imm"):
-      make_cr_rs1_imm(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros"):
       if (test in jtype):
         make_j_imm_ones_zeros(test, xlen)
@@ -445,6 +443,7 @@ for xlen in xlens:
     wordsize = 8
   corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2,  
              0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+  corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
   
   WALLY = os.environ.get('WALLY')
   pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"

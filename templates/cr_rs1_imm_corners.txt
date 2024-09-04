@@ -11,6 +11,6 @@
         wildcard bins onesm1 = {12'b111111111110};
         wildcard bins ones  = {12'b111111111111};
     }
-    cr_rs1_imm_corners: cross cp_rs1_corners,cp_imm_corners  iff (ins.trap == 0 )  {
+    cr_rs1_imm_corners: cross cp_rs1_corners,cp_imm12_corners  iff (ins.trap == 0 )  {
         option.comment = "Cross coverage of RS1 sign and Imm corners";
     }
