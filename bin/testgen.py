@@ -171,19 +171,19 @@ def make_rs1_rs2(test, xlen):
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs1_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
@@ -247,14 +247,12 @@ def make_rs2_sign(test, xlen):
     desc = "cp_rs2_sign (Test source rs2 value = " + hex(rs2val) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_cr_rs1_rs2_sign(test, xlen):
-  for v1 in [1, -1]:
-    for v2 in [1, -1]:
+def make_cr_rs1_rs2_corners(test, xlen):
+  for v1 in corners:
+    for v2 in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      rs1val = abs(rs1val % 2**(xlen-1)) * v1;
-      rs2val = abs(rs2val % 2**(xlen-1)) * v2;
-      desc = "cr_rs1_rs2 (Test source rs1 = " + hex(rs1val) + " rs2 = " + hex(rs2val) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+      desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
 
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -324,11 +322,7 @@ def write_tests(coverpoints, test, xlen):
       make_rd_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
-    elif (coverpoint == "cmp_rd_rs1_eq"):
-      pass # duplicate of cmp_rd_rs1
-    elif (coverpoint == "cmp_rd_rs2_eq"):
-      pass # duplicate of cmp_rd_rs2
-    elif (coverpoint == "cmp_rs1_rs2_eq"):
+    elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen)
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners(test, xlen)
@@ -347,9 +341,11 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_sign"):
       make_rs2_sign(test, xlen)
     elif (coverpoint == "cp_rd_sign"):
-      pass #TODO hope already covered by rd_corners
+      pass # already covered by rd_corners
+    elif (coverpoint == "cr_rs1_rs2_corners"):
+      make_cr_rs1_rs2_corners(test, xlen)
     elif (coverpoint == "cr_rs1_rs2"):
-      make_cr_rs1_rs2_sign(test, xlen)
+      pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
@@ -447,9 +443,9 @@ for xlen in xlens:
   else:
     storecmd = "sd"
     wordsize = 8
-    corners = [0, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**xlen-1, 2**xlen-2, 1, 2, 2**(xlen-1)+1, 
+  corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2,  
              0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-
+  
   WALLY = os.environ.get('WALLY')
   pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"
   cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
