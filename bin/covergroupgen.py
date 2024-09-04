@@ -76,7 +76,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
             missingTemplates.append(name)
         return ""
     template = template.replace("INSTR", instr)
-    template = template.replace("ARCH", arch)
+    template = template.replace("ARCH", arch.lower())
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
