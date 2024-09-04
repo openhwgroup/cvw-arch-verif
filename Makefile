@@ -1,7 +1,7 @@
 all:
 	${WALLY}/addins/cvw-arch-verif/bin/covergroupgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/testgen.py
-	make build
+	make -j 8 build
 
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
