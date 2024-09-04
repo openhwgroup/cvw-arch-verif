@@ -32,15 +32,19 @@ def readTestplans():
                 reader = csv.DictReader(csvfile)
                 tp = dict()
                 for row in reader:
+                    #print(f"row = {row}")
                     instr = row["Instruction"]
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
+                        #print(f"key = {key}, value = {value}")
                         if (value != ''):
-                            cps.append(key)
+                            if(key == "Type"):
+                                cps.append("sample_" + value)
+                            else: cps.append(key)
                     tp[instr] = cps
             testplans[arch] = tp
-#    print(testplans)
+    #print(testplans["RV32I"])
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
@@ -59,7 +63,7 @@ def readCovergroupTemplates():
 # and picks from RV32/RV64 as necessary
 
 def customizeTemplate(covergroupTemplates, name, arch, instr):
-    # Select customaizied template for RV32/RV64 if necessary, else use the generic one
+    # Select customized template for RV32/RV64 if necessary, else use the generic one
     #print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
     prefixName = re.search("(RV..)", arch).group(1) + "_" + name
     if (name in covergroupTemplates):
@@ -72,7 +76,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
             missingTemplates.append(name)
         return ""
     template = template.replace("INSTR", instr)
-    template = template.replace("ARCH", arch)
+    template = template.replace("ARCH", arch.lower())
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
@@ -81,7 +85,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
 def writeCovergroups(testPlans, covergroupTemplates):
     covergroupDir = WALLY+'/addins/cvw-arch-verif/fcov'
     for arch, tp in testPlans.items():
-        subdir = re.search("(RV..)", arch).group(1)
+        subdir = re.search("(RV..)", arch).group(1).lower()
+        subdir = os.path.join(subdir, "coverage")
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
         print("***** Writing " + file)
@@ -94,8 +99,20 @@ def writeCovergroups(testPlans, covergroupTemplates):
                 cps = tp[instr]
                 f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
                 for cp in cps:
-                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                    if(not cp.startswith("sample_")):
+                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
                 f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+            #archlower = arch.lower()
+            #print(" Writing sample_header ARCH = " + archlower + " INSTR = " + instr)
+            f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
+            for instr in k:
+                cps = tp[instr]
+                for cp in cps:
+                    if(cp.startswith("sample_")):
+                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+            f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
+
+    
 
 ##################################
 # Main Python Script
@@ -108,8 +125,8 @@ covergroupTemplates = readCovergroupTemplates()
 writeCovergroups(testPlans, covergroupTemplates)
 
 # TODO:
-Complete missing templates
-Review .csv testplans
+#Complete missing templates
+#Review .csv testplans
 
 
 
