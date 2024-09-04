@@ -138,6 +138,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 **Habib University:**
 
 * Muhammad Shaheer
+* Shahjahan
 
 **UET:**
 
