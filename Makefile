@@ -9,6 +9,7 @@ sim:
 	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov2
 #	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov2
 #	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-and.elf --fcov2
+	mkdir -p work
 	cd work && \
 	vcover merge merge.ucdb *.ucdb ${WALLY}/sim/questa/fcov_ucdb/*  && \
 	vcover report -details -html merge.ucdb && \
@@ -26,6 +27,7 @@ BASEDIR = ${WALLY}/addins/cvw-arch-verif
 SRCDIR64 = ${BASEDIR}/tests/rv64/I
 SRCDIR32 = ${BASEDIR}/tests/rv32/I
 SRCEXT = S
+$(shell mkdir -p $(SRCDIR32) $(SRCDIR64))
 SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".*\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
