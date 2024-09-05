@@ -118,15 +118,13 @@ def writeCovergroups(testPlans, covergroupTemplates):
 # Main Python Script
 ##################################
 
-WALLY = os.environ.get('WALLY')
-missingTemplates = list() # keep list of missing templates to only print once
-testPlans = readTestplans()
-covergroupTemplates = readCovergroupTemplates()
-writeCovergroups(testPlans, covergroupTemplates)
+if __name__ == '__main__':
+    WALLY = os.environ.get('WALLY')
+    missingTemplates = list() # keep li st of missing templates to only print once
+    testPlans = readTestplans()
+    covergroupTemplates = readCovergroupTemplates()
+    writeCovergroups(testPlans, covergroupTemplates)
 
-# TODO:
-#Complete missing templates
-#Review .csv testplans
-
-
-
+    # TODO:
+    #Complete missing templates
+    #Review .csv testplans
