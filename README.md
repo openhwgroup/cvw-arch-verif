@@ -135,7 +135,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * David Harris
 * Corey Hickson
 * Ahlyssa Santillana
-* Add your names here
+* Hamza Jamal
 
 **Habib University:**
 
