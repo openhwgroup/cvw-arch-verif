@@ -133,12 +133,15 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 * Vikram Krishna
 * David Harris
-* Add your names here
+* Corey Hickson
+* Ahlyssa Santillana
+* Hamza Jamal
 
 **Habib University:**
 
 * Muhammad Shaheer
 * Shahjahan
+* Daniyal Areshia
 
 **UET:**
 
@@ -146,5 +149,3 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * Muhammad Ahmad
 * Muhammad Abdullah
 * Hamza Ali 
-
-
