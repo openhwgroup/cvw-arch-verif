@@ -7,20 +7,22 @@ sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov
 	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-addi.elf --fcov
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lw.elf --fcov
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-sw.elf --fcov
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-beq.elf --fcov
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-auipc.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lw.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-sw.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-beq.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-auipc.elf --fcov
 	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lui.elf --fcov
+	wsim --sim questa --fcov rv32gc /home/harris/cvw/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-slti.elf 
 	make merge
 
 merge:
 	mkdir -p work
 	rm -f work/merge.ucdb
 	cd work && \
-	vcover merge merge.ucdb *.ucdb ${WALLY}/sim/questa/fcov_ucdb/*  && \
+	vcover merge merge.ucdb ${WALLY}/sim/questa/fcov_ucdb/*.ucdb  && \
 	vcover report -details -html merge.ucdb && \
-	vcover report -output report.txt -details merge.ucdb
+	vcover report -output fcov.txt -details merge.ucdb
+	vcover report -details merge.ucdb -below 100 -output fcov_uncovered.txt
 
 CEXT		:= c
 CPPEXT		:= cpp
