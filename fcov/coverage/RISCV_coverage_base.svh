@@ -75,7 +75,14 @@ class RISCV_coverage
         `cover_info("//      RV32I - Enabled");
         `include "coverage/RV32I_coverage_init.svh"
     `endif
-
+    `ifdef COVER_RV32M
+        `cover_info("//      RV32M - Enabled");
+        `include "coverage/RV32M_coverage_init.svh"
+    `endif
+    `ifdef COVER_RV32F
+        `cover_info("//      RV32F - Enabled");
+        `include "coverage/RV32F_coverage_init.svh"
+    `endif
     endfunction
 
     function string get_inst_name(bit trap, int hart, int issue, string disass); // break and move this first bit out
@@ -89,6 +96,12 @@ class RISCV_coverage
         
     `ifdef COVER_RV32I
         rv32i_sample(hart, issue);
+    `endif
+     `ifdef COVER_RV32M
+        rv32m_sample(hart, issue);
+    `endif
+    `ifdef COVER_RV32F
+        rv32f_sample(hart, issue);
     `endif
     endfunction
 

@@ -1,0 +1,1 @@
+    INSTR_cg = new(); INSTR_cg.set_inst_name("obj_INSTR");
