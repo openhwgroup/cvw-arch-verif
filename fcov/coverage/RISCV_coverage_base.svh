@@ -68,44 +68,8 @@ class RISCV_coverage
     `ifdef COVER_BASE_RV64E
         `cover_info("//      BASE: RV64E");
     `endif
-
-        `cover_info("//      COVER LEVELS:");
-    `ifdef COVER_LEVEL_COMPL_BAS
-        `cover_info("//        Compliance Basic - Enabled");
-    `else
-        `cover_info("//        Compliance Basic - Disabled");
-    `endif
-    `ifdef COVER_LEVEL_COMPL_EXT
-        `cover_info("//        Compliance Extended - Enabled");
-    `else
-        `cover_info("//        Compliance Extended - Disabled");
-    `endif
-    `ifdef COVER_LEVEL_DV_UP_BAS
-        `cover_info("//        DV Un-privileged Basic - Enabled");
-    `else
-        `cover_info("//        DV Un-privileged Basic - Disabled");
-    `endif
-    `ifdef COVER_LEVEL_DV_UP_EXT
-        `cover_info("//        DV Un-privileged Extended - Enabled");
-    `else
-        `cover_info("//        DV Un-privileged Extended - Disabled");
-    `endif
-    `ifdef COVER_LEVEL_DV_PR_BAS
-        `cover_info("//        DV Privileged Basic - Enabled");
-    `else
-        `cover_info("//        DV Privileged Basic - Disabled");
-    `endif
-    `ifdef COVER_LEVEL_DV_PR_EXT
-        `cover_info("//        DV Privileged Extended - Enabled");
-    `else
-        `cover_info("//        DV Privileged Extended - Disabled");
-    `endif
         
     `cover_info("//    EXTENSIONS:"); 
-    `ifdef COVER_RV32I_IMPTEST
-        `cover_info("//      RV32I_IMPTEST - Enabled (Dev Only)");
-        `include "coverage/RV32I_IMPTEST_coverage_init.svh"
-    `endif
 
     `ifdef COVER_RV32I
         `cover_info("//      RV32I - Enabled");
@@ -127,10 +91,6 @@ class RISCV_coverage
 
     function void sample_extensions(int hart, int issue);
         
-    `ifdef COVER_RV32I_IMPTEST
-        rv32i_sample(hart, issue);
-    `endif
-
     `ifdef COVER_RV32I
         rv32i_sample(hart, issue);
     `endif
