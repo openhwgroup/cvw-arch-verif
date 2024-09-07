@@ -42,23 +42,8 @@ class RISCV_coverage
     `include "coverage/RISCV_coverage_exceptions.svh"
     `include "coverage/RISCV_coverage_hazards.svh"
 
-    `ifdef COVER_RV32I_IMPTEST
-        `include "coverage/RV32I_IMPTEST_coverage.svh"
-    `endif
-
-    `ifdef COVER_RV32I
-        `ifdef COVER_RV32I_ILLEGAL
-            msgfatal($sformatf("Fatal error: Cannot select both COVER_RV32I and COVER_RV32I_ILLEGAL"));
-        `endif
-        `ifdef COVER_BASE_RV64I
-              msgfatal($sformatf("Fatal error: Cannot use COVER_RV32I with COVER_BASE_RV64I"));
-        `else
-            `include "coverage/RV32I_coverage.svh"     
-        `endif
-    `endif
-    `ifdef COVER_RV32I_ILLEGAL
-        `include "coverage/RV32I_illegal_coverage.svh"
-    `endif
+    // Load which extensions are supported in this configuration (from $WALLY/config/<config>/coverage_extensions.svh)
+    `include "coverage_extensions.svh"
 
     virtual rvviTrace #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) rvvi;
 
@@ -66,10 +51,9 @@ class RISCV_coverage
     function new(virtual rvviTrace #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) rvvi);
    
         this.rvvi = rvvi;
-        `cover_info("//  riscvISACOV    ");         
-        `cover_info("//  Version 20231026.0\n//");  
-        `cover_info("//  Copyright (c) 2005-2023 Imperas Software Ltd. ");
-        `cover_info("//  All Rights Reserved.\n//"); 
+        `cover_info("//  cvw_arch_verif    ");         
+        `cover_info("//  adapted from riscvISACOV Version 20231026.0");         
+        `cover_info("//  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0");
         `cover_info("//    Configuration:");
 
     `ifdef COVER_BASE_RV32I
