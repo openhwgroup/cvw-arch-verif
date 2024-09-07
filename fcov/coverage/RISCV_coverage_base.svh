@@ -75,10 +75,6 @@ class RISCV_coverage
         `cover_info("//      RV32I - Enabled");
         `include "coverage/RV32I_coverage_init.svh"
     `endif
-    `ifdef COVER_RV32I_ILLEGAL
-        `cover_info("//      RV32I_ILLEGAL - Enabled");
-        `include "coverage/RV32I_coverage_init.svh"
-    `endif
 
     endfunction
 
@@ -92,9 +88,6 @@ class RISCV_coverage
     function void sample_extensions(int hart, int issue);
         
     `ifdef COVER_RV32I
-        rv32i_sample(hart, issue);
-    `endif
-    `ifdef COVER_RV32I_ILLEGAL
         rv32i_sample(hart, issue);
     `endif
     endfunction
