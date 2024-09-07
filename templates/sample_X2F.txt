@@ -2,5 +2,5 @@
             ins = new(hart, issue, traceDataQ); 
             ins.add_fd(0);
             ins.add_rs1(1);
-            INSTR_cg.sample(ins); 
+            INSTRNODOT_cg.sample(ins); 
         end

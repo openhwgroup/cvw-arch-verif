@@ -75,6 +75,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
             print("No template found for " + name + " or " + prefixName)
             missingTemplates.append(name)
         return ""
+    instr_nodot = instr.replace(".", "_")
+    template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
     template = template.replace("ARCH", arch.lower())
     return template
