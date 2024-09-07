@@ -42,8 +42,8 @@ class RISCV_coverage
     `include "coverage/RISCV_coverage_exceptions.svh"
     `include "coverage/RISCV_coverage_hazards.svh"
 
-    // Load which extensions are supported in this configuration (from $WALLY/config/<config>/coverage_extensions.svh)
-    `include "coverage_extensions.svh"
+    // Load which extensions are supported in this configuration (from $WALLY/config/<config>/coverage.svh)
+    `include "coverage.svh"
 
     virtual rvviTrace #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) rvvi;
 
@@ -83,6 +83,20 @@ class RISCV_coverage
         `cover_info("//      RV32F - Enabled");
         `include "coverage/RV32F_coverage_init.svh"
     `endif
+
+    `ifdef COVER_RV64I
+        `cover_info("//      RV64I - Enabled");
+        `include "coverage/RV64I_coverage_init.svh"
+    `endif
+    `ifdef COVER_RV64M
+        `cover_info("//      RV64M - Enabled");
+        `include "coverage/RV64M_coverage_init.svh"
+    `endif
+    `ifdef COVER_RV64F
+        `cover_info("//      RV64F - Enabled");
+        `include "coverage/RV64F_coverage_init.svh"
+    `endif
+
     endfunction
 
     function string get_inst_name(bit trap, int hart, int issue, string disass); // break and move this first bit out
@@ -103,6 +117,16 @@ class RISCV_coverage
     `ifdef COVER_RV32F
         rv32f_sample(hart, issue);
     `endif
+    `ifdef COVER_RV64I
+        rv64i_sample(hart, issue);
+    `endif
+     `ifdef COVER_RV64M
+        rv64m_sample(hart, issue);
+    `endif
+    `ifdef COVER_RV64F
+        rv64f_sample(hart, issue);
+    `endif
+
     endfunction
 
     function void sample_csrs(int hart, int issue);
