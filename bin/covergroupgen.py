@@ -75,6 +75,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
             print("No template found for " + name + " or " + prefixName)
             missingTemplates.append(name)
         return ""
+    instr_nodot = instr.replace(".", "_")
+    template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
     template = template.replace("ARCH", arch.lower())
     return template
@@ -89,15 +91,19 @@ def writeCovergroups(testPlans, covergroupTemplates):
         subdir = os.path.join(subdir, "coverage")
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
+        initfile = subdir + "/" + arch + "_coverage_init.svh"
         print("***** Writing " + file)
         with open(os.path.join(covergroupDir,file), "w") as f:
+            finit = open(os.path.join(covergroupDir,initfile), "w")
             #print(covergroupTemplates)
             f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
+            finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
             k = list(tp.keys())
             k.sort()
             for instr in k:
                 cps = tp[instr]
                 f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
+                finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
                 for cp in cps:
                     if(not cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
