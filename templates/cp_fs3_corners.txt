@@ -22,6 +22,6 @@
         bins neginfinity      = {32'hff800000};
         bins posQNaN          = {[32'h7fc00000:32'h7fffffff]};
         bins posSNaN          = {[32'h7f800000:32'h7fbfffff]};
-        bins posrandom        = {32'h7ef8654f}};
-        bins negrandom        = {32'h813d9ab0}};
+        bins posrandom        = {32'h7ef8654f};
+        bins negrandom        = {32'h813d9ab0};
     }
