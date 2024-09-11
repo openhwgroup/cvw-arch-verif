@@ -171,19 +171,19 @@ def make_rs1_rs2(test, xlen):
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs1_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen):
-   for v in corners:
+  for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
@@ -247,14 +247,12 @@ def make_rs2_sign(test, xlen):
     desc = "cp_rs2_sign (Test source rs2 value = " + hex(rs2val) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_cr_rs1_rs2_sign(test, xlen):
-  for v1 in [1, -1]:
-    for v2 in [1, -1]:
+def make_cr_rs1_rs2_corners(test, xlen):
+  for v1 in corners:
+    for v2 in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      rs1val = abs(rs1val % 2**(xlen-1)) * v1;
-      rs2val = abs(rs2val % 2**(xlen-1)) * v2;
-      desc = "cr_rs1_rs2 (Test source rs1 = " + hex(rs1val) + " rs2 = " + hex(rs2val) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+      desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
 
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -285,22 +283,18 @@ def make_mem_hazard(test, xlen):
   lines = lines + test + " x2, 0(x1)\n"
   f.write(lines)
 
-def make_cr_rs1_imm(test, xlen):
-  desc = "cp_cr_rs1_imm"
+def make_cp_imm12_corners(test, xlen):
+  desc = "cp_imm12_corners"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  for s1 in range(2):
-    for s2 in range(3):
-      if (s1):
-        rs1v = -abs(rs1val)
-      else:
-        rs1v = abs(rs1val)
-      if (s2 == 0):
-        immv = 0
-      elif (s2 == 1):
-        immv = abs(immval)
-      else:
-        immv = -abs(immval)
-      writeCovVector(desc, rs1, rs2, rd, rs1v, rs2val, immv, rdval, test, xlen)
+  for v1 in corners_imm:
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v1, rdval, test, xlen)
+
+def make_cr_rs1_imm_corners(test, xlen):
+  desc = "cr_rs1_imm_corners"
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+  for v1 in corners:
+    for v2 in corners_imm:
+      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
@@ -324,11 +318,7 @@ def write_tests(coverpoints, test, xlen):
       make_rd_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
-    elif (coverpoint == "cmp_rd_rs1_eq"):
-      pass # duplicate of cmp_rd_rs1
-    elif (coverpoint == "cmp_rd_rs2_eq"):
-      pass # duplicate of cmp_rd_rs2
-    elif (coverpoint == "cmp_rs1_rs2_eq"):
+    elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen)
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners(test, xlen)
@@ -347,9 +337,15 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_sign"):
       make_rs2_sign(test, xlen)
     elif (coverpoint == "cp_rd_sign"):
-      pass #TODO hope already covered by rd_corners
+      pass # already covered by rd_corners
+    elif (coverpoint == "cr_rs1_rs2_corners"):
+      make_cr_rs1_rs2_corners(test, xlen)
+    elif (coverpoint == "cp_imm12_corners"):
+      make_cp_imm12_corners(test, xlen)
+    elif (coverpoint == "cr_rs1_imm_corners"):
+      make_cr_rs1_imm_corners(test, xlen)
     elif (coverpoint == "cr_rs1_rs2"):
-      make_cr_rs1_rs2_sign(test, xlen)
+      pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
@@ -360,8 +356,6 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
-    elif (coverpoint == "cr_rs1_imm"):
-      make_cr_rs1_imm(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros"):
       if (test in jtype):
         make_j_imm_ones_zeros(test, xlen)
@@ -406,90 +400,88 @@ def getcovergroups(coverdefdir, coverfiles):
 # main body
 ##################################
 
-# change these to suite your tests
-WALLY = os.environ.get('WALLY')
-#coverfiles = ["RV64I", "RV64M", "RV64A", "RV64C", "RV64F", "RV64D"] # add more later
-rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
-          "addw", "subw", "sllw", "srlw", "sraw"
-          "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
-          "mulw", "divw", "divuw", "remw", "remuw"]
-loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
-shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
-shiftiwtype = ["slliw", "srliw", "sraiw"]
-itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
-stype = ["sb", "sh", "sw", "sd"]
-btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
-jtype = ["jal"]
-jalrtype = ["jalr"]
-utype = ["lui", "auipc"]
-# TODO: auipc missing, check whatelse is missing in ^these^ types
-
-
-author = "David_Harris@hmc.edu"
-xlens = [32, 64]
-numrand = 3
-corners = []
-
-# setup
-seed(0) # make tests reproducible
-
-# generate files for each test
-for xlen in xlens:
-  coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
-  coverfiles = ["RV"+str(xlen)+"I"] # add more later
-  coverpoints = getcovergroups(coverdefdir, coverfiles)
-  formatstrlen = str(int(xlen/4))
-  formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-  formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-  if (xlen == 32):
-    storecmd = "sw"
-    wordsize = 4
-  else:
-    storecmd = "sd"
-    wordsize = 8
-    corners = [0, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**xlen-1, 2**xlen-2, 1, 2, 2**(xlen-1)+1, 
-             0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-
+if __name__ == '__main__':
+  # change these to suite your tests
   WALLY = os.environ.get('WALLY')
-  pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"
-  cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-  os.system(cmd)
-  for test in coverpoints.keys():
-    basename = "WALLY-COV-" + test 
-    fname = pathname + "/" + basename + ".S"
+  #coverfiles = ["RV64I", "RV64M", "RV64A", "RV64C", "RV64F", "RV64D"] # add more later
+  rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
+            "addw", "subw", "sllw", "srlw", "sraw"
+            "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
+            "mulw", "divw", "divuw", "remw", "remuw"]
+  loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
+  shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
+  shiftiwtype = ["slliw", "srliw", "sraiw"]
+  itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
+  stype = ["sb", "sh", "sw", "sd"]
+  btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
+  jtype = ["jal"]
+  jalrtype = ["jalr"]
+  utype = ["lui", "auipc"]
+  # TODO: auipc missing, check whatelse is missing in ^these^ types
 
-    # print custom header part
-    f = open(fname, "w")
-    line = "///////////////////////////////////////////\n"
-    f.write(line)
-    line="// "+fname+ "\n// " + author + "\n"
-    f.write(line)
-    line ="// Created " + str(datetime.now()) + "\n"
-    f.write(line)
 
-    # insert generic header
-    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
-    for line in h:  
+  author = "David_Harris@hmc.edu"
+  xlens = [32, 64]
+  numrand = 3
+  corners = []
+
+  # setup
+  seed(0) # make tests reproducible
+
+  # generate files for each test
+  for xlen in xlens:
+    coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
+    coverfiles = ["RV"+str(xlen)+"I"] # add more later
+    coverpoints = getcovergroups(coverdefdir, coverfiles)
+    formatstrlen = str(int(xlen/4))
+    formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+    formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+    if (xlen == 32):
+      storecmd = "sw"
+      wordsize = 4
+    else:
+      storecmd = "sd"
+      wordsize = 8
+    corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2, 
+              0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+    corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+
+    WALLY = os.environ.get('WALLY')
+    pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"
+    cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+    os.system(cmd)
+    for test in coverpoints.keys():
+      basename = "WALLY-COV-" + test 
+      fname = pathname + "/" + basename + ".S"
+
+      # print custom header part
+      f = open(fname, "w")
+      line = "///////////////////////////////////////////\n"
+      f.write(line)
+      line="// "+fname+ "\n// " + author + "\n"
+      f.write(line)
+      line ="// Created " + str(datetime.now()) + "\n"
       f.write(line)
 
-    # print directed and random test vectors
-    # Coverage for R-type arithmetic instructions
-    #if (test not in rtests):
-    #  exit("Error: %s not implemented yet" % test)
-    #else:
-    #  write_rtype_arith_vectors(test, xlen)
-    write_tests(coverpoints[test], test, xlen) 
+      # insert generic header
+      h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
+      for line in h:  
+        f.write(line)
 
-    # print footer
-    line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
-    f.write(line)
-    h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
-    for line in h:  
+      # print directed and random test vectors
+      # Coverage for R-type arithmetic instructions
+      #if (test not in rtests):
+      #  exit("Error: %s not implemented yet" % test)
+      #else:
+      #  write_rtype_arith_vectors(test, xlen)
+      write_tests(coverpoints[test], test, xlen) 
+
+      # print footer
+      line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
       f.write(line)
+      h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
+      for line in h:  
+        f.write(line)
 
-    # Finish
-    f.close()
-
-
-
-
+      # Finish
+      f.close()

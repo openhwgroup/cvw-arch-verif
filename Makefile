@@ -5,15 +5,26 @@ all:
 
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	rm -f work/merge.ucdb
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov2
-#	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov2
-#	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-and.elf --fcov2
-	cd work && \
-	vcover merge merge.ucdb *.ucdb ${WALLY}/sim/questa/fcov_ucdb/*  && \
-	vcover report -details -html merge.ucdb && \
-	vcover report -output report.txt -details merge.ucdb
+	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov
+	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-addi.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lw.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-sw.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-beq.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-auipc.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lui.elf --fcov
+	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-add.elf --fcov
+	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-addi.elf --fcov
+	make merge
 
+merge:
+	cd ${WALLY}/addins/cvw-arch-verif && \
+	mkdir -p work && \
+	rm -f work/merge.ucdb
+	cd ${WALLY}/addins/cvw-arch-verif/work && \
+	vcover merge merge.ucdb ${WALLY}/sim/questa/fcov_ucdb/*.ucdb  && \
+	vcover report -details -html merge.ucdb && \
+	vcover report -output fcov.txt -details merge.ucdb && \
+	vcover report -details merge.ucdb -below 100 -output fcov_uncovered.txt
 
 CEXT		:= c
 CPPEXT		:= cpp
@@ -26,6 +37,7 @@ BASEDIR = ${WALLY}/addins/cvw-arch-verif
 SRCDIR64 = ${BASEDIR}/tests/rv64/I
 SRCDIR32 = ${BASEDIR}/tests/rv32/I
 SRCEXT = S
+$(shell mkdir -p $(SRCDIR32) $(SRCDIR64))
 SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".*\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
@@ -54,7 +66,7 @@ $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT)
 clean:
 	rm -rf ${BASEDIR}/fcov/rv32/coverage/*
 	rm -rf ${BASEDIR}/fcov/rv64/coverage/*
-	rm -rf ${BASEDIR}/tests/*
+	rm -rf ${BASEDIR}/tests/rv*
 	#rm -f ${SRCDIR}/*.elf ${SRCDIR}/*.objdump ${SRCDIR}/*.addr *${SRCDIR}/.lab ${SRCDIR}/*.memfile
 
 
