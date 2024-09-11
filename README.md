@@ -133,7 +133,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 
 * Vikram Krishna
 * David Harris
-* Add your names here
+* Ahlyssa Santillana
 
 **Habib University:**
 
