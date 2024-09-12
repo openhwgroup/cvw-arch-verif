@@ -403,7 +403,6 @@ def getcovergroups(coverdefdir, coverfiles):
 if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
-  #coverfiles = ["RV64I", "RV64M", "RV64A", "RV64C", "RV64F", "RV64D"] # add more later
   rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
             "addw", "subw", "sllw", "srlw", "sraw"
             "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
@@ -430,58 +429,65 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
-    coverfiles = ["RV"+str(xlen)+"I"] # add more later
-    coverpoints = getcovergroups(coverdefdir, coverfiles)
-    formatstrlen = str(int(xlen/4))
-    formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-    formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-    if (xlen == 32):
-      storecmd = "sw"
-      wordsize = 4
-    else:
-      storecmd = "sd"
-      wordsize = 8
-    corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2, 
-              0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-    corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+    for extension in ["I", "M", "Zicond"]:
+      coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
+      coverfiles = ["RV"+str(xlen)+extension] 
+      coverpoints = getcovergroups(coverdefdir, coverfiles)
+      formatstrlen = str(int(xlen/4))
+      formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+      formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+      if (xlen == 32):
+        storecmd = "sw"
+        wordsize = 4
+      else:
+        storecmd = "sd"
+        wordsize = 8
+      
+      corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+      if (xlen == 32):
+        corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+      else:
+        corners = corners + [0b0101101110111100100010000111011101011011101111001000100001110111, # random
+                             0b1010101010101010101010101010101010101010101010101010101010101010, # walking ones
+                             0b0101010101010101010101010101010101010101010101010101010101010101] # walking ones
+      corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
 
-    WALLY = os.environ.get('WALLY')
-    pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/I/"
-    cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-    os.system(cmd)
-    for test in coverpoints.keys():
-      basename = "WALLY-COV-" + test 
-      fname = pathname + "/" + basename + ".S"
+      WALLY = os.environ.get('WALLY')
+      pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
+      cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+      os.system(cmd)
+      for test in coverpoints.keys():
+        basename = "WALLY-COV-" + test 
+        fname = pathname + "/" + basename + ".S"
 
-      # print custom header part
-      f = open(fname, "w")
-      line = "///////////////////////////////////////////\n"
-      f.write(line)
-      line="// "+fname+ "\n// " + author + "\n"
-      f.write(line)
-      line ="// Created " + str(datetime.now()) + "\n"
-      f.write(line)
-
-      # insert generic header
-      h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
-      for line in h:  
+        # print custom header part
+        f = open(fname, "w")
+        line = "///////////////////////////////////////////\n"
+        f.write(line)
+        line="// "+fname+ "\n// " + author + "\n"
+        f.write(line)
+        line ="// Created " + str(datetime.now()) + "\n"
         f.write(line)
 
-      # print directed and random test vectors
-      # Coverage for R-type arithmetic instructions
-      #if (test not in rtests):
-      #  exit("Error: %s not implemented yet" % test)
-      #else:
-      #  write_rtype_arith_vectors(test, xlen)
-      write_tests(coverpoints[test], test, xlen) 
+        # insert generic header
+        h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
+        for line in h:  
+          f.write(line)
 
-      # print footer
-      line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
-      f.write(line)
-      h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
-      for line in h:  
+        # print directed and random test vectors
+        # Coverage for R-type arithmetic instructions
+        #if (test not in rtests):
+        #  exit("Error: %s not implemented yet" % test)
+        #else:
+        #  write_rtype_arith_vectors(test, xlen)
+        write_tests(coverpoints[test], test, xlen) 
+
+        # print footer
+        line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
         f.write(line)
+        h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_footer.S", "r")
+        for line in h:  
+          f.write(line)
 
-      # Finish
-      f.close()
+        # Finish
+        f.close()
