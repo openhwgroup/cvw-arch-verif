@@ -413,9 +413,11 @@ if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
   rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
-            "addw", "subw", "sllw", "srlw", "sraw"
+            "addw", "subw", "sllw", "srlw", "sraw",
             "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
-            "mulw", "divw", "divuw", "remw", "remuw"]
+            "mulw", "divw", "divuw", "remw", "remuw",
+            "czero.eqz", "czero.nez"
+            ]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]

@@ -83,6 +83,11 @@ class RISCV_coverage
         `cover_info("//      RV32F - Enabled");
         `include "coverage/RV32F_coverage_init.svh"
     `endif
+    `ifdef COVER_RV32ZICOND
+        `cover_info("//      RV32ZICOND - Enabled");
+        `include "coverage/RV32Zicond_coverage_init.svh"
+    `endif
+
 
     `ifdef COVER_RV64I
         `cover_info("//      RV64I - Enabled");
@@ -95,6 +100,10 @@ class RISCV_coverage
     `ifdef COVER_RV64F
         `cover_info("//      RV64F - Enabled");
         `include "coverage/RV64F_coverage_init.svh"
+    `endif
+    `ifdef COVER_RV64ZICOND
+        `cover_info("//      RV64ZICOND - Enabled");
+        `include "coverage/RV64Zicond_coverage_init.svh"
     `endif
 
     endfunction
@@ -117,6 +126,10 @@ class RISCV_coverage
     `ifdef COVER_RV32F
         rv32f_sample(hart, issue);
     `endif
+    `ifdef COVER_RV32ZICOND
+        rv32zicond_sample(hart, issue);
+    `endif
+
     `ifdef COVER_RV64I
         rv64i_sample(hart, issue);
     `endif
@@ -125,6 +138,9 @@ class RISCV_coverage
     `endif
     `ifdef COVER_RV64F
         rv64f_sample(hart, issue);
+    `endif
+    `ifdef COVER_RV64ZICOND
+        rv64zicond_sample(hart, issue);
     `endif
 
     endfunction
