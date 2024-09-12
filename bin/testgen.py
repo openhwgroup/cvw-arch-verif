@@ -197,6 +197,21 @@ def make_rd_corners(test, xlen):
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, -1, -1, rdval, test, xlen)
 
+def make_rd_corners_auipc(test, xlen):
+  for v in corners:
+    # rs1 = 0, rs2 = v, others are random
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rd_corners_auipc (Test rd value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
+    # rs1, rs2 = v, others are random
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rd_corners_auipc (Test rd value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
+    # rs1 = all 1s, rs2 = v, others are random
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rd_corners_auipc (Test rd value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, v, -1, -1, rdval, test, xlen)
+
 def make_rd_rs1_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
   desc = "cmp_rdm_rs1_eqval (Test rs1 = rd = " + hex(rs1val) + ")"
@@ -326,6 +341,8 @@ def write_tests(coverpoints, test, xlen):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen)
+    elif (coverpoint == "cp_rd_corners_auipc"):
+      make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):
