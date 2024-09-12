@@ -32,6 +32,6 @@ cp_rs1_nx0 : coverpoint ins.get_gpr_reg(ins.current.rs1) iff (ins.trap == 0) {
     bins x30 = {30};
     bins x31 = {31};
 `endif    
-    ignore_bins x0_bin = {0};  // Exclude the x0 register
+
     option.comment = "RS1 register assignment (excluding x0)";
 }
