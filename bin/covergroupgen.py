@@ -79,6 +79,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
     template = template.replace("ARCH", arch.lower())
+    # For psuedo instructions
+    if name == 'sample_I' and instr == 'addi':          # Incase of 'addi', also generate 'mv'
+        template += template.replace(instr, 'mv', 1)    # Replaces top occurrence of instr
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
