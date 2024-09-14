@@ -190,19 +190,35 @@ def make_rs2_corners(test, xlen):
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen):
-  for v in corners:
-    # rs1 = 0, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
-    # rs1, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
-    # rs1 = all 1s, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+  if (xlen==32):
+    for v in corners_32:
+      # rs1 = 0, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
+      # rs1, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
+      # rs1 = all 1s, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+  else:
+    for v in corners_64:
+      # rs1 = 0, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
+      # rs1, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
+      # rs1 = all 1s, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+
 
 def make_rd_rs1_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -451,8 +467,11 @@ if __name__ == '__main__':
     else:
       storecmd = "sd"
       wordsize = 8
-    corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2, 
-              0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+    corners_32 = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2, 
+               0b10101010101010101010101010101010, 0b01010101010101010101010101010101, 0b01011011101111001000100001110111]
+    corners_64 = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2, 
+              2**(xlen//2)-1, 2**(xlen//2)-2,2**(xlen//2),2**(xlen//2)+1, 0b1010101010101010101010101010101010101010101010101010101010101010,
+               0b0101010101010101010101010101010101010101010101010101010101010101, 0b0101101110111100100010000111011101100011101011101000011011110111]
     corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
 
     WALLY = os.environ.get('WALLY')
