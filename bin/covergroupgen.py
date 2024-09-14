@@ -79,9 +79,10 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
     template = template.replace("ARCH", arch.lower())
-    # For psuedo instructions
-    if name == 'sample_I' and instr == 'addi':          # Incase of 'addi', also generate 'mv'
-        template += template.replace(instr, 'mv', 1)    # Replaces top occurrence of instr
+    # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
+    # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
+    if name == 'sample_I' and instr == 'addi': 
+        template += template.replace(instr, 'mv', 1)    
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
