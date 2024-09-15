@@ -56,55 +56,21 @@ class RISCV_coverage
         `cover_info("//  SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0");
         `cover_info("//    Configuration:");
 
-    `ifdef COVER_BASE_RV32I
-        `cover_info("//      BASE: RV32I");
-    `endif
-    `ifdef COVER_BASE_RV32E
-        `cover_info("//      BASE: RV32E");
-    `endif
-    `ifdef COVER_BASE_RV64I
-        `cover_info("//      BASE: RV64I");
-    `endif
-    `ifdef COVER_BASE_RV64E
-        `cover_info("//      BASE: RV64E");
-    `endif
-        
-    `cover_info("//    EXTENSIONS:"); 
-
-    `ifdef COVER_RV32I
-        `cover_info("//      RV32I - Enabled");
-        `include "RV32I_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV32M
-        `cover_info("//      RV32M - Enabled");
-        `include "RV32M_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV32F
-        `cover_info("//      RV32F - Enabled");
-        `include "RV32F_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV32ZICOND
-        `cover_info("//      RV32ZICOND - Enabled");
-        `include "RV32Zicond_coverage_init.svh"
-    `endif
-
-
-    `ifdef COVER_RV64I
-        `cover_info("//      RV64I - Enabled");
-        `include "RV64I_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV64M
-        `cover_info("//      RV64M - Enabled");
-        `include "RV64M_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV64F
-        `cover_info("//      RV64F - Enabled");
-        `include "RV64F_coverage_init.svh"
-    `endif
-    `ifdef COVER_RV64ZICOND
-        `cover_info("//      RV64ZICOND - Enabled");
-        `include "RV64Zicond_coverage_init.svh"
-    `endif
+        `ifdef COVER_BASE_RV32I
+            `cover_info("//      BASE: RV32I");
+        `endif
+        `ifdef COVER_BASE_RV32E
+            `cover_info("//      BASE: RV32E");
+        `endif
+        `ifdef COVER_BASE_RV64I
+            `cover_info("//      BASE: RV64I");
+        `endif
+        `ifdef COVER_BASE_RV64E
+            `cover_info("//      BASE: RV64E");
+        `endif
+            
+        `cover_info("//    EXTENSIONS:"); 
+        `include "RISCV_coverage_base_init.svh"
 
     endfunction
 
@@ -116,32 +82,8 @@ class RISCV_coverage
 
 
     function void sample_extensions(int hart, int issue);
-        
-    `ifdef COVER_RV32I
-        rv32i_sample(hart, issue);
-    `endif
-     `ifdef COVER_RV32M
-        rv32m_sample(hart, issue);
-    `endif
-    `ifdef COVER_RV32F
-        rv32f_sample(hart, issue);
-    `endif
-    `ifdef COVER_RV32ZICOND
-        rv32zicond_sample(hart, issue);
-    `endif
 
-    `ifdef COVER_RV64I
-        rv64i_sample(hart, issue);
-    `endif
-     `ifdef COVER_RV64M
-        rv64m_sample(hart, issue);
-    `endif
-    `ifdef COVER_RV64F
-        rv64f_sample(hart, issue);
-    `endif
-    `ifdef COVER_RV64ZICOND
-        rv64zicond_sample(hart, issue);
-    `endif
+    `include "RISCV_coverage_base_sample.svh"
 
     endfunction
 

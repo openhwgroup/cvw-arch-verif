@@ -32,4 +32,5 @@ fcov/rv32
 fcov/rv64
 tests/rv32
 tests/rv64
-
+fcov/coverage/RISCV_coverage_base_init.svh
+fcov/coverage/RISCV_coverage_base_sample.svh

@@ -80,6 +80,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
+    template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
     # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
     # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
@@ -123,6 +124,18 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     if(cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
             f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
+    # Create include files listing all the coverage groups to use in RISCV_coverage_base
+    keys = list(testPlans.keys())
+    keys.sort()
+    file = "coverage/RISCV_coverage_base_init.svh"
+    with open(os.path.join(covergroupDir,file), "w") as f:
+        for arch in keys:
+            f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+    file = "coverage/RISCV_coverage_base_sample.svh"
+    with open(os.path.join(covergroupDir,file), "w") as f:
+        for arch in keys:
+            f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
+
 
     
 
