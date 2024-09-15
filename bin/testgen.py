@@ -453,7 +453,7 @@ if __name__ == '__main__':
   # generate files for each test
   for xlen in xlens:
     for extension in ["I", "M", "Zicond"]:
-      coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
+      coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
       formatstrlen = str(int(xlen/4))
