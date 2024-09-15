@@ -79,6 +79,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
+    template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCH", arch.lower())
     # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
     # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
