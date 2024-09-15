@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 ##################################
-# covergroupegen.py
+# covertreport.py
 #
 # David_Harris@hmc.edu 15 August 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
@@ -20,7 +20,6 @@ reportdir = f"{WALLY}/addins/cvw-arch-verif/work"
 
 # Find all the configurations in the fcov_ucdb directory
 configs = {}
-ucdbdir = f"{WALLY}/sim/questa/fcov_ucdb"
 ucdbs = os.listdir(ucdbdir)
 for ucdb in ucdbs:
 	if (ucdb.endswith(".ucdb")):
