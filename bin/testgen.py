@@ -190,7 +190,7 @@ def make_rs2_corners(test, xlen):
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_corners(test, xlen):
+def make_rd_corners(test, xlen, corners):
   for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -205,20 +205,6 @@ def make_rd_corners(test, xlen):
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
 
-def make_rd_corners_16(test, xlen):
-    for v in corners_16bits:
-      # rs1 = 0, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
-      # rs1, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
-      # rs1 = all 1s, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
 
 def make_rd_corners_auipc(test, xlen):
   for v in corners:
@@ -354,9 +340,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners"):
-      make_rd_corners(test, xlen)
+      make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lh"):
-      make_rd_corners_16(test, xlen)           # Make rd corners for lh and lhu for both RV32I & RV64I
+      make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rs1_nx0"):
