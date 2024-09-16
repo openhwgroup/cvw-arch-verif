@@ -36,9 +36,8 @@ SRCEXT 		:= \([$(CEXT)$(AEXT)$(SEXT)]\|$(CPPEXT)\)
 BASEDIR = ${WALLY}/addins/cvw-arch-verif
 SRCDIR64 = ${BASEDIR}/tests/rv64
 SRCDIR32 = ${BASEDIR}/tests/rv32
-WALLYEXTS = I # Add the extensions testing here
+WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} -type d | sort)
 SRCEXT = S
-$(foreach letter, $(WALLYEXTS), $(shell mkdir -p $(SRCDIR64)/$(letter) $(SRCDIR32)/$(letter)))
 SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
