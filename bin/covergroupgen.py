@@ -3,6 +3,7 @@
 # covergroupegen.py
 #
 # David_Harris@hmc.edu 15 August 2025
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
 # Generate functional covergroups for RISC-V instructions
 ##################################
@@ -78,7 +79,13 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
     template = template.replace("INSTR", instr)
+    template = template.replace("ARCHUPPER", arch.upper())
+    template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
+    # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
+    # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
+    if name == 'sample_I' and instr == 'addi': 
+        template += template.replace(instr, 'mv', 1)    
     return template
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
@@ -88,7 +95,7 @@ def writeCovergroups(testPlans, covergroupTemplates):
     covergroupDir = WALLY+'/addins/cvw-arch-verif/fcov'
     for arch, tp in testPlans.items():
         subdir = re.search("(RV..)", arch).group(1).lower()
-        subdir = os.path.join(subdir, "coverage")
+        #subdir = os.path.join(subdir, "coverage")
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
         initfile = subdir + "/" + arch + "_coverage_init.svh"
@@ -117,6 +124,18 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     if(cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
             f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
+    # Create include files listing all the coverage groups to use in RISCV_coverage_base
+    keys = list(testPlans.keys())
+    keys.sort()
+    file = "coverage/RISCV_coverage_base_init.svh"
+    with open(os.path.join(covergroupDir,file), "w") as f:
+        for arch in keys:
+            f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+    file = "coverage/RISCV_coverage_base_sample.svh"
+    with open(os.path.join(covergroupDir,file), "w") as f:
+        for arch in keys:
+            f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
+
 
     
 
