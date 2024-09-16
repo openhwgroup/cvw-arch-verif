@@ -190,7 +190,7 @@ def make_rs2_corners(test, xlen):
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_corners(test, xlen):
+def make_rd_corners(test, xlen, corners):
   for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -204,6 +204,7 @@ def make_rd_corners(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+
 
 def make_rd_corners_auipc(test, xlen):
   for v in corners:
@@ -339,7 +340,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners"):
-      make_rd_corners(test, xlen)
+      make_rd_corners(test, xlen, corners)
+    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
+      make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rs1_nx0"):
@@ -475,6 +478,8 @@ if __name__ == '__main__':
                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
       corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+      corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
+                    0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
