@@ -5,11 +5,12 @@ all:
 
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
+	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-add.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/Zicond/WALLY-COV-czero.eqz.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/M/WALLY-COV-div.elf --fcov
 
 	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-add.elf --fcov
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-addi.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-addi.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lw.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-sw.elf --fcov
 	##wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-beq.elf --fcov
@@ -22,13 +23,9 @@ sim:
 merge:
 	cd ${WALLY}/addins/cvw-arch-verif && \
 	mkdir -p work && \
-	rm -f work/merge.ucdb
-	cd ${WALLY}/addins/cvw-arch-verif/work && \
-	vcover merge merge.ucdb ${WALLY}/sim/questa/fcov_ucdb/*.ucdb  && \
-	vcover report -details -html merge.ucdb && \
-	vcover report -output fcov.txt -details merge.ucdb && \
-	vcover report -details merge.ucdb -below 100 -output fcov_uncovered.txt
-
+	rm -f work/merge*.ucdb && \
+	bin/coverreport.py 
+	
 CEXT		:= c
 CPPEXT		:= cpp
 AEXT		:= s
@@ -37,11 +34,11 @@ SRCEXT 		:= \([$(CEXT)$(AEXT)$(SEXT)]\|$(CPPEXT)\)
 #SRCS = $(wildcard *.S)
 #PROGS = $(patsubst %.S,%,$(SRCS))
 BASEDIR = ${WALLY}/addins/cvw-arch-verif
-SRCDIR64 = ${BASEDIR}/tests/rv64/I
-SRCDIR32 = ${BASEDIR}/tests/rv32/I
+SRCDIR64 = ${BASEDIR}/tests/rv64
+SRCDIR32 = ${BASEDIR}/tests/rv32
+WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} -type d | sort)
 SRCEXT = S
-$(shell mkdir -p $(SRCDIR32) $(SRCDIR64))
-SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".*\.$(SRCEXT)" | sort)
+SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
 

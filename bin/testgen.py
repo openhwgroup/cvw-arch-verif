@@ -3,6 +3,7 @@
 # testgen.py
 #
 # David_Harris@hmc.edu 27 March 2024
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
 # Generate directed tests for functional coverage
 ##################################
@@ -189,7 +190,7 @@ def make_rs2_corners(test, xlen):
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_corners(test, xlen):
+def make_rd_corners(test, xlen, corners):
   for v in corners:
     # rs1 = 0, rs2 = v, others are random
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -203,6 +204,7 @@ def make_rd_corners(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+
 
 def make_rd_corners_auipc(test, xlen):
   for v in corners:
@@ -338,7 +340,11 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners"):
-      make_rd_corners(test, xlen)
+      make_rd_corners(test, xlen, corners)
+    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
+      make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
+    elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
+      make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rs1_nx0"):
@@ -449,7 +455,7 @@ if __name__ == '__main__':
   # generate files for each test
   for xlen in xlens:
     for extension in ["I", "M", "Zicond"]:
-      coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)+"/coverage"
+      coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
       formatstrlen = str(int(xlen/4))
@@ -466,10 +472,18 @@ if __name__ == '__main__':
       if (xlen == 32):
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
       else:
-        corners = corners + [0b0101101110111100100010000111011101011011101111001000100001110111, # random
-                             0b1010101010101010101010101010101010101010101010101010101010101010, # walking ones
-                             0b0101010101010101010101010101010101010101010101010101010101010101] # walking ones
+        corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
+                             0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
+                             0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
+                             0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
+                             0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
+                             0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
+                             0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
       corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+      corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
+                    0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
+      corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
+                        0b01010101, 0b10101010, 0b01011011, 0b11011011]
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
