@@ -95,7 +95,7 @@ def writeCovergroups(testPlans, covergroupTemplates):
     covergroupDir = WALLY+'/addins/cvw-arch-verif/fcov'
     for arch, tp in testPlans.items():
         subdir = re.search("(RV..)", arch).group(1).lower()
-        subdir = os.path.join(subdir, "coverage")
+        #subdir = os.path.join(subdir, "coverage")
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
         initfile = subdir + "/" + arch + "_coverage_init.svh"
