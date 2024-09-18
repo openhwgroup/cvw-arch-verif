@@ -143,6 +143,7 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * Shahjahan
 * Daniyal Areshia
 * Sher Ali
+* Ahmed Abdullah Mujtaba
 
 **UET:**
 
