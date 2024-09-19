@@ -160,12 +160,6 @@ def make_rs1(test, xlen):
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_fs1_nx0(test, xlen):
-  for r in range(1, 32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_fs1_nx0 (Test source rs1 = x" + str(r) + ")"
-    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
-
 def make_rs2(test, xlen):
   for r in range(32):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -358,8 +352,6 @@ def write_tests(coverpoints, test, xlen):
       make_fd(test, xlen)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
-    elif (coverpoint == "cp_fs1_nx0"):
-      make_fs1_nx0(test, xlen)
     elif (coverpoint == "cp_rs2"):
       make_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
