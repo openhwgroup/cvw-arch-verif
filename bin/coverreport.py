@@ -2,10 +2,10 @@
 ##################################
 # covertreport.py
 #
-# David_Harris@hmc.edu 15 August 2025
+# David_Harris@hmc.edu 15 Septmeber 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
-# Generate functional covergroups for RISC-V instructions
+# Find and merge UCDBs on a per-configuration basis
 ##################################
 
 import os
