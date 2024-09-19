@@ -104,8 +104,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in utype):#["lui", "auipc"]
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
   elif (test in fltype):#["flw"]
-    if (rs1 == 0 or rs1 == rs2):
-      rs1 = rs1 % xlen + 1 # adds 1 to rs1 if invalid, but wraps 32 back to 1
+    while (rs1 == 0 or rs1 == rs2):
+      rs1 = randint(1, 31)
     lines = lines + "# set mstatus.FS to 01 to enable fp \n"
     lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
     lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
@@ -311,7 +311,7 @@ def make_offset(test, xlen):
     lines = lines + "3: nop # done with sequence\n"
     f.write(lines)
 
-def make_mem_hazard(test, xlen): #TODO: MAKE SEPARATE MEM HAZARDS CP FOR FLOAT MEM HAZARD
+def make_mem_hazard(test, xlen): 
   lines = "\n# Testcase mem_hazard (no dependency)\n"
   lines = lines + "la x1, scratch\n"
   lines = lines + test + " x2, 0(x1)\n"
