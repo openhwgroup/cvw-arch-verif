@@ -37,6 +37,8 @@ for config in configs:
 	os.system(cmd)
 	cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -below 100 -output "+reportdir+"/uncovered_"+config+".txt"
 	os.system(cmd)
+	cmd = "grep Covergroup "+reportdir+"/report_"+config+".txt > "+reportdir+"/summary_"+config+".txt"
+	os.system(cmd)
 
 	# skip HTML report because it is a mess doing one for each different config
 	#	vcover report -details -html merge.ucdb && \
