@@ -1,0 +1,1 @@
+    INSTRNODOT_cg = new(); INSTRNODOT_cg.set_inst_name("obj_INSTRNODOT");
