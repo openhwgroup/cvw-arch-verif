@@ -2,10 +2,10 @@
 ##################################
 # covertreport.py
 #
-# David_Harris@hmc.edu 15 August 2025
+# David_Harris@hmc.edu 15 Septmeber 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
-# Generate functional covergroups for RISC-V instructions
+# Find and merge UCDBs on a per-configuration basis
 ##################################
 
 import os
@@ -36,6 +36,8 @@ for config in configs:
 	cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -output "+reportdir+"/report_"+config+".txt"
 	os.system(cmd)
 	cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -below 100 -output "+reportdir+"/uncovered_"+config+".txt"
+	os.system(cmd)
+	cmd = "grep Covergroup "+reportdir+"/report_"+config+".txt > "+reportdir+"/summary_"+config+".txt"
 	os.system(cmd)
 
 	# skip HTML report because it is a mess doing one for each different config
