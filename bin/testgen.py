@@ -65,7 +65,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         storeop = "sw"
       else:
         storeop = "sd"
-      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put someting in memory\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
       lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
 #      lines = lines + test + " x" + str(rd) + ", 0(x" + str(rs1) + ") # perform operation\n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
@@ -103,6 +103,19 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "1:\n"
   elif (test in utype):#["lui", "auipc"]
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
+  elif (test in fltype):#["flw"]
+    if (rs1 == 0 or rs1 == rs2):
+      rs1 = rs1 % xlen + 1 # adds 1 to rs1 if invalid, but wraps 32 back to 1
+    lines = lines + "# set mstatus.FS to 01 to enable fp \n"
+    lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
+    lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
+    lines = lines + "sw x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
+    lines = lines +  test + " f" + str(rd)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+  elif (test in fcomptype):
+    # TODO: fill out fcomp type to implement feq.s, flt.s, fle.s 
+    pass
   else:
     pass
     #print("Error: %s type not implemented yet" % test)
@@ -135,10 +148,22 @@ def make_rd(test, xlen):
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
+def make_fd(test, xlen):
+  for r in range(32):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_fd (Test destination fd = x" + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+
 def make_rs1(test, xlen):
   for r in range(32):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
+    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+
+def make_fs1_nx0(test, xlen):
+  for r in range(1, 32):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_fs1_nx0 (Test source rs1 = x" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs2(test, xlen):
@@ -292,10 +317,16 @@ def make_offset(test, xlen):
     lines = lines + "3: nop # done with sequence\n"
     f.write(lines)
 
-def make_mem_hazard(test, xlen):
+def make_mem_hazard(test, xlen): #TODO: MAKE SEPARATE MEM HAZARDS CP FOR FLOAT MEM HAZARD
   lines = "\n# Testcase mem_hazard (no dependency)\n"
   lines = lines + "la x1, scratch\n"
   lines = lines + test + " x2, 0(x1)\n"
+  f.write(lines)
+
+def make_f_mem_hazard(test, xlen):
+  lines = "\n# Testcase f_mem_hazard (no dependency)\n"
+  lines = lines + "la x1, scratch\n"
+  lines = lines + test + " f2, 0(x1)\n"
   f.write(lines)
 
 def make_cp_imm12_corners(test, xlen):
@@ -323,8 +354,12 @@ def write_tests(coverpoints, test, xlen):
       pass
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen)
+    elif (coverpoint == "cp_fd"):
+      make_fd(test, xlen)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
+    elif (coverpoint == "cp_fs1_nx0"):
+      make_fs1_nx0(test, xlen)
     elif (coverpoint == "cp_rs2"):
       make_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
@@ -384,6 +419,8 @@ def write_tests(coverpoints, test, xlen):
         make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
+    elif (coverpoint == "cp_f_mem_hazard"):
+      make_f_mem_hazard(test, xlen)
     elif (coverpoint == "cp_imm_zero"):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_mem_unaligned"):
@@ -441,6 +478,8 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
+  fltype = ["flw"]
+  fcomptype = ["feq.s", "flt.s", "fle.s"]
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
 
@@ -454,7 +493,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "Zicond"]:
+    for extension in ["I", "M", "F", "Zicond"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
