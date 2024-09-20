@@ -67,10 +67,10 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # Select customized template for RV32/RV64 if necessary, else use the generic one
     #print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
     prefixName = re.search("(RV..)", arch).group(1) + "_" + name
-    if (name in covergroupTemplates):
-        template = covergroupTemplates[name]
-    elif (prefixName in covergroupTemplates):
+    if (prefixName in covergroupTemplates):
         template = covergroupTemplates[prefixName]
+    elif (name in covergroupTemplates):
+        template = covergroupTemplates[name]
     else:
         if (not (name in missingTemplates)):
             print("No template found for " + name + " or " + prefixName)
