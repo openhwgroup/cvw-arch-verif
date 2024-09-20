@@ -370,7 +370,7 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw"):
       make_rd_corners(test, xlen, corners_32bits)
-    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
+    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu" or coverpoint == "cp_rd_corners_lh64"):
       make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
       make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
