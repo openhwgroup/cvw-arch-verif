@@ -368,6 +368,8 @@ def write_tests(coverpoints, test, xlen):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
+    elif (coverpoint == "cp_rd_corners_lw"):
+      make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
       make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
@@ -515,6 +517,9 @@ if __name__ == '__main__':
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
                         0b01010101, 0b10101010, 0b01011011, 0b11011011]
+      corners_32bits = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
+                        0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
+                        0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
