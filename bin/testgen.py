@@ -36,6 +36,12 @@ def unsignedImm20(imm):
   imm = imm % pow(2, 20)
   return str(imm)
 
+def unsignedImm6(imm):
+  imm = imm % pow(2, 5)
+  if imm == 0:
+    imm = 1
+  return str(imm)
+
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
@@ -47,6 +53,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+  elif (test in citype):
+    if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
+        rd = 9
+    lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     if (test in shiftiwtype):
@@ -135,7 +145,6 @@ def randomize():
     rd = rs1
     while (rd == rs1 or rd == rs2):
       rd = randint(1, 31)
-    rd = randint(1, 31)
     rs1val = randint(0, 2**xlen-1)
     rs2val = randint(0, 2**xlen-1)
     immval = randint(0, 2**xlen-1)
@@ -476,6 +485,7 @@ if __name__ == '__main__':
   utype = ["lui", "auipc"]
   fltype = ["flw"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
+  citype = ["c.lui"]
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
 
@@ -489,7 +499,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond"]:
+    for extension in ["I", "M", "F", "Zicond","Zca"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
