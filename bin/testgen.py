@@ -285,6 +285,8 @@ def make_cr_rs1_rs2_corners(test, xlen):
   for v1 in corners:
     for v2 in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      while rs1 == rs2:
+        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
 
