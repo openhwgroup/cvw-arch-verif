@@ -55,8 +55,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
-        rd = 9
+        rd = 9 # change to arbitrary other register
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
+  elif (test in crtype):
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     if (test in shiftiwtype):
@@ -487,6 +489,7 @@ if __name__ == '__main__':
   fltype = ["flw"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui"]
+  crtype = ["c.add"]
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
 
