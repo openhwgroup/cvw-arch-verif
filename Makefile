@@ -49,16 +49,19 @@ build: $(OBJECTS)
 
 %.elf.objdump: %.elf
 
+# Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
+CMPR_FLAG = $(if $(findstring /Zc, $(dir $<)),c,)
+
 # Change many things if bit width isn't 64
 $(SRCDIR64)/%.elf: $(SRCDIR64)/%.$(SEXT) 
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gqc_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gq$(CMPR_FLAG)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
 	    -nostartfiles -T${WALLY}/examples/link/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
 
 $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT) 
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv32gqc_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=ilp32 -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv32gq$(CMPR_FLAG)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=ilp32 -mcmodel=medany \
 	    -nostartfiles -T${WALLY}/examples/link/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 32 --input $@ --output $@.memfile
