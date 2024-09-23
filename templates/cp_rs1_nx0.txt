@@ -1,37 +1,37 @@
-cp_rs1_nx0 : coverpoint ins.get_gpr_reg(ins.current.rs1) iff (ins.trap == 0) {
-    bins x1 = {1};
-    bins x2 = {2};
-    bins x3 = {3};
-    bins x4 = {4};
-    bins x5 = {5};
-    bins x6 = {6};
-    bins x7 = {7};
-    bins x8 = {8};
-    bins x9 = {9};
-    bins x10 = {10};
-    bins x11 = {11};
-    bins x12 = {12};
-    bins x13 = {13};
-    bins x14 = {14};
-    bins x15 = {15};
-`ifndef COVER_BASE_E
-    bins x16 = {16};
-    bins x17 = {17};
-    bins x18 = {18};
-    bins x19 = {19};
-    bins x20 = {20};
-    bins x21 = {21};
-    bins x22 = {22};
-    bins x23 = {23};
-    bins x24 = {24};
-    bins x25 = {25};
-    bins x26 = {26};
-    bins x27 = {27};
-    bins x28 = {28};
-    bins x29 = {29};
-    bins x30 = {30};
-    bins x31 = {31};
-`endif    
+    cp_rs1_nx0 : coverpoint ins.get_gpr_reg(ins.current.rs1) iff (ins.trap == 0) {
+        option.comment = "RS1 register assignment (excluding x0)";
 
-    option.comment = "RS1 register assignment (excluding x0)";
-}
+        bins x1 = {1};
+        bins x2 = {2};
+        bins x3 = {3};
+        bins x4 = {4};
+        bins x5 = {5};
+        bins x6 = {6};
+        bins x7 = {7};
+        bins x8 = {8};
+        bins x9 = {9};
+        bins x10 = {10};
+        bins x11 = {11};
+        bins x12 = {12};
+        bins x13 = {13};
+        bins x14 = {14};
+        bins x15 = {15};
+        `ifndef COVER_BASE_E
+        bins x16 = {16};
+        bins x17 = {17};
+        bins x18 = {18};
+        bins x19 = {19};
+        bins x20 = {20};
+        bins x21 = {21};
+        bins x22 = {22};
+        bins x23 = {23};
+        bins x24 = {24};
+        bins x25 = {25};
+        bins x26 = {26};
+        bins x27 = {27};
+        bins x28 = {28};
+        bins x29 = {29};
+        bins x30 = {30};
+        bins x31 = {31};
+        `endif    
+    }
