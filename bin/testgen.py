@@ -53,6 +53,17 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+  if (test in frtype):
+    lines = lines + "li x1, 0x4000 # *** factor this out to only run once at start of fp test\n"
+    lines = lines + "csrs mstatus, x1 # Turn on FPU with mstatus.FS\n"
+    lines = lines + "la x2, scratch\n"
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x3, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
+    lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
@@ -138,9 +149,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
 
 def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test):
   # consecutive R-type instructions to trigger hazards
+  if test in frtype:
+    reg = "f"
+  else: 
+    reg = "x"
   lines = "\n# Testcase " + str(desc) + "\n"
-  lines = lines + test + " x" + str(rda) + ", x" + str(rs1a) + ", x" + str(rs2a) + " # perform first operation\n" 
-  lines = lines + test + " x" + str(rdb) + ", x" + str(rs1b) + ", x" + str(rs2b) + " # perform second operation\n" 
+  lines = lines + test + " "+reg + str(rda) + ", "+reg + str(rs1a) + ", "+reg + str(rs2a) + " # perform first operation\n" 
+  lines = lines + test + " "+reg + str(rdb) + ", "+reg + str(rs1b) + ", "+reg + str(rs2b) + " # perform second operation\n" 
   f.write(lines)
 
 def randomize():
@@ -494,6 +509,7 @@ if __name__ == '__main__':
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
   fltype = ["flw"]
+  frtype = ["fadd.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui"]
   crtype = ["c.add"]
