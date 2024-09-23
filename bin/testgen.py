@@ -293,6 +293,7 @@ def make_rs2_sign(test, xlen):
 def make_cr_rs1_rs2_corners(test, xlen):
   for v1 in corners:
     for v2 in corners:
+      # select distinct rs1 and rs2
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       while rs1 == rs2:
         [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()

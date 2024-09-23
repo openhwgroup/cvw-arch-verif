@@ -34,12 +34,15 @@ def readTestplans():
                 tp = dict()
                 for row in reader:
                     #print(f"row = {row}")
+                    if ("Instruction" not in row):
+                        print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
+                        exit(1)
                     instr = row["Instruction"]
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
                         #print(f"key = {key}, value = {value}")
-                        if (value != ''):
+                        if (type(value) == str and value != ''):
                             if(key == "Type"):
                                 cps.append("sample_" + value)
                             else: cps.append(key)
@@ -84,9 +87,14 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("ARCH", arch.lower())
     # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
     # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
-    if name == 'sample_I' and instr == 'addi': 
+    if name.startswith('sample_') and instr == 'addi': 
         template += template.replace(instr, 'mv', 1)    
+    if name.startswith('sample_') and instr == 'beq': 
+        template += template.replace(instr, 'beqz', 1).replace("add_rs2", "add_rs2_0", 1)  
+    if name.startswith('sample_') and instr == 'jal': 
+        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
     return template
+
      
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
 # all instructions in each testplan
