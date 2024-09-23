@@ -423,6 +423,10 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rd_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_fd_toggle"):
+      pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_fd_toggle_lw"):
+      pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros"):
