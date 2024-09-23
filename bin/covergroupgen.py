@@ -41,7 +41,7 @@ def readTestplans():
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
-                        #print(f"key = {key}, value = {value}")
+#                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
                         if (type(value) == str and value != ''):
                             if(key == "Type"):
                                 cps.append("sample_" + value)
