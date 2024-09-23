@@ -22,6 +22,10 @@ import re
 # functions
 ##################################
 
+def legalizecompr(r):
+  # bring into range 8-15 for compressed instructions with limited
+  return r % 8 + 8
+
 def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
@@ -37,9 +41,17 @@ def unsignedImm20(imm):
   return str(imm)
 
 def unsignedImm6(imm):
-  imm = imm % pow(2, 5)
+  imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
+  # zero immediates are prohibited
   if imm == 0:
     imm = 1
+  return str(imm)
+
+def unsignedImm10(imm):
+  imm = imm % pow(2, 10)
+  # zero immediates are prohibited
+  if imm == 0:
+    imm = 16
   return str(imm)
 
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen):
@@ -67,12 +79,20 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
-    lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
+    if (test == "c.addi16sp"):
+      rd = legalizecompr(rd)
+      lines = lines + test + " sp, " + unsignedImm10(immval*16) + " # perform operation\n"
+    else:
+      lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in crtype):
-    if (test == "c.add" and (rd == 0 or rs2 == 0)):
+    if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
       rs2 = 11
     lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+  elif (test in ciwtype): # addi4spn
+    rd = legalizecompr(rd)
+    lines = lines + test + " x" + str(rd) + ", sp, " + unsignedImm10(immval*4) + " # perform operation\n"
+   # lines = lines + test + " x" + str(rd) + ", sp, 32 # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     if (test in shiftiwtype):
@@ -511,8 +531,9 @@ if __name__ == '__main__':
   fltype = ["flw"]
   frtype = ["fadd.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.lui"]
-  crtype = ["c.add"]
+  citype = ["c.lui", "c.li", "c.addi", "c.addi16sp", "c.slli"]
+  crtype = ["c.add", "c.mv"]
+  ciwtype = ["c.addi4spn"]
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
 
