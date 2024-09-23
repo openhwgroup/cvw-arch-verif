@@ -1,9 +1,8 @@
-cp_csr_fflags : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "fcsr", "fflags") iff (ins.trap == 0 )  {
-            option.comment = "Value of FCSR.fflags";
-            wildcard bins NX  = {5'b????1};
-            wildcard bins UF  = {5'b???1?};
-            wildcard bins OF  = {5'b??1??};
-            wildcard bins DZ  = {5'b?1???};
-            wildcard bins NV  = {5'b1????};
-        }
-    
+    cp_csr_fflags : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "fcsr", "fflags") iff (ins.trap == 0 )  {
+        option.comment = "Value of FCSR.fflags";
+        wildcard bins NX  = {5'b????1};
+        wildcard bins UF  = {5'b???1?};
+        wildcard bins OF  = {5'b??1??};
+        wildcard bins DZ  = {5'b?1???};
+        wildcard bins NV  = {5'b1????};
+    }

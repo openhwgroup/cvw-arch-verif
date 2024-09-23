@@ -1,0 +1,35 @@
+    cmp_fd_fs1 : coverpoint ins.current.fd == ins.current.fs1  iff (ins.trap == 0 )  {
+        option.comment = "FD and FS1 register (assignment) WAR Hazard";
+        bins x0  = {1} iff (ins.current.fd == "x0");
+        bins x1  = {1} iff (ins.current.fd == "x1");
+        bins x2  = {1} iff (ins.current.fd == "x2");
+        bins x3  = {1} iff (ins.current.fd == "x3");
+        bins x4  = {1} iff (ins.current.fd == "x4");
+        bins x5  = {1} iff (ins.current.fd == "x5");
+        bins x6  = {1} iff (ins.current.fd == "x6");
+        bins x7  = {1} iff (ins.current.fd == "x7");
+        bins x8  = {1} iff (ins.current.fd == "x8");
+        bins x9  = {1} iff (ins.current.fd == "x9");
+        bins x10  = {1} iff (ins.current.fd == "x10");
+        bins x11  = {1} iff (ins.current.fd == "x11");
+        bins x12  = {1} iff (ins.current.fd == "x12");
+        bins x13  = {1} iff (ins.current.fd == "x13");
+        bins x14  = {1} iff (ins.current.fd == "x14");
+        bins x15  = {1} iff (ins.current.fd == "x15");
+        bins x16  = {1} iff (ins.current.fd == "x16");
+        bins x17  = {1} iff (ins.current.fd == "x17");
+        bins x18  = {1} iff (ins.current.fd == "x18");
+        bins x19  = {1} iff (ins.current.fd == "x19");
+        bins x20  = {1} iff (ins.current.fd == "x20");
+        bins x21  = {1} iff (ins.current.fd == "x21");
+        bins x22  = {1} iff (ins.current.fd == "x22");
+        bins x23  = {1} iff (ins.current.fd == "x23");
+        bins x24  = {1} iff (ins.current.fd == "x24");
+        bins x25  = {1} iff (ins.current.fd == "x25");
+        bins x26  = {1} iff (ins.current.fd == "x26");
+        bins x27  = {1} iff (ins.current.fd == "x27");
+        bins x28  = {1} iff (ins.current.fd == "x28");
+        bins x29  = {1} iff (ins.current.fd == "x29");
+        bins x30  = {1} iff (ins.current.fd == "x30");
+        bins x31  = {1} iff (ins.current.fd == "x31");
+    }
