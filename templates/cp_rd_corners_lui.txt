@@ -1,15 +1,15 @@
 cp_rd_corners_lui : coverpoint unsigned'(ins.current.rd_val) iff (ins.trap == 0) {
     option.comment = "RD Corners";
-    wildcard bins zero     = {32'b00000000000000000000000000000000};                  // Zero (unusual for LUI)
-    wildcard bins one      = {32'b00000000000000000001000000000000};                  // Smallest non-zero value for LUI
-    wildcard bins two      = {32'b00000000000000000010000000000000};                  // Second smallest non-zero value for LUI
-    wildcard bins min      = {32'b10000000000000000000000000000000};                  // Minimum signed 32-bit value
-    wildcard bins minp1    = {32'b10000000000000000001000000000000};                  // Minimum + 1 page
-    wildcard bins max      = {32'b01111111111111111111000000000000};                  // Maximum positive signed value for LUI
-    wildcard bins maxm1    = {32'b01111111111111111110000000000000};                  // Maximum positive signed value - 1 page
-    wildcard bins ones     = {32'b11111111111111111111000000000000};                  // All upper 20 bits set to 1
-    wildcard bins onesm1   = {32'b11111111111111111110000000000000};                  // All upper 20 bits set to 1, except the least significant
-    wildcard bins walkeodd = {32'b10101010101010101010000000000000};                  // Alternating 1s and 0s in upper bits, starting with 1
-    wildcard bins walkeven = {32'b01010101010101010101000000000000};                  // Alternating 1s and 0s in upper bits, starting with 0
-    wildcard bins random   = {32'b01011011110001111000000000000000};                  // A random pattern in the upper 20 bits
+    wildcard bins zero     = {32'b00000000000000000000000000000000};                  
+    wildcard bins one      = {32'b00000000000000000001000000000000};                  
+    wildcard bins two      = {32'b00000000000000000010000000000000};                  
+    wildcard bins min      = {32'b10000000000000000000000000000000};                  
+    wildcard bins minp1    = {32'b10000000000000000001000000000000};                  
+    wildcard bins max      = {32'b01111111111111111111000000000000};                  
+    wildcard bins maxm1    = {32'b01111111111111111110000000000000};                  
+    wildcard bins ones     = {32'b11111111111111111111000000000000};                  
+    wildcard bins onesm1   = {32'b11111111111111111110000000000000};                  
+    wildcard bins walkeodd = {32'b10101010101010101010000000000000};                 
+    wildcard bins walkeven = {32'b01010101010101010101000000000000};                  
+    wildcard bins random   = {32'b01011011110001111000000000000000};                  
 }
