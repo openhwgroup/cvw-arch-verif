@@ -411,8 +411,6 @@ def make_f_mem_hazard(test, xlen):
   lines = "\n# Testcase f_mem_hazard (no dependency)\n"
   lines = lines + "la x1, scratch\n"
   lines = lines + test + " f2, 0(x1)\n"
-  lines = lines + "la x9, scratch\n"
-  lines = lines + test + " f2, 0(x10)\n"
   f.write(lines)
 
 def make_cp_imm12_corners(test, xlen):
@@ -635,6 +633,9 @@ if __name__ == '__main__':
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
                   0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
+
+      
+
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
