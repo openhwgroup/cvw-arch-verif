@@ -394,6 +394,40 @@ def make_imm_shift(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
+def make_fd_fs1(test, xlen):
+  for r in range(32):
+    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
+    writeCovVector(desc, r, fs2, r, fs1val, fs2val, immval, fdval, test, xlen)
+
+def make_fd_fs2(test, xlen):
+  for r in range(32):
+    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
+    writeCovVector(desc, fs1, r, r, fs1val, fs2val, immval, fdval, test, xlen)
+
+def make_fcr_fs1_fs2_corners(test, xlen):
+  for v1 in fcorners:
+    for v2 in fcorners:
+      # select distinct fs1 and fs2
+      [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+      while fs1 == fs2:
+        [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+      desc = "fcr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
+      writeCovVector(desc, fs1, fs2, fd, v1, v2, immval, fdval, test, xlen)
+
+def make_fs1_corners(test, xlen):
+  for v in fcorners:
+    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
+    writeCovVector(desc, fs1, fs2, fd, v, fs2val, immval, fdval, test, xlen)
+
+def make_fs2_corners(test, xlen):
+  for v in fcorners:
+    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
+    writeCovVector(desc, fs1, fs2, fd, fs1val, v, immval, fdval, test, xlen)
+
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
@@ -483,6 +517,16 @@ def write_tests(coverpoints, test, xlen):
       make_imm_shift(test, xlen)
     elif (coverpoint == "cp_rd_boolean"):
       pass # covered by other generators
+    elif (coverpoint == "cmp_fd_fs1"):
+      make_fd_fs1(test, xlen)
+    elif (coverpoint == "cmp_fd_fs2"):
+      make_fd_fs2(test, xlen)
+    elif (coverpoint == "cp_fs1_corners"):
+      make_fs1_corners(test, xlen)
+    elif (coverpoint == "cp_fs2_corners"):
+      make_fs2_corners(test, xlen)
+    elif (coverpoint == "fcr_fs1_fs2_corners"):
+      make_fcr_fs1_fs2_corners(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
