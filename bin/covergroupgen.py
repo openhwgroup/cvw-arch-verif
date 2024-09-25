@@ -41,7 +41,7 @@ def readTestplans():
                     cps = []
                     del row["Instruction"]
                     for key, value in row.items():
-                        #print(f"key = {key}, value = {value}")
+#                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
                         if (type(value) == str and value != ''):
                             if(key == "Type"):
                                 cps.append("sample_" + value)
@@ -123,15 +123,20 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     if(not cp.startswith("sample_")):
                         f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
                 f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
-            #archlower = arch.lower()
-            #print(" Writing sample_header ARCH = " + archlower + " INSTR = " + instr)
-            f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
-            for instr in k:
-                cps = tp[instr]
-                for cp in cps:
-                    if(cp.startswith("sample_")):
-                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
-            f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
+            # Sample functions
+            # Use a custom template if it exists (particularly for Zc*).  Autogenerate others
+            customTemplate = "sample_"+arch
+            #print("Searching for custom template " + customTemplate)
+            if (customTemplate in covergroupTemplates):
+                f.write(customizeTemplate(covergroupTemplates, customTemplate, arch, "NotApplicable"))
+            else:
+                f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, instr))
+                for instr in k:
+                    cps = tp[instr]
+                    for cp in cps:
+                        if(cp.startswith("sample_")):
+                            f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, instr))
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
