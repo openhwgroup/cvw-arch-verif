@@ -159,9 +159,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
     lines = lines + "sw x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
     lines = lines +  test + " f" + str(rd)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
-  elif (test in fcomptype):
-    # TODO: fill out fcomp type to implement feq.s, flt.s, fle.s 
-    pass
+  elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
+    lines = lines + "# set mstatus.FS to 01 to enable fp \n"
+    lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
+    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
   else:
     pass
     #print("Error: %s type not implemented yet" % test)
