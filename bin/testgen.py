@@ -54,7 +54,7 @@ def unsignedImm10(imm):
     imm = 16
   return str(imm)
 
-def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen):
+def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
@@ -149,12 +149,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "1:\n"
   elif (test in utype):#["lui", "auipc"]
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
-<<<<<<< HEAD
-  elif (test in frtype): #["fadd", "fsub", "fmul", "fdiv", "fsgnj", "fsgnjn", "fsgnjx", "fmin", "fmax"]
-    lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
-  elif (test in fr4type): #["fmadd", "fmsub", "fnmadd", "fnmsub"]
+  elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
-=======
   elif (test in fltype):#["flw"]
     while (rs1 == 0 or rs1 == rs2):
       rs1 = randint(1, 31)
@@ -182,33 +178,24 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fcomptype):
     # TODO: fill out fcomp type to implement feq.s, flt.s, fle.s 
     pass
->>>>>>> c029dd3adaf610168f5e164cfd5e3421ba766510
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test):
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=False, rs3a=None, rs3b=None):
   # consecutive R-type instructions to trigger hazards
-  if test in frtype:
-    reg = "f"
-  else: 
-    reg = "x"
-  lines = "\n# Testcase " + str(desc) + "\n"
-  lines = lines + test + " "+reg + str(rda) + ", "+reg + str(rs1a) + ", "+reg + str(rs2a) + " # perform first operation\n" 
-  lines = lines + test + " "+reg + str(rdb) + ", "+reg + str(rs1b) + ", "+reg + str(rs2b) + " # perform second operation\n" 
-  f.write(lines)
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=False):
   if floatHazard: 
-    # consecutive FR-type instructions to trigger hazards
-    lines = "\n# Testcase " + str(desc) + "\n"
-    lines = lines + test + " f" + str(rda) + ", f" + str(rs1a) + ", f" + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " f" + str(rdb) + ", f" + str(rs1b) + ", f" + str(rs2b) + " # perform second operation\n" 
-    f.write(lines)
-  else: # consecutive R-type instructions to trigger hazards
-    lines = "\n# Testcase " + str(desc) + "\n"
-    lines = lines + test + " x" + str(rda) + ", x" + str(rs1a) + ", x" + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " x" + str(rdb) + ", x" + str(rs1b) + ", x" + str(rs2b) + " # perform second operation\n" 
-    f.write(lines)
+    reg = "f"
+  else:
+    reg = "x" 
+  lines = "\n# Testcase " + str(desc) + "\n"
+  if (test in fr4type): 
+    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + ", " + reg + str(rs3a) + " # perform first operation\n" 
+    lines = lines + test + " " + reg + str(rdb) + ", " + reg + str(rs1b) + ", " + reg + str(rs2b) + ", " + reg + str(rs3b) + " # perform second operation\n" 
+  else:
+    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + " # perform first operation\n" 
+    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + " # perform first operation\n" 
+  f.write(lines)
 
 def randomize(rs3=None):
     rs1 = randint(1, 31)
@@ -235,33 +222,21 @@ def make_rd(test, xlen):
 
 def make_fd(test, xlen):
   for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fd (Test destination fd = x" + str(r) + ")"
-    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs1(test, xlen):
   for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
-    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2(test, xlen):
   for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
-    writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
-
-def make_fs1_corners(test, xlen):
-  for v in fcorners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
-
-def make_fs2_corners(test, xlen):
-  for v in fcorners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+    writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_rs1(test, xlen):
   for r in range(32):
@@ -356,8 +331,8 @@ def make_rs1_rs2_eqval(test, xlen):
 def make_cp_gpr_hazard(test, xlen):
   for haz in ["raw", "waw", "war"]:
     for src in range(2):
-      [rs1a, rs2a, rda, rs1vala, rs2vala, immvala, rdvala] = randomize()
-      [rs1b, rs2b, rdb, rs1valb, rs2valb, immvalb, rdvalb] = randomize()
+      [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
+      [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
       # set up hazard
       if (haz == "raw"):
         if (src):
@@ -375,7 +350,7 @@ def make_cp_gpr_hazard(test, xlen):
       floatHazard = False
       if (test in frtype) or (test in fr4type):
         floatHazard = True
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=floatHazard)
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=floatHazard, rs3a=rs3a, rs3b=rs3b)
 
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
@@ -457,93 +432,37 @@ def make_imm_shift(test, xlen):
 
 def make_fd_fs1(test, xlen):
   for r in range(32):
-    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
-    writeCovVector(desc, r, fs2, r, fs1val, fs2val, immval, fdval, test, xlen)
+    writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fd_fs2(test, xlen):
   for r in range(32):
-    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
-    writeCovVector(desc, fs1, r, r, fs1val, fs2val, immval, fdval, test, xlen)
+    writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fcr_fs1_fs2_corners(test, xlen):
   for v1 in fcorners:
     for v2 in fcorners:
       # select distinct fs1 and fs2
-      [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       while fs1 == fs2:
-        [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+        [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "fcr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
-      writeCovVector(desc, fs1, fs2, fd, v1, v2, immval, fdval, test, xlen)
+    writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs1_corners(test, xlen):
   for v in fcorners:
-    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-    writeCovVector(desc, fs1, fs2, fd, v, fs2val, immval, fdval, test, xlen)
-
-def make_fs2_corners(test, xlen):
-  for v in fcorners:
-    [fs1, fs2, fd, fs1val, fs2val, immval, fdval] = randomize()
-    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-    writeCovVector(desc, fs1, fs2, fd, fs1val, v, immval, fdval, test, xlen)
-
-def make_fd(text, xlen):
-  for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fd (Test destination fd = f" + str(r) + ")"
-    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_fs1(test, xlen):
-  for r in range(32):
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
-    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_fs2(test, xlen):
-  for r in range(32):
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
-    writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_fs3(test, xlen):
-  for r in range(32):
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs3 (Test source fs3 = f" + str(r) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val)
-
-def make_fs1_corners(test, xlen):
-  for v in corners:
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs1_corners (Test fs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2_corners(test, xlen):
-  for v in corners:
+  for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs1_corners (Test fs1 value = " + hex(v) + ")"
+    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_fs3_corners(test, xlen):
-  for v in corners:
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs1_corners (Test fs1 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
-
-def make_cr_fs1_fs2_frm_corners(test,xlen):
-  for v1 in corners:
-    for v2 in corners:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cr_fs1_fs2_corners (Test fs1 value = " + hex(1) + ", fs2 value = " + hex(v2) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_cr_fs1_fs3_frm_corners(test,xlen):
-  for v1 in corners:
-    for v2 in corners:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cr_fs1_fs2_corners (Test fs1 value = " + hex(1) + ", fs2 value = " + hex(v2) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v2)
 
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
@@ -708,7 +627,7 @@ if __name__ == '__main__':
   fltype = ["flw"]
   fstype = ["fsw"]
   frtype = ["fadd.s"]
-  fr4type = ["fmadd", "fmsub", "fnmadd", "fnmsub"]
+  fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
   fitype = ["fsqrt.s", "fclass.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
