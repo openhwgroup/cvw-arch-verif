@@ -196,7 +196,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=
     lines = lines + test + " " + reg + str(rdb) + ", " + reg + str(rs1b) + ", " + reg + str(rs2b) + ", " + reg + str(rs3b) + " # perform second operation\n" 
   else:
     lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + " # perform first operation\n" 
+    lines = lines + test + " " + reg + str(rdb) + ", " + reg + str(rs1b) + ", " + reg + str(rs2b) + " # perform second operation\n" 
   f.write(lines)
 
 def randomize(rs3=None):
