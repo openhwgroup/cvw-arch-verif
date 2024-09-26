@@ -519,6 +519,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners_lui(test, xlen, corners_20bits)            
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
+    elif (coverpoint == "cp_rd_corners_lui"):
+      make_rd_corners_lui(test, xlen)
     elif (coverpoint == "cp_rs1_nx0"):
       make_cp_rs1_nx0(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
