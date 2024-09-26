@@ -169,6 +169,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "sw x" + str(tempreg) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
     lines = lines + "flw f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # load value into f register\n" 
     lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+  elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
+    while (rs2 == rs1):
+      rs2 = randint(1, 31)
+    lines = lines + "la x" + str(rs2) + ", scratch" + " # base address \n"
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # load immediate value into integer register\n"
+    lines = lines +  "sw x" + str(rs1) + ", " +  "0(x" + str(rs2) + ") # store value to memory\n"
+    lines = lines + "flw f" + str(rs1) + ", " +  "0(x" + str(rs2) + ") # load value into f register\n"
+    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
   elif (test in fcomptype):
     # TODO: fill out fcomp type to implement feq.s, flt.s, fle.s 
     pass
@@ -537,6 +545,8 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint == "cp_fpr_hazard"):
+      make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rs2_toggle"):
@@ -633,7 +643,7 @@ if __name__ == '__main__':
   utype = ["lui", "auipc"]
   fltype = ["flw"]
   fstype = ["fsw"]
-  F2Xtype = []
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
   fitype = ["fsqrt.s", "fclass.s"]
@@ -641,6 +651,8 @@ if __name__ == '__main__':
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp", "c.slli"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
+
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
@@ -724,7 +736,7 @@ if __name__ == '__main__':
           f.write(line)
 
         # add assembly lines to enable fp where needed
-        if test in frtype + fstype + fltype + fcomptype + F2Xtype + fr4type:
+        if test in floattypes:
           float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
           f.write(float_en)
 
