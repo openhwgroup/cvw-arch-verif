@@ -66,8 +66,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
   if (test in frtype):
-    lines = lines + "li x1, 0x4000 # *** factor this out to only run once at start of fp test\n"
-    lines = lines + "csrs mstatus, x1 # Turn on FPU with mstatus.FS\n"
     lines = lines + "la x2, scratch\n"
     lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
@@ -154,8 +152,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fltype):#["flw"]
     while (rs1 == 0 or rs1 == rs2):
       rs1 = randint(1, 31)
-    lines = lines + "# set mstatus.FS to 01 to enable fp \n"
-    lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
     lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
@@ -167,8 +163,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     tempreg = rs2 # for intermediate memory transactions 
     while (tempreg == rs1):
       tempreg = randint(1, 31)
-    lines = lines + "# set mstatus.FS to 01 to enable fp \n"
-    lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
     lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "li x" + str(tempreg) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
@@ -637,7 +631,7 @@ if __name__ == '__main__':
   utype = ["lui", "auipc"]
   fltype = ["flw"]
   fstype = ["fsw"]
-  frtype = ["fadd.s"]
+  F2Xtype = []
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
   fitype = ["fsqrt.s", "fclass.s"]
@@ -726,6 +720,11 @@ if __name__ == '__main__':
         h = open(WALLY+"/addins/cvw-arch-verif/templates/testgen_header.S", "r")
         for line in h:  
           f.write(line)
+
+        # add assembly lines to enable fp where needed
+        if test in frtype + fstype + fltype + fcomptype + F2Xtype + fr4type:
+          float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+          f.write(float_en)
 
         # print directed and random test vectors
         # Coverage for R-type arithmetic instructions
