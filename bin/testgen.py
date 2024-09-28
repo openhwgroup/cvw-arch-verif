@@ -47,6 +47,12 @@ def unsignedImm6(imm):
     imm = 1
   return str(imm)
 
+def signedImm6(imm):
+  imm = imm % pow(2, 6)
+  if (imm & 0x20):
+    imm = imm - 0x40
+  return str(imm)
+
 def unsignedImm10(imm):
   imm = imm % pow(2, 10)
   # zero immediates are prohibited
@@ -81,7 +87,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = legalizecompr(rd)
       lines = lines + test + " sp, " + unsignedImm10(immval*16) + " # perform operation\n"
     else:
-      lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
+      if test in ["c.li"]:        # Add tests with signed Imm in the list
+        lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
+      else:
+        lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in crtype):
     if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
@@ -542,6 +551,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
       make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
+    elif (coverpoint == "cp_rd_corners_6bit"):
+      make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test='lui', xlen=64)
       make_rd_corners_lui(test='lui', xlen=32)
@@ -585,11 +596,14 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fd_toggle_lw"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_rd_toggle_jal"):
+      pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
+    elif (coverpoint == "cp_imm_ones_zeros_jal"):
+      make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros"):
-      if (test in jtype):
-        make_j_imm_ones_zeros(test, xlen)
+      pass 
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
@@ -736,7 +750,8 @@ if __name__ == '__main__':
       corners_32bits = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
                         0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
                         0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
-      
+      corners_6bits = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
+                        0b101010, 0b010101, 0b010110]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       
