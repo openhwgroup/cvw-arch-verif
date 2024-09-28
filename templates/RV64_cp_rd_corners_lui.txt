@@ -1,10 +1,9 @@
     cp_rd_corners_lui : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
         option.comment = "RD Corners";
-        wildcard bins zero     = {0};
-        wildcard bins one      = {64'b1111111111111111111111111111111111111111000000000000000000000000};
-        wildcard bins MSB1     = {64'b1000000000000000000000000000000000000000000000000000000000000000};
-        wildcard bins LSB1     = {64'b0000000000000000000000000000000000000010000000000000000010000000};
-        wildcard bins random   = {64'b1000000000001000100000001100000000000000100000000000000000000000};
-        
+        wildcard bins zero = {64'h0000_0000_0000_0000};
+        wildcard bins all_ones = {64'hFFFF_FFFF_FFFF_F000};
+        wildcard bins msb1 = {64'hFFFF_FFFF_8000_0000};
+        wildcard bins lsb1 = {64'h0000_0000_0000_1000};
+        wildcard bins random   = {64'h0000_0000_0100_0000};
     }
 

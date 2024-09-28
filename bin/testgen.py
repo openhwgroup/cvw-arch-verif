@@ -315,12 +315,39 @@ def make_rd_corners_auipc(test, xlen):
     desc = "cp_rd_corners_auipc (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v, rdval, test, xlen)   
 
+def make_rd_corners_lui(test, xlen, corners_20bits=None, immediate_values=None):
+    if immediate_values is None:
+        if xlen == 64:
+            immediate_values = [
+                0x00000,  # Zero Value Test
+                0xFFFFF,  # All Ones Immediate Test
+                0x80000,  # MSB Set Test
+                0x00001,  # LSB Set Test
+                0x00001   # Random Immediate Value Test for 64-bit
+            ]
+        else:  # Default immediate values for 32-bit
+            immediate_values = [
+                0x00000,  # Zero Value Test
+                0xFFFFF,  # All Ones Immediate Test
+                0x80000,  # MSB Set Test
+                0x00001,  # LSB Set Test
+                0x4AE20   # Random Immediate Value Test for 32-bit
+            ]
 
-def make_rd_corners_lui(test, xlen, corners):
-  for v in corners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)   
+    descriptions = [
+        "Zero Value Test",
+        "All Ones Immediate Test",
+        "MSB Set Test",
+        "LSB Set Test",
+        "Random Immediate Value Test"
+    ]
+
+    for imm, desc in zip(immediate_values, descriptions):
+        [rs1, rs2, rd, rs1val, rs2val, _, rdval] = randomize()
+        test_desc = f"cp_rd_corners_lui ({desc}, imm = 0x{imm:05X})"
+        writeCovVector(test_desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
+
+
 
 
 
@@ -516,7 +543,8 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
       make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bits)            
+      make_rd_corners_lui(test='lui', xlen=64)
+      make_rd_corners_lui(test='lui', xlen=32)
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rd_corners_lui"):
@@ -686,6 +714,7 @@ if __name__ == '__main__':
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         fcorners = fcorners + [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
       else:
+        
         corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
@@ -693,6 +722,12 @@ if __name__ == '__main__':
                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+        # corners_20bits = [0, 0b11111111111111111111,        # 0xfffff000
+        #                   0b10000000000000000000,        # 0x80000000
+        #                   0b00000000000000000010,        # 0x1000
+        #                   0b01001010111000100000,        # 0x4ae20000
+        #                   0b00000001000000000000]         # 0x1000000
+      
       corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
@@ -705,6 +740,7 @@ if __name__ == '__main__':
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       
+  
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
