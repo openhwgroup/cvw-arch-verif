@@ -84,9 +84,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    # This cond is added so that compressed instrs without "c." can also be detected by cp_asm_count
+    # This cond is added to neglect "c." from compressed instructions
     if (name == "cp_asm_count" and instr.startswith("c.")):
-        template = template.replace("INSTR", f'{instr[2:]}" || ins.ins_str == "{instr}')
+        template = template.replace("INSTR", instr[2:])
     else:
         template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
