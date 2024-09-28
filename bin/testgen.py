@@ -568,11 +568,14 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fd_toggle_lw"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_rd_toggle_jal"):
+      pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
+    elif (coverpoint == "cp_imm_ones_zeros_jal"):
+      make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros"):
-      if (test in jtype):
-        make_j_imm_ones_zeros(test, xlen)
+      pass 
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
