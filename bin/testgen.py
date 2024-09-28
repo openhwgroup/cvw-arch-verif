@@ -463,14 +463,9 @@ def make_cr_rs1_imm_corners(test, xlen):
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
-  if (test == "c.slli"):
-    for shift in range(1, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
-  else:
-    for shift in range(0, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  for shift in range(0, xlen):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
 
 def make_fd_fs1(test, xlen):
