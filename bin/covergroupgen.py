@@ -84,9 +84,14 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    # This cond is added to neglect "c." from compressed instructions
+    # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
+    # This makes sure that cp_asm_count gets hit
+    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
-        template = template.replace("INSTR", instr[2:])
+        if (instr in c_instr_alias):
+            template = template.replace("INSTR", c_instr_alias[instr])
+        else:
+            template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
     else:
         template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
