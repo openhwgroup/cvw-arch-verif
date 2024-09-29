@@ -647,6 +647,9 @@ def getcovergroups(coverdefdir, coverfiles):
 #        if (curinstr != ""):
 #          print(curinstr + ": " + str(coverpoints[curinstr]))
         curinstr = m.group(1)
+        #  If in a Zc* dir, add a preceding "c." to curinstr. (e.g. addi -> c.addi)
+        if (re.search(r'/RV..Zc.+_coverage', coverfile)):
+          curinstr = "c." + curinstr
         coverpoints[curinstr] = []
       m = re.search("\s*(\S+) :", line)
       if (m):
