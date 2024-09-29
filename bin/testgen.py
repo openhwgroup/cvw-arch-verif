@@ -463,9 +463,14 @@ def make_cr_rs1_imm_corners(test, xlen):
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
-  for shift in range(0, xlen):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  if (test == "c.slli" or test == "c.srli"):
+    for shift in range(1, xlen):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  else:
+    for shift in range(0, xlen):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
 
 def make_fd_fs1(test, xlen):
@@ -538,6 +543,8 @@ def write_tests(coverpoints, test, xlen):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rdp_corners_slli"):
       make_rdp_corners(test, xlen, c_slli_32_corners)
+    elif (coverpoint == "cp_rdp_corners_srli"):
+      make_rdp_corners(test, xlen, c_srli_32_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
@@ -690,7 +697,7 @@ if __name__ == '__main__':
   fitype = ["fsqrt.s", "fclass.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
-  c_shiftitype = ["c.slli"]
+  c_shiftitype = ["c.slli","c.srli"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
 
@@ -750,7 +757,9 @@ if __name__ == '__main__':
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
                             0b00101101110111100100010000111011]               
-      
+      c_srli_32_corners  = [0,2,4,0b10000000000000000000000000000000,0b11111111111111111111111111111110,
+                            0b11111111111111111111111111111100,0b10101010101010101010101010101010,
+                            0b10110111011110010001000011101110]
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
