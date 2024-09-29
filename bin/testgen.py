@@ -619,19 +619,21 @@ def getcovergroups(coverdefdir, coverfiles):
   for coverfile in coverfiles:
     coverfile = coverdefdir + "/" + coverfile + "_coverage.svh"
     f = open(coverfile, "r")
+    prev_line = "" 
     for line in f:
       m = re.search(r'cp_asm_count.*\"(.*)"', line)
       if (m):
 #        if (curinstr != ""):
 #          print(curinstr + ": " + str(coverpoints[curinstr]))
         curinstr = m.group(1)
-        #  If in a Zc* dir, add a preceding "c." to curinstr. (e.g. addi -> c.addi)
+        #  If in a Zc* dir, curinstr name is on previous line
         if (re.search(r'/RV..Zc.+_coverage', coverfile)):
-          curinstr = "c." + curinstr
+          curinstr = re.search(r'option.comment = "(.*)"', prev_line).group(1)
         coverpoints[curinstr] = []
       m = re.search("\s*(\S+) :", line)
       if (m):
         coverpoints[curinstr].append(m.group(1))
+      prev_line = line # Store for next iteration
     f.close()
     print(coverpoints)
     return coverpoints
