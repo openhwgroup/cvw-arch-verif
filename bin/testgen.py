@@ -91,6 +91,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
       else:
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
+  elif (test in c_shiftitype):
+    rd = legalizecompr(rd)
+    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
+    lines = lines + test + " x" + str(rd) + ", " + shiftImm(immval, 32) + " # perform operation\n" 
   elif (test in crtype):
     if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
@@ -231,6 +235,12 @@ def make_rd(test, xlen):
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
+def make_rdp(test, xlen):
+  for r in range(8,16):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rdp (Test destination rd = x" + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+
 def make_fd(test, xlen):
   for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
@@ -317,6 +327,13 @@ def make_rd_corners(test, xlen, corners):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
+
+def make_rdp_corners(test, xlen, corners):
+  for v in corners:
+    # rs1 = all 1s, rs2 = v, others are random
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rdp_corners (Test rd value = " + hex(v) + " Shifted by 1)"
+    writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
 
 def make_rd_corners_auipc(test, xlen):
   for v in corners:
@@ -450,6 +467,7 @@ def make_imm_shift(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
+
 def make_fd_fs1(test, xlen):
   for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
@@ -490,6 +508,8 @@ def write_tests(coverpoints, test, xlen):
       pass
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen)
+    elif (coverpoint == "cp_rdp"):
+      make_rdp(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
     elif (coverpoint == "cp_fs1"):
@@ -516,6 +536,8 @@ def write_tests(coverpoints, test, xlen):
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
+    elif (coverpoint == "cp_rdp_corners_slli"):
+      make_rdp_corners(test, xlen, c_slli_32_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
@@ -667,7 +689,8 @@ if __name__ == '__main__':
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
   fitype = ["fsqrt.s", "fclass.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.lui", "c.li", "c.addi", "c.addi16sp", "c.slli"]
+  citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
+  c_shiftitype = ["c.slli"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
 
@@ -724,6 +747,9 @@ if __name__ == '__main__':
                         0b101010, 0b010101, 0b010110]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
+      c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
+                            0b01111111111111111111111111111111,0b01010101010101010101010101010101,
+                            0b00101101110111100100010000111011]               
       
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
