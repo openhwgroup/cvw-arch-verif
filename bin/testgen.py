@@ -93,8 +93,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
     rd = legalizecompr(rd)
+    if shiftImm(immval, 32) == "0":           # Immediate 0 isn't allowed
+      imm = "1"
+    else:
+      imm = shiftImm(immval, 32)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
-    lines = lines + test + " x" + str(rd) + ", " + shiftImm(immval, 31) + " # perform operation\n" 
+    lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
     if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
