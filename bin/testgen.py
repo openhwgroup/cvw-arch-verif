@@ -623,7 +623,7 @@ def write_tests(coverpoints, test, xlen):
       make_offset(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
-    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_cshift"):
+    elif (coverpoint == "cp_imm_shift"):
       make_imm_shift(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)

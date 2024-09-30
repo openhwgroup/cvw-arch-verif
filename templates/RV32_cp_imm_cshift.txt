@@ -1,4 +1,0 @@
- cp_imm_cshift : coverpoint int'(ins.current.imm)  iff (ins.trap == 0 )  {
-        option.comment = "Immediate Shift";
-        bins shift[]  = {[1:31]};    // Immediate value 0 isn't allowed for compressed shift instructions.
-    }
