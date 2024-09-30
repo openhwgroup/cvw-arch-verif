@@ -92,7 +92,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       else:
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
-    rd = legalizecompr(rd)
+    if (test == "c.srli" or test == "c.srai"):
+        rd = legalizecompr(rd)
     if shiftImm(immval, xlen) == "0":           # Immediate 0 isn't allowed
       imm = "1"
     else:
@@ -545,7 +546,7 @@ def write_tests(coverpoints, test, xlen):
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_rdp_corners_slli"):
+    elif (coverpoint == "cp_rd_corners_slli"):
       make_rdp_corners(test, xlen, c_slli_32_corners)
     elif (coverpoint == "cp_rdp_corners_srli"):
       make_rdp_corners(test, xlen, c_srli_32_corners)
