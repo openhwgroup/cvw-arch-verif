@@ -93,10 +93,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
     rd = legalizecompr(rd)
-    if shiftImm(immval, 32) == "0":           # Immediate 0 isn't allowed
+    if shiftImm(immval, xlen) == "0":           # Immediate 0 isn't allowed
       imm = "1"
     else:
-      imm = shiftImm(immval, 32)
+      imm = shiftImm(immval, xlen)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
@@ -623,7 +623,7 @@ def write_tests(coverpoints, test, xlen):
       make_offset(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
-    elif (coverpoint == "cp_imm_shift"):
+    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_cshift"):
       make_imm_shift(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)

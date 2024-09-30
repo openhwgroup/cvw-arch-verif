@@ -1,0 +1,4 @@
+    cp_rdp_sign_srli : coverpoint int'(ins.current.rd_val)  iff (ins.trap == 0 )  {
+        option.comment = "RD sign of value";
+        bins pos  = {[1:$]};    // Since, sign will not be preserved. That's why only bin pos
+    }
