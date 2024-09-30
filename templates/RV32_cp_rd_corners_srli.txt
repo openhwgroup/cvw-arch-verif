@@ -1,4 +1,4 @@
-    cp_rdp_corners_srli : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
+    cp_rd_corners_srli : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
         option.comment = "RD Corners";
         wildcard bins zero  = {0};
         wildcard bins one  = {32'b00000000000000000000000000000001};
