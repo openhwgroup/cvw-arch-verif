@@ -45,7 +45,10 @@ def readTestplans():
                         if (type(value) == str and value != ''):
                             if(key == "Type"):
                                 cps.append("sample_" + value)
-                            else: cps.append(key)
+                            else: 
+                                if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                    key = key + "_" + value
+                                cps.append(key)
                     tp[instr] = cps
             testplans[arch] = tp
     #print(testplans["RV32I"])
@@ -81,7 +84,16 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    template = template.replace("INSTR", instr)
+    # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
+    # This makes sure that cp_asm_count gets hit
+    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi"}
+    if (name == "cp_asm_count" and instr.startswith("c.")):
+        if (instr in c_instr_alias):
+            template = template.replace("INSTR", c_instr_alias[instr])
+        else:
+            template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
+    else:
+        template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
@@ -93,6 +105,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'beqz', 1).replace("add_rs2", "add_rs2_0", 1)  
     if name.startswith('sample_') and instr == 'jal': 
         template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
+    if name.startswith('sample_') and instr == 'slt':
+        template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
     return template
 
      
