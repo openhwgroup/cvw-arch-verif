@@ -556,6 +556,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, c_slli_32_corners)
     elif (coverpoint == "cp_rd_corners_srli"):
       make_rd_corners(test, xlen, c_srli_32_corners)
+    elif (coverpoint == "cp_rd_corners_srai"):
+      make_rd_corners(test, xlen, c_srai_32_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
@@ -773,7 +775,8 @@ if __name__ == '__main__':
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
                             0b00101101110111100100010000111011] 
       c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
-                            0b10101010101010101010101010101010,0b10110111011110010001000011101110]                    
+                            0b10101010101010101010101010101010,0b10110111011110010001000011101110]
+      c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]                   
       
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
