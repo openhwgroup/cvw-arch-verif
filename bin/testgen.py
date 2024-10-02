@@ -330,12 +330,6 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
-  if (test == "c.mv"):
-    for v in corners:
-      # rs1 = all 1s, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
-      writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
