@@ -72,6 +72,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
   elif (test in frtype):
+    roundingModes = ["0x00", "0x20", "0x40", "0x60", "0x80"]
+    selectedMode = roundingModes[randint(0, 4)]
+    lines = lines + f"\n# clear the fcsr.frm before setting it\nli t0,0xE0\ncsrc fcsr, t0\n"
+    lines = lines + f"\n# set fcsr.frm to one of the rounding modes to cover all of them over different tests\nli t0,{selectedMode}\ncsrs fcsr, t0\n\n"
     lines = lines + "la x2, scratch\n"
     lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
