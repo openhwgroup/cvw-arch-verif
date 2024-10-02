@@ -20,7 +20,7 @@ function void rv32zca_sample(int hart, int issue);
                 end else begin // ordinary addi
                     ins = new(hart, issue, traceDataQ); 
                     ins.add_rd(0);
-                    ins.add_imm(1);
+                    ins.add_imm(2);
                     c_addi_cg.sample(ins); 
                 end
             end
@@ -61,13 +61,13 @@ function void rv32zca_sample(int hart, int issue);
             "srli"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_imm(1);
+                ins.add_imm(2);
                 c_srli_cg.sample(ins); 
             end
             "srai"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_imm(1);
+                ins.add_imm(2);
                 c_srai_cg.sample(ins); 
             end
             "andi"     : begin 
@@ -120,8 +120,8 @@ function void rv32zca_sample(int hart, int issue);
             "slli"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_imm(1);
-                c_slli_cg.sample(ins); 
+                ins.add_imm(2);
+                c_slli_cg.sample(ins);
             end
             "lwsp"     : begin 
                 ins = new(hart, issue, traceDataQ); 
