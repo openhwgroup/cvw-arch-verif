@@ -92,9 +92,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       else:
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
-    rd = legalizecompr(rd)
+    if (test == "c.srli" or test == "c.srai"):
+        rd = legalizecompr(rd)
+    if (rd == 0):                        # rd = 0 not allowed for c.slli
+      rd = 0
+    if shiftImm(immval, xlen) == "0":    # imm = 0 isn't allowed
+      imm = "1"
+    else:
+      imm = shiftImm(immval, xlen)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
-    lines = lines + test + " x" + str(rd) + ", " + shiftImm(immval, 32) + " # perform operation\n" 
+    lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
     if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
@@ -318,26 +325,26 @@ def make_rs2_corners(test, xlen):
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen, corners):
-  for v in corners:
-    # rs1 = 0, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
-    # rs1, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
-    # rs1 = all 1s, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
-
-def make_rdp_corners(test, xlen, corners):
-  for v in corners:
-    # rs1 = all 1s, rs2 = v, others are random
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rdp_corners (Test rd value = " + hex(v) + " Shifted by 1)"
-    writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
+  if test in c_shiftitype:
+    for v in corners:
+      # rs1 = all 1s, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
+      writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
+  else:
+    for v in corners:
+      # rs1 = 0, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
+      # rs1, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
+      # rs1 = all 1s, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
 
 def make_rd_corners_auipc(test, xlen):
   for v in corners:
@@ -469,9 +476,14 @@ def make_cr_rs1_imm_corners(test, xlen):
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
-  for shift in range(0, xlen):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  if test in c_shiftitype:
+    for shift in range(1, xlen):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  else:
+    for shift in range(0, xlen):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
 
 def make_fd_fs1(test, xlen):
@@ -542,8 +554,8 @@ def write_tests(coverpoints, test, xlen):
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_rdp_corners_slli"):
-      make_rdp_corners(test, xlen, c_slli_32_corners)
+    elif (coverpoint == "cp_rd_corners_slli"):
+      make_rd_corners(test, xlen, c_slli_32_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
@@ -616,7 +628,7 @@ def write_tests(coverpoints, test, xlen):
       make_offset(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
-    elif (coverpoint == "cp_imm_shift"):
+    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
@@ -696,7 +708,7 @@ if __name__ == '__main__':
   fitype = ["fsqrt.s", "fclass.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
-  c_shiftitype = ["c.slli"]
+  c_shiftitype = ["c.slli","c.srli","c.srai"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
 
