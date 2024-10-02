@@ -87,7 +87,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = legalizecompr(rd)
       lines = lines + test + " sp, " + unsignedImm10(immval*16) + " # perform operation\n"
     else:
-      if test in ["c.li"]:        # Add tests with signed Imm in the list
+      if test in ["c.li","c.addi"]:        # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
       else:
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
