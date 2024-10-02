@@ -197,19 +197,23 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=False, rs3a=None, rs3b=None):
-  # consecutive R-type instructions to trigger hazards
-  if floatHazard: 
-    reg = "f"
-  else:
-    reg = "x" 
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None):
+  # consecutive R-type instructions to trigger hazards                           ^~~~~~~~~ the types of the registers {rd, rs1, rs2, rs3} (x for int, f for float)
+  reg0 = regconfig[0]
+  reg1 = regconfig[1]
+  reg2 = regconfig[2]
+  reg3 = regconfig[3]
+
   lines = "\n# Testcase " + str(desc) + "\n"
   if (test in fr4type): 
-    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + ", " + reg + str(rs3a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg + str(rdb) + ", " + reg + str(rs1b) + ", " + reg + str(rs2b) + ", " + reg + str(rs3b) + " # perform second operation\n" 
+    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
+    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
+  elif (test in fitype):
+    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
+    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
   else:
-    lines = lines + test + " " + reg + str(rda) + ", " + reg + str(rs1a) + ", " + reg + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg + str(rdb) + ", " + reg + str(rs1b) + ", " + reg + str(rs2b) + " # perform second operation\n" 
+    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
+    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
   f.write(lines)
 
 def randomize(rs3=None):
@@ -384,10 +388,12 @@ def make_cp_gpr_hazard(test, xlen):
         else:
           rdb = rs1a
       desc = "cmp_gpr_hazard " + haz +  " test"
-      floatHazard = False
-      if (test in frtype) or (test in fr4type):
-        floatHazard = True
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, floatHazard=floatHazard, rs3a=rs3a, rs3b=rs3b)
+      regconfig = 'xxxx' # default to all int registers
+      if (test in regconfig_ffff):
+        regconfig = 'ffff'
+      if (test in regconfig_xfff):
+        regconfig = 'xfff'
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b)
 
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
@@ -694,7 +700,11 @@ if __name__ == '__main__':
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
 
-  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype
+  # instructions with all float args
+  regconfig_ffff = frtype + fr4type + ["fsqrt.s"] 
+  # instructions with int first arg and the rest float args
+  regconfig_xfff = F2Xtype + fcomptype + ["fclass.s"]
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
