@@ -94,8 +94,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in c_shiftitype):
     if (test == "c.srli" or test == "c.srai"):
         rd = legalizecompr(rd)
-    if (rd == 0):                        # rd = 0 not allowed for c.slli
-      rd = 0
     if shiftImm(immval, xlen) == "0":    # imm = 0 isn't allowed
       imm = "1"
     else:
