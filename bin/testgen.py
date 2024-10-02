@@ -104,6 +104,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
       rd = 10
       rs2 = 11
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
@@ -329,6 +330,12 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
+  if (test == "c.mv"):
+    for v in corners:
+      # rs1 = all 1s, rs2 = v, others are random
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
+      writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
@@ -522,7 +529,7 @@ def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
       pass
-    elif (coverpoint == "cp_rd"):
+    elif (coverpoint == "cp_rd" or coverpoint == "cp_rd_nx0"):
       make_rd(test, xlen)
     elif (coverpoint == "cp_rdp"):
       make_rdp(test, xlen)
@@ -538,7 +545,7 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
-    elif (coverpoint == "cp_rs2"):
+    elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen)
