@@ -20,7 +20,7 @@ function void rv32zca_sample(int hart, int issue);
                 end else begin // ordinary addi
                     ins = new(hart, issue, traceDataQ); 
                     ins.add_rd(0);
-                    ins.add_imm(1);
+                    ins.add_imm(2);
                     c_addi_cg.sample(ins); 
                 end
             end
