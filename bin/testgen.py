@@ -60,7 +60,7 @@ def unsignedImm10(imm):
     imm = 16
   return str(imm)
 
-def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None):
+def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, roundingMode=None):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
@@ -166,6 +166,19 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in utype):#["lui", "auipc"]
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
+    lines = lines + "la x2, scratch\n"
+    if roundingMode != None:
+      lines = lines + "li t1, " + formatstr.format(roundingMode) + " # prep csr value\n"
+      lines = lines + "fsrm t0, t1 # set frm\n"
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
+    lines = lines + "li x5, " + formatstr.format(rs3val) + " # prep fs3\n"
+    lines = lines + "sw x5, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs3) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
   elif (test in fltype):#["flw"]
     while (rs1 == 0 or rs1 == rs2):
@@ -483,7 +496,6 @@ def make_imm_shift(test, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
-
 def make_fd_fs1(test, xlen):
   for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
@@ -517,6 +529,18 @@ def make_fs2_corners(test, xlen):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
+def make_frm(test, xlen):
+  modes = [0b000, # RNE
+           0b001, # RTZ
+           0b010, # RDN
+           0b011, # RUP
+           0b100, # RMM
+           0b111] # DYN
+  for roundingMode in modes:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_frm (Test frm " + hex(roundingMode) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, roundingMode=roundingMode)
 
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
@@ -652,6 +676,8 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "fcr_fs1_fs2_corners"):
       make_fcr_fs1_fs2_corners(test, xlen)
+    elif (coverpoint == "cp_csr_frm"):
+      make_frm(test,xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -751,7 +777,32 @@ if __name__ == '__main__':
       corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
       if (xlen == 32):
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        fcorners = fcorners + [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
+        fcorners = fcorners + [0x00000000,
+                               0x80000000,
+                               0x3f800000,
+                               0xbf800000,
+                               0x3fc00000,
+                               0xbfc00000,
+                               0x40000000,
+                               0xc0000000,
+                               0x00800000,
+                               0x80800000,
+                               0x7f7fffff,
+                               0xff7fffff,
+                               0x007fffff,
+                               0x807fffff,
+                               0x00400000,
+                               0x80400000,
+                               0x00000001, 
+                               0x80000001, 
+                               0x7f800000, 
+                               0xff800000, 
+                               0x7fc00000, 
+                               0x7fffffff, 
+                               0x7f800000, 
+                               0x7fbfffff, 
+                               0x7ef8654f, 
+                               0x813d9ab0]
       else:
         corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
