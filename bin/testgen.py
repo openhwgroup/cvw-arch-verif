@@ -60,7 +60,7 @@ def unsignedImm10(imm):
     imm = 16
   return str(imm)
 
-def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, roundingMode=None):
+def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
@@ -77,7 +77,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
     lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
     lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
-    lines = lines + "sw x3, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
     lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
   elif (test in citype):
@@ -529,18 +529,6 @@ def make_fs2_corners(test, xlen):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_frm(test, xlen):
-  modes = [0b000, # RNE
-           0b001, # RTZ
-           0b010, # RDN
-           0b011, # RUP
-           0b100, # RMM
-           0b111] # DYN
-  for roundingMode in modes:
-    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_frm (Test frm " + hex(roundingMode) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, roundingMode=roundingMode)
 
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
