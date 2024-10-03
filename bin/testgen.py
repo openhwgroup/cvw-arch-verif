@@ -44,7 +44,7 @@ def unsignedImm6(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
   if imm == 0:
-    imm = 1
+    imm = 4
   return str(imm)
 
 def signedImm6(imm):
@@ -136,6 +136,22 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
       lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
 #      lines = lines + test + " x" + str(rd) + ", 0(x" + str(rs1) + ") # perform operation\n"
+  elif (test in cltype):
+    rd = legalizecompr(rd)
+    rs1 = legalizecompr(rs1)
+    rs2 = legalizecompr(rs2) 
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
+    if (xlen == 32):
+        storeop = "c.sw"
+        mul = 4
+    else:
+        storeop = "c.sd"
+        mul = 8
+    lines = lines + storeop + " x" + str(rs2) + ", " + unsignedImm6(immval*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+    lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval*mul) + "(x" + str(rs1) + ") # perform operation\n"
+    
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -739,6 +755,7 @@ if __name__ == '__main__':
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
+  cltype = ["c.lw"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
