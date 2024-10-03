@@ -152,7 +152,7 @@ function void rv32zca_sample(int hart, int issue);
                 $display("recording compressed add");
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(1);
+                ins.add_rs2(2);
                 c_add_cg.sample(ins); 
             end
             "swsp"     : begin 
