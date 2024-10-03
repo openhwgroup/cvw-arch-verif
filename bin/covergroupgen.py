@@ -113,6 +113,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
     if name.startswith('sample_') and instr == 'slt':
         template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
+    if name.startswith('sample_') and instr == 'sltu':
+        template += template.replace(instr, 'snez',1).replace("add_rs2","add_rs2_0",1) 
     return template
 
      
