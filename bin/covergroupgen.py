@@ -102,7 +102,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     if name.startswith('sample_') and instr == 'addi': 
         template += template.replace(instr, 'mv', 1)    
     if name.startswith('sample_') and instr == 'beq': 
-        template += template.replace(instr, 'beqz', 1).replace("add_rs2", "add_rs2_0", 1)  
+        template += template.replace(instr, 'beqz', 1).replace("add_rs2", "add_rs2_0", 1)
+    if name.startswith('sample_') and instr == 'bge':  
+        template += template.replace(instr, 'blez', 1).replace("add_rs2", "add_rs2_0", 1)  
     if name.startswith('sample_') and instr == 'jal': 
         template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
     if name.startswith('sample_') and instr == 'slt':
