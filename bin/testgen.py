@@ -72,10 +72,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
   elif (test in frtype):
-    roundingModes = ["0x00", "0x20", "0x40", "0x60", "0x80"]
-    selectedMode = roundingModes[randint(0, 4)]
-    lines = lines + f"\n# clear the fcsr.frm before setting it\nli t0,0xE0\ncsrc fcsr, t0\n"
-    lines = lines + f"\n# set fcsr.frm to one of the rounding modes to cover all of them over different tests\nli t0,{selectedMode}\ncsrs fcsr, t0\n\n"
     lines = lines + "la x2, scratch\n"
     lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
@@ -522,6 +518,25 @@ def make_fs2_corners(test, xlen):
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_cp_csr_frm(test, xlen):
+  roundingModes = ["0x00", "0x20", "0x40", "0x60", "0x80"]
+  selectedMode = roundingModes[randint(0, 4)]
+  lines = ""
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=False)
+  for selectedMode in roundingModes:
+      lines = lines + "# clear the fcsr.frm before setting it\nli t0,0xE0\ncsrc fcsr, t0\n"
+      lines = lines + f"\n# set fcsr.frm to one of the rounding modes to cover all of them over different tests\nli t0,{selectedMode}\ncsrs fcsr, t0\n"
+
+      lines = lines + "la x2, scratch\n"
+      lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+      lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+      lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+      lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+      lines = lines + "sw x3, 0(x2) # store fs2 value in memory\n"
+      lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
+      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
+  f.write(lines)
+
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
@@ -656,6 +671,8 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "fcr_fs1_fs2_corners"):
       make_fcr_fs1_fs2_corners(test, xlen)
+    elif (coverpoint == "cp_csr_frm"):
+      make_cp_csr_frm(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
