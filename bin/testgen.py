@@ -530,6 +530,11 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
           lines = lines + f"fsrmi {csrMode}\n"
           f.write(lines)
           writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = "dyn")
+        
+        # Reset the csr to default value
+        lines = f"\n # reset fcsr.frm to RNE \n"
+        lines = lines + f"fsrmi 0x0\n"
+        f.write(lines)
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
