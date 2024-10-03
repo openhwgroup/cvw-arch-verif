@@ -369,6 +369,12 @@ def make_rd_corners_auipc(test, xlen):
 
 def make_rd_corners_lui(test, xlen, corners):
   for v in corners:
+    if (xlen == 64):
+      bit_44 = (v >> 43) & 1
+      if (bit_44 == 1):
+        v |= (0b11111111111111111111)
+      else:
+        v &= ~(0b11111111111111111111)
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)   
@@ -584,7 +590,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_6bit"):
       make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bits)            
+      make_rd_corners_lui(test, xlen, corners_20bits)
+    elif (coverpoint == "cp_rd_corners_lui_64"):
+      make_rd_corners_lui(test, xlen, corners_40bits)          
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rd_corners_lui"):
@@ -812,6 +820,10 @@ if __name__ == '__main__':
                         0b101010, 0b010101, 0b010110]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
+      corners_40bits = [0,0b0000000000000000000010000000000000000000000000000000000000000000, 
+                        0,0b0000000000000000000011111111111111111111000000000000000000000000, 
+                        0,0b0000000000000000000000000000000000000001000000000000000000000000,
+                        0,0b0000000000000000000001001010111000100000000000000000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
                             0b00101101110111100100010000111011] 
