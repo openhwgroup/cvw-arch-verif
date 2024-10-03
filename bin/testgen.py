@@ -455,7 +455,14 @@ def make_j_imm_ones_zeros(test, xlen):
     f.write(lines)
 
 def make_offset(test, xlen):
-  if (test in btype):
+  if (test == "bne"):
+    lines = "\n# Testcase cp_offset\n"
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    lines = lines + "2: " + test + " x0, x1, 1b # backward branch\n"
+    lines = lines + "3: nop # done with sequence\n"
+    f.write(lines)
+  elif (test in btype):
     lines = "\n# Testcase cp_offset\n"
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
