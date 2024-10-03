@@ -661,8 +661,6 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "fcr_fs1_fs2_corners"):
       make_fcr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint == "cp_csr_frm"):
-      make_frm(test,xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
