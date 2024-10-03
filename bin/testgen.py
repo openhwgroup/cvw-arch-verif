@@ -167,9 +167,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
     lines = lines + "la x2, scratch\n"
-    if roundingMode != None:
-      lines = lines + "li t1, " + formatstr.format(roundingMode) + " # prep csr value\n"
-      lines = lines + "fsrm t0, t1 # set frm\n"
     lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
     lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
