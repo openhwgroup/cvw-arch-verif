@@ -66,15 +66,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
     rs2val = rs2val + 2**xlen
-  if (test in catype):
-    rd_c = legalizecompr(rd)
-    rs2_c = legalizecompr(rs2)
-    lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed; helps covering rd_toggle\n"
-  #  lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rs2val*2) + " # initialize rd to 2 times rs2val\n"
-    lines = lines + "li x" + str(rs2_c) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd_c) +", x" + str(rs2_c) + " # perform operation\n"
-  else:
-    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed; helps covering rd_toggle\n"
+  lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed; helps covering rd_toggle\n"
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
@@ -113,6 +105,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 10
       rs2 = 11
     lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+  elif (test in catype):
+    rd_c = legalizecompr(rd)
+    rs2_c = legalizecompr(rs2)
+    lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rdval) + " # initialize leagalized rd to a random value that should get changed;\n"
+    lines = lines + "li x" + str(rs2_c) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + test + " x" + str(rd_c) +", x" + str(rs2_c) + " # perform operation\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
     lines = lines + test + " x" + str(rd) + ", sp, " + unsignedImm10(immval*4) + " # perform operation\n"
@@ -357,7 +355,8 @@ def make_rd_corners(test, xlen, corners):
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, v*2, test, xlen) 
+      if (test == "c.sub"):
+        writeCovVector(desc, rs1, rs2, rd, rs1val, (-v)>>1, 0, v>>1, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
@@ -742,7 +741,7 @@ if __name__ == '__main__':
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
-  catype = ["c.sub"]
+  catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
