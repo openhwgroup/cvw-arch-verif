@@ -1,0 +1,3 @@
+    cr_fs1_fs2_corners_frm : cross cp_fs1_corners,cp_fs2_corners,cp_csr_frm  iff (ins.trap == 0 )  {
+        option.comment = "Cross coverage FS1, FS2, rounding mode";
+    }

@@ -77,7 +77,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
     lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
     lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
-    lines = lines + "sw x3, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
     lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
   elif (test in citype):
@@ -196,9 +196,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "flw f" + str(rs1) + ", " +  "0(x" + str(rs2) + ") # load value into f register\n"
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
-      lines = lines + "# set mstatus.FS to 01 to enable fp \n"
-      lines = lines + "li t0,0x4000\ncsrs mstatus, t0\n\n"
-      lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
+    lines = lines + "la x2, scratch\n"
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
+    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -497,15 +502,15 @@ def make_fd_fs2(test, xlen):
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fcr_fs1_fs2_corners(test, xlen):
+def make_cr_fs1_fs2_corners(test, xlen):
   for v1 in fcorners:
     for v2 in fcorners:
       # select distinct fs1 and fs2
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      while fs1 == fs2:
+      while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "fcr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
-    writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+      desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs1_corners(test, xlen):
   for v in fcorners:
@@ -651,8 +656,8 @@ def write_tests(coverpoints, test, xlen):
       make_fs1_corners(test, xlen)
     elif (coverpoint == "cp_fs2_corners"):
       make_fs2_corners(test, xlen)
-    elif (coverpoint == "fcr_fs1_fs2_corners"):
-      make_fcr_fs1_fs2_corners(test, xlen)
+    elif (coverpoint == "cr_fs1_fs2_corners"):
+      make_cr_fs1_fs2_corners(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
