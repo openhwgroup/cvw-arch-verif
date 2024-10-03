@@ -1,0 +1,3 @@
+    cr_fs1_fs2_corners : cross cp_fs1_corners,cp_fs2_corners  iff (ins.trap == 0 )  {
+        option.comment = "Cross coverage FS1, FS2";
+    }
