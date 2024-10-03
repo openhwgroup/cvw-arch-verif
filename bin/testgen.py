@@ -512,7 +512,6 @@ def make_fd_fs2(test, xlen):
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_cr_fs1_fs2_corners(test, xlen, frm = False):
-  roundingModes = ["rdn", "rmm", "rne", "rtz", "rup", "dyn"]
   for v1 in fcorners:
     for v2 in fcorners:
       # select distinct fs1 and fs2
@@ -521,8 +520,16 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
       if frm:
+        roundingModes = ["rdn", "rmm", "rne", "rtz", "rup"]
         for mode in roundingModes:
           writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = mode)
+        
+        # Change the csr and hit the corner cases for dynamic rounding modes
+        for csrMode in ["0x0", "0x1", "0x2", "0x3", "0x4"]:
+          lines = f"\n # set fcsr.frm to {csrMode} \n"
+          lines = lines + f"fsrmi {csrMode}\n"
+          f.write(lines)
+          writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = "dyn")
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -530,7 +537,7 @@ def make_fs1_corners(test, xlen):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while rs2 == rs1:
-      rs2 += 1
+      rs2 = randint(1, 31)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -539,26 +546,6 @@ def make_fs2_corners(test, xlen):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
-def make_cp_csr_frm(test, xlen):
-  roundingModes = ["0x0", "0x1", "0x2", "0x3", "0x4"]
-  selectedMode = roundingModes[randint(0, 4)]
-  lines = ""
-  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=False)
-  for selectedMode in roundingModes:
-      # lines = lines + "# clear the fcsr.frm before setting it\nfsrmi 0x000\n"
-      lines = lines + f"\n# set fcsr.frm to one of the rounding modes to cover all of them over different tests\nfsrmi {selectedMode}\n"
-
-      lines = lines + "la x2, scratch\n"
-      lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
-      lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
-      lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
-      lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
-      lines = lines + "sw x3, 0(x2) # store fs2 value in memory\n"
-      lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
-      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
-  lines = lines + f"\n# restore the fcsr.frm to the default value\nfsrmi 0x000\n"
-  f.write(lines)
   
 
 def write_tests(coverpoints, test, xlen):
@@ -697,8 +684,6 @@ def write_tests(coverpoints, test, xlen):
       make_cr_fs1_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners_frm"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint == "cp_csr_frm"):
-      make_cp_csr_frm(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
