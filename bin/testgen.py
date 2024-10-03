@@ -565,7 +565,7 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
-    elif (coverpoint == "cp_rs2"):
+    elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen)
