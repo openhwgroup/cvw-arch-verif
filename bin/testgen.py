@@ -101,8 +101,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
-    if ((test == "c.add" or test == "c.mv") and (rd == 0 or rs2 == 0)):
-      rd = 10
+    if ((test == "c.add" or test == "c.mv") and (rs2 == 0)):
       rs2 = 11
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
@@ -523,7 +522,7 @@ def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
       pass
-    elif (coverpoint == "cp_rd" or coverpoint == "cp_rd_nx0"):
+    elif (coverpoint == "cp_rd"):
       make_rd(test, xlen)
     elif (coverpoint == "cp_rdp"):
       make_rdp(test, xlen)
