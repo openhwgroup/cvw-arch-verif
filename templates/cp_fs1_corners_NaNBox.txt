@@ -1,0 +1,27 @@
+    cp_fs1_corners_NaNBox : coverpoint unsigned'(ins.current.fs1_val)  iff (ins.trap == 0 )  { 
+        option.comment = "FS1 corners NaNBoxed to 64 Bits";
+        bins pos0             = {64'hffffffff00000000};
+        bins neg0             = {64'hffffffff80000000};
+        bins pos1             = {64'hffffffff3f800000};
+        bins neg1             = {64'hffffffffbf800000};
+        bins pos1p5           = {64'hffffffff3fc00000};
+        bins neg1p5           = {64'hffffffffbfc00000};
+        bins pos2             = {64'hffffffff40000000};
+        bins neg2             = {64'hffffffffc0000000};
+        bins posminnorm       = {64'hffffffff00800000};
+        bins mnegminnorm      = {64'hffffffff80800000};
+        bins posmaxnorm       = {64'hffffffff7f7fffff};
+        bins negmaxnorm       = {64'hffffffffff7fffff};
+        bins posmax_subnorm   = {64'hffffffff007fffff};
+        bins negmax_subnorm   = {64'hffffffff807fffff};
+        bins posmid_subnorm   = {64'hffffffff00400000};
+        bins negmid_subnorm   = {64'hffffffff80400000};
+        bins posmin_subnorm   = {64'hffffffff00000001};
+        bins negmin_subnorm   = {64'hffffffff80000001};
+        bins posinfinity      = {64'hffffffff7f800000};
+        bins neginfinity      = {64'hffffffffff800000};
+        bins posQNaN          = {[64'hffffffff7fc00000:64'hffffffff7fffffff]};
+        bins posSNaN          = {[64'hffffffff7f800000:64'hffffffff7fbfffff]};
+        bins posrandom        = {64'hffffffff7ef8654f};
+        bins negrandom        = {64'hffffffff813d9ab0};
+    }

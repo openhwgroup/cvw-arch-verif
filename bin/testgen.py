@@ -549,7 +549,11 @@ def write_tests(coverpoints, test, xlen):
       make_fs2(test, xlen)
     elif (coverpoint == "cp_fs1_corners"):
       make_fs1_corners(test, xlen)
+    elif (coverpoint == "cp_fs1_corners_NaNBox"):
+      make_fs1_corners(test, xlen)
     elif (coverpoint == "cp_fs2_corners"):
+      make_fs2_corners(test, xlen)
+    elif (coverpoint == "cp_fs2_corners_NaNBox"):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
@@ -764,34 +768,39 @@ if __name__ == '__main__':
         wordsize = 8
       
       corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+      fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000,
+                  0x00800000, 0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000,
+                  0x00000001, 0x80000001, 0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 
+                  0x7ef8654f, 0x813d9ab0]
+
       if (xlen == 32):
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        fcorners = fcorners + [0x00000000,
-                               0x80000000,
-                               0x3f800000,
-                               0xbf800000,
-                               0x3fc00000,
-                               0xbfc00000,
-                               0x40000000,
-                               0xc0000000,
-                               0x00800000,
-                               0x80800000,
-                               0x7f7fffff,
-                               0xff7fffff,
-                               0x007fffff,
-                               0x807fffff,
-                               0x00400000,
-                               0x80400000,
-                               0x00000001, 
-                               0x80000001, 
-                               0x7f800000, 
-                               0xff800000, 
-                               0x7fc00000, 
-                               0x7fffffff, 
-                               0x7f800000, 
-                               0x7fbfffff, 
-                               0x7ef8654f, 
-                               0x813d9ab0]
+        # fcorners = fcorners + [0x00000000, 
+        #                        0x80000000,
+        #                        0x3f800000,
+        #                        0xbf800000,
+        #                        0x3fc00000,
+        #                        0xbfc00000,
+        #                        0x40000000,
+        #                        0xc0000000,
+        #                        0x00800000,
+        #                        0x80800000,
+        #                        0x7f7fffff,
+        #                        0xff7fffff,
+        #                        0x007fffff,
+        #                        0x807fffff,
+        #                        0x00400000,
+        #                        0x80400000,
+        #                        0x00000001, 
+        #                        0x80000001, 
+        #                        0x7f800000, 
+        #                        0xff800000, 
+        #                        0x7fc00000, 
+        #                        0x7fffffff, 
+        #                        0x7f800000, 
+        #                        0x7fbfffff, 
+        #                        0x7ef8654f, 
+        #                        0x813d9ab0]
       else:
         corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
@@ -824,14 +833,7 @@ if __name__ == '__main__':
       c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
                             0b10101010101010101010101010101010,0b10110111011110010001000011101110]
       c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]                   
-      
-      # TODO: DELETEME if this breaks something
-      fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
-                  0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
-                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
-
-      
-
+        
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
