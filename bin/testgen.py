@@ -140,6 +140,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2) 
+    while (rs1 == rs2):
+      rs2 = randint(8,15)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
@@ -319,10 +321,11 @@ def make_rs2(test, xlen):
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rd_rs1(test, xlen):
-  for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cmp_rd_rs1 (Test rd = rs1 = x" + str(r) + ")"
-    writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+  rng = range(8, 16) if test in cltype else range(32)
+  for r in rng:
+     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = f"cmp_rd_rs1 (Test rd = rs1 = x{r})"
+      writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_cp_rs1_nx0(test, xlen):
   for r in range(32):
@@ -583,7 +586,7 @@ def write_tests(coverpoints, test, xlen):
       make_rs1(test, xlen)
     elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen)
-    elif (coverpoint == "cmp_rd_rs1"):
+    elif (coverpoint == "cmp_rd_rs1" or coverpoint == "cmp_rd_rs1_c"):
       make_rd_rs1(test, xlen)
     elif (coverpoint == "cmp_rd_rs2"):
       make_rd_rs2(test, xlen)
@@ -756,6 +759,7 @@ if __name__ == '__main__':
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw"]
+  cstype = ["c.sw"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
