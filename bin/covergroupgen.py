@@ -127,7 +127,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'blez', 1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(1)", "add_rs2(0)").replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
     # psueoinstructions such as neg with rs1 tied to x0 must use the special add_rs1_0 function and take rs2 from argument 1 rather than 2
     if name.startswith('sample_') and instr == 'sub':
-        template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)").replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+        template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
           
     return template
 
