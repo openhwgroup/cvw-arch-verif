@@ -97,8 +97,27 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
-    # When 'addi' has imm=0, the assembler optimizes it to 'mv', causing the covergroup to miss it.
+
+    # Following code is in progress.  As of 10/3/24, it produces a get_gpr_error on sub related to the pseudoopsrs1_0 group
+    # List of instructions and corresponding pseudo-ops that need to be added to the covergroup
+    pseudoopsimm_0 = {'addi': 'mv'}
+    pseudoopsrs1_0 = {} #{'beq': 'beqz', 'bge': 'blez', 'blt': 'bgtz', 'bne': 'bnez', 'jal': 'j', 'slt': 'sltz'}
+    pseudoopsrs2_0 = {'sub': 'neg'}
+    # addi rd, rs1, 0, is renamed to the psuedoinstruction mv rd, rs1 causing the covergroup to miss it.
     # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
+    # addi/mv uses its ordinary rs1 field and neither use rs2, so the sample function arguments are unchanged
+    #for base, pseudo in pseudoopsimm_0.items():
+    #    if (name.startswith('sample_') and instr == base):
+    #        template += template.replace(base, pseudo, 1)
+    # pseudoinstructions with rs2 tied to x0 must use the special add_rs2_0 function 
+    #for base, pseudo in pseudoopsrs1_0.items():
+    #    if (name.startswith('sample_') and instr == base):
+    #        template += template.replace(base, pseudo, 1).replace("add_rs2", "add_rs2_0", 1)
+    # psueoinstructions with rs1 tied to x0 must use the special add_rs1_0 function and take rs2 from argument 1 rather than 2
+    #for base, pseudo in pseudoopsrs2_0.items():
+    #    if (name.startswith('sample_') and instr == base):
+    #        template += template.replace(base, pseudo, 1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)") 
+
     if name.startswith('sample_') and instr == 'addi': 
         template += template.replace(instr, 'mv', 1)    
     if name.startswith('sample_') and instr == 'beq': 
@@ -113,6 +132,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
     if name.startswith('sample_') and instr == 'slt':
         template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
+    if name.startswith('sample_') and instr == 'sub':
+        template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
+          
     return template
 
      

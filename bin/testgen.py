@@ -44,7 +44,7 @@ def unsignedImm6(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
   if imm == 0:
-    imm = 4
+    imm = 8
   return str(imm)
 
 def signedImm6(imm):
