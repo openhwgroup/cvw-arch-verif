@@ -154,9 +154,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + storeop + " x" + str(rs2) + ", " + unsignedImm6(immval*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval*mul) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in cstype):
-    if rs1 not in range(8, 16) or rs2 not in range(8, 16):
-      rs1 = legalizecompr(rs1)
-      rs2 = legalizecompr(rs2)
+    #if rs1 not in range(8, 16) or rs2 not in range(8, 16):
+    rs1 = legalizecompr(rs1)
+    rs2 = legalizecompr(rs2)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
