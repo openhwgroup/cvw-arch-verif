@@ -153,7 +153,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         mul = 8
     lines = lines + storeop + " x" + str(rs2) + ", " + unsignedImm6(immval*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval*mul) + "(x" + str(rs1) + ") # perform operation\n"
-    
+  elif (test in cstype):
+    rs1 = legalizecompr(rs1)
+    rs2 = legalizecompr(rs2)
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " x" + str(rs2) + ", " + unsignedImm6(immval*4) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -289,6 +295,12 @@ def make_rdp(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rdp (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+
+def make_rs2p(test, xlen):
+  for r in range(8,16):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = "cp_rs2p (Test destination rs2 = x" + str(r) + ")"
+    writeCovVector(desc, 7-r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)   # It will make sure rs1 != rs2
 
 def make_fd(test, xlen):
   for r in range(32):
@@ -579,6 +591,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd(test, xlen)
     elif (coverpoint == "cp_rdp"):
       make_rdp(test, xlen)
+    elif (coverpoint == "cp_rs2p"):
+      make_rs2p(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
     elif (coverpoint == "cp_fs1"):
