@@ -321,11 +321,11 @@ def make_rs2(test, xlen):
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rd_rs1(test, xlen):
-    rng = range(8, 16) if test in cltype else range(32)
-    for r in rng:
-        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-        desc = f"cmp_rd_rs1 (Test rd = rs1 = x{r})"
-        writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+  rng = range(8, 16) if test in cltype else range(32)
+  for r in rng:
+     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = f"cmp_rd_rs1 (Test rd = rs1 = x{r})"
+      writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_cp_rs1_nx0(test, xlen):
   for r in range(32):
