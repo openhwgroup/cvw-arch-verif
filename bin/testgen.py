@@ -376,6 +376,13 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       if (test == "c.sub"):
         writeCovVector(desc, rs1, rs2, rd, rs1val, (-v)>>1, 0, v>>1, test, xlen)
+  elif test in crtype:
+    for v in corners:
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      rs2val = -(rdval - v)
+      writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
+
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
