@@ -98,30 +98,37 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
 
-    # List of instructions and corresponding pseudo-ops that need to be added to the covergroup
-    pseudoopsimm_0 = {'addi': 'mv'}
-    pseudoopsrs1_0 = {'beq': 'beqz', 'bge': 'blez', 'blt': 'bgtz', 'bne': 'bnez', 'slt': 'sltz'}
-    pseudoopsrd_0 = {'jal': 'j'}
-    pseudoopsrs2_0 = {'sub': 'neg'}
+     # List of instructions and corresponding pseudo-ops that need to be added to the covergroup
+
     # addi rd, rs1, 0, is renamed to the psuedoinstruction mv rd, rs1 causing the covergroup to miss it.
     # To ensure full coverage, we add 'mv' along with 'addi' in the covergroup.
     # addi/mv uses its ordinary rs1 field and neither use rs2, so the sample function arguments are unchanged
-    for base, pseudo in pseudoopsimm_0.items():
-        if (name.startswith('sample_') and instr == base):
-            template += template.replace(base, pseudo, 1)
-    # pseudoinstructions with rs2 tied to x0 must use the special add_rs2_0 function 
-    for base, pseudo in pseudoopsrs1_0.items():
-        if (name.startswith('sample_') and instr == base):
-            template += template.replace(base, pseudo, 1).replace("add_rs2", "add_rs2_0", 1)
-    # psueoinstructions with rs1 tied to x0 must use the special add_rs1_0 function and take rs2 from argument 1 rather than 2
-    for base, pseudo in pseudoopsrs2_0.items():
-        if (name.startswith('sample_') and instr == base):
-            template += template.replace(base, pseudo, 1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)") 
+    if name.startswith('sample_') and instr == 'addi': 
+        template += template.replace(instr, 'mv', 1)    
     # pseudoinstructions with rd tied to x0 must use the special add_rd_0 function 
-    for base, pseudo in pseudoopsrd_0.items():
-        if (name.startswith('sample_') and instr == base):
-            template += template.replace(base, pseudo, 1).replace("add_rd", "add_rd_0", 1)
-
+    if name.startswith('sample_') and instr == 'jal': 
+        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
+    # pseudoinstructions with rs2 tied to x0 must use the special add_rs2_0 function. 
+    if name.startswith('sample_') and instr == 'slt':
+        template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
+    # pseudoinstruction branches with rs2 tied to x0 must use the special add_rs2_0 function.  also immediate field is in different position
+    if name.startswith('sample_') and instr == 'beq': 
+        template += template.replace(instr, 'beqz', 1).replace("add_rs2", "add_rs2_0", 1).replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    if name.startswith('sample_') and instr == 'bne':  
+        template += template.replace(instr, 'bnez', 1).replace("add_rs2", "add_rs2_0", 1).replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    if name.startswith('sample_') and instr == 'bge':  
+        template += template.replace(instr, 'bgez', 1).replace("add_rs2", "add_rs2_0", 1).replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    if name.startswith('sample_') and instr == 'blt':  
+        template += template.replace(instr, 'bltz', 1).replace("add_rs2", "add_rs2_0", 1).replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    # psueoinstructions branches such as blez with rs1 tied to x0 must use the special add_rs1_0 function and adjust position of immediate field
+    if name.startswith('sample_') and instr == 'blt':  
+        template += template.replace(instr, 'bgtz', 1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(1)", "add_rs2(0)").replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    if name.startswith('sample_') and instr == 'bge':  
+        template += template.replace(instr, 'blez', 1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(1)", "add_rs2(0)").replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+    # psueoinstructions such as neg with rs1 tied to x0 must use the special add_rs1_0 function and take rs2 from argument 1 rather than 2
+    if name.startswith('sample_') and instr == 'sub':
+        template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)").replace("add_imm_addr(2)", "add_imm_addr(1)", 1)
+          
     return template
 
      
