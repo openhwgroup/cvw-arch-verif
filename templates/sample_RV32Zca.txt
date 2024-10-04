@@ -73,7 +73,7 @@ function void rv32zca_sample(int hart, int issue);
             "andi"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_imm(1);
+                ins.add_imm(2);
                 c_andi_cg.sample(ins); 
             end
             "sub"     : begin 
@@ -85,19 +85,19 @@ function void rv32zca_sample(int hart, int issue);
             "xor"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(1);
+                ins.add_rs2(2);
                 c_xor_cg.sample(ins); 
             end
             "or"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(1);
+                ins.add_rs2(2);
                 c_or_cg.sample(ins); 
             end
             "and"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(1);
+                ins.add_rs2(2);
                 c_and_cg.sample(ins); 
             end
             "j"     : begin 
@@ -107,13 +107,13 @@ function void rv32zca_sample(int hart, int issue);
             end
             "beqz"     : begin 
                 ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
+                ins.add_rs1(0);
                 ins.add_imm(1);
                 c_beqz_cg.sample(ins); 
             end
             "bnez"     : begin 
                 ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
+                ins.add_rs1(0);
                 ins.add_imm(1);
                 c_bnez_cg.sample(ins); 
             end
