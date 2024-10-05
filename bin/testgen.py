@@ -285,8 +285,7 @@ def randomize(rs3=None):
     else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
 def make_rd(test, xlen):
-  rng = range(0,32) if test in c_shiftitype else range(32)
-  for r in rng:
+  for r in range(32):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
