@@ -371,7 +371,10 @@ def make_rs1_corners(test, xlen):
   for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
+    if (test in cbptype):
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, v, test, xlen)
+    else:
+      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
   for v in corners:
@@ -496,12 +499,6 @@ def make_cr_rs1_rs2_corners(test, xlen):
       desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
 
-def make_cp_imm6_corners(test, xlen):
-  desc = "cp_imm6_corners"
-  for v1 in corners_imm_6bits:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v1, rdval, test, xlen)
-
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
   desc = "cp_imm_zero"
@@ -537,18 +534,21 @@ def make_f_mem_hazard(test, xlen):
   lines = lines + test + " f2, 0(x1)\n"
   f.write(lines)
 
-def make_cp_imm12_corners(test, xlen):
-  desc = "cp_imm12_corners"
+def make_cp_imm_corners(test, xlen, corners_imm):
+  desc = "cp_imm_corners"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
   for v1 in corners_imm:
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v1, rdval, test, xlen)
 
-def make_cr_rs1_imm_corners(test, xlen):
+def make_cr_rs1_imm_corners(test, xlen, corners_imm):
   desc = "cr_rs1_imm_corners"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
   for v1 in corners:
     for v2 in corners_imm:
-      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
+      if (test in cbptype):
+        writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v2, v1, test, xlen)
+      else:
+        writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
@@ -670,11 +670,13 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cr_rs1_rs2_corners"):
       make_cr_rs1_rs2_corners(test, xlen)
     elif (coverpoint == "cp_imm12_corners"):
-      make_cp_imm12_corners(test, xlen)
+      make_cp_imm_corners(test, xlen, corners_imm_12bits)
     elif (coverpoint == "cp_imm6_corners"):
-      make_cp_imm6_corners(test, xlen)
+      make_cp_imm_corners(test, xlen, corners_imm_6bits)
     elif (coverpoint == "cr_rs1_imm_corners"):
-      make_cr_rs1_imm_corners(test, xlen)
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_12bits)
+    elif (coverpoint == "cr_rs1_imm_corners_6bit"):
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bits)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
@@ -870,7 +872,7 @@ if __name__ == '__main__':
                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
-      corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+      corners_imm_12bits = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
@@ -880,7 +882,7 @@ if __name__ == '__main__':
                         0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
       corners_6bits = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                         0b101010, 0b010101, 0b010110]
-      corners_imm_6bits = [0, 1, 2, 15, 16, 31, -32, -31, -2, -1]
+      corners_imm_6bits = [0, 1, 2, 31, 30, -32, -31, -2, -1]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
