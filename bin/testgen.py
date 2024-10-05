@@ -794,7 +794,7 @@ if __name__ == '__main__':
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
-  cltype = []#["c.lw","c.ld"]
+  cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
