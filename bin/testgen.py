@@ -374,6 +374,9 @@ def make_rs2_corners(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+  
+
+  
 
 def make_rd_corners(test, xlen, corners):
   if test in c_shiftitype:
@@ -668,6 +671,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners_lui(test='lui', xlen=32)
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
+    elif (coverpoint == "cp_rd_corners_sraiw"):
+      make_rd_corners(test,xlen,corners_sraiw)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen)
     elif (coverpoint == "cp_rs1_nx0"):
@@ -882,11 +887,15 @@ if __name__ == '__main__':
                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
-        # corners_20bits = [0, 0b11111111111111111111,        # 0xfffff000
-        #                   0b10000000000000000000,        # 0x80000000
-        #                   0b00000000000000000010,        # 0x1000
-        #                   0b01001010111000100000,        # 0x4ae20000
-        #                   0b00000001000000000000]         # 0x1000000
+        
+      
+      # Array of rs1 values to test for sraiw coverage bins
+        corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                         0b0000000000000000000000000000000000000000000000000000000000000001,
+                         0b1111111111111111111111111111111111111111111111111111111111111111,
+                         0b0000000000000000000000000000000001111111111111111111111111111111,
+                         0b1111111111111111111111111111111110000000000000000000000000000000]
+  
       
       corners_imm = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
