@@ -621,18 +621,16 @@ def write_tests(coverpoints, test, xlen):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners_slli"):
       if (xlen == 32):
-        corner = c_slli_32_corners
+        make_rd_corners(test, xlen, c_slli_32_corners)
       else:
-        corner = c_slli_64_corners
-      make_rd_corners(test, xlen, corner)
+        make_rd_corners(test, xlen, c_slli_64_corners)
     elif (coverpoint == "cp_rd_corners_srli"):
       make_rd_corners(test, xlen, c_srli_32_corners)
     elif (coverpoint == "cp_rd_corners_srai"):
       if (xlen == 32):
-        corner = c_srai_32_corners
+        make_rd_corners(test, xlen, c_srai_32_corners)
       else:
-        corner = c_srai_64_corners
-      make_rd_corners(test, xlen, corner)
+        make_rd_corners(test, xlen, c_srai_64_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
