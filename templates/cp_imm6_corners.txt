@@ -1,0 +1,14 @@
+    cp_imm6_corners : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
+        option.comment = "Imm Corners";
+        wildcard bins zero  = {0};
+        wildcard bins one   = {1};
+        wildcard bins two   = {2};
+        wildcard bins hm1   = {15};
+        wildcard bins h   =   {16};
+        wildcard bins max   = {31};
+        wildcard bins min   = {-32};
+        wildcard bins minp1 = {-31};
+        wildcard bins onesm1 = {-2};
+        wildcard bins ones  = {-1};
+    }
+    
