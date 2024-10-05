@@ -625,7 +625,10 @@ def write_tests(coverpoints, test, xlen):
       else:
         make_rd_corners(test, xlen, c_slli_64_corners)
     elif (coverpoint == "cp_rd_corners_srli"):
-      make_rd_corners(test, xlen, c_srli_32_corners)
+      if (xlen == 32):
+        make_rd_corners(test, xlen, c_srli_32_corners)
+      else:
+        make_rd_corners(test, xlen, c_srli_64_corners)
     elif (coverpoint == "cp_rd_corners_srai"):
       if (xlen == 32):
         make_rd_corners(test, xlen, c_srai_32_corners)
@@ -876,13 +879,16 @@ if __name__ == '__main__':
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
                             0b00101101110111100100010000111011]
-      c_slli_64_corners  = [0x0,0x1,0x4000000000000000,0x7fffffff,0x80000000,0x3FFFFFFFFFFFFFFF,
-                            0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B] 
+      c_slli_64_corners  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
+                            0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B] 
       c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
                             0b10101010101010101010101010101010,0b10110111011110010001000011101110]
+      c_srli_64_corners =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
+                            0xb77910eec75d0dee]
       c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110] 
-      c_srai_64_corners  = [0,2,4,0x1fffffffe,0x1fffffffc,0x200000000,0x200000002,0xfffffffffffffffe,
-                            0xfffffffffffffffc,0x377910eec75d0dee]               
+      c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]               
       
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
