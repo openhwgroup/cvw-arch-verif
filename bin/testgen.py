@@ -158,10 +158,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
       rs2 = randint(8,15)
+    if (xlen == 32):
+      mul = 4
+    else:
+      mul = 8
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + unsignedImm6(immval*4) + "(x" + str(rs1) + ") # perform operation \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*mul) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " x" + str(rs2) + ", " + unsignedImm6(immval*mul) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -790,8 +794,8 @@ if __name__ == '__main__':
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
-  cltype = ["c.lw","c.ld"]
-  cstype = ["c.sw"]
+  cltype = []#["c.lw","c.ld"]
+  cstype = ["c.sw","c.sd"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
