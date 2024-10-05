@@ -273,9 +273,14 @@ def randomize(rs3=None):
     if (rs3 is not None):
       rs3 = randint(1, 31)
       rs3val = randint(0, 2**xlen-1)
-    # choose rd that is different than rs1 and rs2
+    # all three source registers must be different for corners to work
+    while (rs1 == rs2):
+      rs2 = randint(1,31)
+    while ((rs3 is not None) and ((rs3 == rs1) or (rs3 == rs2))):
+      rs3 = randint(1,31)
+    # choose rd that is different than rs1 and rs2 and rs3
     rd = rs1
-    while (rd == rs1 or rd == rs2):
+    while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
       rd = randint(1, 31)
     rs1val = randint(0, 2**xlen-1)
     rs2val = randint(0, 2**xlen-1)
