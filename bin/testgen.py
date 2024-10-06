@@ -628,7 +628,8 @@ def make_fs3_corners(test, xlen, fcorners):
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
-      pass
+      if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
+        f.write("\n# Testcase cp_asm_count\nc.nop\n")
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
     elif (coverpoint == "cp_rdp"):
@@ -856,7 +857,7 @@ if __name__ == '__main__':
   fitype = ["fsqrt.s"]
   fixtype = ["fclass.s"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
+  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]

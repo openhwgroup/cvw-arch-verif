@@ -4,7 +4,7 @@ function void rv32zca_sample(int hart, int issue);
     if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
         $display("Examining compressed instruction rv32zca_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
         case (traceDataQ[hart][issue][0].inst_name)
-            // Distinguish among the three types of addi compressed instructions
+            // Distinguish among the four types of addi compressed instructions
             "addi"     : begin 
                 if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b000) begin // addi4spn
                     ins = new(hart, issue, traceDataQ); 
@@ -17,6 +17,9 @@ function void rv32zca_sample(int hart, int issue);
                     ins.add_rd(0);
                     ins.add_imm(1);
                     c_addi16sp_cg.sample(ins); 
+                end else if (traceDataQ[hart][issue][0].insn[15:1] == 0) begin // nop
+                    ins = new(hart, issue, traceDataQ); 
+                    c_nop_cg.sample(ins); 
                 end else begin // ordinary addi
                     ins = new(hart, issue, traceDataQ); 
                     ins.add_rd(0);
@@ -41,10 +44,6 @@ function void rv32zca_sample(int hart, int issue);
                 ins.current.inst_category = INST_CAT_STORE;
                 ins.add_mem_address();
                 c_sw_cg.sample(ins); 
-            end
-            "nop"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                c_nop_cg.sample(ins); 
             end
             "li"     : begin 
                 ins = new(hart, issue, traceDataQ); 
