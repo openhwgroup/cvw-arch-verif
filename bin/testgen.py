@@ -577,9 +577,9 @@ def make_imm_shift(test, xlen):
 
 def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
-  for shift in range(xlen):
+  for imm in range(32):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
 
 def make_fd_fs1(test, xlen):
   for r in range(32):
@@ -746,7 +746,7 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
-    elif (coverpoint == "cp_imm_mul"):
+    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_4"):
       make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
