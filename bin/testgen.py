@@ -43,8 +43,9 @@ def unsignedImm20(imm):
 def unsignedImm6(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
-  if imm == 0:
-    imm = 8
+  if test not in cstype and test not in cltype:
+    if imm == 0:
+      imm = 8
   return str(imm)
 
 def signedImm6(imm):
@@ -574,6 +575,12 @@ def make_imm_shift(test, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
+def make_imm_mul(test, xlen):
+  desc = "cp_imm_mul"
+  for shift in range(xlen):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+
 def make_fd_fs1(test, xlen):
   for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
@@ -739,6 +746,8 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
+    elif (coverpoint == "cp_imm_mul"):
+      make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
     elif (coverpoint == "cp_fs1"):
