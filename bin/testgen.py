@@ -580,10 +580,6 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
-      if frm:
-        lines = "\n # reset fcsr.frm to RNE \n"
-        lines = lines + f"fsrmi 0x0\n"
-        f.write(lines)
 
 def make_fs1_corners(test, xlen):
   for v in fcorners:
