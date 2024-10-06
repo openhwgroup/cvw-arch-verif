@@ -115,6 +115,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rd = legalizecompr(rd)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
+  elif (test in cbtype):
+    rs1 = legalizecompr(rs1)
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rs1) + ", some_label_for_cbtype_" + str(immval) + " # perform operation \n"
+    lines = lines + "addi x0, x1, 1\n"
+    lines = lines + "some_label_for_cbtype_" + str(immval) + ":\n"
+    lines = lines + "addi x0, x2, 2\n"
+    lines = lines + "nop\nnop\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
     lines = lines + test + " x" + str(rd) + ", sp, " + unsignedImm10(immval*4) + " # perform operation\n"
@@ -299,23 +307,11 @@ def randomize(rs3=None):
     if (rs3 is None): return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
     else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
-def make_rd(test, xlen):
-  for r in range(32):
+def make_rd(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
-
-def make_rdp(test, xlen):
-  for r in range(8,16):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rdp (Test destination rd = x" + str(r) + ")"
-    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
-
-def make_rs2p(test, xlen):
-  for r in range(8,16):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs2p (Test destination rs2 = x" + str(r) + ")"
-    writeCovVector(desc, 7-r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)   # It will make sure rs1 != rs2
 
 def make_fd(test, xlen):
   for r in range(32):
@@ -335,14 +331,14 @@ def make_fs2(test, xlen):
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_rs1(test, xlen):
-  for r in range(32):
+def make_rs1(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs2(test, xlen):
-  for r in range(32):
+def make_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
@@ -525,13 +521,19 @@ def make_j_imm_ones_zeros(test, xlen):
     f.write(lines)
 
 def make_offset(test, xlen):
+  lines = "\n# Testcase cp_offset\n"
   if (test in btype):
-    lines = "\n# Testcase cp_offset\n"
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     lines = lines + "2: " + test + " x0, x0, 1b # backward branch\n"
-    lines = lines + "3: nop # done with sequence\n"
-    f.write(lines)
+  elif (test in cbtype):
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
+    lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
+    lines = lines + test + " x8,  1b # backward branch\n"
+  lines = lines + "3: nop # done with sequence\n"
+  f.write(lines)
 
 def make_mem_hazard(test, xlen): 
   lines = "\n# Testcase mem_hazard (no dependency)\n"
@@ -611,11 +613,13 @@ def write_tests(coverpoints, test, xlen):
     if (coverpoint == "cp_asm_count"):
       pass
     elif (coverpoint == "cp_rd"):
-      make_rd(test, xlen)
+      make_rd(test, xlen, range(32))
     elif (coverpoint == "cp_rdp"):
-      make_rdp(test, xlen)
+      make_rd(test, xlen, range(8, 16))
+    elif (coverpoint == "cp_rs1p"):
+      make_rs1(test, xlen, range(8, 16))
     elif (coverpoint == "cp_rs2p"):
-      make_rs2p(test, xlen)
+      make_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
     elif (coverpoint == "cp_fs1"):
@@ -627,9 +631,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_fs2_corners"):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "cp_rs1"):
-      make_rs1(test, xlen)
+      make_rs1(test, xlen, range(32))
     elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
-      make_rs2(test, xlen)
+      make_rs2(test, xlen, range(32)) 
     elif (coverpoint == "cmp_rd_rs1" or coverpoint == "cmp_rd_rs1_c"):
       make_rd_rs1(test, xlen)
     elif (coverpoint == "cmp_rd_rs2"):
@@ -821,6 +825,7 @@ if __name__ == '__main__':
   ciwtype = ["c.addi4spn"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
   cbptype = ["c.andi"]
+  cbtype = ["c.beqz", "c.bnez"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
