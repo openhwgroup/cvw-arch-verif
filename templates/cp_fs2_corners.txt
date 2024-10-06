@@ -1,4 +1,4 @@
-    cp_fs2_corners : coverpoint unsigned'(ins.current.fs2_val)  iff (ins.trap == 0 )  {
+    cp_fs2_corners : coverpoint unsigned'(ins.current.fs2_val[31:0])  iff (ins.trap == 0 )  {
         option.comment = "FS2 corners";
         bins pos0             = {32'h00000000};
         bins neg0             = {32'h80000000};
