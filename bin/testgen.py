@@ -405,6 +405,10 @@ def make_rd_corners(test, xlen, corners):
         writeCovVector(desc, rs1, rs2, rd, rs1val, (-v)>>1, 0, v>>1, test, xlen)
       elif (test == "c.or"):
         writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
+      elif (test == "c.and"):
+        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, v, test, xlen)
+      elif (test == "c.xor"):
+        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
   elif test in crtype:
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
