@@ -82,10 +82,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
     else:
-    # ! Important: This function does not reset the fcsr.frm register after the operation due to performance reasons
-    # ! Please ensure that the fcsr.frm register is reset to the default value after all instance of writeCovVector for this test are called
       frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
-      csrFrm = ["0x0", "0x1", "0x2", "0x3", "0x4"]
+      csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
       for roundingMode in frm:
         lines = lines + f"{test} f{rd}, f{rs1}, f{rs2}, {roundingMode}" + " # perform operation\n"
       for csrMode in csrFrm:
