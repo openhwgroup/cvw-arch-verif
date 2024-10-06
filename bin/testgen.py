@@ -60,7 +60,7 @@ def unsignedImm10(imm):
     imm = 16
   return str(imm)
 
-def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None):
+def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
@@ -79,7 +79,19 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
     lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
     lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
-    lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n" 
+    if not frm:
+      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
+    else:
+    # ! Important: This function does not reset the fcsr.frm register after the operation due to performance reasons
+    # ! Please ensure that the fcsr.frm register is reset to the default value after all instance of writeCovVector for this test are called
+      frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
+      csrFrm = ["0x0", "0x1", "0x2", "0x3", "0x4"]
+      for roundingMode in frm:
+        lines = lines + f"{test} f{rd}, f{rs1}, f{rs2}, {roundingMode}" + " # perform operation\n"
+      for csrMode in csrFrm:
+        lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
+        lines = lines + f"fsrmi {csrMode}\n"
+        lines = lines + f"{test} f{rd}, f{rs1}, f{rs2}" + " # perform operation\n"
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
@@ -561,7 +573,7 @@ def make_fd_fs2(test, xlen):
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_cr_fs1_fs2_corners(test, xlen):
+def make_cr_fs1_fs2_corners(test, xlen, frm = False):
   for v1 in fcorners:
     for v2 in fcorners:
       # select distinct fs1 and fs2
@@ -569,17 +581,25 @@ def make_cr_fs1_fs2_corners(test, xlen):
       while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
+      if frm:
+        lines = "\n # reset fcsr.frm to RNE \n"
+        lines = lines + f"fsrmi 0x0\n"
+        f.write(lines)
 
 def make_fs1_corners(test, xlen):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    while rs2 == rs1:
+      rs2 = randint(1, 31)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2_corners(test, xlen):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    while rs2 == rs1:
+      rs2 = randint(1, 31)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -719,6 +739,8 @@ def write_tests(coverpoints, test, xlen):
       make_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners"):
       make_cr_fs1_fs2_corners(test, xlen)
+    elif (coverpoint == "cr_fs1_fs2_corners_frm"):
+      make_cr_fs1_fs2_corners(test, xlen, frm = True)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
