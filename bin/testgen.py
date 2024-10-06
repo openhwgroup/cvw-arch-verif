@@ -146,24 +146,30 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs2 = legalizecompr(rs2) 
     while (rs1 == rs2):
       rs2 = randint(8,15)
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
-    if (xlen == 32):
+    if (test == "c.lw"):
         storeop = "c.sw"
         mul = 4
     else:
         storeop = "c.sd"
         mul = 8
-    lines = lines + storeop + " x" + str(rs2) + ", " + unsignedImm6(immval*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
-    lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval*mul) + "(x" + str(rs1) + ") # perform operation\n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+    lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm6(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in cstype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
+    while (rs1 == rs2):
+      rs2 = randint(8,15)
+    if (test == "c.sw"):
+      mul = 4
+    else:
+      mul = 8
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm6(immval*4) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + unsignedImm6(immval*4) + "(x" + str(rs1) + ") # perform operation \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -637,11 +643,20 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
     elif (coverpoint == "cp_rd_corners_slli"):
-      make_rd_corners(test, xlen, c_slli_32_corners)
+      if (xlen == 32):
+        make_rd_corners(test, xlen, c_slli_32_corners)
+      else:
+        make_rd_corners(test, xlen, c_slli_64_corners)
     elif (coverpoint == "cp_rd_corners_srli"):
-      make_rd_corners(test, xlen, c_srli_32_corners)
+      if (xlen == 32):
+        make_rd_corners(test, xlen, c_srli_32_corners)
+      else:
+        make_rd_corners(test, xlen, c_srli_64_corners)
     elif (coverpoint == "cp_rd_corners_srai"):
-      make_rd_corners(test, xlen, c_srai_32_corners)
+      if (xlen == 32):
+        make_rd_corners(test, xlen, c_srai_32_corners)
+      else:
+        make_rd_corners(test, xlen, c_srai_64_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
@@ -800,8 +815,8 @@ if __name__ == '__main__':
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
-  cltype = ["c.lw"]
-  cstype = ["c.sw"]
+  cltype = ["c.lw","c.ld"]
+  cstype = ["c.sw","c.sd"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
@@ -892,10 +907,17 @@ if __name__ == '__main__':
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
-                            0b00101101110111100100010000111011] 
+                            0b00101101110111100100010000111011]
+      c_slli_64_corners  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
+                            0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B] 
       c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
                             0b10101010101010101010101010101010,0b10110111011110010001000011101110]
-      c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]                   
+      c_srli_64_corners =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
+                            0xb77910eec75d0dee]
+      c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110] 
+      c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]               
       
       # TODO: DELETEME if this breaks something
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
