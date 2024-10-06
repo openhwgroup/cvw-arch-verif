@@ -588,71 +588,23 @@ def make_cr_fs1_fs2_corners(test, xlen):
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs1_corners(test, xlen, flen = "F"):
-  if flen == "F":
-    for v in fcorners:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  elif flen == "D":
-    for v in fcornersD:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  elif flen == "H":
-    for v in fcornersH:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  elif flen == "Q":
-    for v in fcornersQ:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+def make_fs1_corners(test, xlen, fcorners):
+  for v in fcorners:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs2_corners(test, xlen, flen = "F"):
-  if flen == "F":
-    for v in fcorners:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  if flen == "D":
-    for v in fcornersD:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  if flen == "H":
-    for v in fcornersH:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  if flen == "Q":
-    for v in fcornersQ:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+def make_fs2_corners(test, xlen, fcorners):
+  for v in fcorners:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs3_corners(test, xlen, flen = "F"):
-  if flen == "F":
-    for v in fcorners:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
-  if flen == "D":
-    for v in fcornersD:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
-  if flen == "H":
-    for v in fcornersH:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
-  if flen == "Q":
-    for v in fcornersQ:
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-      desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
+def make_fs3_corners(test, xlen, fcorners):
+  for v in fcorners:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
@@ -671,29 +623,29 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_fs2"):
       make_fs2(test, xlen)
     elif (coverpoint == "cp_fs1_corners"):
-      make_fs1_corners(test, xlen)
+      make_fs1_corners(test, xlen, fcorners)
     elif (coverpoint == "cp_fs2_corners"):
-      make_fs2_corners(test, xlen)
+      make_fs2_corners(test, xlen, fcorners)
     elif (coverpoint == "cp_fs3_corners"):
-      make_fs3_corners(test, xlen)
+      make_fs3_corners(test, xlen, fcorners)
     elif (coverpoint == "cp_fs1_corners_D"):
-      make_fs1_corners(test, xlen, flen = "D")
+      make_fs1_corners(test, xlen, fcornersD)
     elif (coverpoint == "cp_fs2_corners_D"):
-      make_fs2_corners(test, xlen, flen = "D")
+      make_fs2_corners(test, xlen, fcornersD)
     elif (coverpoint == "cp_fs3_corners_D"):
-      make_fs3_corners(test, xlen, flen = "D")
+      make_fs3_corners(test, xlen, fcornersD)
     elif (coverpoint == "cp_fs1_corners_H"):
-      make_fs1_corners(test, xlen, flen = "H")
+      make_fs1_corners(test, xlen, fcornersH)
     elif (coverpoint == "cp_fs2_corners_H"):
-      make_fs2_corners(test, xlen, flen = "H")
+      make_fs2_corners(test, xlen, fcornersH)
     elif (coverpoint == "cp_fs3_corners_H"):
-      make_fs3_corners(test, xlen, flen = "H")
-    elif (coverpoint == "cp_fs1_corners_Q"):
-      make_fs1_corners(test, xlen, flen = "Q")
-    elif (coverpoint == "cp_fs2_corners_Q"):
-      make_fs2_corners(test, xlen, flen = "Q")
-    elif (coverpoint == "cp_fs3_corners_Q"):
-      make_fs3_corners(test, xlen, flen = "Q")
+      make_fs3_corners(test, xlen, fcornersH)
+    # elif (coverpoint == "cp_fs1_corners_Q"):
+    #   make_fs1_corners(test, xlen, fcornersQ)
+    # elif (coverpoint == "cp_fs2_corners_Q"):
+    #   make_fs2_corners(test, xlen, fcornersQ)
+    # elif (coverpoint == "cp_fs3_corners_Q"):
+    #   make_fs3_corners(test, xlen, fcornersQ)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen)
     elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
@@ -1004,7 +956,7 @@ if __name__ == '__main__':
                   0xA6E895993737426C]
       
       fcornersH = [] # TODO: Fill out half precision F corners
-      fcornersQ = [] # TODO: Fill out quad precision F corners
+      # fcornersQ = [] # TODO: Fill out quad precision F corners
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
