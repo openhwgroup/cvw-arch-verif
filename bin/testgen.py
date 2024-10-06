@@ -750,7 +750,7 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
-    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_4"):
+    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8"):
       make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
