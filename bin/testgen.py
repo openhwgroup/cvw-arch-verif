@@ -61,6 +61,13 @@ def unsignedImm10(imm):
     imm = 16
   return str(imm)
 
+def unsignedImm8(imm):
+  imm = imm % pow(2, 8)
+  # zero immediates are prohibited
+  if imm == 0:
+    imm = 16
+  return str(imm)
+
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
@@ -126,7 +133,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "nop\nnop\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
-    lines = lines + test + " x" + str(rd) + ", sp, " + unsignedImm10(immval*4) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n"
    # lines = lines + test + " x" + str(rd) + ", sp, 32 # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
@@ -581,7 +588,8 @@ def make_imm_shift(test, xlen):
 
 def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
-  for imm in range(32):
+  rng = range(1,256) if test in ciwtype else range(32)
+  for imm in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
 
@@ -776,7 +784,7 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
-    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8"):
+    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8" or coverpoint == "cp_imm_mul_addi4spn"):
       make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
