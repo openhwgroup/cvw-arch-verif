@@ -607,17 +607,23 @@ def make_cr_fs1_fs2_corners(test, xlen):
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs1_corners(test, xlen):
+def make_fs1_corners(test, xlen, fcorners):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs2_corners(test, xlen):
+def make_fs2_corners(test, xlen, fcorners):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
+def make_fs3_corners(test, xlen, fcorners):
+  for v in fcorners:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
 def write_tests(coverpoints, test, xlen):
   for coverpoint in coverpoints:
@@ -638,9 +644,29 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_fs2"):
       make_fs2(test, xlen)
     elif (coverpoint == "cp_fs1_corners"):
-      make_fs1_corners(test, xlen)
+      make_fs1_corners(test, xlen, fcorners)
     elif (coverpoint == "cp_fs2_corners"):
-      make_fs2_corners(test, xlen)
+      make_fs2_corners(test, xlen, fcorners)
+    elif (coverpoint == "cp_fs3_corners"):
+      make_fs3_corners(test, xlen, fcorners)
+    elif (coverpoint == "cp_fs1_corners_D"):
+      make_fs1_corners(test, xlen, fcornersD)
+    elif (coverpoint == "cp_fs2_corners_D"):
+      make_fs2_corners(test, xlen, fcornersD)
+    elif (coverpoint == "cp_fs3_corners_D"):
+      make_fs3_corners(test, xlen, fcornersD)
+    elif (coverpoint == "cp_fs1_corners_H"):
+      make_fs1_corners(test, xlen, fcornersH)
+    elif (coverpoint == "cp_fs2_corners_H"):
+      make_fs2_corners(test, xlen, fcornersH)
+    elif (coverpoint == "cp_fs3_corners_H"):
+      make_fs3_corners(test, xlen, fcornersH)
+    # elif (coverpoint == "cp_fs1_corners_Q"):
+    #   make_fs1_corners(test, xlen, fcornersQ)
+    # elif (coverpoint == "cp_fs2_corners_Q"):
+    #   make_fs2_corners(test, xlen, fcornersQ)
+    # elif (coverpoint == "cp_fs3_corners_Q"):
+    #   make_fs3_corners(test, xlen, fcornersQ)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen, range(32))
     elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
@@ -766,10 +792,10 @@ def write_tests(coverpoints, test, xlen):
       make_fd_fs1(test, xlen)
     elif (coverpoint == "cmp_fd_fs2"):
       make_fd_fs2(test, xlen)
-    elif (coverpoint == "cp_fs1_corners"):
-      make_fs1_corners(test, xlen)
-    elif (coverpoint == "cp_fs2_corners"):
-      make_fs2_corners(test, xlen)
+    # elif (coverpoint == "cp_fs1_corners"):
+    #   make_fs1_corners(test, xlen)
+    # elif (coverpoint == "cp_fs2_corners"):
+    #   make_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners"):
       make_cr_fs1_fs2_corners(test, xlen)
     else:
@@ -937,13 +963,40 @@ if __name__ == '__main__':
       c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
                             0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]               
       
-      # TODO: DELETEME if this breaks something
+      
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
                   0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
-
       
-
+      fcornersD = [0x0000000000000000,
+                  0x8000000000000000,
+                  0x3FF0000000000000,
+                  0xBFF0000000000000,
+                  0x3FF8000000000000,
+                  0xBFF8000000000000,
+                  0x4000000000000000,
+                  0xc000000000000000,
+                  0x0010000000000000,
+                  0x8010000000000000,
+                  0x7FEFFFFFFFFFFFFF,
+                  0xFFEFFFFFFFFFFFFF,
+                  0x000FFFFFFFFFFFFF,
+                  0x800FFFFFFFFFFFFF,
+                  0x0008000000000000,
+                  0x8008000000000000,
+                  0x0000000000000001,
+                  0x8000000000000001,
+                  0x7FF0000000000000,
+                  0xFFF0000000000000,
+                  0x7FF8000000000000, 
+                  0x7FFFFFFFFFFFFFFF,
+                  0x77FF000000000000,
+                  0x7FF7FFFFFFFFFFFF,
+                  0x5A392534A57711AD, 
+                  0xA6E895993737426C]
+      
+      fcornersH = [] # TODO: Fill out half precision F corners
+      # fcornersQ = [] # TODO: Fill out quad precision F corners
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
