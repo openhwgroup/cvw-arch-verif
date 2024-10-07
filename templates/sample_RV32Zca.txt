@@ -15,7 +15,7 @@ function void rv32zca_sample(int hart, int issue);
                 end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // addi16sp
                     ins = new(hart, issue, traceDataQ); 
                     ins.add_rd(0);
-                    ins.add_imm(1);
+                    ins.add_imm(2);
                     c_addi16sp_cg.sample(ins); 
                 end else if (traceDataQ[hart][issue][0].insn[15:1] == 0) begin // nop
                     ins = new(hart, issue, traceDataQ); 

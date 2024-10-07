@@ -102,8 +102,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
     if (test == "c.addi16sp"):
-      rd = legalizecompr(rd)
-      lines = lines + test + " sp, " + unsignedImm10(immval*16) + " # perform operation\n"
+      immval = int(signedImm6(immval)) * 16
+      if (immval == 0):
+        immval = 16
+      lines = lines + test + " sp, " + str(immval) + " # perform operation\n"
     else:
       if test in ["c.li","c.addi"]:        # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
@@ -598,7 +600,12 @@ def make_imm_shift(test, xlen):
 
 def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
-  rng = range(1,256) if test in ciwtype else range(32)
+  if test in ciwtype:
+    rng = range(1,256)
+  elif test in citype:
+    rng = range(-32,32)
+  else:
+    rng = range(32) 
   for imm in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
@@ -799,7 +806,7 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
       make_imm_shift(test, xlen)
-    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8" or coverpoint == "cp_imm_mul_addi4spn"):
+    elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8" or coverpoint == "cp_imm_mul_addi4spn" or coverpoint == "cp_imm_mul_addi16sp"):
       make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
       make_fd(test, xlen)
