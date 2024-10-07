@@ -587,7 +587,7 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
 
 def make_imm_shift_w(test,xlen):
   desc = "cp_imm_shit_w"
-  if test in c_shiftitype:
+  if test in shiftwtype:
     for shift in range(1, 32):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
@@ -905,6 +905,7 @@ if __name__ == '__main__':
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
   cbptype = ["c.andi"]
   cbtype = ["c.beqz", "c.bnez"]
+  shiftwtype = ["sraiw", "srliw"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
