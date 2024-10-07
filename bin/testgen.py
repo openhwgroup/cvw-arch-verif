@@ -585,16 +585,16 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
-def make_imm_shift_w(test,xlen):
-  desc = "cp_imm_shit_w"
-  if test in shiftwtype:
-    for shift in range(1, 32):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
-  else:
-    for shift in range(0, 32):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+# def make_imm_shift_w(test,xlen):
+#   desc = "cp_imm_shit_w"
+#   if test in shiftwtype:
+#     for shift in range(1, 32):
+#       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+#       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+#   else:
+#     for shift in range(0, 32):
+#       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+#       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
@@ -602,6 +602,12 @@ def make_imm_shift(test, xlen):
     for shift in range(1, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  
+  elif test in shiftwtype:
+    for shift in range(1, 32):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  
   else:
     for shift in range(0, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -810,10 +816,8 @@ def write_tests(coverpoints, test, xlen):
       make_offset(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
-    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
+    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c" or coverpoint == "cp_imm_shift_w"):
       make_imm_shift(test, xlen)
-    elif(coverpoint == "cp_imm_shift_w"):
-      make_imm_shift_w(test,xlen)
     elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8" or coverpoint == "cp_imm_mul_addi4spn"):
       make_imm_mul(test, xlen)
     elif (coverpoint == "cp_fd"):
