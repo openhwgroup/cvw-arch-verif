@@ -585,33 +585,20 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
-# def make_imm_shift_w(test,xlen):
-#   desc = "cp_imm_shit_w"
-#   if test in shiftwtype:
-#     for shift in range(1, 32):
-#       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-#       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
-#   else:
-#     for shift in range(0, 32):
-#       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-#       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
 
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
-  if test in c_shiftitype:
-    for shift in range(1, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
-  
-  elif test in shiftwtype:
-    for shift in range(1, 32):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
-  
+  if test in shiftwtype:
+    rng = range(1, 32)
+  elif test in c_shiftitype:
+    rng = range(1, xlen)
   else:
-    for shift in range(0, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+    rng = range(0, xlen)
+  
+  for shift in rng:
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+
 
 def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
