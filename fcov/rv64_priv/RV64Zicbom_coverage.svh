@@ -22,24 +22,24 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64zicbom_t;
 
 covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
-    priv_mode: coverpoint ins.current.mode iff (ins.current.valid == 1 ){
+    priv_mode: coverpoint ins.current.mode iff (ins.current.valid){
         bins not_M_mode = {!2'b11};
         bins U_mode = {2'b00};
     }
-    menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4] iff (ins.current.valid == 1 ){
+    menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4] iff (ins.current.valid){
         bins insrt_exception = {2'b00};
         bins flush = {2'b01};
         bins inval = {2'b11};
     }
-    senvcfg_cbie: coverpoint ins.current.csr[12'h10A][5:4] iff (ins.current.valid == 1 ){
+    senvcfg_cbie: coverpoint ins.current.csr[12'h10A][5:4] iff (ins.current.valid){
         bins insrt_exception = {2'b00};
         bins flush = {2'b01};
         bins inval = {2'b11};
     }
-    cbo: coverpoint ins.current.insn iff (ins.current.valid == 1 ){
+    cbo: coverpoint ins.current.insn iff (ins.current.valid){
         bins inval = {32'b000000000000_?????_010_00000_0001111};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.current.valid == 1 ){
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.current.valid){
         bins illegal_ins = {64'd2};
     }
     illegal_ins_exception_m: cross priv_mode, menvcfg_cbie, cbo, Mcause{ //inv.1
