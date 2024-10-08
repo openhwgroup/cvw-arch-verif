@@ -1,0 +1,3 @@
+    cr_fs1_fs3_corners_frm_H : cross cp_fs1_corners_H,cp_fs3_corners_H,cp_csr_frm  iff (ins.trap == 0 )  {
+        option.comment = "Cross coverage FS1 (half precision), FS3 (half precision), rounding mode";
+    }
