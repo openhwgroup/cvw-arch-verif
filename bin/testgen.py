@@ -587,16 +587,20 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
 
+
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
-  if test in c_shiftitype:
-    for shift in range(1, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+  if test in shiftwtype:
+    rng = range(1, 32)
+  elif test in c_shiftitype:
+    rng = range(1, xlen)
   else:
-    for shift in range(0, xlen):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+    rng = range(0, xlen)
+  
+  for shift in rng:
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, shift, rdval, test, xlen)
+
 
 def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
@@ -790,6 +794,8 @@ def write_tests(coverpoints, test, xlen):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros_jal"):
       make_j_imm_ones_zeros(test, xlen)
+    elif (coverpoint == "cp_rd_corners_sraiw"): 
+      make_rd_corners(test,xlen,corners_sraiw)
     elif (coverpoint == "cp_imm_ones_zeros"):
       pass 
     elif (coverpoint == "cp_mem_hazard"):
@@ -804,7 +810,7 @@ def write_tests(coverpoints, test, xlen):
       make_offset(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
-    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c"):
+    elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c" or coverpoint == "cp_imm_shift_w"):
       make_imm_shift(test, xlen)
     elif (coverpoint == "cp_imm_mul" or coverpoint == "cp_imm_mul_8" or coverpoint == "cp_imm_mul_addi4spn" or coverpoint == "cp_imm_mul_addi16sp"):
       make_imm_mul(test, xlen)
@@ -897,6 +903,7 @@ if __name__ == '__main__':
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
   cbptype = ["c.andi"]
   cbtype = ["c.beqz", "c.bnez"]
+  shiftwtype = ["sraiw", "srliw"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
@@ -968,6 +975,14 @@ if __name__ == '__main__':
                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+        
+        corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                         0b0000000000000000000000000000000000000000000000000000000000000001,
+                         0b1111111111111111111111111111111111111111111111111111111111111111,
+                         0b0000000000000000000000000000000001111111111111111111111111111111,
+                         0b1111111111111111111111111111111110000000000000000000000000000000]
+        
+        
       corners_imm_12bits = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
