@@ -1042,7 +1042,33 @@ if __name__ == '__main__':
                   0x5A392534A57711AD, 
                   0xA6E895993737426C]
       
-      fcornersH = [] # TODO: Fill out half precision F corners
+      fcornersH = [0x0000,
+                   0x8000,
+                   0x3C00,
+                   0xBC00,
+                   0x3E00,
+                   0xBE00,
+                   0x4000,
+                   0xC000,
+                   0x0400,
+                   0x8400,
+                   0x7BFF,
+                   0xFBFF,
+                   0x03FF,
+                   0x83FF,
+                   0x0200,
+                   0x8200,
+                   0x0001,
+                   0x8001,
+                   0x7C00,
+                   0xFC00,
+                   0x7E00, 
+                   0x7FFF,
+                   0x7C00, 
+                   0x7DFF,
+                   0x58B4,
+                   0xC93A]
+
       # fcornersQ = [] # TODO: Fill out quad precision F corners
 
       WALLY = os.environ.get('WALLY')
