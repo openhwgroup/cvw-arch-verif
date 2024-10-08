@@ -21,7 +21,7 @@
         bins posinfinity      = {16'h7C00};
         bins neginfinity      = {16'hFC00};
         bins posQNaN          = {[16'h7E00:16'h7FFF]};
-        bins posSNaN          = {[16'h7C00:16'h7DFF]};
+        bins posSNaN          = {[16'h7C01:16'h7DFF]};
         bins posrandom        = {16'h58B4};
         bins negrandom        = {16'hC93A};
     }
