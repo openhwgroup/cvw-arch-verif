@@ -178,15 +178,25 @@ def writeCovergroups(testPlans, covergroupTemplates):
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
+    #List of priv cover groups
+    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM"]
     file = "coverage/RISCV_coverage_base_init.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"        `cover_info(\"//      {define} - Enabled\");\n")
+            f.write(f"       `include \"{define}_coverage_init.svh\"\n")
+            f.write(f"   `endif\n \n")
     file = "coverage/RISCV_coverage_base_sample.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f:        
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
-
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"       {define.lower()}_sample(hart, issue);\n")
+            f.write(f"   `endif\n \n")
 
     
 
