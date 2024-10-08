@@ -889,10 +889,12 @@ if __name__ == '__main__':
   fltype = ["flw"]
   fstype = ["fsw"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
-  fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
-  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
-  fitype = ["fsqrt.s"]
-  fixtype = ["fclass.s"]
+  fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
+             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
+  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
+  fitype = ["fsqrt.s", "fsqrt.h"]
+  fixtype = ["fclass.s", "fclass.h"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
@@ -924,7 +926,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond","Zca"]:
+    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
