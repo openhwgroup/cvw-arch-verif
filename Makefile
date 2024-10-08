@@ -69,8 +69,8 @@ $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT)
 
     
 clean:
-	rm -rf ${BASEDIR}/fcov/rv32/coverage/*
-	rm -rf ${BASEDIR}/fcov/rv64/coverage/*
+	rm -rf ${BASEDIR}/fcov/rv32/*
+	rm -rf ${BASEDIR}/fcov/rv64/*
 	rm -rf ${BASEDIR}/tests/rv*
 	#rm -f ${SRCDIR}/*.elf ${SRCDIR}/*.objdump ${SRCDIR}/*.addr *${SRCDIR}/.lab ${SRCDIR}/*.memfile
 
