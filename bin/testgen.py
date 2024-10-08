@@ -965,7 +965,7 @@ if __name__ == '__main__':
                                0xff800000, 
                                0x7fc00000, 
                                0x7fffffff, 
-                               0x7f800000, 
+                               0x7f800001, 
                                0x7fbfffff, 
                                0x7ef8654f, 
                                0x813d9ab0]
@@ -1015,7 +1015,7 @@ if __name__ == '__main__':
       
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
-                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
+                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800001, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
       
       fcornersD = [0x0000000000000000,
                   0x8000000000000000,
@@ -1039,7 +1039,7 @@ if __name__ == '__main__':
                   0xFFF0000000000000,
                   0x7FF8000000000000, 
                   0x7FFFFFFFFFFFFFFF,
-                  0x77FF000000000000,
+                  0x7FF0000000000001,
                   0x7FF7FFFFFFFFFFFF,
                   0x5A392534A57711AD, 
                   0xA6E895993737426C]
@@ -1066,7 +1066,7 @@ if __name__ == '__main__':
                    0xFC00,
                    0x7E00, 
                    0x7FFF,
-                   0x7C00, 
+                   0x7C01, 
                    0x7DFF,
                    0x58B4,
                    0xC93A]
