@@ -86,7 +86,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
     # This makes sure that cp_asm_count gets hit
-    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi"}
+    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
         if (instr in c_instr_alias):
             template = template.replace("INSTR", c_instr_alias[instr])
@@ -128,7 +128,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # psueoinstructions such as neg with rs1 tied to x0 must use the special add_rs1_0 function and take rs2 from argument 1 rather than 2
     if name.startswith('sample_') and instr == 'sub':
         template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
-          
+    if name.startswith('sample_') and instr == 'sltu':
+        template += template.replace(instr, 'snez',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
+                
     return template
 
      
@@ -176,15 +178,25 @@ def writeCovergroups(testPlans, covergroupTemplates):
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
+    #List of priv cover groups
+    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM"]
     file = "coverage/RISCV_coverage_base_init.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"        `cover_info(\"//      {define} - Enabled\");\n")
+            f.write(f"       `include \"{define}_coverage_init.svh\"\n")
+            f.write(f"   `endif\n \n")
     file = "coverage/RISCV_coverage_base_sample.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f:        
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
-
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"       {define.lower()}_sample(hart, issue);\n")
+            f.write(f"   `endif\n \n")
 
     
 
