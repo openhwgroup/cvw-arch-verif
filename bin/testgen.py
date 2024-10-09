@@ -76,7 +76,6 @@ def unsignedImm1(imm):
   imm = imm % pow(2, 1)
   return str(imm)
 
-
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
@@ -216,7 +215,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm2(immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + test + " x" + str(rs2) + ", " + unsignedImm2(immval) + "(x" + str(rs1) + ") # perform operation \n"
-
   elif (test in cshtype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
@@ -226,7 +224,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm1(immval))*2) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + test + " x" + str(rs2) + ", " + str(int(unsignedImm1(immval))*2) + "(x" + str(rs1) + ") # perform operation \n"
-  
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
