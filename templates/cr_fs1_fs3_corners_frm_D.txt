@@ -1,0 +1,3 @@
+    cr_fs1_fs3_corners_frm_D : cross cp_fs1_corners_D,cp_fs3_corners_D,cp_csr_frm  iff (ins.trap == 0 )  {
+        option.comment = "Cross coverage FS1 (double precision), FS3 (double precision), rounding mode";
+    }

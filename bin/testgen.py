@@ -889,10 +889,12 @@ if __name__ == '__main__':
   fltype = ["flw"]
   fstype = ["fsw"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
-  fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
-  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmin.s", "fmax.s"]
-  fitype = ["fsqrt.s"]
-  fixtype = ["fclass.s"]
+  fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
+             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
+  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
+  fitype = ["fsqrt.s", "fsqrt.h"]
+  fixtype = ["fclass.s", "fclass.h"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
@@ -924,7 +926,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond","Zca"]:
+    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
@@ -963,7 +965,7 @@ if __name__ == '__main__':
                                0xff800000, 
                                0x7fc00000, 
                                0x7fffffff, 
-                               0x7f800000, 
+                               0x7f800001, 
                                0x7fbfffff, 
                                0x7ef8654f, 
                                0x813d9ab0]
@@ -1013,7 +1015,7 @@ if __name__ == '__main__':
       
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
-                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800000, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
+                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800001, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
       
       fcornersD = [0x0000000000000000,
                   0x8000000000000000,
@@ -1037,12 +1039,38 @@ if __name__ == '__main__':
                   0xFFF0000000000000,
                   0x7FF8000000000000, 
                   0x7FFFFFFFFFFFFFFF,
-                  0x77FF000000000000,
+                  0x7FF0000000000001,
                   0x7FF7FFFFFFFFFFFF,
                   0x5A392534A57711AD, 
                   0xA6E895993737426C]
       
-      fcornersH = [] # TODO: Fill out half precision F corners
+      fcornersH = [0x0000,
+                   0x8000,
+                   0x3C00,
+                   0xBC00,
+                   0x3E00,
+                   0xBE00,
+                   0x4000,
+                   0xC000,
+                   0x0400,
+                   0x8400,
+                   0x7BFF,
+                   0xFBFF,
+                   0x03FF,
+                   0x83FF,
+                   0x0200,
+                   0x8200,
+                   0x0001,
+                   0x8001,
+                   0x7C00,
+                   0xFC00,
+                   0x7E00, 
+                   0x7FFF,
+                   0x7C01, 
+                   0x7DFF,
+                   0x58B4,
+                   0xC93A]
+
       # fcornersQ = [] # TODO: Fill out quad precision F corners
 
       WALLY = os.environ.get('WALLY')

@@ -21,7 +21,7 @@
         bins posinfinity      = {64'h7FF0000000000000};
         bins neginfinity      = {64'hFFF0000000000000};
         bins posQNaN          = {[64'h7FF8000000000000:64'h7FFFFFFFFFFFFFFF]};
-        bins posSNaN          = {[64'h77FF000000000000:64'h7FF7FFFFFFFFFFFF]};
+        bins posSNaN          = {[64'h7FF0000000000001:64'h7FF7FFFFFFFFFFFF]};
         bins posrandom        = {64'h5A392534A57711AD};
         bins negrandom        = {64'hA6E895993737426C};
     }
