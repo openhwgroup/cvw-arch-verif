@@ -27,23 +27,43 @@ function void rv64zca_sample(int hart, int issue);
                     c_addi_cg.sample(ins); 
                 end
             end
-            "lw"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(1);
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_LOAD;
-                ins.add_mem_address();
-                c_lw_cg.sample(ins); 
-            end
             "ld"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(1);  
-                ins.add_rs1(2);  
-                ins.current.inst_category = INST_CAT_LOAD;
-                ins.add_mem_address();
-                c_ld_cg.sample(ins); 
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // normal ld
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rd(0);
+                    ins.add_imm(1);
+                    ins.add_rs1(2);
+                    ins.current.inst_category = INST_CAT_LOAD;
+                    ins.add_mem_address();
+                    c_ld_cg.sample(ins); 
+                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // ldsp
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rd(0);
+                    ins.add_imm(1);
+                    ins.add_rs1_2();
+                    ins.current.inst_category = INST_CAT_LOAD;
+                    ins.add_mem_address();
+                    c_ldsp_cg.sample(ins); 
+                end 
+            end
+            "lw"     : begin 
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b010) begin // normal lw
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rd(0);
+                    ins.add_imm(1);
+                    ins.add_rs1(2);
+                    ins.current.inst_category = INST_CAT_LOAD;
+                    ins.add_mem_address();
+                    c_lw_cg.sample(ins); 
+                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b010) begin // lwsp
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rd(0);
+                    ins.add_imm(1);
+                    ins.add_rs1_2();
+                    ins.current.inst_category = INST_CAT_LOAD;
+                    ins.add_mem_address();
+                    c_lwsp_cg.sample(ins); 
+                end 
             end
             "sw"     : begin 
                 if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b110) begin // normal sw
@@ -65,13 +85,23 @@ function void rv64zca_sample(int hart, int issue);
                 end 
             end
             "sd"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs2(0);
-                ins.add_imm(1);  // adjust as needed for 64-bit store operations
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_STORE;
-                ins.add_mem_address();
-                c_sd_cg.sample(ins); 
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b111) begin // normal sd
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rs2(0);
+                    ins.add_imm(1);
+                    ins.add_rs1(2);
+                    ins.current.inst_category = INST_CAT_STORE;
+                    ins.add_mem_address();
+                    c_sd_cg.sample(ins); 
+                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b111) begin // sdsp
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rs2(0);
+                    ins.add_imm(1);
+                    ins.add_rs1_2();
+                    ins.current.inst_category = INST_CAT_STORE;
+                    ins.add_mem_address();
+                    c_sdsp_cg.sample(ins); 
+                end 
             end
             "li"     : begin 
                 ins = new(hart, issue, traceDataQ); 
@@ -149,15 +179,6 @@ function void rv64zca_sample(int hart, int issue);
                 ins.add_rd(0);
                 ins.add_imm(2);
                 c_slli_cg.sample(ins);
-            end
-            "lwsp"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(1);
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_LOAD;
-                ins.add_mem_address();
-                c_lwsp_cg.sample(ins); 
             end
             "ldsp"     : begin 
                 ins = new(hart, issue, traceDataQ); 
