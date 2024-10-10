@@ -46,13 +46,23 @@ function void rv64zca_sample(int hart, int issue);
                 c_ld_cg.sample(ins); 
             end
             "sw"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs2(0);
-                ins.add_imm(1);
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_STORE;
-                ins.add_mem_address();
-                c_sw_cg.sample(ins); 
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b110) begin // normal sw
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rs2(0);
+                    ins.add_imm(1);
+                    ins.add_rs1(2);
+                    ins.current.inst_category = INST_CAT_STORE;
+                    ins.add_mem_address();
+                    c_sw_cg.sample(ins); 
+                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b110) begin // swsp
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rs2(0);
+                    ins.add_imm(1);
+                    ins.add_rs1_2();
+                    ins.current.inst_category = INST_CAT_STORE;
+                    ins.add_mem_address();
+                    c_swsp_cg.sample(ins); 
+                end 
             end
             "sd"     : begin 
                 ins = new(hart, issue, traceDataQ); 
@@ -179,15 +189,6 @@ function void rv64zca_sample(int hart, int issue);
                 ins.add_rd(0);
                 ins.add_rs2(2);
                 c_add_cg.sample(ins); 
-            end
-            "swsp"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs2(0);
-                ins.add_imm(1);
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_STORE;
-                ins.add_mem_address();
-                c_swsp_cg.sample(ins); 
             end
             "sdsp"     : begin 
                 ins = new(hart, issue, traceDataQ); 

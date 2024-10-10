@@ -366,6 +366,12 @@ class RISCV_instruction
         current.rs1_val = 0;
     endfunction
 
+    virtual function void add_rs1_2();
+        current.has_rs1 = 1;
+        current.rs1 = "x2";
+        current.rs1_val = prev.x_wdata[get_gpr_num("x2")];
+    endfunction
+
     virtual function void add_rs2(int offset);
         current.has_rs2 = 1;
         current.rs2 = ops[offset].key;
