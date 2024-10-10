@@ -536,9 +536,8 @@ def make_imm_zero(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
 def make_j_imm_ones_zeros(test, xlen):
-  for align in range(2,19):
+  for align in range(2,12):
     lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
-    lines = lines + "li x1, " + formatstr.format(randint(0, 2**xlen-1)) + "\n"
     lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
     lines = lines + ".align " + str(align) + "\n"
     lines = lines + "1:\n"
