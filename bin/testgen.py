@@ -191,8 +191,25 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
     lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm6(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
+  elif (test in clhtype or test in clbtype):
+    rd = legalizecompr(rd)
+    rs1 = legalizecompr(rs1)
+    rs2 = legalizecompr(rs2) 
+    while (rs1 == rs2):
+      rs2 = randint(8,15)
+    if (test in clhtype):
+      storeop = "c.sh"
+      mul = 2
+    else:
+      storeop = "c.sb"
+      mul = 1
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm1(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm1(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
+    lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm1(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in cstype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
@@ -460,7 +477,6 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       rs2val = -(rdval - v)
       writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
-
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
@@ -933,6 +949,8 @@ if __name__ == '__main__':
   shiftwtype = ["sraiw", "srliw"]
   csbtype = ["c.sb"]
   cshtype = ["c.sh"]
+  clhtype = ["c.lh","c.lhu"]
+  clbtype = ["c.lbu"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
