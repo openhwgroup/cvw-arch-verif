@@ -1,7 +1,7 @@
-function void rv32zcb_sample(int hart, int issue);
-    ins_rv32zcb_t ins;
+function void rv64zcb_sample(int hart, int issue);
+    ins_rv64zcb_t ins;
     if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
-        $display("Examining compressed instruction rv32zcb_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        $display("Examining compressed instruction rv64zcb_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
         case (traceDataQ[hart][issue][0].inst_name)
             "lbu"    : begin 
                 ins = new(hart, issue, traceDataQ); 
@@ -50,7 +50,7 @@ function void rv32zcb_sample(int hart, int issue);
             end
             "not"    : begin 
                 ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);                                 
+                ins.add_rd(0);                               
                 c_not_cg.sample(ins); 
             end
         endcase

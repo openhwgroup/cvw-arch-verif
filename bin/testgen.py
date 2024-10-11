@@ -223,6 +223,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + test + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
+  elif (test in cutype):
+    rd = legalizecompr(rd)
+    rs1 = legalizecompr(rs1)
+    if (test == "c.not"):
+      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
+      lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
+      lines = lines + test + " x" + str(rd) + "  # reverting to the prev value, help in covering rd_corners \n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -951,6 +958,7 @@ if __name__ == '__main__':
   cshtype = ["c.sh"]
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
+  cutype = ["c.not"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
