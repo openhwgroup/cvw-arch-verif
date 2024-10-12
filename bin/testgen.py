@@ -139,7 +139,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
       lines = lines + "li x" + str(rs2_c) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       lines = lines + test + " x" + str(rd_c) +", x" + str(rs2_c) + " # perform operation\n"
-
   elif (test in cbptype):
     rd = legalizecompr(rd)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+"\n"
@@ -227,7 +226,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cutype):
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     if (test == "c.not"):
       lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
       lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
@@ -489,7 +487,7 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       rs2val = -(rdval - v)
-      writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen) 
+      writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
