@@ -136,7 +136,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in catype):
       rd_c = legalizecompr(rd)
       rs2_c = legalizecompr(rs2)
-      lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed;\n"
+      lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
       lines = lines + "li x" + str(rs2_c) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       lines = lines + test + " x" + str(rd_c) +", x" + str(rs2_c) + " # perform operation\n"
 
@@ -232,10 +232,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
       lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
       lines = lines + test + " x" + str(rd) + "  # reverting to the prev value, help in covering rd_corners \n"
-    elif (test == "c.mul"):
-      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd\n"
-      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-      lines = lines + test + " x" + str(rd) +", x" + str(rs2) + " # perform operation\n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -472,18 +468,18 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
-  elif test in catype:
+  elif test in catype:   # Using rs1val as temp variable to pass rd value
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       if (test == "c.sub"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, (-v)>>1, 0, v>>1, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
       elif (test == "c.or"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.and"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, v, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.xor"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.mul"):
         while (legalizecompr(rd) == legalizecompr(rs2)):
           rs2 = randint(0,31)
