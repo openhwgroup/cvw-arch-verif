@@ -109,13 +109,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
+    elif (test == "c.addiw" and rd == 0):
+      rd = 1
     if (test == "c.addi16sp"):
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
         immval = 16
       lines = lines + test + " sp, " + str(immval) + " # perform operation\n"
     else:
-      if test in ["c.li","c.addi"]:        # Add tests with signed Imm in the list
+      if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
       else:
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm6(immval) + " # perform operation\n"
@@ -413,21 +415,14 @@ def make_rs2(test, xlen, rng):
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rd_rs1(test, xlen):
-  rng = range(8, 16) if test in cltype else range(32)
+def make_rd_rs1(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = f"cmp_rd_rs1 (Test rd = rs1 = x{r})"
     writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_cp_rs1_nx0(test, xlen):
-  for r in range(32):
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs1_nx0 (Test source rs1 = x" + str(r) + ")"
-    writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
-
-def make_rd_rs2(test, xlen):
-  for r in (range(8, 16) if test in catype else range(32)):
+def make_rd_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cmp_rd_rs2 (Test rd = rs1 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen)
@@ -448,7 +443,7 @@ def make_rs1_corners(test, xlen):
   for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
-    if (test in cbptype):
+    if ((test in cbptype) or (test in citype)):
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, v, test, xlen)
     else:
       writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
@@ -472,7 +467,7 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       if (test == "c.sub"):
         writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
-      elif (test == "c.or"):
+      elif (test == "c.or" or test == "c.addw"):
         writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.and"):
         writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
@@ -488,6 +483,14 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       rs2val = -(rdval - v)
       writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
+  elif (test == "c.addiw"):
+    for v in corners:
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      immval = int(signedImm6(immval))
+      rdval = v - immval
+      rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
@@ -634,7 +637,7 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
   for v1 in corners:
     for v2 in corners_imm:
-      if (test in cbptype):
+      if ((test in cbptype) or (test in citype)):
         writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v2, v1, test, xlen)
       else:
         writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
@@ -715,7 +718,7 @@ def write_tests(coverpoints, test, xlen):
     if (coverpoint == "cp_asm_count"):
       if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
         f.write("\n# Testcase cp_asm_count\nc.nop\n")
-    elif (coverpoint == "cp_rd"):
+    elif (coverpoint == "cp_rd" or coverpoint == "cp_rd_nx0"):
       make_rd(test, xlen, range(32))
     elif (coverpoint == "cp_rdp"):
       make_rd(test, xlen, range(8, 16))
@@ -753,14 +756,18 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs2_corners(test, xlen, fcornersQ)
     # elif (coverpoint == "cp_fs3_corners_Q"):
     #   make_fs3_corners(test, xlen, fcornersQ)
-    elif (coverpoint == "cp_rs1"):
+    elif (coverpoint == "cp_rs1" or coverpoint == "cp_rs1_nx0"):
       make_rs1(test, xlen, range(32))
     elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(32)) 
-    elif (coverpoint == "cmp_rd_rs1" or coverpoint == "cmp_rd_rs1_c"):
-      make_rd_rs1(test, xlen)
-    elif (coverpoint == "cmp_rd_rs2" or coverpoint == "cmp_rd_rs2_c"):
-      make_rd_rs2(test, xlen)
+    elif (coverpoint == "cmp_rd_rs1"):
+      make_rd_rs1(test, xlen, range(32))
+    elif (coverpoint == "cmp_rd_rs1_c"):
+      make_rd_rs1(test, xlen, range(8, 16))
+    elif (coverpoint == "cmp_rd_rs2"):
+      make_rd_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rd_rs2_c"):
+      make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
     elif (coverpoint == "cmp_rs1_rs2"):
@@ -794,14 +801,14 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_6bit"):
       make_rd_corners(test, xlen, corners_6bits)
+    elif (coverpoint == "cp_rd_corners_32bit"):
+      make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen, corners_20bits)            
     elif (coverpoint == "cp_rd_corners_auipc"):
       make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen)
-    elif (coverpoint == "cp_rs1_nx0"):
-      make_cp_rs1_nx0(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):
@@ -948,7 +955,7 @@ if __name__ == '__main__':
   fitype = ["fsqrt.s", "fsqrt.h"]
   fixtype = ["fclass.s", "fclass.h"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp"]
+  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]
