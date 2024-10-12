@@ -136,7 +136,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in catype):
     rd_c = legalizecompr(rd)
     rs2_c = legalizecompr(rs2)
-    lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rdval) + " # initialize leagalized rd to a random value that should get changed;\n"
+    lines = lines + "li x" + str(rd_c) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
     lines = lines + "li x" + str(rs2_c) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd_c) +", x" + str(rs2_c) + " # perform operation\n"
   elif (test in cbptype):
@@ -466,18 +466,22 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
-  elif test in catype:
+  elif test in catype:   # Using rs1val as temp variable to pass rd value
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       if (test == "c.sub"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, (-v)>>1, 0, v>>1, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
       elif (test == "c.or"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.and"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, v, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.xor"):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, v, 0, 0, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
+      elif (test == "c.mul"):
+        while (legalizecompr(rd) == legalizecompr(rs2)):
+          rs2 = randint(0,31)
+        writeCovVector(desc, rs1, rs2, rd, 1, v, 0, rdval, test, xlen)        
   elif test in crtype:
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -521,8 +525,8 @@ def make_rd_rs1_eqval(test, xlen):
 
 def make_rd_rs2_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  desc = "cmp_rd_rs2_eqval (Test rs2 = rd = " + hex(rs2val) + ")"
-  writeCovVector(desc, 0, rs2, rd, rs1val, rdval, immval, rdval, test, xlen)
+  desc = "cmp_rd_rs2_eqval (Test rs2 = rd = " + hex(rdval) + ")"
+  writeCovVector(desc, 0, rs2, rd, rdval, rdval, immval, rdval, test, xlen)
 
 def make_rs1_rs2_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -755,7 +759,7 @@ def write_tests(coverpoints, test, xlen):
       make_rs2(test, xlen, range(32)) 
     elif (coverpoint == "cmp_rd_rs1" or coverpoint == "cmp_rd_rs1_c"):
       make_rd_rs1(test, xlen)
-    elif (coverpoint == "cmp_rd_rs2"):
+    elif (coverpoint == "cmp_rd_rs2" or coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
@@ -950,7 +954,7 @@ if __name__ == '__main__':
   cstype = ["c.sw","c.sd"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
-  catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw"]
+  catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw","c.mul"]
   cbptype = ["c.andi"]
   cbtype = ["c.beqz", "c.bnez"]
   shiftwtype = ["sraiw", "srliw"]
@@ -979,7 +983,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh","Zcb"]:
+    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh","Zcb","ZcbM"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
