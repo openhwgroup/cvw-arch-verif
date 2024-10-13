@@ -87,11 +87,16 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
     # This makes sure that cp_asm_count gets hit
     c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi"}
+    # special cases for fmv instructions being interpreted with depreciated names
+    # we need to look for the old name for asm_count
+    fmv_instr_alias = {"fmv.x.w":"fmv.x.s"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
         if (instr in c_instr_alias):
             template = template.replace("INSTR", c_instr_alias[instr])
         else:
             template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
+    elif (name == "cp_asm_count" and instr in fmv_instr_alias):
+            template = template.replace("INSTR", fmv_instr_alias[instr])
     else:
         template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
@@ -130,6 +135,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
     if name.startswith('sample_') and instr == 'sltu':
         template += template.replace(instr, 'snez',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
+    # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
+    if name.startswith('sample_') and instr == 'fmv.x.w':
+        template += template.replace(instr, 'fmv.x.s',1)
                 
     return template
 
