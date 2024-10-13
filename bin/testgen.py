@@ -941,7 +941,7 @@ if __name__ == '__main__':
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
   fltype = ["flw", "flh"]
-  fstype = ["fsw"]
+  fstype = ["fsw", "fsh"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
