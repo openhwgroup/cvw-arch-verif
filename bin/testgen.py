@@ -797,8 +797,6 @@ def write_tests(coverpoints, test, xlen):
         make_rd_corners(test, xlen, c_srai_64_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
-    elif (coverpoint == "cp_rd_corners_subw"):
-      make_rd_corners(test, xlen, c_subw_corners)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
@@ -1080,12 +1078,7 @@ if __name__ == '__main__':
                             0xb77910eec75d0dee]
       c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110] 
       c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
-                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
-      c_subw_corners = [0, 1, 2, 2**(32-1), 2**(32-1)+1, 2**(32-1)-1, 2**(32-1)-2, 2**32-1, 2**32-2,0b0000000000000000000000000000000101100011101011101000011011110111,
-                        0b0000000000000000000000000000000100000000000000000000000000000001,0b0000000000000000000000000000000100000000000000000000000000000000,
-                        0b0000000000000000000000000000000011111111111111111111111111111111,0b0000000000000000000000000000000001010101010101010101010101010101,
-                        0b0000000000000000000000000000000010101010101010101010101010101010,0b0000000000000000000000000000000111111111111111111111111111111110]                                            
-      
+                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]                                            
       
       fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000, 
                   0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001, 
