@@ -295,9 +295,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "sw x5, 0(x2) # store fs2 value in memory\n"
     lines = lines + "flw f" + str(rs3) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
-  elif (test in fltype):#["flw"]
-    while (rs1 == 0 or rs1 == rs2):
+  elif (test in fltype):#["flw", "flh"]
+    while (rs1 == 0):
       rs1 = randint(1, 31)
+    while (rs1 == rs2):
+      rs2 = randint(1, 31)
     lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
@@ -938,7 +940,7 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
-  fltype = ["flw"]
+  fltype = ["flw", "flh"]
   fstype = ["fsw"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
