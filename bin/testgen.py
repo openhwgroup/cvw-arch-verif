@@ -232,6 +232,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
       lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
       lines = lines + test + " x" + str(rd) + "  # reverting to the prev value, help in covering rd_corners \n"
+    elif (test == "c.zext.b"):
+      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
+      lines = lines + test + " x" + str(rd) + " # perform operation\n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -805,6 +808,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_32bit"):
       make_rd_corners(test, xlen, corners_32bits)
+    elif (coverpoint == "cp_rd_corners_zext_b"):
+      make_rd_corners(test, xlen, corners_8bits)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen, corners_20bits)            
     elif (coverpoint == "cp_rd_corners_auipc"):
@@ -971,7 +976,7 @@ if __name__ == '__main__':
   cshtype = ["c.sh"]
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
-  cutype = ["c.not"]
+  cutype = ["c.not", "c.zext.b", "c.zext.h", "c.zext.w"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
