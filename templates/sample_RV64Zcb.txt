@@ -51,12 +51,13 @@ function void rv64zcb_sample(int hart, int issue);
             "not"    : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);                               
+                ins.add_rs1(1); 
                 c_not_cg.sample(ins); 
             end
             "zext.b"    : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);  
-                ins.add_rs1(1);                               
+                ins.add_rs1(1);                              
                 c_zext_b_cg.sample(ins); 
             end
         endcase
