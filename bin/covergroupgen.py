@@ -87,11 +87,16 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
     # This makes sure that cp_asm_count gets hit
     c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi"}
+    # special cases for fmv instructions being interpreted with depreciated names
+    # we need to look for the old name for asm_count
+    fmv_instr_alias = {"fmv.x.w":"fmv.x.s"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
         if (instr in c_instr_alias):
             template = template.replace("INSTR", c_instr_alias[instr])
         else:
             template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
+    elif (name == "cp_asm_count" and instr in fmv_instr_alias):
+            template = template.replace("INSTR", fmv_instr_alias[instr])
     else:
         template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
