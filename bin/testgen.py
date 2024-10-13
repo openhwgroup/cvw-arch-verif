@@ -232,6 +232,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
       lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
       lines = lines + test + " x" + str(rd) + "  # reverting to the prev value, help in covering rd_corners \n"
+    elif test in ["c.zext.b","c.zext.h","c.sext.b","c.sext.h"]:
+      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
+      lines = lines + test + " x" + str(rd) + " # perform operation\n"
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
@@ -971,7 +974,7 @@ if __name__ == '__main__':
   cshtype = ["c.sh"]
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
-  cutype = ["c.not"]
+  cutype = ["c.not", "c.zext.b", "c.zext.h", "c.zext.w","c.sext.b","c.sext.h"]
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
   # instructions with all float args
@@ -992,7 +995,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh","Zcb","ZcbM"]:
+    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh","Zcb","ZcbM","ZcbZbb"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
