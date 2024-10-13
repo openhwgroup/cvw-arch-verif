@@ -808,8 +808,6 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_32bit"):
       make_rd_corners(test, xlen, corners_32bits)
-    elif (coverpoint == "cp_rd_corners_zext_b"):
-      make_rd_corners(test, xlen, corners_8bits)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen, corners_20bits)            
     elif (coverpoint == "cp_rd_corners_auipc"):
