@@ -940,7 +940,7 @@ if __name__ == '__main__':
   utype = ["lui", "auipc"]
   fltype = ["flw"]
   fstype = ["fsw"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s"]
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
