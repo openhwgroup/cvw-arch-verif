@@ -472,7 +472,7 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       while (legalizecompr(rd) == legalizecompr(rs2)):
         rs2 = randint(0,31)      
-      if (test == "c.sub"):
+      if (test == "c.sub" or "c.subw"):
         writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
       elif (test == "c.or"):  
         writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
