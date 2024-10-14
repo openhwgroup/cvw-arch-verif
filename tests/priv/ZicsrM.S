@@ -311,7 +311,7 @@ tmp:
 
     csrrw t6, menvcfg, s0    # restore CSR
 
- /////////////////////////////////
+/////////////////////////////////
 // cp_mip_write_corners
 /////////////////////////////////
 
@@ -331,7 +331,31 @@ tmp:
 
     csrrw t6, mip, s0    # restore CSR
 
-// *** still need mtvec, mstatus,
+/////////////////////////////////
+// cp_mtvec_base_write_corners
+// cp_mtvec_mode_write
+/////////////////////////////////
+
+    csrr s0, mtvec    # save CSR
+    li t1, -1           # all 1s
+    li t0, 1            # 1 in lsb
+1:  csrrc t6, mtvec, t1    # clear all bits
+    csrrs t6, mtvec, t0    # set walking 1
+    slli t0, t0, 1      # walk the 1 
+    bnez t0, 1b         # repeat until all bits are walked
+
+    li t0, 1            # 1 in lsb
+1:  csrrs t6, mtvec, t1    # set all bits
+    csrrc t6, mtvec, t0    # clear walking 1
+    slli t0, t0, 1      # walk the 1
+    bnez t0, 1b         # repeat until all bits are walked
+
+    li t0, 3            # Write 3 to mode
+    csrrw t6, mtvec, t0 # exercise case of cp_mtvec_mode_write not captured by walking ones
+
+    csrrw t6, mtvec, s0    # restore CSR
+
+// *** still need mstatus,
 // RV32 registers
 // *** instructions
  
