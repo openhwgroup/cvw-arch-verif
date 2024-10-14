@@ -2,6 +2,7 @@ all:
 	${WALLY}/addins/cvw-arch-verif/bin/covergroupgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/testgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/combinetests.py
+	${WALLY}/addins/cvw-arch-verif/bin/csrtests.py
 	make -j 8 build
 
 sim:
