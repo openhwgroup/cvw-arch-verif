@@ -470,17 +470,19 @@ def make_rd_corners(test, xlen, corners):
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      while (legalizecompr(rd) == legalizecompr(rs2)):
+        rs2 = randint(0,31)      
       if (test == "c.sub"):
         writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
-      elif (test == "c.or" or test == "c.addw"):
+      elif (test == "c.or"):  
+        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
+      elif (test == "c.addw"):
         writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.and"):
-        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, -1, v, 0, rdval, test, xlen)
       elif (test == "c.xor"):
         writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
       elif (test == "c.mul"):
-        while (legalizecompr(rd) == legalizecompr(rs2)):
-          rs2 = randint(0,31)
         writeCovVector(desc, rs1, rs2, rd, 1, v, 0, rdval, test, xlen)        
   elif test in crtype:
     for v in corners:
@@ -511,20 +513,11 @@ def make_rd_corners(test, xlen, corners):
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
 
-def make_rd_corners_auipc(test, xlen):
-  for v in corners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rd_corners_auipc (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v, rdval, test, xlen)   
-
-
 def make_rd_corners_lui(test, xlen, corners):
   for v in corners:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)   
-
-
 
 def make_rd_rs1_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -810,8 +803,6 @@ def write_tests(coverpoints, test, xlen):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen, corners_20bits)            
-    elif (coverpoint == "cp_rd_corners_auipc"):
-      make_rd_corners_auipc(test, xlen)
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
@@ -995,7 +986,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    for extension in ["I", "M", "F", "Zicond","Zca", "Zfh","Zcb","ZcbM","ZcbZbb"]:
+    for extension in ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb"]:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
       coverpoints = getcovergroups(coverdefdir, coverfiles)
