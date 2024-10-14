@@ -16,6 +16,13 @@
 
 main:
 
+    # set up fast trap handler for uncompressed illegal instructions
+    # because Zicsr tests will throw a lot of illegal instruction traps while attempting to access CSRs
+    # This cuts the instruction count and runtime by nearly 2x
+    # However, don't blindly use this handler in other privileged tests
+    la t0, trap_handler_fastuncompressedillegalinstr
+    csrw mtvec, t0
+
     j tmp  // *** jump over mcause_write, which fails on Issue #1007
 
 /////////////////////////////////
@@ -155,193 +162,163 @@ tmp:
     // Restore MISA
     csrrw t6, misa, s0       # restore saved value
    
+
+/////////////////////////////////
+// cp_mststaus_tsr_write
+// cp_mstatus_tw_write
+// cp_mstatus_tvm_write
+// cp_mstatus_mxr_write
+// cp_mstatus_sum_write
+// cp_mstatus_mprv_write
+// cp_mstatus_xs_write
+// cp_mstatus_fs_write
+// cp_mstatus_vs_write
+// cp_mstatus_spp_write
+// cp_mstatus_mpie_write
+// cp_mstatus_ube_write
+// cp_mstatus_spie_write
+// cp_mstatus_wpri*cp_mie_write
+// cp_mstatus_mie_write
+// cp_mstatus_sie_write
+/////////////////////////////////
+// use a pattern of walking zeros and walking 1s relative to the initial value of mstatus
+// Also apply 00 and 11 to the 2-bit fields
+
+    csrr s0, mstatus    # save CSR
+    li t0, 1            # 1 in lsb
+1:  csrrc t6, mstatus, t0    # walk a zero
+    csrrs t6, mstatus, t0    # walk a one
+    csrrw t6, mstatus, s0   # restore mstatus
+    slli t0, t0, 1      # walk the 1 
+    bnez t0, 1b         # repeat until all bits are walked
+
+    li t0, 0x1800       # MPP: bits 12:11
+    csrrc t6, mstatus, t0   # mstatus.MPP = 00
+    csrrs t6, mstatus, t0   # mstatus.MPP = 11
+    csrrw t6, mstatus, s0   # restore MPP
+
+/////////////////////////////////
+// cp_mstatus_sd_write
+/////////////////////////////////
+// all 128 combinations of sd, fs, xs, vs
+
+    jal setmsb          # put a 1 in the msb of a0 (SD)
+    li a1, 0x6000       # FS: bits 14:13
+    li a2, 0x18000      # XS: bits 16:15
+    li a3, 0x600        # VS: bits 10:9
+    not t0, a0          # zero in SD msb
+    not t1, a1          # zero in FS
+    not t2, a2          # zero in XS
+    not t3, a3          # zero in VS
+    # create a4 with all seven bits cleared
+    and a4, s0, t0      # clear SD
+    and a4, a4, t1      # clear FS
+    and a4, a4, t2      # clear XS
+    and a4, a4, t3      # clear VS
+
+sdloop:
+    # loop over SD
+    li t0, 0            # initial SD value
+fsloop:
+    li s1, 0x2000       # initial FS value
+    li t1, 0
+xsloop:
+    li s2, 0x8000       # initial XS value
+    li t2, 0
+vsloop:
+    li s3, 0x200        # initial VS value
+    li t3, 0
+formbits:
+// form the combination in t4 and merge it with other fields from a4
+    or t4, t0, t1       # SD | FS
+    or t4, t4, t2       # | XS
+    or t4, t4, t3       # | VS
+    or t4, t4, a4       # merge mstatus with SD, FS, XS, VS
+    csrrw t6, mstatus, t4   # write value to mstatus
+
+// increment VS
+    add t3, t3, s3      # increment vs
+    ble t3, a3, formbits    # repeat until all 4 cases of VS are covered
+// increment XS
+    add t2, t2, s2      # increment xs
+    ble t2, a2, vsloop  # repeat until all 4 cases of XS are covered
+// increment FS
+    add t1, t1, s1      # increment fs
+    ble t1, a1, xsloop  # repeat until all 4 cases of FS are covered
+    add t0, t0, a0      # increment SD value
+    bnez t0, fsloop     # repeat until both cases of SD are covered
+
+    csrrw t6, mstatus, s0    # restore CSR
+
+/////////////////////////////////
+// Endianness testing
+/////////////////////////////////
+    # store an pattern in memory for testing endiannes
+    la t2, scratch
+    li t0, 0x01020304
+    sw t0, 0(t2)
+    li t0, 0x05060708
+    sw t0, 4(t2)
+
+/////////////////////////////////
+// cp_mstatush_mbe_endianness
+// cp_mstatus_mbe_endianness
+/////////////////////////////////
+    li t0, 0x20 # 1 in bit 5 for MBE
+    li t1, 0x1
+    slli t1, t1, 30
+    slli t1, t1, 7
+    csrrs t6, mstatush, t0  # for RV32, set mstatush.MBE
+    csrrs t6, mstatus, t1   # for RV64, set mstatus.MBE
+    jal endianaccess
+    csrrc t6, mstatush, t0  # for RV32, clear mstatush.MBE
+    csrrc t6, mstatus, t1   # for RV64, clear mstatus.MBE
+    jal endianaccess
+    j postendian
+
+endianaccess:
+    # Try all the accesses to make sure they work for the endianness
+    lb t3, 0(t2)
+    lb t3, 1(t2)
+    lb t3, 2(t2)
+    lb t3, 3(t2)
+    lb t3, 4(t2)
+    lb t3, 5(t2)
+    lb t3, 6(t2)
+    lb t3, 7(t2)
+    lh t3, 0(t2)
+    lh t3, 2(t2)
+    lh t3, 4(t2)
+    lh t3, 6(t2)
+    lw t3, 0(t2)
+    lw t3, 4(t2)
+    ld t3, 0(t2) # will trap in RV32, but that's ok
+    ret
+
+postendian:
+
+
+
+// *** instructions
+
+/////////////////////////////////
+// walking 1s and 0s for each register, also 11 in 2-bit fields
 /////////////////////////////////
 // cp_medeleg_write_corners
-/////////////////////////////////
-
-    csrr s0, medeleg    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, medeleg, t1    # clear all bits
-    csrrs t6, medeleg, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, medeleg, t1    # set all bits
-    csrrc t6, medeleg, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, medeleg, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mideleg_write_corners
-/////////////////////////////////
-
-    csrr s0, mideleg    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mideleg, t1    # clear all bits
-    csrrs t6, mideleg, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mideleg, t1    # set all bits
-    csrrc t6, mideleg, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mideleg, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mie_write_corners
-/////////////////////////////////
-
-    csrr s0, mie    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mie, t1    # clear all bits
-    csrrs t6, mie, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mie, t1    # set all bits
-    csrrc t6, mie, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mie, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mepc_write_corners
-/////////////////////////////////
-
-    csrr s0, mepc    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mepc, t1    # clear all bits
-    csrrs t6, mepc, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mepc, t1    # set all bits
-    csrrc t6, mepc, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mepc, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mtval_write_corners
-/////////////////////////////////
-
-    csrr s0, mtval    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mtval, t1    # clear all bits
-    csrrs t6, mtval, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mtval, t1    # set all bits
-    csrrc t6, mtval, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mtval, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mseccfg_write_corners
-/////////////////////////////////
-
-    csrr s0, mseccfg    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mseccfg, t1    # clear all bits
-    csrrs t6, mseccfg, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mseccfg, t1    # set all bits
-    csrrc t6, mseccfg, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mseccfg, s0    # restore CSR
-
-/////////////////////////////////
 // cp_menvcfg_write_corners
-/////////////////////////////////
-
-    csrr s0, menvcfg    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, menvcfg, t1    # clear all bits
-    csrrs t6, menvcfg, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, menvcfg, t1    # set all bits
-    csrrc t6, menvcfg, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, menvcfg, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mip_write_corners
-/////////////////////////////////
-
-    csrr s0, mip    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mip, t1    # clear all bits
-    csrrs t6, mip, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mip, t1    # set all bits
-    csrrc t6, mip, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    csrrw t6, mip, s0    # restore CSR
-
-/////////////////////////////////
 // cp_mtvec_base_write_corners
 // cp_mtvec_mode_write
+// cp_mstatus_sxl_write
+// cp_mstatus_uxl_write
 /////////////////////////////////
 
-    csrr s0, mtvec    # save CSR
-    li t1, -1           # all 1s
-    li t0, 1            # 1 in lsb
-1:  csrrc t6, mtvec, t1    # clear all bits
-    csrrs t6, mtvec, t0    # set walking 1
-    slli t0, t0, 1      # walk the 1 
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 1            # 1 in lsb
-1:  csrrs t6, mtvec, t1    # set all bits
-    csrrc t6, mtvec, t0    # clear walking 1
-    slli t0, t0, 1      # walk the 1
-    bnez t0, 1b         # repeat until all bits are walked
-
-    li t0, 3            # Write 3 to mode
-    csrrw t6, mtvec, t0 # exercise case of cp_mtvec_mode_write not captured by walking ones
-
-    csrrw t6, mtvec, s0    # restore CSR
-
-// *** still need mstatus,
-// RV32 registers
-// *** instructions
+#include "ZicsrM-Walk.h"
  
 /////////////////////////////////
 // Autogenerated code pasted in from csrtests.py to hit the following coverpoints
@@ -357,3 +334,30 @@ tmp:
 finished:
     j done
 
+
+/////////////////////////////////
+// Fast trap handler for illegal instructions (when testing writes to CSRs that may be non-existent)
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_fastuncompressedillegalinstr:
+    # Load trap handler stack pointer tp
+    csrrw tp, mscratch, tp  # swap MSCRATCH and tp
+    sd t0, 0(tp)        # Save t0 and t1 on the stack
+    sd t1, -8(tp)
+    csrr t0, mcause     # Check the cause
+    li t1, 2            # Illegal Instruction cause
+    beq t0, t1, uncompressedillegalinstructionreturn
+    # Otherwise use the regular trap handler
+    csrr t1, mtval      # And the trap value
+    bgez t0, exception  # if msb is clear, it is an exception
+    j interrupt         # otherwise interrupt.
+
+uncompressedillegalinstructionreturn:            # return from trap handler.  Fast because it knows instructions are 4-byte aligned
+    csrr t0, mepc  # get address of instruction that caused exception
+    addi t0, t0, 4
+    csrw mepc, t0
+    ld t1, -8(tp)       # restore t1 and t0
+    ld t0, 0(tp)
+    csrrw tp, mscratch, tp  # restore tp
+    mret                # return from trap
