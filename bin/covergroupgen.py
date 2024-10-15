@@ -86,12 +86,17 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
     # This makes sure that cp_asm_count gets hit
-    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi"}
+    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi"}
+    # special cases for fmv instructions being interpreted with depreciated names
+    # we need to look for the old name for asm_count
+    fmv_instr_alias = {"fmv.x.w":"fmv.x.s"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
         if (instr in c_instr_alias):
             template = template.replace("INSTR", c_instr_alias[instr])
         else:
             template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
+    elif (name == "cp_asm_count" and instr in fmv_instr_alias):
+            template = template.replace("INSTR", fmv_instr_alias[instr])
     else:
         template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
@@ -107,9 +112,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'mv', 1)    
     # pseudoinstructions with rd tied to x0 must use the special add_rd_0 function 
     if name.startswith('sample_') and instr == 'jal': 
-        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
+        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1)
     if name.startswith('sample_') and instr == 'jalr': 
-        template += template.replace(instr, 'jr', 1).replace("add_rd", "add_rd_0", 1) 
+        template += template.replace(instr, 'jr', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1).replace("ins.add_rs1(2)", "ins.add_rs1(1)",1)
     if name.startswith('sample_') and instr == 'slt':
         template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
     # pseudoinstruction branches with rs2 tied to x0 must use the special add_rs2_0 function.  also immediate field is in different position
@@ -131,6 +136,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
     if name.startswith('sample_') and instr == 'sltu':
         template += template.replace(instr, 'snez',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
+    # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
+    if name.startswith('sample_') and instr == 'fmv.x.w':
+        template += template.replace(instr, 'fmv.x.s',1)
                 
     return template
 
@@ -179,15 +187,25 @@ def writeCovergroups(testPlans, covergroupTemplates):
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
+    #List of priv cover groups
+    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM"]
     file = "coverage/RISCV_coverage_base_init.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"        `cover_info(\"//      {define} - Enabled\");\n")
+            f.write(f"       `include \"{define}_coverage_init.svh\"\n")
+            f.write(f"   `endif\n \n")
     file = "coverage/RISCV_coverage_base_sample.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    with open(os.path.join(covergroupDir,file), "w") as f:        
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
-
+        for define in priv_defines:
+            f.write(f"   `ifdef COVER_{define.upper()}\n")
+            f.write(f"       {define.lower()}_sample(hart, issue);\n")
+            f.write(f"   `endif\n \n")
 
     
 

@@ -366,6 +366,12 @@ class RISCV_instruction
         current.rs1_val = 0;
     endfunction
 
+    virtual function void add_rs1_2();
+        current.has_rs1 = 1;
+        current.rs1 = "x2";
+        current.rs1_val = prev.x_wdata[get_gpr_num("x2")];
+    endfunction
+
     virtual function void add_rs2(int offset);
         current.has_rs2 = 1;
         current.rs2 = ops[offset].key;
@@ -402,7 +408,22 @@ class RISCV_instruction
     endfunction
 
     virtual function void add_csr(int offset);    
-        current.imm2 = rvviRefCsrIndex(current.hart, ops[offset].key);
+        current.imm2 = rvviRefCsrIndex(current.hart, ops[offset].key);     
+    endfunction
+
+        //For VM Coverage
+    virtual function void add_vm_signals(int offset);    
+        current.VAdrI         = $root.testbench.wallyTracer.VAdrIW;
+        current.VAdrD         = $root.testbench.wallyTracer.VAdrDW;
+        current.PAI           = $root.testbench.wallyTracer.PAIW;
+        current.PAD           = $root.testbench.wallyTracer.PADW; 
+        current.ReadAccess    = $root.testbench.wallyTracer.ReadAccessW;
+        current.WriteAccess   = $root.testbench.wallyTracer.WriteAccessW;
+        current.ExecuteAccess = $root.testbench.wallyTracer.ExecuteAccessW;
+        current.PTE_i         = $root.testbench.wallyTracer.PTE_iW;
+        current.PTE_d         = $root.testbench.wallyTracer.PTE_dW;
+        current.PPN_i         = $root.testbench.wallyTracer.PPN_iW;
+        current.PPN_d         = $root.testbench.wallyTracer.PPN_dW; 
     endfunction
 
     virtual function void add_mem_offset(int offset);

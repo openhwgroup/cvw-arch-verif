@@ -77,6 +77,9 @@ class RISCV_coverage
     function string get_inst_name(bit trap, int hart, int issue, string disass); // break and move this first bit out
         string insbin, ins_str, ops;
         int num = $sscanf (disass, "%s %s %s", insbin, ins_str, ops);
+        `ifdef COVER_PRIV 
+            ins_str = "priv_test";
+        `endif
         return ins_str;
     endfunction
 

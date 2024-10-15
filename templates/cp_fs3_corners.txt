@@ -1,4 +1,4 @@
-    cp_fs3_corners : coverpoint unsigned'(ins.current.fs3_val)  iff (ins.trap == 0 )  {
+    cp_fs3_corners : coverpoint unsigned'(ins.current.fs3_val[31:0])  iff (ins.trap == 0 )  {
         option.comment = "FS3 corners";
         bins pos0             = {32'h00000000};
         bins neg0             = {32'h80000000};
@@ -21,7 +21,7 @@
         bins posinfinity      = {32'h7f800000};
         bins neginfinity      = {32'hff800000};
         bins posQNaN          = {[32'h7fc00000:32'h7fffffff]};
-        bins posSNaN          = {[32'h7f800000:32'h7fbfffff]};
+        bins posSNaN          = {[32'h7f800001:32'h7fbfffff]};
         bins posrandom        = {32'h7ef8654f};
         bins negrandom        = {32'h813d9ab0};
     }

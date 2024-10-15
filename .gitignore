@@ -7,6 +7,9 @@
 *.o
 *.so
 *.objdump
+*.objdump.addr
+*.objdump.lab
+*.memfile
 *.readelf
 *.gtkw
 *.vcd
@@ -34,3 +37,5 @@ tests/rv32
 tests/rv64
 fcov/coverage/RISCV_coverage_base_init.svh
 fcov/coverage/RISCV_coverage_base_sample.svh
+tests/priv/*.h 
+
