@@ -32,8 +32,8 @@ def shiftImm(imm, xlen):
 
 def signedImm12(imm):
   imm = imm % pow(2, 12)
-  if (imm & 0x800):
-    imm = imm - 0x1000
+  if (imm & 0x800): # Check if the 12th bit (0x800) is set
+    imm = imm - 0x1000 # Convert to negative value
   return str(imm)
 
 def unsignedImm20(imm):
@@ -407,13 +407,13 @@ def make_fs2(test, xlen):
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_rs1(test, xlen, rng):
+def make_rs1(test, xlen, rng = range(32)):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs2(test, xlen, rng):
+def make_rs2(test, xlen, rng = range(32)):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
@@ -596,6 +596,23 @@ def make_j_imm_ones_zeros(test, xlen):
     lines = lines + "1:\n"
     f.write(lines)
 
+def make_jalr_imm_ones_zeros(test, xlen):
+
+  for i in range(0,12):
+    imm_value = 2**i # immediate value from 2^0 to 2^11        
+    lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
+    lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
+    if (imm_value >= 2047):
+      lines = lines + "addi x21, x21, 2047\n"
+      new_imm = imm_value - 2047
+      lines = lines + "addi x21, x21, " + signedImm12(new_imm)  + "\n"
+    else:
+      lines = lines + "addi x21, x21, " + signedImm12(-imm_value)  + "\n"
+
+    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "1:\n"
+    f.write(lines)
+
 def make_offset(test, xlen):
   lines = "\n# Testcase cp_offset\n"
   if (test in btype):
@@ -715,8 +732,10 @@ def write_tests(coverpoints, test, xlen):
     if (coverpoint == "cp_asm_count"):
       if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
         f.write("\n# Testcase cp_asm_count\nc.nop\n")
-    elif (coverpoint == "cp_rd" or coverpoint == "cp_rd_nx0"):
+    elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
+    elif(coverpoint == "cp_rd_nx0"):
+      make_rd(test, xlen, range(1,32))
     elif (coverpoint == "cp_rdp"):
       make_rd(test, xlen, range(8, 16))
     elif (coverpoint == "cp_rs1p"):
@@ -753,10 +772,14 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs2_corners(test, xlen, fcornersQ)
     # elif (coverpoint == "cp_fs3_corners_Q"):
     #   make_fs3_corners(test, xlen, fcornersQ)
-    elif (coverpoint == "cp_rs1" or coverpoint == "cp_rs1_nx0"):
+    elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen, range(32))
-    elif (coverpoint == "cp_rs2" or coverpoint == "cp_rs2_nx0"):
+    elif (coverpoint == "cp_rs1_nx0"):
+      make_rs1(test, xlen, range(1,32))
+    elif (coverpoint == "cp_rs2"):
       make_rs2(test, xlen, range(32)) 
+    elif (coverpoint == "cp_rs2_nx0"):
+      make_rs2(test, xlen, range(1,32))
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
     elif (coverpoint == "cmp_rd_rs1_c"):
@@ -851,7 +874,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_sraiw"): 
       make_rd_corners(test,xlen,corners_sraiw)
     elif (coverpoint == "cp_imm_ones_zeros"):
-      pass 
+      #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
+      if (test == "jalr"): 
+         make_jalr_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
