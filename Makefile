@@ -2,6 +2,7 @@ all:
 	${WALLY}/addins/cvw-arch-verif/bin/covergroupgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/testgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/combinetests.py
+	${WALLY}/addins/cvw-arch-verif/bin/csrtests.py
 	make -j 8 build
 
 sim:
@@ -38,9 +39,10 @@ SRCEXT 		:= \([$(CEXT)$(AEXT)$(SEXT)]\|$(CPPEXT)\)
 BASEDIR = ${WALLY}/addins/cvw-arch-verif
 SRCDIR64 = ${BASEDIR}/tests/rv64
 SRCDIR32 = ${BASEDIR}/tests/rv32
-WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} -type d | sort)
+SRCDIRPRIV = ${BASEDIR}/tests/priv
+WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} $(SRCDIRPRIV) -type d | sort)
 SRCEXT = S
-SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
+SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) $(SRCDIRPRIV) -type f -regex ".**\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
 
@@ -72,12 +74,19 @@ $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT)
 	riscv64-unknown-elf-elf2hex --bit-width 32 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
 
+$(SRCDIRPRIV)/%.elf: $(SRCDIRPRIV)/%.$(SEXT) tests/priv/Zicsr-CSR-Tests.h
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gq_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
+	    -nostartfiles -I${WALLY}/tests/coverage -T${WALLY}/examples/link/link.ld $<
+	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
+	extractFunctionRadix.sh $@.objdump
+
+
     
 clean:
 	rm -rf ${BASEDIR}/fcov/rv32/*
 	rm -rf ${BASEDIR}/fcov/rv64/*
 	rm -rf ${BASEDIR}/tests/rv*
 	#rm -f ${SRCDIR}/*.elf ${SRCDIR}/*.objdump ${SRCDIR}/*.addr *${SRCDIR}/.lab ${SRCDIR}/*.memfile
-
 
 

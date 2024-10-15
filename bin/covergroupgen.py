@@ -112,8 +112,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'mv', 1)    
     # pseudoinstructions with rd tied to x0 must use the special add_rd_0 function 
     if name.startswith('sample_') and instr == 'jal': 
-        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1) 
-    # pseudoinstructions with rs2 tied to x0 must use the special add_rs2_0 function. 
+        template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1)
+    if name.startswith('sample_') and instr == 'jalr': 
+        template += template.replace(instr, 'jr', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1).replace("ins.add_rs1(2)", "ins.add_rs1(1)",1)
     if name.startswith('sample_') and instr == 'slt':
         template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
     # pseudoinstruction branches with rs2 tied to x0 must use the special add_rs2_0 function.  also immediate field is in different position
