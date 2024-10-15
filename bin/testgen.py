@@ -76,25 +76,6 @@ def unsignedImm1(imm):
   imm = imm % pow(2, 1)
   return str(imm)
 
-def loadFloatReg(reg, val, xlen, flen):
-  # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
-  lines = "" # f"# Loading value {val} into f{reg}\n"
-  storeop =  "sw" if (xlen == 32) else "sd"
-  loadop  = "flw" if (flen == 32) else "fld"
-  if (flen > xlen): # flen = 64, xlen = 32
-  # lines = lines + "la x2, scratch # base address \n"
-    lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(val)}\n"
-    lines = lines + f"li x4, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[2:10]}) in memory\n"
-    lines = lines + f"{storeop} x4, 4(x2) # store x4 (0x{formatstrFP.format(val)[10:18]}) in memory 4 bytes after x3\n"
-    lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
-  else:
-  # lines = lines + "la x2, scratch # base address \n"
-    lines = lines + f"li x3, {formatstrFP.format(val)} # load x3 with value {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store {formatstrFP.format(val)} in memory\n"
-    lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
-  return lines
-
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
@@ -108,8 +89,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
   elif (test in frtype):
     lines = lines + "la x2, scratch\n"
-    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
-    lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
     else:
@@ -305,9 +290,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
     lines = lines + "la x2, scratch\n"
-    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
-    lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + loadFloatReg(rs3, rs3val, xlen, flen)
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
+    lines = lines + "li x5, " + formatstr.format(rs3val) + " # prep fs3\n"
+    lines = lines + "sw x5, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs3) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
   elif (test in fltype):#["flw", "flh"]
     while (rs1 == 0):
@@ -322,21 +313,31 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fstype):#["fsw"]
     while (rs1 == 0): 
       rs1 = randint(1, 31) 
-    lines = lines + f"la x2, scratch # base address\n"
-    lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + f"la x{rs1}, scratch # base address\n"
-    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval)} # sub immediate from rs1 to counter offset\n"
+    tempreg = rs2 # for intermediate memory transactions 
+    while (tempreg == rs1):
+      tempreg = randint(1, 31)
+    lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + "li x" + str(tempreg) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
+    lines = lines + "sw x" + str(tempreg) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
+    lines = lines + "flw f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # load value into f register\n" 
     lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randint(1, 31)
-    lines = lines + "la x2, scratch" + " # base address \n"
-    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
+    lines = lines + "la x" + str(rs2) + ", scratch" + " # base address \n"
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # load immediate value into integer register\n"
+    lines = lines +  "sw x" + str(rs1) + ", " +  "0(x" + str(rs2) + ") # store value to memory\n"
+    lines = lines + "flw f" + str(rs1) + ", " +  "0(x" + str(rs2) + ") # load value into f register\n"
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
     lines = lines + "la x2, scratch\n"
-    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
-    lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + "li x4, " + formatstr.format(rs2val) + " # prep fs2\n"
+    lines = lines + "sw x4, 0(x2) # store fs2 value in memory\n"
+    lines = lines + "flw f" + str(rs2) + ", 0(x2) # load fs2 value from memory\n"
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
   else:
     print("Error: %s type not implemented yet" % test)
@@ -1001,12 +1002,7 @@ if __name__ == '__main__':
       else:
         storecmd = "sd"
         wordsize = 8
-      if (extension in ["D", "ZfaD", "ZfhD"]):
-        flen = 64
-      else:
-        flen = 32
-      formatstrlenFP = str(int(flen/4))
-      formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
+      
       corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
       if (xlen == 32):
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
