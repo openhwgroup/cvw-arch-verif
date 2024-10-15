@@ -297,9 +297,90 @@ endianaccess:
 
 postendian:
 
+/////////////////////////////////
+// cp_ecall
+/////////////////////////////////
 
+li t0, 3
+ecall       # switch from machine mode to machine mode
 
-// *** instructions
+/////////////////////////////////
+// cp_ebreak
+/////////////////////////////////
+
+ebreak       # take a trap, and the trap handler returns
+
+/////////////////////////////////
+// cp_mret
+/////////////////////////////////
+// Sweep executing mret in machine mode across cross-product of mpp, mprv, mpie, mie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # mpp = 00  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000008   # mpp = 00  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000080   # mpp = 00  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000088   # mpp = 00  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020000   # mpp = 00  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020008   # mpp = 00  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020080   # mpp = 00  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020088   # mpp = 00  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00000800   # mpp = 01  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000808   # mpp = 01  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000880   # mpp = 01  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000888   # mpp = 01  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020800   # mpp = 01  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020808   # mpp = 01  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020880   # mpp = 01  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020888   # mpp = 01  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00001800   # mpp = 11  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00001808   # mpp = 11  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00001880   # mpp = 11  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00001888   # mpp = 11  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00021800   # mpp = 11  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00021808   # mpp = 11  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00021880   # mpp = 11  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00021888   # mpp = 11  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    j postmrettest
+
+mrettest:
+    la t1, mrettest_mepc    
+    csrrw t6, mepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    mret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+
+mrettest_mepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+postmrettest:
 
 /////////////////////////////////
 // walking 1s and 0s for each register, also 11 in 2-bit fields
