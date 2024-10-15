@@ -54,13 +54,12 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth"] # ***removed "mcause", "mseccfg" until Issue 1007 resolved "minstret", 
-sregs = ["sstatus", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120", "stimecmp", "stimecmph"] # ***removed "scause" until Issue 1007 resolved
+# *** "minstret" commented out of mregs for now per issue #210
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth"] # ***removed "mseccfg" until Issue 1007 resolved 
+sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120", "stimecmp", "stimecmph"]
 uregs = ["fflags", "frm", "fcsr"]
 
 seedReg = 0x015
-scauseReg = 0x142
-mcauseReg = 0x342
 mseccfgReg = 0x747
 
 WALLY = os.environ.get('WALLY')
@@ -68,8 +67,11 @@ pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/Zicsr-CSR-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 
+# test pmp separately (EA0-3EF)
+# 323-33F are mhpmevent; should be tied to 0 (i >= 0x323 and i <= 0x33F) or 
+# 7a0-7a5 are debug registers 
 for i in range(4096):
-    while (i == seedReg or i == scauseReg or i == mcauseReg or i == mseccfgReg or (i >= 0x323 and i <= 0x33F) or (i >= 0x3A0 and i <= 0x3EF) or (i >= 0x7a0 and i <= 0x7a5) or (i >= 0x7b0 and i <= 0x7b3)): # *** skip tests causing mismatches for now *** FIX ME *** Issue 1007
+    while (i == mseccfgReg or (i >= 0x3A0 and i <= 0x3EF) or (i >= 0x7a0 and i <= 0x7a5)): # *** skip msseccfg tests causing mismatches for now *** FIX ME *** Issue 1007
         i = i + 1
     reg1 = randint(1, 31)
     reg2 = randint(1, 31)

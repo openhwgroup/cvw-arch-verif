@@ -23,8 +23,6 @@ main:
     la t0, trap_handler_fastuncompressedillegalinstr
     csrw mtvec, t0
 
-    j tmp  // *** jump over mcause_write, which fails on Issue #1007
-
 /////////////////////////////////
 // cp_mcause_write
 /////////////////////////////////
@@ -55,8 +53,9 @@ cp_mcause_walking1s_noint:
    // with interrupt = 0: write mcause with walking 1s in bits 6-(XLEN-2)"
 cp_mcause_walking1s_int: 
     slli t0, t0, 1      # walk 1s
+    or t0, t0, a0       # set 1 in msb for interrupts
     csrrw t6, mcause, t0     # write CSR
-    bnez t0, cp_mcause_walking1s_noint  # until all 1s are gone
+    bne t0, a0, cp_mcause_walking1s_int  # until all 1s are gone and only interrupt bit remains
     csrrw t6, mcause, s0      # restore CSR
 
 /////////////////////////////////
