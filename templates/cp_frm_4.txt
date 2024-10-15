@@ -1,3 +1,3 @@
-    cp_frm : coverpoint get_frm(ins.ops[3].val)  iff (ins.trap == 0 )  {
+    cp_frm_4 : coverpoint get_frm(ins.ops[4].val)  iff (ins.trap == 0 )  {
         option.comment = "Floating-point rounding mode in instruction";
     }

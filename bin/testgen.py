@@ -95,6 +95,19 @@ def loadFloatReg(reg, val, xlen, flen):
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   return lines
 
+def genFrmTests(testInstr):
+  lines = ""
+  frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
+  csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
+  for roundingMode in frm:
+    lines = lines + f"{testInstr}, {roundingMode} # perform operation\n"
+  for csrMode in csrFrm:
+    lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
+    lines = lines + f"fsrmi {csrMode}\n"
+    lines = lines + f"{testInstr} # perform operation\n"
+  
+  return lines
+
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
   lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
@@ -113,14 +126,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
     else:
-      frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
-      csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
-      for roundingMode in frm:
-        lines = lines + f"{test} f{rd}, f{rs1}, f{rs2}, {roundingMode}" + " # perform operation\n"
-      for csrMode in csrFrm:
-        lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
-        lines = lines + f"fsrmi {csrMode}\n"
-        lines = lines + f"{test} f{rd}, f{rs1}, f{rs2}" + " # perform operation\n"
+      testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
+      lines = lines + genFrmTests(testInstr)
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
@@ -338,6 +345,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
+  elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
+    lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
+    testInstr = f"{test} f{rd}, x{rs1}"
+
+    lines = lines + genFrmTests(testInstr)
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -974,6 +986,7 @@ if __name__ == '__main__':
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
   fitype = ["fsqrt.s", "fsqrt.h"]
   fixtype = ["fclass.s", "fclass.h"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
@@ -991,7 +1004,7 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
 
-  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype
   # instructions with all float args
   regconfig_ffff = frtype + fr4type + fitype
   # instructions with int first arg and the rest float args
