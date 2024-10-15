@@ -88,3 +88,5 @@ clean:
 	rm -rf ${BASEDIR}/fcov/rv64/*
 	rm -rf ${BASEDIR}/tests/rv*
 	#rm -f ${SRCDIR}/*.elf ${SRCDIR}/*.objdump ${SRCDIR}/*.addr *${SRCDIR}/.lab ${SRCDIR}/*.memfile
+
+
