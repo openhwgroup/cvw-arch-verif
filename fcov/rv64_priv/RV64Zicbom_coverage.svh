@@ -18,10 +18,11 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64ZICBOM
-`define COVER_PRIV
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64zicbom_t;
 
 covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
+    option.per_instance = 1; 
+    option.comment = "cbo_inval";
     priv_mode: coverpoint ins.current.mode iff (ins.current.valid){
         bins not_M_mode = {!2'b11};
         bins U_mode = {2'b00};
@@ -75,6 +76,8 @@ covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
 endgroup
 
 covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
+    option.per_instance = 1; 
+    option.comment = "cbo_clean";
     priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
         bins U_mode = {2'b00};
@@ -112,6 +115,8 @@ covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
 endgroup
 
 covergroup cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
+    option.per_instance = 1; 
+    option.comment = "cbo_flush";
     priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
         bins U_mode = {2'b00};
@@ -151,14 +156,10 @@ endgroup
 function void rv64zicbom_sample(int hart, int issue);
     ins_rv64zicbom_t ins;
 
-    case (traceDataQ[hart][issue][0].inst_name)
-        "priv_test"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_csr(0);
-            
-            cbo_inval_cg.sample(ins);
-            cbo_clean_cg.sample(ins);
-            cbo_flush_cg.sample(ins);
-        end
-    endcase
+    ins = new(hart, issue, traceDataQ); 
+    ins.add_csr(0);
+    
+    cbo_inval_cg.sample(ins);
+    cbo_clean_cg.sample(ins);
+    cbo_flush_cg.sample(ins);
 endfunction
