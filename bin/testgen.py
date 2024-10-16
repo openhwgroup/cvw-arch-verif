@@ -341,9 +341,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + loadFloatReg(rs3, rs3val, xlen, flen)
-    lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
+    if not frm:
+      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
+    else:
+      testInstr = f"{test} f{rd}, f{rs1}, f{rs2}, f{rs3}"
+      lines = lines + genFrmTests(testInstr)
   elif (test in fltype):#["flw", "flh"]
-    while (rs1 == 0):
+    while (rs1 == 0 or rs1 == rs2):
       rs1 = randint(1, 31)
     while (rs1 == rs2):
       rs2 = randint(1, 31)
@@ -767,6 +771,14 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
+def make_cr_fs1_fs3_corners(test, xlen, frm = False):
+  for v1 in fcorners:
+    for v2 in fcorners:
+      # select distinct fs1 and fs3
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+      desc = "cr_fs1_fs3_corners (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
+      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v2, frm=frm)
+
 def make_fs1_corners(test, xlen, fcorners):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
@@ -977,6 +989,12 @@ def write_tests(coverpoints, test, xlen):
       make_cr_fs1_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners_frm"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
+    elif (coverpoint == "cr_fs1_fs2_corners_frm4"):
+      make_cr_fs1_fs2_corners(test, xlen, frm = True)
+    elif (coverpoint == "cr_fs1_fs3_corners_frm"):
+      make_cr_fs1_fs3_corners(test, xlen, frm = True)
+    elif (coverpoint == "cr_fs1_fs3_corners_frm4"):
+      make_cr_fs1_fs3_corners(test, xlen, frm = True)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
