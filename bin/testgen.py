@@ -977,15 +977,17 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
-  fltype = ["flw", "flh"]
-  fstype = ["fsw", "fsh"]
+  fltype = ["flw", "flh", "fld"]
+  fstype = ["fsw", "fsh", "fsd"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
-             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
+             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h",
+             "fmadd.d", "fmsub.d", "fnmadd.d", "fnmsub.d"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
-            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
-  fitype = ["fsqrt.s", "fsqrt.h"]
-  fixtype = ["fclass.s", "fclass.h"]
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h",
+            "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d"]
+  fitype = ["fsqrt.s", "fsqrt.h", "fsqrt.d"]
+  fixtype = ["fclass.s", "fclass.h", "fclass.d"]
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw"]
@@ -1023,7 +1025,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb"]
+    extensions = ["I", "M", "F", "D", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb"]
     if (xlen == 64):
         extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     for extension in extensions:
