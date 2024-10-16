@@ -51,7 +51,7 @@ def unsignedImm5(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.swsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.swsp","c.sdsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
