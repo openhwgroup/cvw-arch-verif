@@ -7,7 +7,7 @@ all:
 
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-add.elf --fcov --fcovpriv
+	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-add.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/Zicond/WALLY-COV-czero.eqz.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/M/WALLY-COV-div.elf --fcov
 
