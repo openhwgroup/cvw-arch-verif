@@ -43,7 +43,7 @@ def unsignedImm20(imm):
 def unsignedImm6(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -138,9 +138,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if (immval == 0):
         immval = 16
       lines = lines + test + " sp, " + str(immval) + " # perform operation\n"
-    elif (test == "c.lwsp"):
-      storeop = "c.swsp"
-      mul = 4
+    elif test in ["c.lwsp","c.ldsp"]:
+      if (test == "c.lwsp"):
+        storeop = "c.swsp"
+        mul = 4
+      else:
+        storeop = "c.sdsp"
+        mul = 8
       while (rd == 0):
         rd = randint(1,31)     
       while (rs2 == 2):
@@ -658,8 +662,7 @@ def make_offset(test, xlen):
       lines = lines + "li t1,1\n"
       lines = lines + "label2:\n"
       lines = lines + "         nop\n"
-      lines = lines + "beq  t1, t2, label3\n" 
-      lines = lines + "beq  t1, t2, label2\n"    
+      lines = lines + "beq  t1, t2, label3\n"    
       lines = lines + test + " label1\n"
       lines = lines + "label1:\n"
       lines = lines + "         nop\n"
@@ -1020,10 +1023,11 @@ if __name__ == '__main__':
   fixtype = ["fclass.s", "fclass.h"]
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp"]
+  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]
+  csstype = ["c.sdsp","c.swsp"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
