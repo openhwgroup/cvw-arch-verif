@@ -43,7 +43,7 @@ def unsignedImm20(imm):
 def unsignedImm6(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
-  if test not in cstype and test not in cltype:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -138,6 +138,18 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if (immval == 0):
         immval = 16
       lines = lines + test + " sp, " + str(immval) + " # perform operation\n"
+    elif (test == "c.lwsp"):
+      storeop = "c.swsp"
+      mul = 4
+      while (rd == 0):
+        rd = randint(1,31)     
+      while (rs2 == 2):
+        rs2 = randint(1,31)
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+      lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
+      lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(unsignedImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm6(immval))*mul) + "(" + "sp" + ")   # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n"
     else:
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
@@ -705,7 +717,10 @@ def make_imm_mul(test, xlen):
   if test in ciwtype:
     rng = range(1,256)
   elif test in citype:
-    rng = range(-32,32)
+    if (test == "c.lwsp"):
+      rng = range(32)
+    else:
+      rng = range(-32,32)
   else:
     rng = range(32) 
   for imm in rng:
@@ -1005,7 +1020,7 @@ if __name__ == '__main__':
   fixtype = ["fclass.s", "fclass.h"]
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
-  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw"]
+  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]
