@@ -364,7 +364,7 @@ ebreak       # take a trap, and the trap handler returns
     jal mrettest
     li a0, 0x00021888   # mpp = 11  mprv = 1  mpie = 1 mie = 1
     jal mrettest
-    j postmrettest
+    j sretsetup
 
 mrettest:
     la t1, mrettest_mepc    
@@ -379,7 +379,96 @@ mrettest_mepc:
     csrrw t6, mstatus, s0   # restore mstatus
     ret
 
-postmrettest:
+sretsetup:
+
+/////////////////////////////////
+// cp_sret
+/////////////////////////////////
+// Sweep executing sret in machine mode across cross-product of spp, mprv, tsr, spie, sie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000002   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000020   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000022   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00000100   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000102   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000120   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000122   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020000   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020002   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020020   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020022   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020100   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020102   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020120   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020122   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400000   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400002   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400020   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400022   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400100   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400102   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400120   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400122   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420000   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420002   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420020   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420022   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420100   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420102   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420120   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420122   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    j postsrettest
+
+srettest:
+    la t1, srettest_sepc    
+    csrrw t6, sepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    sret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+    nop                     # should be skipped
+
+srettest_sepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+postsrettest:
 
 /////////////////////////////////
 // walking 1s and 0s for each register, also 11 in 2-bit fields
