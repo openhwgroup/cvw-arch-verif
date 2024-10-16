@@ -430,6 +430,8 @@ def make_rs1(test, xlen, rng = range(32)):
 def make_rs2(test, xlen, rng = range(32)):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    while(rs1 == r):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
