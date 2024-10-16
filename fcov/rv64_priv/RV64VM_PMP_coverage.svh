@@ -19,10 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_RV64VM_PMP
-`define COVER_PRIV
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_pmp_t;
 
 covergroup PMP_cg with function sample(ins_rv64vm_pmp_t ins);
+    option.per_instance = 1; 
+    option.comment = "PMP";
     //pte permission for leaf PTEs
     PTE_i: coverpoint ins.current.PTE_i[7:0] iff (ins.current.valid) {
         wildcard bins leaflvl_u = {8'b???11111};
@@ -175,14 +176,10 @@ endgroup
 function void rv64vm_pmp_sample(int hart, int issue);
     ins_rv64vm_pmp_t ins;
 
-    case (traceDataQ[hart][issue][0].inst_name)
-        "priv_test"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_csr(0);
-            ins.add_vm_signals(1);
-            
-            PMP_cg.sample(ins);
-        end
-    endcase
+    ins = new(hart, issue, traceDataQ); 
+    ins.add_csr(0);
+    ins.add_vm_signals(1);
+    
+    PMP_cg.sample(ins);
 endfunction
 
