@@ -2,6 +2,7 @@ all:
 	${WALLY}/addins/cvw-arch-verif/bin/covergroupgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/testgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/combinetests.py
+	${WALLY}/addins/cvw-arch-verif/bin/csrtests.py
 	make -j 8 build
 
 sim:
@@ -38,9 +39,10 @@ SRCEXT 		:= \([$(CEXT)$(AEXT)$(SEXT)]\|$(CPPEXT)\)
 BASEDIR = ${WALLY}/addins/cvw-arch-verif
 SRCDIR64 = ${BASEDIR}/tests/rv64
 SRCDIR32 = ${BASEDIR}/tests/rv32
-WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} -type d | sort)
+SRCDIRPRIV = ${BASEDIR}/tests/priv
+WALLYEXTS = 	$(shell find ${SRCDIR64} ${SRCDIR32} $(SRCDIRPRIV) -type d | sort)
 SRCEXT = S
-SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
+SOURCES		?= $(shell find $(SRCDIR32) $(SRCDIR64) $(SRCDIRPRIV) -type f -regex ".**\.$(SRCEXT)" | sort)
 OBJEXT = elf
 OBJECTS		:= $(SOURCES:.$(SEXT)=.$(OBJEXT))
 
@@ -50,22 +52,35 @@ build: $(OBJECTS)
 %.elf.objdump: %.elf
 
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
-CMPR_FLAG = $(if $(findstring /Zc, $(dir $<)),c,)
+ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
+ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
+ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)
+ZCF_FLAG = $(if $(findstring /Zcf, $(dir $<)),_zcf,)
+
+CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 
 # Change many things if bit width isn't 64
 $(SRCDIR64)/%.elf: $(SRCDIR64)/%.$(SEXT) 
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gq$(CMPR_FLAG)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gq$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
 	    -nostartfiles -T${WALLY}/examples/link/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
 
 $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT) 
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv32gq$(CMPR_FLAG)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=ilp32 -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv32gq$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=ilp32 -mcmodel=medany \
 	    -nostartfiles -T${WALLY}/examples/link/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 32 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
+
+$(SRCDIRPRIV)/%.elf: $(SRCDIRPRIV)/%.$(SEXT) tests/priv/Zicsr-CSR-Tests.h
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv64gq_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
+	    -nostartfiles -I${WALLY}/tests/coverage -T${WALLY}/examples/link/link.ld $<
+	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
+	extractFunctionRadix.sh $@.objdump
+
 
     
 clean:
@@ -73,6 +88,5 @@ clean:
 	rm -rf ${BASEDIR}/fcov/rv64/*
 	rm -rf ${BASEDIR}/tests/rv*
 	#rm -f ${SRCDIR}/*.elf ${SRCDIR}/*.objdump ${SRCDIR}/*.addr *${SRCDIR}/.lab ${SRCDIR}/*.memfile
-
 
 
