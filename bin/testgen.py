@@ -165,15 +165,17 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
-      else:
+      elif test == "c.lui":
         lines = lines + test + " x" + str(rd) + ", " + unsignedImm5(immval) + " # perform operation\n"
+      else:
+        lines = lines + test + " x" + str(rd) + ", " + ZextImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
     if (test == "c.srli" or test == "c.srai"):
         rd = legalizecompr(rd)
-    if shiftImm(immval, xlen) == "0":    # imm = 0 isn't allowed
+    if shiftImm(int(ZextImm6(immval)),xlen) == "0":    # imm = 0 isn't allowed
       imm = "1"
     else:
-      imm = shiftImm(immval, xlen)
+      imm = shiftImm(int(ZextImm6(immval)),xlen)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
