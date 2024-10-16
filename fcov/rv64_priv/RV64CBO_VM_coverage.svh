@@ -18,10 +18,11 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64CBO_VM
-`define COVER_PRIV
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_vm_t;
 
 covergroup exceptions_vm_cg with function sample(ins_rv64cbo_vm_t ins);
+    option.per_instance = 1; 
+    option.comment = "exceptions_vm";
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.PTE_d[7:0] iff (ins.current.valid) { //pte.1
         wildcard bins leaflvl_u_w = {8'b???10110};
