@@ -348,8 +348,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
-
-    lines = lines + genFrmTests(testInstr)
+    if not frm:
+      lines = lines + testInstr
+    else:
+      lines = lines + genFrmTests(testInstr)
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -365,7 +367,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="x
   if (test in fr4type): 
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-  elif (test in fitype + fixtype):
+  elif (test in fitype + fixtype + X2Ftype + F2Xtype):
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
   else:
@@ -570,6 +572,8 @@ def make_cp_gpr_hazard(test, xlen):
         regconfig = 'ffff'
       if (test in regconfig_xfff):
         regconfig = 'xfff'
+      if (test in regconfig_fxxx):
+        regconfig = 'fxxx'
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b)
 
 def make_rs1_sign(test, xlen):
@@ -980,14 +984,14 @@ if __name__ == '__main__':
   utype = ["lui", "auipc"]
   fltype = ["flw", "flh"]
   fstype = ["fsw", "fsh"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h"]
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h", "fcvt.l.s", "fcvt.lu.s"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
   fitype = ["fsqrt.s", "fsqrt.h"]
   fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.w.x"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
@@ -1010,6 +1014,8 @@ if __name__ == '__main__':
   regconfig_ffff = frtype + fr4type + fitype
   # instructions with int first arg and the rest float args
   regconfig_xfff = F2Xtype + fcomptype + fixtype
+  # instructions with fp first arg and the rest int args
+  regconfig_fxxx = X2Ftype
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
