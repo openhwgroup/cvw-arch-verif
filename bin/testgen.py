@@ -482,19 +482,20 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       while (legalizecompr(rd) == legalizecompr(rs2)):
-        rs2 = randint(0,31)      
-      if (test == "c.sub" or "c.subw"):
-        writeCovVector(desc, rs1, rs2, rd, v>>1, (-v)>>1, 0, rdval, test, xlen)
-      elif (test == "c.or"):  
-        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
-      elif (test == "c.addw"):
-        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
-      elif (test == "c.and"):
-        writeCovVector(desc, rs1, rs2, rd, -1, v, 0, rdval, test, xlen)
-      elif (test == "c.xor"):
-        writeCovVector(desc, rs1, rs2, rd, 0, v, 0, rdval, test, xlen)
-      elif (test == "c.mul"):
-        writeCovVector(desc, rs1, rs2, rd, 1, v, 0, rdval, test, xlen)        
+        rs2 = randint(0,31)   
+      if test in ["c.or","c.addw","c.xor"]:
+        rd_temp = 0
+        rs2_temp = v
+      elif test in ["c.and"]:
+        rd_temp = -1
+        rs2_temp = v
+      elif test in ["c.mul"]:
+        rd_temp = 1
+        rs2_temp = v
+      elif test in ["c.sub","c.subw"]:
+        rd_temp =  v>>1
+        rs2_temp = (-v)>>1
+      writeCovVector(desc, rs1, rs2, rd, rd_temp, rs2_temp, 0, rdval, test, xlen)          
   elif test in crtype:
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
