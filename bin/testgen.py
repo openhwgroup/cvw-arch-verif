@@ -603,7 +603,10 @@ def make_imm_zero(test, xlen):
 def make_j_imm_ones_zeros(test, xlen):
   for align in range(2,12):
     lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
-    lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
+    if (test == "jal"):
+      lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
+    elif (test == "c.j"):
+      lines = lines + "c.j  1f # jump to aligned address to stress immediate\n"
     lines = lines + ".align " + str(align) + "\n"
     lines = lines + "1:\n"
     f.write(lines)
@@ -637,6 +640,20 @@ def make_offset(test, xlen):
     rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
     lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
     lines = lines + test + " x8,  1b # backward branch\n"
+  elif (test in cjtype):
+    if (test == "c.j"):
+      lines = lines + "li t2,0\n"
+      lines = lines + "li t1,1\n"
+      lines = lines + "label2:\n"
+      lines = lines + "         nop\n"
+      lines = lines + "beq  t1, t2, label3\n" 
+      lines = lines + "beq  t1, t2, label2\n"    
+      lines = lines + test + " label1\n"
+      lines = lines + "label1:\n"
+      lines = lines + "         nop\n"
+      lines = lines + "li t1,0\n"
+      lines = lines + test + " label2\n"
+      lines = lines + "label3:\n"
   lines = lines + "3: nop # done with sequence\n"
   f.write(lines)
 
@@ -994,6 +1011,7 @@ if __name__ == '__main__':
   cstype = ["c.sw","c.sd"]
   crtype = ["c.add", "c.mv"]
   ciwtype = ["c.addi4spn"]
+  cjtype = ["c.j","c.jal"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw","c.mul"]
   cbptype = ["c.andi"]
   cbtype = ["c.beqz", "c.bnez"]
