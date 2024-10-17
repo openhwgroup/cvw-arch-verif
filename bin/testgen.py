@@ -1086,7 +1086,7 @@ if __name__ == '__main__':
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
   fitype = ["fsqrt.s", "fsqrt.h"]
   fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.w.x", "fcvt.s.l", "fcvt.s.lu"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
