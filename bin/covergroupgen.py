@@ -89,7 +89,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi","c.lwsp":"lw","c.ldsp":"ld"}
     # special cases for fmv instructions being interpreted with depreciated names
     # we need to look for the old name for asm_count
-    fmv_instr_alias = {"fmv.x.w":"fmv.x.s"}
+    fmv_instr_alias = {"fmv.x.w":"fmv.x.s", "fmv.w.x":"fmv.s.x"}
     if (name == "cp_asm_count" and instr.startswith("c.")):
         if (instr in c_instr_alias):
             template = template.replace("INSTR", c_instr_alias[instr])
@@ -139,7 +139,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
     if name.startswith('sample_') and instr == 'fmv.x.w':
         template += template.replace(instr, 'fmv.x.s',1)
-                
+    if name.startswith('sample_') and instr == 'fmv.w.x':
+        template += template.replace(instr, 'fmv.s.x',1)                
     return template
 
      
