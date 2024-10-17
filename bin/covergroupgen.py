@@ -136,6 +136,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         template += template.replace(instr, 'neg',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
     if name.startswith('sample_') and instr == 'sltu':
         template += template.replace(instr, 'snez',1).replace("add_rs1","add_rs1_0",1).replace("add_rs2(2)", "add_rs2(1)")
+    if name.startswith('sample_') and instr == 'sltiu': 
+        template += template.replace(instr, 'seqz', 1).replace("add_imm","add_imm_one",1)    
     # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
     if name.startswith('sample_') and instr == 'fmv.x.w':
         template += template.replace(instr, 'fmv.x.s',1)
