@@ -151,7 +151,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
     else:
-      frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
+      testInstr = f"{test} f{rd}, f{rs1}"
+      lines = lines + genFrmTests(testInstr)
+
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
