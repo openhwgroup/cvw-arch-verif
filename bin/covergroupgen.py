@@ -86,7 +86,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("INSTRNODOT", instr_nodot)
     # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
     # This makes sure that cp_asm_count gets hit
-    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi","c.lwsp":"lw","c.ldsp":"ld"}
+    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi","c.lwsp":"lw","c.ldsp":"ld","c.swsp":"sw","c.sdsp":"sd"}
     # special cases for fmv instructions being interpreted with depreciated names
     # we need to look for the old name for asm_count
     fmv_instr_alias = {"fmv.x.w":"fmv.x.s", "fmv.w.x":"fmv.s.x"}
