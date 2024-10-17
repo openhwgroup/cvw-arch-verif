@@ -369,7 +369,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rs2 = randint(1, 31)
     lines = lines + "la x2, scratch" + " # base address \n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
-    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
+    if not frm:
+      lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
+    else:
+      testInstr = f"{test} x{rd}, f{rs1}"
+      lines = lines + genFrmTests(testInstr)
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -761,6 +765,11 @@ def make_fd_fs2(test, xlen):
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_frm(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+  desc = "cp_frm"
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
+
 def make_cr_fs1_fs2_corners(test, xlen, frm = False):
   for v1 in fcorners:
     for v2 in fcorners:
@@ -995,6 +1004,9 @@ def write_tests(coverpoints, test, xlen):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
     elif (coverpoint == "cr_fs1_fs3_corners_frm4"):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
+    elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
+      make_frm(test, xlen)
+      
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -1054,7 +1066,7 @@ if __name__ == '__main__':
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
   fitype = ["fsqrt.s", "fsqrt.h"]
   fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.w.x"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.w.x", "fcvt.s.l", "fcvt.s.lu"]
   fcomptype = ["feq.s", "flt.s", "fle.s"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
