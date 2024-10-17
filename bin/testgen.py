@@ -136,6 +136,22 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
       lines = lines + genFrmTests(testInstr)
+  elif (test in fixtype):
+    lines = lines + "la x2, scratch\n"
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
+  elif (test in fitype):
+    lines = lines + "la x2, scratch\n"
+    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
+    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
+    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
+    if not frm:
+      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
+    else:
+      frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
@@ -753,11 +769,11 @@ def make_imm_mul(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
 
-def make_fd_fs1(test, xlen):
+def make_fd_fs1(test, xlen, frm=False):
   for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
-    writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+    writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_fd_fs2(test, xlen):
   for r in range(32):
