@@ -405,16 +405,18 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="x
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
   f.write(lines)
 
-def randomize(rs3=None):
-    rs1 = randint(1, 31)
-    rs2 = randint(1, 31)
+def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
+    if rs1 is None: 
+      rs1 = randint(1, 31)
+    if rs2 is None: 
+      rs2 = randint(1, 31)
     if (rs3 is not None):
       rs3 = randint(1, 31)
       rs3val = randint(0, 2**xlen-1)
     # all three source registers must be different for corners to work
-    while (rs1 == rs2):
+    while (rs1 == rs2 and allunique):
       rs2 = randint(1,31)
-    while ((rs3 is not None) and ((rs3 == rs1) or (rs3 == rs2))):
+    while ((rs3 is not None) and ((rs3 == rs1) or (rs3 == rs2)) and allunique):
       rs3 = randint(1,31)
     # choose rd that is different than rs1 and rs2 and rs3
     rd = rs1
@@ -453,15 +455,13 @@ def make_fs2(test, xlen):
 
 def make_rs1(test, xlen, rng = range(32)):
   for r in rng:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs1=r, allunique=True)
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs2(test, xlen, rng = range(32)):
   for r in rng:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    while(rs1 == r):
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs2=r, allunique=True)
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
