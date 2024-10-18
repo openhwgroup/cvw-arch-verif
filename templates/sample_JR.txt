@@ -1,7 +1,9 @@
         "INSTR"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_rd(0);
-            ins.add_rs1(2);
-            ins.add_imm_addr(1);
-            INSTRNODOT_cg.sample(ins); 
+            if (traceDataQ[hart][issue][0].insn[1:0] == 3) begin  // This only allows jalr, c.jalr raises an error if interpreted as 32-bit instr
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(2);
+                ins.add_imm_addr(1);
+                INSTRNODOT_cg.sample(ins); 
+            end
         end
