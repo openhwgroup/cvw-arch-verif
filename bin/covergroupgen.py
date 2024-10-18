@@ -114,7 +114,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     if name.startswith('sample_') and instr == 'jal': 
         template += template.replace(instr, 'j', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1)
     if name.startswith('sample_') and instr == 'jalr': 
-        template += template.replace(instr, 'jr', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1).replace("ins.add_rs1(2)", "ins.add_rs1(1)",1)
+        template += template.replace(instr, 'jr', 1).replace("add_rd", "add_rd_0", 1).replace("ins.add_imm_addr(1)","ins.add_imm_addr(0)",1).replace("ins.add_rs1(2)", "ins.add_rs1(1)",1) # works on generated tests, but fails on wally-riscv-arch-test MMU test that has a jr t2 (with no immediate)
     if name.startswith('sample_') and instr == 'slt':
         template += template.replace(instr, 'sltz',1).replace("add_rs2","add_rs2_0",1)
     # pseudoinstruction branches with rs2 tied to x0 must use the special add_rs2_0 function.  also immediate field is in different position
@@ -191,7 +191,7 @@ def writeCovergroups(testPlans, covergroupTemplates):
     keys = list(testPlans.keys())
     keys.sort()
     #List of priv cover groups
-    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM"]
+    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", "ZicsrZicntrM", "ZicsrF", "ZicsrZicntrS", "ZicsrZicntrU"]
     file = "coverage/RISCV_coverage_base_init.svh"
     with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:

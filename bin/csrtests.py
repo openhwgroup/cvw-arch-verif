@@ -67,11 +67,11 @@ pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/Zicsr-CSR-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 
-# test pmp separately (EA0-3EF)
+# test pmp separately (3A0-3EF)
 # 323-33F are mhpmevent; should be tied to 0 (i >= 0x323 and i <= 0x33F) or 
 # 7a0-7a5 are debug registers 
 for i in range(4096):
-    while (i == mseccfgReg or (i >= 0x3A0 and i <= 0x3EF) or (i >= 0x7a0 and i <= 0x7a5)): # *** skip msseccfg tests causing mismatches for now *** FIX ME *** Issue 1007
+    while (i == mseccfgReg or (i >= 0x7a0 and i <= 0x7a5)): # *** skip msseccfg tests causing mismatches for now *** FIX ME *** Issue 1007
         i = i + 1
     reg1 = randint(1, 31)
     reg2 = randint(1, 31)
@@ -83,15 +83,16 @@ for i in range(4096):
     reg1 = str(reg1)
     reg2 = str(reg2)
     reg3 = str(reg3)
-    i = hex(i)
-    print("\n// Testing CSR "+i)
-    print("\tcsrr x"+str(reg1)+", "+ i + "\t// Read CSR")   
-    print("\tli x"+reg2+", -1")
-    print("\tcsrrw x"+reg3+", "+i+", x"+reg2+"\t// Write all 1s to CSR") 
-    print("\tcsrrw x"+reg3+", "+i+", x0\t// Write all 0s to CSR")
-    print("\tcsrrs x"+reg3+", "+i+", x"+reg2+"\t// Set all CSR bits")
-    print("\tcsrrc x"+reg3+", "+i+", x"+reg2+"\t// Clear all CSR bits")
-    print("\tcsrrw x"+reg3+", "+i+", x"+reg1+"\t// Restore CSR")   
+    ih = hex(i)
+    print("\n// Testing CSR "+ih)
+    print("\tcsrr x"+str(reg1)+", "+ ih + "\t// Read CSR")   
+    if (i < 0x3A0 or i > 0x3EF): # skip writing PMP registers, which are touchy and tested separately
+        print("\tli x"+reg2+", -1")
+        print("\tcsrrw x"+reg3+", "+ih+", x"+reg2+"\t// Write all 1s to CSR") 
+        print("\tcsrrw x"+reg3+", "+ih+", x0\t// Write all 0s to CSR")
+        print("\tcsrrs x"+reg3+", "+ih+", x"+reg2+"\t// Set all CSR bits")
+        print("\tcsrrc x"+reg3+", "+ih+", x"+reg2+"\t// Clear all CSR bits")
+        print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")   
 outfile.close
 
 pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ZicsrM-Walk.h"

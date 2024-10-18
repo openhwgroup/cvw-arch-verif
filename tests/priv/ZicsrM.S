@@ -259,6 +259,8 @@ formbits:
     li t0, 0x05060708
     sw t0, 4(t2)
 
+// *** repeat with endianness reversed on the store
+
 /////////////////////////////////
 // cp_mstatush_mbe_endianness
 // cp_mstatus_mbe_endianness
@@ -499,6 +501,8 @@ postsrettest:
 /////////////////////////////////
 
 #include "Zicsr-CSR-Tests.h"
+
+// *** hit all csrs in supervisor and user mode, not excluding any
 
 finished:
     j done
