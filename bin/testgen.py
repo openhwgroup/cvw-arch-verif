@@ -310,14 +310,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
-    elif (test in csstype):
-      if (test == "c.swsp"):
-        mul = 4
-      elif (test == "c.sdsp"):
-        mul = 8
-      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
+  elif (test in csstype):
+    if (test == "c.swsp"):
+      mul = 4
+    elif (test == "c.sdsp"):
+      mul = 8
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
+    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
   elif (test in csbtype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
@@ -532,10 +532,13 @@ def make_rs1_corners(test, xlen):
       writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
-  for v in corners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+    for v in corners:
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      if test in ["c.swsp", "c.sdsp"]:
+        while (rs2 == 2):
+          rs2 = randint(0,31)
+      desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen, corners):
   if test in c_shiftitype:
@@ -771,8 +774,8 @@ def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
   if test in ciwtype:
     rng = range(1,256)
-  elif test in citype:
-    if (test == "c.lwsp"):
+  elif test in citype or test in csstype:
+    if test in ["c.lwsp", "c.ldsp", "c.swsp", "c.sdsp"]:
       rng = range(64)
     else:
       rng = range(-32,32)
