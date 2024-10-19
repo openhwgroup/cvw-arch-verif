@@ -220,6 +220,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "nop\nnop\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
+    lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = lines + test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n"
    # lines = lines + test + " x" + str(rd) + ", sp, 32 # perform operation\n"
   elif (test in shiftitype):
@@ -280,8 +281,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cstype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
-    while (rs1 == rs2):
-      rs2 = randint(8,15)
     if (test == "c.sw"):
       mul = 4
     else:
@@ -462,7 +461,7 @@ def make_rd(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
-    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
+    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rs1val, test, xlen)
 
 def make_fd(test, xlen):
   for r in range(32):
@@ -516,8 +515,8 @@ def make_rd_rs1_rs2(test, xlen):
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_rs2(test, xlen):
-  for r in range(32):
+def make_rs1_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
@@ -537,6 +536,9 @@ def make_rs2_corners(test, xlen):
       if test in ["c.swsp", "c.sdsp"]:
         while (rs2 == 2):
           rs2 = randint(0,31)
+      elif test in ["c.sw", "c.sd"]:
+        while (legalizecompr(rs1) == legalizecompr(rs2)):
+          rs2 = randint(8,15)
       desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
@@ -906,7 +908,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
     elif (coverpoint == "cmp_rs1_rs2"):
-      make_rs1_rs2(test, xlen)
+      make_rs1_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rs1_rs2_c"):
+      make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
