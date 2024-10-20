@@ -509,8 +509,8 @@ def make_rd_rs2(test, xlen, rng):
     desc = "cmp_rd_rs2 (Test rd = rs1 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rd_rs1_rs2(test, xlen):
-  for r in range(32):
+def make_rd_rs1_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
@@ -906,7 +906,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
-      make_rd_rs1_rs2(test, xlen)
+      make_rd_rs1_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rd_rs1_rs2_c"):
+      make_rd_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen, range(32))
     elif (coverpoint == "cmp_rs1_rs2_c"):
