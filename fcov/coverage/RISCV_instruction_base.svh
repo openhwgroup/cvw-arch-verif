@@ -395,6 +395,10 @@ class RISCV_instruction
         current.imm = get_imm(ops[offset].key);
     endfunction
 
+    virtual function void add_imm_one(int offset);
+        current.imm = 1;
+    endfunction
+
     virtual function void add_imm2(int offset);
         current.imm2 = get_imm(ops[offset].key);
     endfunction

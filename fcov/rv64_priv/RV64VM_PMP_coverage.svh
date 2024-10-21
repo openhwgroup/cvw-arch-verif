@@ -176,14 +176,10 @@ endgroup
 function void rv64vm_pmp_sample(int hart, int issue);
     ins_rv64vm_pmp_t ins;
 
-    case (traceDataQ[hart][issue][0].inst_name)
-        "priv_test"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_csr(0);
-            ins.add_vm_signals(1);
-            
-            PMP_cg.sample(ins);
-        end
-    endcase
+    ins = new(hart, issue, traceDataQ); 
+    ins.add_csr(0);
+    ins.add_vm_signals(1);
+    
+    PMP_cg.sample(ins);
 endfunction
 

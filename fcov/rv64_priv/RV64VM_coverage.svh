@@ -1103,21 +1103,17 @@ endgroup
 function void rv64vm_sample(int hart, int issue);
     ins_rv64vm_t ins;
 
-    case (traceDataQ[hart][issue][0].inst_name)
-        "priv_test"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_csr(0);
-            ins.add_vm_signals(1);
-            
-            PA_VA_cg.sample(ins);
-            satp_cg.sample(ins);
-            sfence_cg.sample(ins);
-            mstatus_cg.sample(ins);
-            vm_permissions_cg.sample(ins);
-            res_global_pte_cg.sample(ins);
-            add_feature_cg.sample(ins);
-        end
-    endcase
+    ins = new(hart, issue, traceDataQ); 
+    ins.add_csr(0);
+    ins.add_vm_signals(1);
+    
+    PA_VA_cg.sample(ins);
+    satp_cg.sample(ins);
+    sfence_cg.sample(ins);
+    mstatus_cg.sample(ins);
+    vm_permissions_cg.sample(ins);
+    res_global_pte_cg.sample(ins);
+    add_feature_cg.sample(ins);
 endfunction
 
    

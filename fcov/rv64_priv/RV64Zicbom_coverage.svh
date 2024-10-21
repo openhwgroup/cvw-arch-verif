@@ -156,14 +156,10 @@ endgroup
 function void rv64zicbom_sample(int hart, int issue);
     ins_rv64zicbom_t ins;
 
-    case (traceDataQ[hart][issue][0].inst_name)
-        "priv_test"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ins.add_csr(0);
-            
-            cbo_inval_cg.sample(ins);
-            cbo_clean_cg.sample(ins);
-            cbo_flush_cg.sample(ins);
-        end
-    endcase
+    ins = new(hart, issue, traceDataQ); 
+    ins.add_csr(0);
+    
+    cbo_inval_cg.sample(ins);
+    cbo_clean_cg.sample(ins);
+    cbo_flush_cg.sample(ins);
 endfunction
