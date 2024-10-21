@@ -357,7 +357,8 @@ class RISCV_instruction
     virtual function void add_rd_1();
         current.has_rd = 1;
         current.rd = "x1";
-        current.rd_val = prev.x_wdata[get_gpr_num("x1")];
+        current.rd_val = current.x_wdata[get_gpr_num("x1")];
+        current.rd_val_pre = prev.x_wdata[get_gpr_num("x1")];
     endfunction
 
     virtual function void add_rs1(int offset);
