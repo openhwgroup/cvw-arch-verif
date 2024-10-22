@@ -23,8 +23,6 @@ main:
     la t0, trap_handler_fastuncompressedillegalinstr
     csrw mtvec, t0
 
-    j tmp  // *** jump over mcause_write, which fails on Issue #1007
-
 /////////////////////////////////
 // cp_mcause_write
 /////////////////////////////////
@@ -55,8 +53,9 @@ cp_mcause_walking1s_noint:
    // with interrupt = 0: write mcause with walking 1s in bits 6-(XLEN-2)"
 cp_mcause_walking1s_int: 
     slli t0, t0, 1      # walk 1s
+    or t0, t0, a0       # set 1 in msb for interrupts
     csrrw t6, mcause, t0     # write CSR
-    bnez t0, cp_mcause_walking1s_noint  # until all 1s are gone
+    bne t0, a0, cp_mcause_walking1s_int  # until all 1s are gone and only interrupt bit remains
     csrrw t6, mcause, s0      # restore CSR
 
 /////////////////////////////////
@@ -260,6 +259,8 @@ formbits:
     li t0, 0x05060708
     sw t0, 4(t2)
 
+// *** repeat with endianness reversed on the store
+
 /////////////////////////////////
 // cp_mstatush_mbe_endianness
 // cp_mstatus_mbe_endianness
@@ -297,9 +298,179 @@ endianaccess:
 
 postendian:
 
+/////////////////////////////////
+// cp_ecall
+/////////////////////////////////
 
+li t0, 3
+ecall       # switch from machine mode to machine mode
 
-// *** instructions
+/////////////////////////////////
+// cp_ebreak
+/////////////////////////////////
+
+ebreak       # take a trap, and the trap handler returns
+
+/////////////////////////////////
+// cp_mret
+/////////////////////////////////
+// Sweep executing mret in machine mode across cross-product of mpp, mprv, mpie, mie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # mpp = 00  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000008   # mpp = 00  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000080   # mpp = 00  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000088   # mpp = 00  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020000   # mpp = 00  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020008   # mpp = 00  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020080   # mpp = 00  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020088   # mpp = 00  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00000800   # mpp = 01  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000808   # mpp = 01  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000880   # mpp = 01  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000888   # mpp = 01  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020800   # mpp = 01  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020808   # mpp = 01  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020880   # mpp = 01  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020888   # mpp = 01  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00001800   # mpp = 11  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00001808   # mpp = 11  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00001880   # mpp = 11  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00001888   # mpp = 11  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00021800   # mpp = 11  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00021808   # mpp = 11  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00021880   # mpp = 11  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00021888   # mpp = 11  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    j sretsetup
+
+mrettest:
+    la t1, mrettest_mepc    
+    csrrw t6, mepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    mret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+
+mrettest_mepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+sretsetup:
+
+/////////////////////////////////
+// cp_sret
+/////////////////////////////////
+// Sweep executing sret in machine mode across cross-product of spp, mprv, tsr, spie, sie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000002   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000020   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000022   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00000100   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000102   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000120   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000122   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020000   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020002   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020020   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020022   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020100   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020102   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020120   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020122   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400000   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400002   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400020   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400022   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400100   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400102   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400120   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400122   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420000   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420002   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420020   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420022   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420100   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420102   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420120   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420122   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    j postsrettest
+
+srettest:
+    la t1, srettest_sepc    
+    csrrw t6, sepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    sret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+    nop                     # should be skipped
+
+srettest_sepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+postsrettest:
 
 /////////////////////////////////
 // walking 1s and 0s for each register, also 11 in 2-bit fields
@@ -330,6 +501,8 @@ postendian:
 /////////////////////////////////
 
 #include "Zicsr-CSR-Tests.h"
+
+// *** hit all csrs in supervisor and user mode, not excluding any
 
 finished:
     j done
