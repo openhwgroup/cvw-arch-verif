@@ -803,8 +803,13 @@ def make_frm(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
 
 def make_cr_fs1_fs2_corners(test, xlen, frm = False):
-  for v1 in fcorners:
-    for v2 in fcorners:
+  corners = fcorners
+  if test[-1] == "h":
+    corners = fcornersH
+  if test[-1] == "d":
+    corners = fcornersD
+  for v1 in corners:
+    for v2 in corners:
       # select distinct fs1 and fs2
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       while rs1 == rs2:
@@ -1030,7 +1035,7 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners"):
       make_cr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm"):
+    elif (coverpoint == "cr_fs1_fs2_corners_frm" or coverpoint == "cr_fs1_fs2_corners_frm_H"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
     elif (coverpoint == "cr_fs1_fs2_corners_frm4"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
