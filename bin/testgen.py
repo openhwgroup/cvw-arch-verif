@@ -50,13 +50,11 @@ def unsignedImm5(imm):
 
 def SextImm6(imm):
   imm = imm % pow(2, 6)
-  #print(f'--> {imm}')
   if (imm & 0x20):
     #if the 6th bit is high, sign extend it
     imm = imm | 0xfffC0
   if (imm == 0):
     imm = 1
-  #print(f'---> {imm}')
   return str(imm)
 
 
