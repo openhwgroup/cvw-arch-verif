@@ -310,14 +310,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
-    elif (test in csstype):
-      if (test == "c.swsp"):
-        mul = 4
-      elif (test == "c.sdsp"):
-        mul = 8
-      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
+  elif (test in csstype):
+    if (test == "c.swsp"):
+      mul = 4
+    elif (test == "c.sdsp"):
+      mul = 8
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
+    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
   elif (test in csbtype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
@@ -532,10 +532,13 @@ def make_rs1_corners(test, xlen):
       writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
-  for v in corners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+    for v in corners:
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      if test in ["c.swsp", "c.sdsp"]:
+        while (rs2 == 2):
+          rs2 = randint(0,31)
+      desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
+      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_rd_corners(test, xlen, corners):
   if test in c_shiftitype:
@@ -771,8 +774,8 @@ def make_imm_mul(test, xlen):
   desc = "cp_imm_mul"
   if test in ciwtype:
     rng = range(1,256)
-  elif test in citype:
-    if (test == "c.lwsp"):
+  elif test in citype or test in csstype:
+    if test in ["c.lwsp", "c.ldsp", "c.swsp", "c.sdsp"]:
       rng = range(64)
     else:
       rng = range(-32,32)
@@ -800,8 +803,13 @@ def make_frm(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
 
 def make_cr_fs1_fs2_corners(test, xlen, frm = False):
-  for v1 in fcorners:
-    for v2 in fcorners:
+  corners = fcorners
+  if test[-1] == "h":
+    corners = fcornersH
+  if test[-1] == "d":
+    corners = fcornersD
+  for v1 in corners:
+    for v2 in corners:
       # select distinct fs1 and fs2
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       while rs1 == rs2:
@@ -1027,7 +1035,7 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs2_corners(test, xlen)
     elif (coverpoint == "cr_fs1_fs2_corners"):
       make_cr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm"):
+    elif (coverpoint == "cr_fs1_fs2_corners_frm" or coverpoint == "cr_fs1_fs2_corners_frm_H"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
     elif (coverpoint == "cr_fs1_fs2_corners_frm4"):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
@@ -1088,17 +1096,25 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
-  fltype = ["flw", "flh"]
-  fstype = ["fsw", "fsh"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h", "fcvt.l.s", "fcvt.lu.s"]
+  fltype = ["flw", 
+            "flh"]
+  fstype = ["fsw", 
+            "fsh"]
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
+             "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
-  fitype = ["fsqrt.s", "fsqrt.h"]
-  fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu"]
-  fcomptype = ["feq.s", "flt.s", "fle.s"]
+  fitype = ["fsqrt.s", 
+            "fsqrt.h", 
+            "fcvt.s.h", "fcvt.h.s"]
+  fixtype = ["fclass.s", 
+             "fclass.h"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
+             "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu"]
+  fcomptype = ["feq.s", "flt.s", "fle.s",
+               "feq.h", "flt.h", "fle.h"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
