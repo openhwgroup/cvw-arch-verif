@@ -1096,17 +1096,25 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
-  fltype = ["flw", "flh"]
-  fstype = ["fsw", "fsh"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h", "fcvt.l.s", "fcvt.lu.s"]
+  fltype = ["flw", 
+            "flh"]
+  fstype = ["fsw", 
+            "fsh"]
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
+             "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
-  fitype = ["fsqrt.s", "fsqrt.h"]
-  fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu"]
-  fcomptype = ["feq.s", "flt.s", "fle.s"]
+  fitype = ["fsqrt.s", 
+            "fsqrt.h", 
+            "fcvt.s.h", "fcvt.h.s"]
+  fixtype = ["fclass.s", 
+             "fclass.h"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
+             "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu"]
+  fcomptype = ["feq.s", "flt.s", "fle.s",
+               "feq.h", "flt.h", "fle.h"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
