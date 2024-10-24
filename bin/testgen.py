@@ -52,6 +52,15 @@ def unsignedImm5(imm):
       imm = 8
   return str(imm)
 
+def SextImm6(imm):
+  imm = imm % pow(2, 6)
+  if (imm & 0x20):
+    #if the 6th bit is high, sign extend it
+    imm = imm | 0xfffC0
+  if (imm == 0):
+    imm = 1
+  return str(imm)
+
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
@@ -183,7 +192,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
       elif test == "c.lui":
-        lines = lines + test + " x" + str(rd) + ", " + unsignedImm5(immval) + " # perform operation\n"
+        lines = lines + test + " x" + str(rd) + ", " + SextImm6(immval) + " # perform operation\n"
       else:
         lines = lines + test + " x" + str(rd) + ", " + ZextImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
@@ -587,6 +596,12 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
+  elif test in citype:
+    if test == "c.lui":
+      for v in corners:
+        desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+        writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
   elif test in catype:   # Using rs1val as temp variable to pass rd value
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -894,7 +909,7 @@ def write_tests(coverpoints, test, xlen):
         f.write("\n# Testcase cp_asm_count\nc.nop\n")
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
-    elif(coverpoint == "cp_rd_nx0"):
+    elif(coverpoint == "cp_rd_nx0" or coverpoint == "cp_rd_nx2"):
       make_rd(test, xlen, range(1,32))
     elif (coverpoint == "cp_rdp"):
       make_rd(test, xlen, range(8, 16))
@@ -973,6 +988,8 @@ def write_tests(coverpoints, test, xlen):
         make_rd_corners(test, xlen, c_srai_64_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
+    elif (coverpoint == "cp_rd_corners_clui"):
+      make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
