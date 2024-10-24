@@ -156,6 +156,7 @@ function void rv32zca_sample(int hart, int issue);
             end
             "jalr"     : begin 
                 ins = new(hart, issue, traceDataQ); 
+                ins.add_rd_1(); 
                 ins.add_rs1(0);
                 c_jalr_cg.sample(ins); 
             end
@@ -168,7 +169,8 @@ function void rv32zca_sample(int hart, int issue);
             end
             "jal"     : begin 
                 ins = new(hart, issue, traceDataQ); 
-                ins.add_imm_addr(0);
+                ins.add_rd_1(); 
+                ins.add_imm_addr(1);
                 c_jal_cg.sample(ins); 
             end
         endcase
