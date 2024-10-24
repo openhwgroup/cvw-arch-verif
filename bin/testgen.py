@@ -51,8 +51,9 @@ def unsignedImm5(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if imm == 0:
-    imm = 8
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp"]:
+    if imm == 0:
+      imm = 8
   return str(imm)
 
 def signedImm6(imm):
@@ -798,8 +799,8 @@ def make_imm_mul(test, xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
 
-def make_fd_fs1(test, xlen, rng, frm=False):
-  for r in rng:
+def make_fd_fs1(test, xlen, frm=False):
+  for r in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
@@ -1040,8 +1041,6 @@ def write_tests(coverpoints, test, xlen):
       pass # covered by other generators
     elif (coverpoint == "cmp_fd_fs1"):
       make_fd_fs1(test, xlen, range(32))
-    elif (coverpoint == "cmp_fd_fs1_c"):
-      make_fd_fs1(test, xlen, range(8,16))
     elif (coverpoint == "cmp_fd_fs2"):
       make_fd_fs2(test, xlen)
     # elif (coverpoint == "cp_fs1_corners"):
