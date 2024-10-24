@@ -1066,7 +1066,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_boolean"):
       pass # covered by other generators
     elif (coverpoint == "cmp_fd_fs1"):
-      make_fd_fs1(test, xlen, range(32))
+      make_fd_fs1(test, xlen)
     elif (coverpoint == "cmp_fd_fs2"):
       make_fd_fs2(test, xlen)
     # elif (coverpoint == "cp_fs1_corners"):
