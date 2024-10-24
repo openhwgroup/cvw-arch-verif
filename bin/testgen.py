@@ -30,21 +30,14 @@ def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
 
-def signedImm12(imm, storeOffset = False):
-#                          ^~~~~~~~~~~~~~~~~ if the imm is used as a store offset, restrict the range to [-2047, 2047]
-  if not storeOffset:
-    imm = imm % pow(2, 12)
-    if (imm & 0x800): # Check if the 12th bit (0x800) is set
-        imm = imm - 0x1000 # Convert to negative value
-    if storeOffset and imm == -2048:
-        imm += 0x0fff # change to 2047
-  else:
-    pos = imm > 0
-    imm = imm % pow(2, 12)
-    if (imm & 0x800): # Check if the 12th bit (0x800) is set
-        imm = imm - 0x1000 # Convert to negative value
-    if imm == -2048:
-        imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
+def signedImm12(imm, immOffset = False):
+#                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
+  pos = imm > 0
+  imm = imm % pow(2, 12)
+  if (imm & 0x800): # Check if the 12th bit (0x800) is set
+    imm = imm - 0x1000 # Convert to negative value
+  if immOffset and imm == -2048:
+    imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
   return str(imm)
 
 def unsignedImm20(imm):
@@ -242,13 +235,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       if (xlen == 32):
         storeop = "sw"
       else:
         storeop = "sd"
-      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
-      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n"
 #      lines = lines + test + " x" + str(rd) + ", 0(x" + str(rs1) + ") # perform operation\n"
   elif (test in cltype):
     rd = legalizecompr(rd)
@@ -315,8 +308,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
             rs2 = 1
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-      lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in csstype):
     if (test == "c.swsp"):
       mul = 4
@@ -362,8 +355,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "1:\n"
   elif (test in jalrtype):#["jalr"]
     lines = lines + "la x" + str(rs1) + ", 1f\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # add immediate to lower part of rs1\n"
-    lines = lines + "jalr x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # add immediate to lower part of rs1\n"
+    lines = lines + "jalr x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval, immOffset=True) + " # perform operation\n"
     lines = lines + "nop\n"
     lines = lines + "1:\n"
   elif (test in utype):#["lui", "auipc"]
@@ -391,27 +384,27 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       tempreg2 = randint(1,31)
     storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, storeOffset=True) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
     if (flen > xlen): # flen = 64, xlen = 32
       lines = lines + f"li x{tempreg1}, 0x{formatstrFP.format(rs2val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(rs2val)}\n"
       lines = lines + f"li x{tempreg2}, 0x{formatstrFP.format(rs2val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(rs2val)}\n"
-      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
       lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
-      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
+      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
       lines = lines + f"addi x{rs1}, x{rs1}, - 4 # move back to scratch\n"
-      lines = lines + f"{test} f{rd}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # perform operation\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n"
     else:
       lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
-      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
-      lines = lines + f"{test} f{rd}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # perform operation\n" 
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n" 
   elif (test in fstype):#["fsw"]
     while (rs1 == 0): 
       rs1 = randint(1, 31) 
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
-    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, storeOffset=True)} # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval, storeOffset=True) + "(x" + str(rs1) + ") # perform operation\n" 
+    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n" 
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randint(1, 31)
@@ -713,14 +706,14 @@ def make_jalr_imm_ones_zeros(test, xlen):
     imm_value = 2**i # immediate value from 2^0 to 2^11        
     lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
     lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
-    if (imm_value >= 2047):
-      lines = lines + "addi x21, x21, 2047\n"
-      new_imm = imm_value - 2047
-      lines = lines + "addi x21, x21, " + signedImm12(new_imm)  + "\n"
-    else:
-      lines = lines + "addi x21, x21, " + signedImm12(-imm_value)  + "\n"
+    # if (imm_value >= 2047):
+    #   lines = lines + "addi x21, x21, 2047\n"
+    #   new_imm = imm_value - 2047
+    #   lines = lines + "addi x21, x21, " + signedImm12(new_imm, immOffset=True)  + "\n"
+    # else:
+    lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
 
-    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value, immOffset=True) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
     lines = lines + "1:\n"
     f.write(lines)
 
