@@ -196,10 +196,20 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
-    if ((test == "c.add" or test == "c.mv") and (rs2 == 0)):
-      rs2 = 11
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+    if (test in ["c.add", "c.mv"]):
+      if (rs2 == 0):
+        rs2 = 11
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
+      lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+    elif test in ["c.jalr", "c.jr"]:
+      if (rs1 == 0):
+        rs1 = randint(1, 31)
+      if (test == "c.jalr"):
+        lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize legalized rd (x1) to a random value that should get changed\n"
+      lines = lines + "la x" + str(rs1) + ", 1f\n"
+      lines = lines + test + " x" + str(rs1) + " # perform operation\n"
+      lines = lines + "nop\nnop\n"
+      lines = lines + "1:\n"
   elif (test in catype):
     rd_c = legalizecompr(rd)
     rs2_c = legalizecompr(rs2)
@@ -678,8 +688,8 @@ def make_j_imm_ones_zeros(test, xlen):
     lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
     if (test == "jal"):
       lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
-    elif (test == "c.j"):
-      lines = lines + "c.j  1f # jump to aligned address to stress immediate\n"
+    elif (test in ["c.jal", "c.j"]):
+      lines = lines + test + " 1f # jump to aligned address to stress immediate\n"
     lines = lines + ".align " + str(align) + "\n"
     lines = lines + "1:\n"
     f.write(lines)
@@ -707,23 +717,23 @@ def make_offset(test, xlen):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     lines = lines + "2: " + test + " x0, x0, 1b # backward branch\n"
+  elif (test in crtype):
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    rs1 = randint(1, 31)
+    lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
+    lines = lines + test + " x" + str(rs1) + " # backward branch\n"
+  elif (test in cjtype):
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    lines = lines + "2: " + "nop\n"
+    lines = lines + test + " 1b" + " # backward branch\n"
   elif (test in cbtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
     lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
     lines = lines + test + " x8,  1b # backward branch\n"
-  elif (test in cjtype):
-    if (test == "c.j"):
-      lines = lines + "li t2,0\n"
-      lines = lines + "li t1,1\n"
-      lines = lines + "label2:\n"
-      lines = lines + "beq  t1, t2, label3\n"    
-      lines = lines + test + " label1\n"
-      lines = lines + "label1:\n"
-      lines = lines + "li t1,0\n"
-      lines = lines + test + " label2\n"
-      lines = lines + "label3:\n"
   lines = lines + "3: nop # done with sequence\n"
   f.write(lines)
 
@@ -993,11 +1003,11 @@ def write_tests(coverpoints, test, xlen):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
       make_rd_corners(test,xlen,corners_sraiw)
-    elif (coverpoint == "cp_imm_ones_zeros" or coverpoint == "cp_imm_ones_zeros_nbit_0_1"):
+    elif (coverpoint == "cp_imm_ones_zeros"):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"): 
         make_jalr_imm_ones_zeros(test, xlen)
-      elif (test == "c.j"):
+    elif (coverpoint == "cp_imm_ones_zeros_c_jal"):
         make_j_imm_ones_zeros(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
@@ -1120,7 +1130,7 @@ if __name__ == '__main__':
   cltype = ["c.lw","c.ld"]
   cstype = ["c.sw","c.sd"]
   csstype = ["c.sdsp","c.swsp"]
-  crtype = ["c.add", "c.mv"]
+  crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw","c.mul"]
