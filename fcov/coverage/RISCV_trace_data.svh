@@ -70,11 +70,11 @@ class riscvTraceData
         bit [(XLEN-1):0]          rs2_val;
         bit [(XLEN-1):0]          rs3_val;
 
-        bit [(XLEN-1):0]          fd_val;
-        bit [(XLEN-1):0]          fd_val_pre;
-        bit [(XLEN-1):0]          fs1_val;
-        bit [(XLEN-1):0]          fs2_val;
-        bit [(XLEN-1):0]          fs3_val;
+        bit [(FLEN-1):0]          fd_val;
+        bit [(FLEN-1):0]          fd_val_pre;
+        bit [(FLEN-1):0]          fs1_val;
+        bit [(FLEN-1):0]          fs2_val;
+        bit [(FLEN-1):0]          fs3_val;
 
         bit [(XLEN-1):0]          imm;
         bit [(XLEN-1):0]          imm2;
