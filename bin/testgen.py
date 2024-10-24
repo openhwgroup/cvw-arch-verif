@@ -47,7 +47,7 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -259,17 +259,31 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs2 = legalizecompr(rs2) 
     while (rs1 == rs2):
       rs2 = randint(8,15)
-    if (test == "c.lw"):
+    if test in ["c.lw","c.ld"]:
+      if (test == "c.lw"):
+          storeop = "c.sw"
+          mul = 4
+      else:
+          storeop = "c.sd"
+          mul = 8
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+      lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
+    else:
+      if (test == "c.flw"):
         storeop = "c.sw"
         mul = 4
-    else:
+      else:
         storeop = "c.sd"
         mul = 8
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
-    lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
+      lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
+      lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
+      lines = lines + "sw x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # store value to memory\n"
+      lines = lines +  test + " f" + str(rd)  + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n" 
+
   elif (test in clhtype or test in clbtype):
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
@@ -1052,7 +1066,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_boolean"):
       pass # covered by other generators
     elif (coverpoint == "cmp_fd_fs1"):
-      make_fd_fs1(test, xlen)
+      make_fd_fs1(test, xlen, range(32))
     elif (coverpoint == "cmp_fd_fs2"):
       make_fd_fs2(test, xlen)
     # elif (coverpoint == "cp_fs1_corners"):
@@ -1154,7 +1168,7 @@ if __name__ == '__main__':
                "feq.d", "flt.d", "fle.d"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
-  cltype = ["c.lw","c.ld"]
+  cltype = ["c.lw","c.ld","c.flw"]
   cstype = ["c.sw","c.sd"]
   csstype = ["c.sdsp","c.swsp"]
   crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
@@ -1170,7 +1184,7 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
 
-  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + ["c.flw"]
   # instructions with all float args
   regconfig_ffff = frtype + fr4type + fitype
   # instructions with int first arg and the rest float args
@@ -1193,7 +1207,9 @@ if __name__ == '__main__':
   for xlen in xlens:
     extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD"]
     if (xlen == 64):
-        extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
+      extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
+    if (xlen == 32):
+      extensions += ["Zcf"]   # Add extensions which are specific to RV32
     for extension in extensions:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
