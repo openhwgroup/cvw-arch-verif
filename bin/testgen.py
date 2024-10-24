@@ -30,10 +30,21 @@ def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
 
-def signedImm12(imm):
-  imm = imm % pow(2, 12)
-  if (imm & 0x800): # Check if the 12th bit (0x800) is set
-    imm = imm - 0x1000 # Convert to negative value
+def signedImm12(imm, storeOffset = False):
+#                          ^~~~~~~~~~~~~~~~~ if the imm is used as a store offset, restrict the range to [-2047, 2047]
+  if not storeOffset:
+    imm = imm % pow(2, 12)
+    if (imm & 0x800): # Check if the 12th bit (0x800) is set
+        imm = imm - 0x1000 # Convert to negative value
+    if storeOffset and imm == -2048:
+        imm += 0x0fff # change to 2047
+  else:
+    pos = imm > 0
+    imm = imm % pow(2, 12)
+    if (imm & 0x800): # Check if the 12th bit (0x800) is set
+        imm = imm - 0x1000 # Convert to negative value
+    if imm == -2048:
+        imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
   return str(imm)
 
 def unsignedImm20(imm):
@@ -87,8 +98,8 @@ def unsignedImm1(imm):
 def loadFloatReg(reg, val, xlen, flen):
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
-  storeop =  "sw" if (xlen == 32) else "sd"
-  loadop  = "flw" if (flen == 32) else "fld"
+  storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
+  loadop  = "flw" if             (flen == 32) else "fld"
   if (flen > xlen): # flen = 64, xlen = 32
   # lines = lines + "la x2, scratch # base address \n"
     lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(val)}\n"
@@ -138,15 +149,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr)
   elif (test in fixtype):
     lines = lines + "la x2, scratch\n"
-    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
-    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
-    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
   elif (test in fitype):
     lines = lines + "la x2, scratch\n"
-    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
-    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
-    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
@@ -372,23 +379,39 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}, f{rs3}"
       lines = lines + genFrmTests(testInstr)
   elif (test in fltype):#["flw", "flh"]
-    while (rs1 == 0 or rs1 == rs2):
+    while (rs1 == 0):
       rs1 = randint(1, 31)
     while (rs1 == rs2):
       rs2 = randint(1, 31)
-    lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
-    lines = lines + "sw x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
-    lines = lines +  test + " f" + str(rd)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+    tempreg1 = 1
+    tempreg2 = 2
+    while (tempreg1 in [rs1, rs2]):
+      tempreg1 = randint(1,31)
+    while (tempreg2 in [rs1, rs2, tempreg1]):
+      tempreg2 = randint(1,31)
+    storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, storeOffset=True) + " # sub immediate from rs1 to counter offset\n"
+    if (flen > xlen): # flen = 64, xlen = 32
+      lines = lines + f"li x{tempreg1}, 0x{formatstrFP.format(rs2val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"li x{tempreg2}, 0x{formatstrFP.format(rs2val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
+      lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
+      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
+      lines = lines + f"addi x{rs1}, x{rs1}, - 4 # move back to scratch\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # perform operation\n"
+    else:
+      lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, storeOffset=True)}(x{rs1}) # perform operation\n" 
   elif (test in fstype):#["fsw"]
     while (rs1 == 0): 
       rs1 = randint(1, 31) 
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
-    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval)} # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, storeOffset=True)} # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval, storeOffset=True) + "(x" + str(rs1) + ") # perform operation\n" 
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randint(1, 31)
@@ -1097,24 +1120,35 @@ if __name__ == '__main__':
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
   fltype = ["flw", 
-            "flh"]
+            "flh",
+            "fld"]
   fstype = ["fsw", 
-            "fsh"]
+            "fsh",
+            "fsd"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
-             "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h"]
+             "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h",
+             "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
-             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
+             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h",
+             "fmadd.d", "fmsub.d", "fnmadd.d", "fnmsub.d"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
-            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h",
+            "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d"]
   fitype = ["fsqrt.s", 
             "fsqrt.h", 
-            "fcvt.s.h", "fcvt.h.s"]
+            "fsqrt.d",
+            "fcvt.s.h", "fcvt.h.s",
+            "fcvt.s.d", "fcvt.d.s", 
+            "fcvt.d.h", "fcvt.h.d"]
   fixtype = ["fclass.s", 
-             "fclass.h"]
+             "fclass.h",
+             "fclass.d"]
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
-             "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu"]
+             "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
+             "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
   fcomptype = ["feq.s", "flt.s", "fle.s",
-               "feq.h", "flt.h", "fle.h"]
+               "feq.h", "flt.h", "fle.h",
+               "feq.d", "flt.d", "fle.d"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld"]
@@ -1154,7 +1188,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb"]
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD"]
     if (xlen == 64):
         extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     for extension in extensions:
