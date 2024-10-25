@@ -596,12 +596,6 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
-  elif test in citype:
-    if test == "c.lui":
-      for v in corners:
-        desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-        writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
   elif test in catype:   # Using rs1val as temp variable to pass rd value
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -635,6 +629,11 @@ def make_rd_corners(test, xlen, corners):
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+  elif (test == "c.lui"):
+    for v in corners:
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
