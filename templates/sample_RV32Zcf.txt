@@ -14,7 +14,7 @@ function void rv32zcf_sample(int hart, int issue);
             end
             "fsw" : begin
                 ins = new(hart, issue, traceDataQ);
-                ins.add_rs2(0);
+                ins.add_fs2(0);
                 ins.add_imm(1); 
                 ins.add_rs1(2); 
                 ins.add_mem_address();
