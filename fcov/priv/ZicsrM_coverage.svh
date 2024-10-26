@@ -22,6 +22,9 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrm_t;
 
 covergroup csr_cg with function sample(ins_zicsrm_t ins);
+    option.per_instance = 1; 
+    option.comment = "csr";
+ 
     // building blocks for the main coverpoints
     /* nonzerord: coverpoint ins.current.rd iff (ins.current.valid) {
         option.weight = 0;
@@ -62,7 +65,6 @@ covergroup csr_cg with function sample(ins_zicsrm_t ins);
     cp_csrc: cross csrrc, csr, priv_mode_m, rs1_ones;               // CSR clear of all bits of all registers
     cp_csrs: cross csrrs, csr, priv_mode_m, rs1_ones;               // CSR set of all bits of all registers
 endgroup
-
 
 function void zicsrm_sample(int hart, int issue);
     ins_zicsrm_t ins;
