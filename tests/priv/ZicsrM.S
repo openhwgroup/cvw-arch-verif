@@ -501,12 +501,11 @@ postsrettest:
 /////////////////////////////////
 
 #include "Zicsr-CSR-Tests.h"
-
-// *** hit all csrs in supervisor and user mode, not excluding any
+// for M mode, skips writing PMP CSRs that would hang the DUT when messed with like this
+// *** for ZicsrU/ZicsrS tests, also include Zicsr-CSR-USPMPWrite-Tests.h here to (unsuccessfully) try writing the PMP CSRs
 
 finished:
     j done
-
 
 /////////////////////////////////
 // Fast trap handler for illegal instructions (when testing writes to CSRs that may be non-existent)
