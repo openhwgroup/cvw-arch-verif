@@ -474,15 +474,23 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="x
   reg3 = regconfig[3]
 
   lines = "\n# Testcase " + str(desc) + "\n"
-  if (test in fr4type): 
+  if (test in rd_rs1_rs2_rs3_format): 
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-  elif (test in fitype + fixtype + X2Ftype + F2Xtype):
+  elif (test in rd_rs1_format):
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
-  else:
+  elif (test in flitype):
+    lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
+    lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
+    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+  elif (test in rd_rs1_rs2_format):
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
+  else:
+    # TODO: need to make new cases for instruction formats not accounted for above
+    print(f"Warning: Hazard tests not yet implemented for {test}")
+    pass
   f.write(lines)
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
@@ -1202,14 +1210,22 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw"] # Zcf instructions
+  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype
   # instructions with all float args
-  regconfig_ffff = frtype + fr4type + fitype
+  regconfig_ffff = frtype + fr4type + fitype + flitype
   # instructions with int first arg and the rest float args
   regconfig_xfff = F2Xtype + fcomptype + fixtype
   # instructions with fp first arg and the rest int args
   regconfig_fxxx = X2Ftype
+
+  # for writeHazardVectors
+  rd_rs1_rs2_format = rtype + frtype + fcomptype
+  rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
+  rd_rs1_rs2_rs3_format = fr4type
+  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
+  rd_imm_format = citype + cstype + ciwtype + cbptype 
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
