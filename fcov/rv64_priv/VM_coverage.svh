@@ -18,26 +18,52 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_RV64VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_t;
+`define COVER_VM
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_vm_t;
 
-covergroup satp_cg with function sample(ins_rv64vm_t ins);
+covergroup satp_cg with function sample(ins_vm_t ins);
     option.per_instance = 1; 
     option.comment = "satp";
-    mode_supported: coverpoint ins.current.csr[12'h180][63:60] iff (ins.current.valid) { //sat.2
-        bins sv39   = {4'b1000};
-        bins sv48   = {4'b1001};
-        bins bare   = {4'b0000}; //bare.1
-    }
-    satp_asid_PPN: coverpoint ins.current.csr[12'h180][59:0] iff (ins.current.valid) {
-        bins all_zero = {60'd0};
-        bins not_zero = {!60'd0};
-    }
+        mode_supported_32: coverpoint ins.current.csr[12'h180][31] iff (ins.current.valid) { //sat.2
+            
+            bins sv32   = {1'b1};
+            bins bare   = {1'b0}; //bare.1
+        }
 
-    bare_mode: cross mode_supported, satp_asid_PPN { //sat.3
-        ignore_bins ig1 = binsof(mode_supported.sv39);
-        ignore_bins ig2 = binsof(mode_supported.sv48);
-    }
+        satp_asid_PPN: coverpoint ins.current.csr[12'h180][30:0] iff (ins.current.valid) {
+            bins all_zero = {31'd0};
+            bins not_zero = {!31'd0};
+        }
+
+        asid_Length: coverpoint ins.current.csr[12'h180][30:22] iff (ins.current.valid) { //sat.4
+            bins values = {9'h001, 9'h002, 9'h004, 9'h008, 9'h010, 9'h020, 9'h040, 9'h080, 9'h100};
+        }
+    
+        mode_supported_64: coverpoint ins.current.csr[12'h180][63:60] iff (ins.current.valid) { //sat.2
+            bins sv39   = {4'b1000};
+            bins sv48   = {4'b1001};
+            bins bare   = {4'b0000}; //bare.1
+        }
+
+        // satp_asid_PPN: coverpoint ins.current.csr[12'h180][59:0] iff (ins.current.valid) {
+        //     bins all_zero = {60'd0};
+        //     bins not_zero = {!60'd0};
+        // }
+
+        // asid_Length: coverpoint ins.current.csr[12'h180][59:44] iff (ins.current.valid) { //sat.4
+        //     bins values = {16'h0001, 16'h0002, 16'h0004, 16'h0008, 16'h0010, 16'h0020, 16'h0040, 16'h0080, 16'h0100, 16'h0200, 16'h0400, 16'h0800, 16'h1000, 16'h2000, 16'h0400, 16'h8000};
+        // }
+    
+
+    bare_mode_sv32: cross mode_supported_32, satp_asid_PPN; //{ //sat.3
+    //     ignore_bins ig1 = binsof(mode_supported_32.sv39);
+    //     ignore_bins ig2 = binsof(mode_supported_32.sv48);
+    // }
+
+    bare_mode_sv64: cross mode_supported_64, satp_asid_PPN; //{ //sat.3
+    //     ignore_bins ig1 = binsof(mode_supported.sv39);
+    //     ignore_bins ig2 = binsof(mode_supported.sv48);
+    // }
 
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] iff (ins.current.valid){
         bins zero = {0};
@@ -66,13 +92,9 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(Mcause.illegal_ins);
     }
-
-    asid_Length: coverpoint ins.current.csr[12'h180][59:44] iff (ins.current.valid) { //sat.4
-        bins values = {16'h0001, 16'h0002, 16'h0004, 16'h0008, 16'h0010, 16'h0020, 16'h0040, 16'h0080, 16'h0100, 16'h0200, 16'h0400, 16'h0800, 16'h1000, 16'h2000, 16'h0400, 16'h8000};
-    }
 endgroup
 
-covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
+covergroup PA_VA_cg with function sample(ins_vm_t ins); //checking that all bits of PA and VA are live
     option.per_instance = 1; 
     option.comment = "PA_VA";
     VA_i: coverpoint ins.current.VAdrI iff (ins.current.valid) { 
@@ -94,7 +116,7 @@ covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all 
     }
 endgroup
 
-covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
+covergroup sfence_cg with function sample(ins_vm_t ins); //sf.1
     option.per_instance = 1; 
     option.comment = "sfence";
     ins: coverpoint ins.current.insn iff (ins.current.valid) { 
@@ -102,7 +124,7 @@ covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
     }
 endgroup
 
-covergroup mstatus_cg with function sample(ins_rv64vm_t ins);
+covergroup mstatus_cg with function sample(ins_vm_t ins);
     option.per_instance = 1; 
     option.comment = "mstatus";
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] iff (ins.current.valid) {
@@ -159,7 +181,7 @@ covergroup mstatus_cg with function sample(ins_rv64vm_t ins);
     }
 endgroup
 
-covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
+covergroup vm_permissions_cg with function sample(ins_vm_t ins);
     option.per_instance = 1; 
     option.comment = "vm_permissions";
     //pte permission for leaf PTEs
@@ -907,7 +929,7 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     }
 endgroup
 
-covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins); 
+covergroup res_global_pte_cg with function sample(ins_vm_t ins); 
     option.per_instance = 1; 
     option.comment = "res_global_pte";
     //pte.1
@@ -983,7 +1005,7 @@ covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins);
     global_exec_u: cross global_PTE_perm_u_i, exec_acc;
 endgroup
 
-covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
+covergroup add_feature_cg with function sample(ins_vm_t ins);
     option.per_instance = 1; 
     option.comment = "add_features";
     PTE_i: coverpoint ins.current.PTE_i[63:54] iff (ins.current.valid) {
@@ -1100,20 +1122,32 @@ covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
     svadu_not_supported: cross menvcfg, mode;
 endgroup
 
-function void rv64vm_sample(int hart, int issue);
-    ins_rv64vm_t ins;
+function void vm_sample(int hart, int issue);
+        ins_vm_t ins;
+        ins = new(hart, issue, traceDataQ); 
+        ins.add_csr(0);
+        ins.add_vm_signals(1);
+        
+        PA_VA_cg.sample(ins);
+        satp_cg.sample(ins);
+        sfence_cg.sample(ins);
+        mstatus_cg.sample(ins);
+        vm_permissions_cg.sample(ins);
+        res_global_pte_cg.sample(ins);
+        add_feature_cg.sample(ins);
 
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_csr(0);
-    ins.add_vm_signals(1);
-    
-    PA_VA_cg.sample(ins);
-    satp_cg.sample(ins);
-    sfence_cg.sample(ins);
-    mstatus_cg.sample(ins);
-    vm_permissions_cg.sample(ins);
-    res_global_pte_cg.sample(ins);
-    add_feature_cg.sample(ins);
+        if (XLEN==64) begin
+            satp_cg.mode_supported_32.option.weight =0;
+            satp_cg.mode_supported_32.type_option.weight=0;
+            satp_cg.bare_mode_sv32.option.weight=0;
+            satp_cg.bare_mode_sv32.type_option.weight=0;
+        end
+        else if (XLEN==32) begin
+            satp_cg.mode_supported_64.option.weight =0;
+            satp_cg.mode_supported_64.type_option.weight=0;
+            satp_cg.bare_mode_sv64.option.weight=0;
+            satp_cg.bare_mode_sv64.type_option.weight=0;
+        end
 endfunction
 
    
