@@ -104,10 +104,10 @@ def loadFloatReg(reg, val, xlen, flen):
   loadop  = "flw" if             (flen == 32) else "fld"
   if (flen > xlen): # flen = 64, xlen = 32
   # lines = lines + "la x2, scratch # base address \n"
-    lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(val)}\n"
-    lines = lines + f"li x4, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[2:10]}) in memory\n"
-    lines = lines + f"{storeop} x4, 4(x2) # store x4 (0x{formatstrFP.format(val)[10:18]}) in memory 4 bytes after x3\n"
+    lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
+    lines = lines + f"li x4, 0x{formatstrFP.format(val)[2:10]} # load x4 with 32 LSBs of {formatstrFP.format(val)}\n"
+    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[10:18]}) in memory\n"
+    lines = lines + f"{storeop} x4, 4(x2) # store x4 (0x{formatstrFP.format(val)[2:10]}) in memory 4 bytes after x3\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   else:
   # lines = lines + "la x2, scratch # base address \n"
@@ -882,8 +882,13 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_cr_fs1_fs3_corners(test, xlen, frm = False):
-  for v1 in fcorners:
-    for v2 in fcorners:
+  corners = fcorners
+  if test[-1] == "h":
+    corners = fcornersH
+  if test[-1] == "d":
+    corners = fcornersD
+  for v1 in corners:
+    for v2 in corners:
       # select distinct fs1 and fs3
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs3_corners (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
@@ -1099,15 +1104,15 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs1_corners(test, xlen)
     # elif (coverpoint == "cp_fs2_corners"):
     #   make_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners"):
+    elif (coverpoint in ["cr_fs1_fs2_corners", "cr_fs1_fs2_corners_H", "cr_fs1_fs2_corners_D"]):
       make_cr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm" or coverpoint == "cr_fs1_fs2_corners_frm_H"):
+    elif (coverpoint in ["cr_fs1_fs2_corners_frm", "cr_fs1_fs2_corners_frm_H", "cr_fs1_fs2_corners_frm_D"]):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm4"):
+    elif (coverpoint in ["cr_fs1_fs2_corners_frm4", "cr_fs1_fs2_corners_frm4_H", "cr_fs1_fs2_corners_frm4_D"]):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs3_corners_frm"):
+    elif (coverpoint in ["cr_fs1_fs3_corners_frm", "cr_fs1_fs3_corners_frm_H", "cr_fs1_fs3_corners_frm_D"]):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs3_corners_frm4"):
+    elif (coverpoint in ["cr_fs1_fs3_corners_frm4", "cr_fs1_fs3_corners_frm4_H", "cr_fs1_fs3_corners_frm4_D"]):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
     elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
       make_frm(test, xlen)
