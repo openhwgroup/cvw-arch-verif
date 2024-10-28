@@ -251,52 +251,139 @@ formbits:
 
 /////////////////////////////////
 // Endianness testing
-/////////////////////////////////
-    # store an pattern in memory for testing endiannes
-    la t2, scratch
-    li t0, 0x01020304
-    sw t0, 0(t2)
-    li t0, 0x05060708
-    sw t0, 4(t2)
-
-// *** repeat with endianness reversed on the store
-
-/////////////////////////////////
 // cp_mstatush_mbe_endianness
 // cp_mstatus_mbe_endianness
 /////////////////////////////////
-    li t0, 0x20 # 1 in bit 5 for MBE
-    li t1, 0x1
-    slli t1, t1, 30
-    slli t1, t1, 7
-    csrrs t6, mstatush, t0  # for RV32, set mstatush.MBE
-    csrrs t6, mstatus, t1   # for RV64, set mstatus.MBE
-    jal endianaccess
-    csrrc t6, mstatush, t0  # for RV32, clear mstatush.MBE
-    csrrc t6, mstatus, t1   # for RV64, clear mstatus.MBE
-    jal endianaccess
-    j postendian
+    # save mstatus
+    # prep s1 and s2 with bits to set/clear MBE for RV32/RV64
+    # always do both.  One or the other will trap, but this
+    # avoids needing separate code for the two architectures
+    # code assumes s registers are saved during these tests
+    csrr s0, mstatus    # save CSR
+    li s1, 0x20 # 1 in bit 5 for mstatush.MBE
+    li s2, 0x1
+    slli s2, s2, 30
+    slli s2, s2, 7  # 1 in bit 37 for mstatus.MBE
+    la s3, scratch  # pointer to scratch
 
-endianaccess:
-    # Try all the accesses to make sure they work for the endianness
-    lb t3, 0(t2)
-    lb t3, 1(t2)
-    lb t3, 2(t2)
-    lb t3, 3(t2)
-    lb t3, 4(t2)
-    lb t3, 5(t2)
-    lb t3, 6(t2)
-    lb t3, 7(t2)
-    lh t3, 0(t2)
-    lh t3, 2(t2)
-    lh t3, 4(t2)
-    lh t3, 6(t2)
-    lw t3, 0(t2)
-    lw t3, 4(t2)
-    ld t3, 0(t2) # will trap in RV32, but that's ok
+    # iterate over each endianness, doing all sizes of stores and loads
+    li s4, 0        # endianness for write
+    li s5, 0        # endianness for read
+    jal endiantest  # test little-endian read and write
+    li s4, 1        # endianness for write
+    jal endiantest  # test big-endian write, little-endian read
+    li s5, 1        # endianness for read
+    jal endiantest  # test big-endian read and write
+    li s4, 0        # endianness for write
+    jal endiantest  # test little-endian write, big-endian read
+    j postendian    
+
+endiantest:
+    # save away ra on stack
+    sd ra, 0(sp)
+    addi sp, sp, -8
+    # Try each size of stores with the write endianness, and then the loads with the read endianness
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    # Test storing bytes
+    li t0, 0x01
+    sb t0, 0(s3)
+    li t0, 0x02
+    sb t0, 1(s3)
+    li t0, 0x03
+    sb t0, 2(s3)
+    li t0, 0x04
+    sb t0, 3(s3)
+    li t0, 0x05
+    sb t0, 4(s3)
+    li t0, 0x06
+    sb t0, 5(s3)
+    li t0, 0x07
+    sb t0, 6(s3)
+    li t0, 0x08
+    sb t0, 7(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    li t0, 0x1112
+    sh t0, 0(s3)
+    li t0, 0x1314
+    sh t0, 2(s3)
+    li t0, 0x1516
+    sh t0, 4(s3)
+    li t0, 0x1718
+    sh t0, 6(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+     li t0, 0x21222324
+    sw t0, 0(s3)
+    li t0, 0x25262728
+    sw t0, 4(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    li t0, 0x3132333435363738
+    sd t0, 0(s3)
+    jal endianaccess
+    # restore return address from stack
+    addi sp, sp, 8
+    ld ra, 0(sp)
     ret
 
-postendian:
+setendianness:
+    // if a0 = 1, bigendian, otherwise littleendian
+    beqz a0, 1f      # little endian
+    csrrs t6, mstatush, s0  # for RV32, set mstatush.MBE
+    csrrs t6, mstatus, s1   # for RV64, set mstatus.MBE
+    ret
+1:  csrrc t6, mstatush, s0  # for RV32, clear mstatush.MBE
+    csrrc t6, mstatus, s1   # for RV64, clear mstatus.MBE
+    ret
+
+endianaccess:
+    // Try all the accesses to make sure they work for the endianness
+    # save away ra on stack
+    sd ra, 0(sp)            # This will need to change for RV32
+    addi sp, sp, -8         # change for RV32 (several places in this file)
+    mv a0, s5   # setEndianness(read)
+    jal setendianness
+    lb t3, 0(s3)
+    lb t3, 1(s3)
+    lb t3, 2(s3)
+    lb t3, 3(s3)
+    lb t3, 4(s3)
+    lb t3, 5(s3)
+    lb t3, 6(s3)
+    lb t3, 7(s3)
+    lbu t3, 0(s3)
+    lbu t3, 1(s3)
+    lbu t3, 2(s3)
+    lbu t3, 3(s3)
+    lbu t3, 4(s3)
+    lbu t3, 5(s3)
+    lbu t3, 6(s3)
+    lbu t3, 7(s3)
+    lh t3, 0(s3)
+    lh t3, 2(s3)
+    lh t3, 4(s3)
+    lh t3, 6(s3)
+    lhu t3, 0(s3)
+    lhu t3, 2(s3)
+    lhu t3, 4(s3)
+    lhu t3, 6(s3)
+    lw t3, 0(s3)
+    lw t3, 4(s3)
+    lwu t3, 0(s3) # will trap in RV32, but that's ok
+    lwu t3, 4(s3) # will trap in RV32
+    ld t3, 0(s3) # will trap in RV32
+    # restore return address from stack
+    addi sp, sp, 8
+    ld ra, 0(sp)
+    ret
+
+postendian: 
+    csrrw t6, mstatus, s0    # restore CSR
 
 /////////////////////////////////
 // cp_ecall
