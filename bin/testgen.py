@@ -30,10 +30,14 @@ def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
 
-def signedImm12(imm):
+def signedImm12(imm, immOffset = False):
+#                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
+  pos = imm > 0
   imm = imm % pow(2, 12)
   if (imm & 0x800): # Check if the 12th bit (0x800) is set
     imm = imm - 0x1000 # Convert to negative value
+  if immOffset and imm == -2048:
+    imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
   return str(imm)
 
 def unsignedImm20(imm):
@@ -41,11 +45,20 @@ def unsignedImm20(imm):
   return str(imm)
 
 def unsignedImm5(imm):
-  imm = imm % pow(2, 5) # *** seems it should be 6, but this is causing assembler error right now for instructions with imm > 31 like c.lui x15, 60
+  imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw"]:
     if imm == 0:
       imm = 8
+  return str(imm)
+
+def SextImm6(imm):
+  imm = imm % pow(2, 6)
+  if (imm & 0x20):
+    #if the 6th bit is high, sign extend it
+    imm = imm | 0xfffC0
+  if (imm == 0):
+    imm = 1
   return str(imm)
 
 
@@ -87,14 +100,14 @@ def unsignedImm1(imm):
 def loadFloatReg(reg, val, xlen, flen):
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
-  storeop =  "sw" if (xlen == 32) else "sd"
-  loadop  = "flw" if (flen == 32) else "fld"
+  storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
+  loadop  = "flw" if             (flen == 32) else "fld"
   if (flen > xlen): # flen = 64, xlen = 32
   # lines = lines + "la x2, scratch # base address \n"
-    lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(val)}\n"
-    lines = lines + f"li x4, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[2:10]}) in memory\n"
-    lines = lines + f"{storeop} x4, 4(x2) # store x4 (0x{formatstrFP.format(val)[10:18]}) in memory 4 bytes after x3\n"
+    lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
+    lines = lines + f"li x4, 0x{formatstrFP.format(val)[2:10]} # load x4 with 32 LSBs of {formatstrFP.format(val)}\n"
+    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[10:18]}) in memory\n"
+    lines = lines + f"{storeop} x4, 4(x2) # store x4 (0x{formatstrFP.format(val)[2:10]}) in memory 4 bytes after x3\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   else:
   # lines = lines + "la x2, scratch # base address \n"
@@ -138,15 +151,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr)
   elif (test in fixtype):
     lines = lines + "la x2, scratch\n"
-    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
-    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
-    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
   elif (test in fitype):
     lines = lines + "la x2, scratch\n"
-    lines = lines + "li x3, " + formatstr.format(rs1val) + " # prep fs1\n"
-    lines = lines + "sw x3, 0(x2) # store fs1 value in memory\n"
-    lines = lines + "flw f" + str(rs1) + ", 0(x2) # load fs1 value from memory\n"
+    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
     if not frm:
       lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
@@ -183,7 +192,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
       elif test == "c.lui":
-        lines = lines + test + " x" + str(rd) + ", " + unsignedImm5(immval) + " # perform operation\n"
+        lines = lines + test + " x" + str(rd) + ", " + SextImm6(immval) + " # perform operation\n"
       else:
         lines = lines + test + " x" + str(rd) + ", " + ZextImm6(immval) + " # perform operation\n"
   elif (test in c_shiftitype):
@@ -196,10 +205,20 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)+"\n"
     lines = lines + test + " x" + str(rd) + ", " + imm + " # perform operation\n" 
   elif (test in crtype):
-    if ((test == "c.add" or test == "c.mv") and (rs2 == 0)):
-      rs2 = 11
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+    if (test in ["c.add", "c.mv"]):
+      if (rs2 == 0):
+        rs2 = 11
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + "\n"
+      lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
+    elif test in ["c.jalr", "c.jr"]:
+      if (rs1 == 0):
+        rs1 = randint(1, 31)
+      if (test == "c.jalr"):
+        lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize legalized rd (x1) to a random value that should get changed\n"
+      lines = lines + "la x" + str(rs1) + ", 1f\n"
+      lines = lines + test + " x" + str(rs1) + " # perform operation\n"
+      lines = lines + "nop\nnop\n"
+      lines = lines + "1:\n"
   elif (test in catype):
     rd_c = legalizecompr(rd)
     rs2_c = legalizecompr(rs2)
@@ -235,13 +254,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       if (xlen == 32):
         storeop = "sw"
       else:
         storeop = "sd"
-      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
-      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n"
 #      lines = lines + test + " x" + str(rd) + ", 0(x" + str(rs1) + ") # perform operation\n"
   elif (test in cltype):
     rd = legalizecompr(rd)
@@ -249,17 +268,31 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs2 = legalizecompr(rs2) 
     while (rs1 == rs2):
       rs2 = randint(8,15)
-    if (test == "c.lw"):
+    if test in ["c.lw","c.ld"]:
+      if (test == "c.lw"):
+          storeop = "c.sw"
+          mul = 4
+      else:
+          storeop = "c.sd"
+          mul = 8
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+      lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
+    else:
+      if (test == "c.flw"):
         storeop = "c.sw"
         mul = 4
-    else:
+      else:
         storeop = "c.sd"
         mul = 8
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
-    lines = lines + test + " x" + str(rd) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n"
+      lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
+      lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
+      lines = lines + "sw x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # store value to memory\n"
+      lines = lines +  test + " f" + str(rd)  + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n" 
+
   elif (test in clhtype or test in clbtype):
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
@@ -282,14 +315,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
       rs2 = randint(8,15)
-    if (test == "c.sw"):
-      mul = 4
-    else:
-      mul = 8
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    mul = 4 if (test in ["c.sw", "c.fsw"]) else 8
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address\n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2 with random value\n"
+    if (test in ["c.fsw", "c.fsd"]):
+      lines = lines + "sw x" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # store " + hex(rs2val) + " in memory\n"
+      lines = lines + "flw f" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # load " + hex(rs2val) + " from memory into fs2\n"
+      lines = lines + "sw x0, 0(x" + str(rs1) + ")" + " # clearing the random value store at scratch\n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
+    lines = lines + test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
+    
   elif (test in cutype):
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
@@ -308,8 +343,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
             rs2 = 1
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-      lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+      lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in csstype):
     if (test == "c.swsp"):
       mul = 4
@@ -355,8 +390,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "1:\n"
   elif (test in jalrtype):#["jalr"]
     lines = lines + "la x" + str(rs1) + ", 1f\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # add immediate to lower part of rs1\n"
-    lines = lines + "jalr x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # add immediate to lower part of rs1\n"
+    lines = lines + "jalr x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval, immOffset=True) + " # perform operation\n"
     lines = lines + "nop\n"
     lines = lines + "1:\n"
   elif (test in utype):#["lui", "auipc"]
@@ -372,23 +407,39 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}, f{rs3}"
       lines = lines + genFrmTests(testInstr)
   elif (test in fltype):#["flw", "flh"]
-    while (rs1 == 0 or rs1 == rs2):
+    while (rs1 == 0):
       rs1 = randint(1, 31)
     while (rs1 == rs2):
       rs2 = randint(1, 31)
-    lines = lines + "la x"       + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
-    lines = lines + "sw x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # store value to memory\n"
-    lines = lines +  test + " f" + str(rd)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+    tempreg1 = 1
+    tempreg2 = 2
+    while (tempreg1 in [rs1, rs2]):
+      tempreg1 = randint(1,31)
+    while (tempreg2 in [rs1, rs2, tempreg1]):
+      tempreg2 = randint(1,31)
+    storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+    if (flen > xlen): # flen = 64, xlen = 32
+      lines = lines + f"li x{tempreg1}, 0x{formatstrFP.format(rs2val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"li x{tempreg2}, 0x{formatstrFP.format(rs2val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
+      lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
+      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
+      lines = lines + f"addi x{rs1}, x{rs1}, - 4 # move back to scratch\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n"
+    else:
+      lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
+      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n" 
   elif (test in fstype):#["fsw"]
     while (rs1 == 0): 
       rs1 = randint(1, 31) 
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
-    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval)} # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n" 
+    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n" 
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randint(1, 31)
@@ -423,15 +474,23 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="x
   reg3 = regconfig[3]
 
   lines = "\n# Testcase " + str(desc) + "\n"
-  if (test in fr4type): 
+  if (test in rd_rs1_rs2_rs3_format): 
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-  elif (test in fitype + fixtype + X2Ftype + F2Xtype):
+  elif (test in rd_rs1_format):
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
-  else:
+  elif (test in flitype):
+    lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
+    lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
+    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+  elif (test in rd_rs1_rs2_format):
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
     lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
+  else:
+    # TODO: need to make new cases for instruction formats not accounted for above
+    print(f"Warning: Hazard tests not yet implemented for {test}")
+    pass
   f.write(lines)
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
@@ -580,6 +639,11 @@ def make_rd_corners(test, xlen, corners):
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+  elif (test == "c.lui"):
+    for v in corners:
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
   else:
     for v in corners:
       # rs1 = 0, rs2 = v, others are random
@@ -678,8 +742,8 @@ def make_j_imm_ones_zeros(test, xlen):
     lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
     if (test == "jal"):
       lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
-    elif (test == "c.j"):
-      lines = lines + "c.j  1f # jump to aligned address to stress immediate\n"
+    elif (test in ["c.jal", "c.j"]):
+      lines = lines + test + " 1f # jump to aligned address to stress immediate\n"
     lines = lines + ".align " + str(align) + "\n"
     lines = lines + "1:\n"
     f.write(lines)
@@ -690,14 +754,14 @@ def make_jalr_imm_ones_zeros(test, xlen):
     imm_value = 2**i # immediate value from 2^0 to 2^11        
     lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
     lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
-    if (imm_value >= 2047):
-      lines = lines + "addi x21, x21, 2047\n"
-      new_imm = imm_value - 2047
-      lines = lines + "addi x21, x21, " + signedImm12(new_imm)  + "\n"
-    else:
-      lines = lines + "addi x21, x21, " + signedImm12(-imm_value)  + "\n"
+    # if (imm_value >= 2047):
+    #   lines = lines + "addi x21, x21, 2047\n"
+    #   new_imm = imm_value - 2047
+    #   lines = lines + "addi x21, x21, " + signedImm12(new_imm, immOffset=True)  + "\n"
+    # else:
+    lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
 
-    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value, immOffset=True) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
     lines = lines + "1:\n"
     f.write(lines)
 
@@ -707,23 +771,23 @@ def make_offset(test, xlen):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     lines = lines + "2: " + test + " x0, x0, 1b # backward branch\n"
+  elif (test in crtype):
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    rs1 = randint(1, 31)
+    lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
+    lines = lines + test + " x" + str(rs1) + " # backward branch\n"
+  elif (test in cjtype):
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    lines = lines + "2: " + "nop\n"
+    lines = lines + test + " 1b" + " # backward branch\n"
   elif (test in cbtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
     lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
     lines = lines + test + " x8,  1b # backward branch\n"
-  elif (test in cjtype):
-    if (test == "c.j"):
-      lines = lines + "li t2,0\n"
-      lines = lines + "li t1,1\n"
-      lines = lines + "label2:\n"
-      lines = lines + "beq  t1, t2, label3\n"    
-      lines = lines + test + " label1\n"
-      lines = lines + "label1:\n"
-      lines = lines + "li t1,0\n"
-      lines = lines + test + " label2\n"
-      lines = lines + "label3:\n"
   lines = lines + "3: nop # done with sequence\n"
   f.write(lines)
 
@@ -803,8 +867,13 @@ def make_frm(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
 
 def make_cr_fs1_fs2_corners(test, xlen, frm = False):
-  for v1 in fcorners:
-    for v2 in fcorners:
+  corners = fcorners
+  if test[-1] == "h":
+    corners = fcornersH
+  if test[-1] == "d":
+    corners = fcornersD
+  for v1 in corners:
+    for v2 in corners:
       # select distinct fs1 and fs2
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       while rs1 == rs2:
@@ -813,8 +882,13 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_cr_fs1_fs3_corners(test, xlen, frm = False):
-  for v1 in fcorners:
-    for v2 in fcorners:
+  corners = fcorners
+  if test[-1] == "h":
+    corners = fcornersH
+  if test[-1] == "d":
+    corners = fcornersD
+  for v1 in corners:
+    for v2 in corners:
       # select distinct fs1 and fs3
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs3_corners (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
@@ -849,7 +923,7 @@ def write_tests(coverpoints, test, xlen):
         f.write("\n# Testcase cp_asm_count\nc.nop\n")
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
-    elif(coverpoint == "cp_rd_nx0"):
+    elif(coverpoint == "cp_rd_nx0" or coverpoint == "cp_rd_nx2"):
       make_rd(test, xlen, range(1,32))
     elif (coverpoint == "cp_rdp"):
       make_rd(test, xlen, range(8, 16))
@@ -928,6 +1002,8 @@ def write_tests(coverpoints, test, xlen):
         make_rd_corners(test, xlen, c_srai_64_corners)
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
+    elif (coverpoint == "cp_rd_corners_clui"):
+      make_rd_corners(test, xlen, corners_6bits)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
@@ -988,11 +1064,11 @@ def write_tests(coverpoints, test, xlen):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
       make_rd_corners(test,xlen,corners_sraiw)
-    elif (coverpoint == "cp_imm_ones_zeros" or coverpoint == "cp_imm_ones_zeros_nbit_0_1"):
+    elif (coverpoint == "cp_imm_ones_zeros"):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"): 
         make_jalr_imm_ones_zeros(test, xlen)
-      elif (test == "c.j"):
+    elif (coverpoint == "cp_imm_ones_zeros_c_jal"):
         make_j_imm_ones_zeros(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
@@ -1028,15 +1104,15 @@ def write_tests(coverpoints, test, xlen):
     #   make_fs1_corners(test, xlen)
     # elif (coverpoint == "cp_fs2_corners"):
     #   make_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners"):
+    elif (coverpoint in ["cr_fs1_fs2_corners", "cr_fs1_fs2_corners_H", "cr_fs1_fs2_corners_D"]):
       make_cr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm"):
+    elif (coverpoint in ["cr_fs1_fs2_corners_frm", "cr_fs1_fs2_corners_frm_H", "cr_fs1_fs2_corners_frm_D"]):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs2_corners_frm4"):
+    elif (coverpoint in ["cr_fs1_fs2_corners_frm4", "cr_fs1_fs2_corners_frm4_H", "cr_fs1_fs2_corners_frm4_D"]):
       make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs3_corners_frm"):
+    elif (coverpoint in ["cr_fs1_fs3_corners_frm", "cr_fs1_fs3_corners_frm_H", "cr_fs1_fs3_corners_frm_D"]):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
-    elif (coverpoint == "cr_fs1_fs3_corners_frm4"):
+    elif (coverpoint in ["cr_fs1_fs3_corners_frm4", "cr_fs1_fs3_corners_frm4_H", "cr_fs1_fs3_corners_frm4_D"]):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
     elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
       make_frm(test, xlen)
@@ -1091,23 +1167,42 @@ if __name__ == '__main__':
   jtype = ["jal"]
   jalrtype = ["jalr"]
   utype = ["lui", "auipc"]
-  fltype = ["flw", "flh"]
-  fstype = ["fsw", "fsh"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fmv.x.h", "fcvt.l.s", "fcvt.lu.s"]
+  fltype = ["flw", 
+            "flh",
+            "fld"]
+  fstype = ["fsw", 
+            "fsh",
+            "fsd"]
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
+             "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h",
+             "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
-             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h"]
+             "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h",
+             "fmadd.d", "fmsub.d", "fnmadd.d", "fnmsub.d"]
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
-            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h"]
-  fitype = ["fsqrt.s", "fsqrt.h"]
-  fixtype = ["fclass.s", "fclass.h"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fcvt.w.x", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu"]
-  fcomptype = ["feq.s", "flt.s", "fle.s"]
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h",
+            "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d"]
+  fitype = ["fsqrt.s", 
+            "fsqrt.h", 
+            "fsqrt.d",
+            "fcvt.s.h", "fcvt.h.s",
+            "fcvt.s.d", "fcvt.d.s", 
+            "fcvt.d.h", "fcvt.h.d"]
+  fixtype = ["fclass.s", 
+             "fclass.h",
+             "fclass.d"]
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
+             "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
+             "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
+  fcomptype = ["feq.s", "flt.s", "fle.s",
+               "feq.h", "flt.h", "fle.h",
+               "feq.d", "flt.d", "fle.d"]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
-  cltype = ["c.lw","c.ld"]
-  cstype = ["c.sw","c.sd"]
+  cltype = ["c.lw","c.ld","c.flw"]
+  cstype = ["c.sw","c.sd","c.fsw"]
   csstype = ["c.sdsp","c.swsp"]
-  crtype = ["c.add", "c.mv"]
+  crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
   catype = ["c.sub","c.or","c.and","c.xor","c.subw","c.addw","c.mul"]
@@ -1119,14 +1214,23 @@ if __name__ == '__main__':
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
+  zcftype = ["c.flw", "c.fsw"] # Zcf instructions
+  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
 
-  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype
   # instructions with all float args
-  regconfig_ffff = frtype + fr4type + fitype
+  regconfig_ffff = frtype + fr4type + fitype + flitype
   # instructions with int first arg and the rest float args
   regconfig_xfff = F2Xtype + fcomptype + fixtype
   # instructions with fp first arg and the rest int args
   regconfig_fxxx = X2Ftype
+
+  # for writeHazardVectors
+  rd_rs1_rs2_format = rtype + frtype + fcomptype
+  rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
+  rd_rs1_rs2_rs3_format = fr4type
+  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
+  rd_imm_format = citype + cstype + ciwtype + cbptype 
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
@@ -1141,9 +1245,11 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb"]
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD"]
     if (xlen == 64):
-        extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
+      extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
+    if (xlen == 32):
+      extensions += ["Zcf"]   # Add extensions which are specific to RV32
     for extension in extensions:
       coverdefdir = WALLY+"/addins/cvw-arch-verif/fcov/rv"+str(xlen)
       coverfiles = ["RV"+str(xlen)+extension] 
