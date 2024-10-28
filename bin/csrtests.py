@@ -57,9 +57,6 @@ def csrtests(pathname, US):
     else:
         rng = range(4096)
     for i in rng:
-        # 7a0-7a5 are debug/trace registers implemented in ImperasDV but not Wally (Issue 1031) ***skipped until fixed
-        while (i == mseccfgReg or (i >= 0x7a0 and i <= 0x7a5)): # *** skip msseccfg tests causing mismatches for now *** FIX ME *** Issue 1007
-            i = i + 1
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
         reg3 = randint(1, 31)
@@ -90,11 +87,9 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth"] # ***removed "mseccfg" until Issue 1007 resolved 
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth", "mseccfg"] 
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120", "stimecmp", "stimecmph"]
 uregs = ["fflags", "frm", "fcsr"]
-
-mseccfgReg = 0x747
 
 WALLY = os.environ.get('WALLY')
 
