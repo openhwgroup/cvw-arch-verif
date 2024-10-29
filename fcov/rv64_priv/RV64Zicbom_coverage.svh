@@ -23,24 +23,24 @@ typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64zicbo
 covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
     option.per_instance = 1; 
     option.comment = "cbo_inval";
-    priv_mode: coverpoint ins.current.mode iff (ins.current.valid){
+    priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
         bins U_mode = {2'b00};
     }
-    menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4] iff (ins.current.valid){
+    menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4]{
         bins insrt_exception = {2'b00};
         bins flush = {2'b01};
         bins inval = {2'b11};
     }
-    senvcfg_cbie: coverpoint ins.current.csr[12'h10A][5:4] iff (ins.current.valid){
+    senvcfg_cbie: coverpoint ins.current.csr[12'h10A][5:4]{
         bins insrt_exception = {2'b00};
         bins flush = {2'b01};
         bins inval = {2'b11};
     }
-    cbo: coverpoint ins.current.insn iff (ins.current.valid){
-        bins inval = {32'b000000000000_?????_010_00000_0001111};
+    cbo: coverpoint ins.current.insn{
+        wildcard bins inval = {32'b000000000000_?????_010_00000_0001111};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.current.valid){
+    Mcause: coverpoint  ins.current.csr[12'h342]{
         bins illegal_ins = {64'd2};
     }
     illegal_ins_exception_m: cross priv_mode, menvcfg_cbie, cbo, Mcause{ //inv.1
@@ -91,7 +91,7 @@ covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
         bins not_set = {1'b0};
     }
     cbo: coverpoint ins.current.insn {
-        bins clean = {32'b000000000001_?????_010_00000_0001111};
+        wildcard bins clean = {32'b000000000001_?????_010_00000_0001111};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
         bins illegal_ins = {64'd2};
@@ -130,7 +130,7 @@ covergroup cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
         bins not_set = {1'b0};
     }
     cbo: coverpoint ins.current.insn {
-        bins flush = {32'b000000000010_?????_010_00000_0001111};
+        wildcard bins flush = {32'b000000000010_?????_010_00000_0001111};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
         bins illegal_ins = {64'd2};

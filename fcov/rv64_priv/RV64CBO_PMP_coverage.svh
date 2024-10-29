@@ -24,12 +24,12 @@ covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
     option.per_instance = 1; 
     option.comment = "exceptions_pmp";
     //pte permission for leaf PTEs
-    PTE_d: coverpoint ins.current.PTE_d[7:0] iff (ins.current.valid) {
+    PTE_d: coverpoint ins.current.PTE_d[7:0] {
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
     //aligned PPN for DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
-    PPN_d: coverpoint ins.current.PPN_d[26:0] iff (ins.current.valid) {
+    PPN_d: coverpoint ins.current.PPN_d[26:0] {
         bins tera_zero = {27'd0};
         wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
         wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
@@ -37,7 +37,7 @@ covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
     }
 
     //satp.mode for coverage of both sv39 and sv48
-    mode: coverpoint  ins.current.csr[12'h180][63:60] iff (ins.current.valid) {
+    mode: coverpoint  ins.current.csr[12'h180][63:60] {
         bins sv48   = {4'b1001};
         bins sv39   = {4'b1000};
     }
@@ -53,29 +53,29 @@ covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
     }
 
     //For crosses with write accesses and its corresponding faults
-    write_acc: coverpoint ins.current.WriteAccess iff (ins.current.valid) {
+    write_acc: coverpoint ins.current.WriteAccess {
         bins set = {1};
     }
 
-    Scause: coverpoint ins.current.csr[12'h142] iff (ins.current.valid){
+    Scause: coverpoint ins.current.csr[12'h142]{
         bins store_amo_acc = {64'd7};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.current.valid) {
+    Mcause: coverpoint  ins.current.csr[12'h342] {
         bins store_amo_acc = {64'd7};
     }
 
     cbo_ins: coverpoint ins.current.insn {
-        bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
+        wildcard bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
     }
 
-    PMP0_PTE: coverpoint  ins.current.csr[12'h3A0][7:0] iff (ins.current.valid) {
+    PMP0_PTE: coverpoint  ins.current.csr[12'h3A0][7:0] {
         wildcard bins nowrite  = {8'b?????101};
     }
 
     pmp0_pte_nowrite_s: cross PTE_perm_s_d, mode, PMP0_PTE, Scause, write_acc; //pmp.2
     pmp0_pte_nowrite_u: cross PTE_perm_u_d, mode, PMP0_PTE, Mcause, write_acc; //pmp.2
 
-    PMP0_PA: coverpoint  ins.current.csr[12'h3A0][15:8] iff (ins.current.valid) {
+    PMP0_PA: coverpoint  ins.current.csr[12'h3A0][15:8] {
         wildcard bins nowrite  = {8'b?????101};
     }
 
