@@ -252,54 +252,313 @@ formbits:
 
 /////////////////////////////////
 // Endianness testing
-/////////////////////////////////
-    # store an pattern in memory for testing endiannes
-    la t2, scratch
-    li t0, 0x01020304
-    sw t0, 0(t2)
-    li t0, 0x05060708
-    sw t0, 4(t2)
-
-/////////////////////////////////
 // cp_mstatush_mbe_endianness
 // cp_mstatus_mbe_endianness
 /////////////////////////////////
-    li t0, 0x20 # 1 in bit 5 for MBE
-    li t1, 0x1
-    slli t1, t1, 30
-    slli t1, t1, 7
-    csrrs t6, mstatush, t0  # for RV32, set mstatush.MBE
-    csrrs t6, mstatus, t1   # for RV64, set mstatus.MBE
-    jal endianaccess
-    csrrc t6, mstatush, t0  # for RV32, clear mstatush.MBE
-    csrrc t6, mstatus, t1   # for RV64, clear mstatus.MBE
-    jal endianaccess
-    j postendian
+    # save mstatus
+    # prep s1 and s2 with bits to set/clear MBE for RV32/RV64
+    # always do both.  One or the other will trap, but this
+    # avoids needing separate code for the two architectures
+    # code assumes s registers are saved during these tests
+    csrr s0, mstatus    # save CSR
+    li s1, 0x20 # 1 in bit 5 for mstatush.MBE
+    li s2, 0x1
+    slli s2, s2, 30
+    slli s2, s2, 7  # 1 in bit 37 for mstatus.MBE
+    la s3, scratch  # pointer to scratch
 
-endianaccess:
-    # Try all the accesses to make sure they work for the endianness
-    lb t3, 0(t2)
-    lb t3, 1(t2)
-    lb t3, 2(t2)
-    lb t3, 3(t2)
-    lb t3, 4(t2)
-    lb t3, 5(t2)
-    lb t3, 6(t2)
-    lb t3, 7(t2)
-    lh t3, 0(t2)
-    lh t3, 2(t2)
-    lh t3, 4(t2)
-    lh t3, 6(t2)
-    lw t3, 0(t2)
-    lw t3, 4(t2)
-    ld t3, 0(t2) # will trap in RV32, but that's ok
+    # iterate over each endianness, doing all sizes of stores and loads
+    li s4, 0        # endianness for write
+    li s5, 0        # endianness for read
+    jal endiantest  # test little-endian read and write
+    li s4, 1        # endianness for write
+    jal endiantest  # test big-endian write, little-endian read
+    li s5, 1        # endianness for read
+    jal endiantest  # test big-endian read and write
+    li s4, 0        # endianness for write
+    jal endiantest  # test little-endian write, big-endian read
+    j postendian    
+
+endiantest:
+    # save away ra on stack
+    sd ra, 0(sp)
+    addi sp, sp, -8
+    # Try each size of stores with the write endianness, and then the loads with the read endianness
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    # Test storing bytes
+    li t0, 0x01
+    sb t0, 0(s3)
+    li t0, 0x02
+    sb t0, 1(s3)
+    li t0, 0x03
+    sb t0, 2(s3)
+    li t0, 0x04
+    sb t0, 3(s3)
+    li t0, 0x05
+    sb t0, 4(s3)
+    li t0, 0x06
+    sb t0, 5(s3)
+    li t0, 0x07
+    sb t0, 6(s3)
+    li t0, 0x08
+    sb t0, 7(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    li t0, 0x1112
+    sh t0, 0(s3)
+    li t0, 0x1314
+    sh t0, 2(s3)
+    li t0, 0x1516
+    sh t0, 4(s3)
+    li t0, 0x1718
+    sh t0, 6(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+     li t0, 0x21222324
+    sw t0, 0(s3)
+    li t0, 0x25262728
+    sw t0, 4(s3)
+    jal endianaccess
+    mv a0, s4       # setEndianness(write)
+    jal setendianness
+    li t0, 0x3132333435363738
+    sd t0, 0(s3)
+    jal endianaccess
+    # restore return address from stack
+    addi sp, sp, 8
+    ld ra, 0(sp)
     ret
 
-postendian:
+setendianness:
+    // if a0 = 1, bigendian, otherwise littleendian
+    beqz a0, 1f      # little endian
+    csrrs t6, mstatush, s0  # for RV32, set mstatush.MBE
+    csrrs t6, mstatus, s1   # for RV64, set mstatus.MBE
+    ret
+1:  csrrc t6, mstatush, s0  # for RV32, clear mstatush.MBE
+    csrrc t6, mstatus, s1   # for RV64, clear mstatus.MBE
+    ret
 
+endianaccess:
+    // Try all the accesses to make sure they work for the endianness
+    # save away ra on stack
+    sd ra, 0(sp)            # This will need to change for RV32
+    addi sp, sp, -8         # change for RV32 (several places in this file)
+    mv a0, s5   # setEndianness(read)
+    jal setendianness
+    lb t3, 0(s3)
+    lb t3, 1(s3)
+    lb t3, 2(s3)
+    lb t3, 3(s3)
+    lb t3, 4(s3)
+    lb t3, 5(s3)
+    lb t3, 6(s3)
+    lb t3, 7(s3)
+    lbu t3, 0(s3)
+    lbu t3, 1(s3)
+    lbu t3, 2(s3)
+    lbu t3, 3(s3)
+    lbu t3, 4(s3)
+    lbu t3, 5(s3)
+    lbu t3, 6(s3)
+    lbu t3, 7(s3)
+    lh t3, 0(s3)
+    lh t3, 2(s3)
+    lh t3, 4(s3)
+    lh t3, 6(s3)
+    lhu t3, 0(s3)
+    lhu t3, 2(s3)
+    lhu t3, 4(s3)
+    lhu t3, 6(s3)
+    lw t3, 0(s3)
+    lw t3, 4(s3)
+    lwu t3, 0(s3) # will trap in RV32, but that's ok
+    lwu t3, 4(s3) # will trap in RV32
+    ld t3, 0(s3) # will trap in RV32
+    # restore return address from stack
+    addi sp, sp, 8
+    ld ra, 0(sp)
+    ret
 
+postendian: 
+    csrrw t6, mstatus, s0    # restore CSR
 
-// *** instructions
+/////////////////////////////////
+// cp_ecall
+/////////////////////////////////
+
+li t0, 3
+ecall       # switch from machine mode to machine mode
+
+/////////////////////////////////
+// cp_ebreak
+/////////////////////////////////
+
+ebreak       # take a trap, and the trap handler returns
+
+/////////////////////////////////
+// cp_mret
+/////////////////////////////////
+// Sweep executing mret in machine mode across cross-product of mpp, mprv, mpie, mie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # mpp = 00  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000008   # mpp = 00  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000080   # mpp = 00  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000088   # mpp = 00  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020000   # mpp = 00  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020008   # mpp = 00  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020080   # mpp = 00  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020088   # mpp = 00  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00000800   # mpp = 01  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00000808   # mpp = 01  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00000880   # mpp = 01  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00000888   # mpp = 01  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00020800   # mpp = 01  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00020808   # mpp = 01  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00020880   # mpp = 01  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00020888   # mpp = 01  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00001800   # mpp = 11  mprv = 0  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00001808   # mpp = 11  mprv = 0  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00001880   # mpp = 11  mprv = 0  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00001888   # mpp = 11  mprv = 0  mpie = 1 mie = 1
+    jal mrettest
+    li a0, 0x00021800   # mpp = 11  mprv = 1  mpie = 0 mie = 0
+    jal mrettest
+    li a0, 0x00021808   # mpp = 11  mprv = 1  mpie = 0 mie = 1
+    jal mrettest
+    li a0, 0x00021880   # mpp = 11  mprv = 1  mpie = 1 mie = 0
+    jal mrettest
+    li a0, 0x00021888   # mpp = 11  mprv = 1  mpie = 1 mie = 1
+    jal mrettest
+    j sretsetup
+
+mrettest:
+    la t1, mrettest_mepc    
+    csrrw t6, mepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    mret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+
+mrettest_mepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+sretsetup:
+
+/////////////////////////////////
+// cp_sret
+/////////////////////////////////
+// Sweep executing sret in machine mode across cross-product of spp, mprv, tsr, spie, sie
+
+    csrr s0, mstatus    # save mstatus
+
+    li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000002   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000020   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000022   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00000100   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00000102   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00000120   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00000122   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020000   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020002   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020020   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020022   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00020100   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00020102   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00020120   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00020122   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400000   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400002   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400020   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400022   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00400100   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00400102   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00400120   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00400122   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420000   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420002   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420020   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420022   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 1
+    jal srettest
+    li a0, 0x00420100   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 0
+    jal srettest
+    li a0, 0x00420102   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 1
+    jal srettest
+    li a0, 0x00420120   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 0
+    jal srettest
+    li a0, 0x00420122   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 1
+    jal srettest
+    j postsrettest
+
+srettest:
+    la t1, srettest_sepc    
+    csrrw t6, sepc, t1      # return to mrettest_mepc when done
+    csrrw t6, mstatus, a0   # preload mstatus with argument
+    sret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
+    nop                     # should be skipped
+    nop                     # should be skipped
+
+srettest_sepc:
+    li a0, 3                
+    ecall                   # make sure we return to machine mode
+    csrrw t6, mstatus, s0   # restore mstatus
+    ret
+
+postsrettest:
 
 /////////////////////////////////
 // walking 1s and 0s for each register, also 11 in 2-bit fields
@@ -330,10 +589,11 @@ postendian:
 /////////////////////////////////
 
 #include "Zicsr-CSR-Tests.h"
+// for M mode, skips writing PMP CSRs that would hang the DUT when messed with like this
+// *** for ZicsrU/ZicsrS tests, also include Zicsr-CSR-USPMPWrite-Tests.h here to (unsuccessfully) try writing the PMP CSRs
 
 finished:
     j done
-
 
 /////////////////////////////////
 // Fast trap handler for illegal instructions (when testing writes to CSRs that may be non-existent)
