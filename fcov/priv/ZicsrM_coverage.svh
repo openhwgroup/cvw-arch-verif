@@ -30,21 +30,17 @@ covergroup csr_cg with function sample(ins_zicsrm_t ins);
         option.weight = 0;
         bins nonzero = { [1:$] }; // rd != 0
     }
-    nonzerors1: coverpoint ins.current.insn[19:15] {
-        //option.weight = 0;
-        bins nonzero = { !0 }; // rs1 != 0
-    }
     csrr: coverpoint ins.current.insn  {
-        wildcard bins csrr = {32'b????????????_00000_010_?????_1110011}; // *** how to specify nonzero destination?
+        wildcard bins csrr = {32'b????????????_00000_010_?????_1110011};
     }
     csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; // *** how to specify nonzero source?
+        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csrrs: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_010_?????_1110011}; // *** how to specify nonzero source?
+        wildcard bins csrrw = {32'b????????????_?????_010_?????_1110011};
     }
     csrrc: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_011_?????_1110011}; // *** how to specify nonzero source?
+        wildcard bins csrrw = {32'b????????????_?????_011_?????_1110011};
     }
     csr: coverpoint ins.current.insn[31:20]  {
         // automtically gives all 4096 bins
@@ -55,7 +51,6 @@ covergroup csr_cg with function sample(ins_zicsrm_t ins);
     rs1_ones: coverpoint ins.current.rs1_val {
         bins ones = {'1};
     }
-
     rs1_corners: coverpoint ins.current.rs1_val {
         bins zero = {0};
         bins ones = {'1};
@@ -115,10 +110,7 @@ covergroup mcause_cg with function sample(ins_zicsrm_t ins);
         bins b_17_reserved = {17};
         bins b_18_software_check = {18};
         bins b_19_hardware_error = {19};
-        bins b_20_reserved = {20};
-        bins b_21_reserved = {21};
-        bins b_22_reserved = {22};
-        bins b_23_reserved = {23};
+        bins b_20_reserved = {[23:20]]};
         bins b_31_24_custom = {[31:24]};
         bins walkingones = {128}; 
     }
