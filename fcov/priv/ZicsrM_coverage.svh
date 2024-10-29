@@ -75,13 +75,13 @@ endgroup
 
 covergroup mcause_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 1; 
-    option.comment = "ZicsrM csr";
+    option.comment = "ZicsrM mcause";
  
     csrrw_mcause: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b001101000010_?????_001_?????_1110011};  // csrrw to mcause
     }
     priv_mode_m: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
+       bins M_mode = {2'b11};
     }
     mcause_interrupt : coverpoint ins.current.rs1_val[XLEN-1] {
         bins interrupt = {1};
@@ -106,17 +106,84 @@ covergroup mcause_cg with function sample(ins_zicsrm_t ins);
         bins b_13_load_page_fault = {13};
         bins b_14_reserved = {14};
         bins b_15_store_page_fault = {15};
-        bins b_16_reserved = {16};
-        bins b_17_reserved = {17};
+        bins b_17_16_reserved = {[17:16]};
         bins b_18_software_check = {18};
         bins b_19_hardware_error = {19};
-        bins b_20_reserved = {[23:20]]};
+        bins b_23_20_reserved = {[23:20]};
         bins b_31_24_custom = {[31:24]};
-        bins walkingones = {128}; 
+        bins b_47_32_reserved = {[47:32]};
+        bins b_63_48_custom = {[63:48]};
+        // walking 1s.  Only go up to bit 31 for simplicity, even when XLEN = 64
+        bins w_7  = {'b0000000000000000000000010000000};
+        bins w_8 =  {'b0000000000000000000000100000000};
+        bins w_9 =  {'b0000000000000000000001000000000};
+        bins w_10 = {'b0000000000000000000010000000000};
+        bins w_11 = {'b0000000000000000000100000000000};
+        bins w_12 = {'b0000000000000000001000000000000};
+        bins w_13 = {'b0000000000000000010000000000000};
+        bins w_14 = {'b0000000000000000100000000000000};
+        bins w_15 = {'b0000000000000001000000000000000};
+        bins w_16 = {'b0000000000000010000000000000000};
+        bins w_17 = {'b0000000000000100000000000000000};
+        bins w_18 = {'b0000000000001000000000000000000};
+        bins w_19 = {'b0000000000010000000000000000000};
+        bins w_20 = {'b0000000000100000000000000000000};
+        bins w_21 = {'b0000000001000000000000000000000};
+        bins w_22 = {'b0000000010000000000000000000000};
+        bins w_23 = {'b0000000100000000000000000000000};
+        bins w_24 = {'b0000001000000000000000000000000};
+        bins w_25 = {'b0000010000000000000000000000000};
+        bins w_26 = {'b0000100000000000000000000000000};
+        bins w_27 = {'b0001000000000000000000000000000};
+        bins w_28 = {'b0010000000000000000000000000000};
+        bins w_29 = {'b0100000000000000000000000000000};
+        bins w_30 = {'b1000000000000000000000000000000};
     }
     mcause_interrupt_values: coverpoint ins.current.rs1_val[XLEN-2:0] {
-        bins b_0 = {0};
-        bins b_01 = {1};
+        bins b_0_reserved = {0};
+        bins b_1_supervisor_software = {1};
+        bins b_2_reserved = {2};
+        bins b_3_machine_software = {3};
+        bins b_4_reserved = {4};
+        bins b_5_supervisor_timer = {5};
+        bins b_6_reserved = {6};
+        bins b_7_machine_timer = {7};
+        bins b_8_reserved = {8};
+        bins b_9_supervisor_external = {9};
+        bins b_10_reserved = {10};
+        bins b_11_machine_external = {11};
+        bins b_12_reserved = {12};
+        bins b_13_counter_overflow = {13};
+        bins b_14_reserved = {14};
+        bins b_15_reserved = {15};
+         // walking 1s.  Only go up to bit 31 for simplicity, even when XLEN = 64
+        bins w_4  = {'b0000000000000000000000000010000};
+        bins w_5  = {'b0000000000000000000000000100000};
+        bins w_6  = {'b0000000000000000000000001000000};
+        bins w_7  = {'b0000000000000000000000010000000};
+        bins w_8 =  {'b0000000000000000000000100000000};
+        bins w_9 =  {'b0000000000000000000001000000000};
+        bins w_10 = {'b0000000000000000000010000000000};
+        bins w_11 = {'b0000000000000000000100000000000};
+        bins w_12 = {'b0000000000000000001000000000000};
+        bins w_13 = {'b0000000000000000010000000000000};
+        bins w_14 = {'b0000000000000000100000000000000};
+        bins w_15 = {'b0000000000000001000000000000000};
+        bins w_16 = {'b0000000000000010000000000000000};
+        bins w_17 = {'b0000000000000100000000000000000};
+        bins w_18 = {'b0000000000001000000000000000000};
+        bins w_19 = {'b0000000000010000000000000000000};
+        bins w_20 = {'b0000000000100000000000000000000};
+        bins w_21 = {'b0000000001000000000000000000000};
+        bins w_22 = {'b0000000010000000000000000000000};
+        bins w_23 = {'b0000000100000000000000000000000};
+        bins w_24 = {'b0000001000000000000000000000000};
+        bins w_25 = {'b0000010000000000000000000000000};
+        bins w_26 = {'b0000100000000000000000000000000};
+        bins w_27 = {'b0001000000000000000000000000000};
+        bins w_28 = {'b0010000000000000000000000000000};
+        bins w_29 = {'b0100000000000000000000000000000};
+        bins w_30 = {'b1000000000000000000000000000000};    
     }
 
     // main coverpoints
