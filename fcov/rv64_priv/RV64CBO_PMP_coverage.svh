@@ -65,7 +65,7 @@ covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
     }
 
     cbo_ins: coverpoint ins.current.insn {
-        bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
+        wildcard bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
     }
 
     PMP0_PTE: coverpoint  ins.current.csr[12'h3A0][7:0] {
