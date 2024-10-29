@@ -100,9 +100,18 @@ def unsignedImm1(imm):
 def loadFloatReg(reg, val, xlen, flen):
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
+  if test[-1] == "h":
+    precision = 16
+    loadop = "flh"
+  elif test[-1] == "d":
+    precision = 64
+    loadop = "fld"
+  else:
+    precision = 32
+    loadop = "flw"
   storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
-  loadop  = "flw" if             (flen == 32) else "fld"
-  if (flen > xlen): # flen = 64, xlen = 32
+  # loadop  = "flw" if             (flen == 32) else "fld"
+  if (precision > xlen): # precision = 64, xlen = 32
   # lines = lines + "la x2, scratch # base address \n"
     lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
     lines = lines + f"li x4, 0x{formatstrFP.format(val)[2:10]} # load x4 with 32 LSBs of {formatstrFP.format(val)}\n"
