@@ -38,7 +38,7 @@ covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
         bins inval = {2'b11};
     }
     cbo: coverpoint ins.current.insn iff (ins.current.valid){
-        bins inval = {32'b000000000000_?????_010_00000_0001111};
+        wildcard bins inval = {32'b000000000000_?????_010_00000_0001111};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.current.valid){
         bins illegal_ins = {64'd2};
@@ -91,7 +91,7 @@ covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
         bins not_set = {1'b0};
     }
     cbo: coverpoint ins.current.insn {
-        bins clean = {32'b000000000001_?????_010_00000_0001111};
+        wildcard bins clean = {32'b000000000001_?????_010_00000_0001111};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
         bins illegal_ins = {64'd2};
@@ -130,7 +130,7 @@ covergroup cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
         bins not_set = {1'b0};
     }
     cbo: coverpoint ins.current.insn {
-        bins flush = {32'b000000000010_?????_010_00000_0001111};
+        wildcard bins flush = {32'b000000000010_?????_010_00000_0001111};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
         bins illegal_ins = {64'd2};

@@ -198,7 +198,7 @@ covergroup exceptions_vm_cg with function sample(ins_rv64cbo_vm_t ins);
     }
 
     cbo_ins: coverpoint ins.current.insn {
-        bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
+        wildcard bins any_cbo_ins = {32'b000000000000_?????_010_00000_0001111, 32'b000000000001_?????_010_00000_0001111, 32'b000000000010_?????_010_00000_0001111};
     }
 
     invwrite_s: cross PTE_inv_write_s_d, Scause, write_acc, cbo_ins; //pte.1
