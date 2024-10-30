@@ -475,7 +475,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None):
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None, haz_type='waw'):
   # consecutive R-type instructions to trigger hazards                           ^~~~~~~~~ the types of the registers {rd, rs1, rs2, rs3} (x for int, f for float)
   reg0 = regconfig[0]
   reg1 = regconfig[1]
@@ -483,19 +483,55 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="x
   reg3 = regconfig[3]
 
   lines = "\n# Testcase " + str(desc) + "\n"
+
+  match haz_type:
+    case 'waw':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'war':
+      if reg1 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else: 
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'raw':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+
   if (test in rd_rs1_rs2_rs3_format): 
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
+    lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform second operation\n" 
   elif (test in rd_rs1_format):
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
+    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n"
+    lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform second operation\n" 
   elif (test in flitype):
     lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
-    lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
+    lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform second operation\n" 
     #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
-  elif (test in rd_rs1_rs2_format):
+  elif (test in rd_rs1_rs2_format): 
     lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
+    lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform second operation\n" 
   else:
     # TODO: need to make new cases for instruction formats not accounted for above
     print(f"Warning: Hazard tests not yet implemented for {test}")
@@ -715,7 +751,30 @@ def make_cp_gpr_hazard(test, xlen):
         regconfig = 'xfff'
       if (test in regconfig_fxxx):
         regconfig = 'fxxx'
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b)
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
+
+def make_cp_gpr_hazard_no_war(test, xlen):
+  for haz in ["raw", "waw"]:
+    for src in range(2):
+      [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
+      [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+      # set up hazard
+      if (haz == "raw"):
+        if (src):
+          rs2b = rda
+        else:
+          rs1b = rda
+      elif (haz == "waw"):  
+        rdb = rda
+      desc = "cmp_gpr_hazard " + haz +  " test"
+      regconfig = 'xxxx' # default to all int registers
+      if (test in regconfig_ffff):
+        regconfig = 'ffff'
+      if (test in regconfig_xfff):
+        regconfig = 'xfff'
+      if (test in regconfig_fxxx):
+        regconfig = 'fxxx'
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
 
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
@@ -1053,6 +1112,8 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint == "cp_gpr_hazard_no_war"):
+      make_cp_gpr_hazard_no_war(test, xlen)
     elif (coverpoint == "cp_fpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
