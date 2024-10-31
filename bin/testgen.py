@@ -347,9 +347,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
+        if(str(desc[0:5]) == "cp_rs2"): #If conflict occurs and cp_rs2 is being tested, change rs1
+          rs1 = (rs1 + 1) % 32
+        elif(str(desc[0:5]) == "cp_rs1"): #If conflict occurs and cp_rs1 is being tested, change rs2
           rs2 = (rs1 + 1) % 32
-          if (rs2 == 0):
-            rs2 = 1
+        if (rs2 == 0):
+          rs2 = 1
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
