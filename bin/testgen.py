@@ -1125,6 +1125,10 @@ def write_tests(coverpoints, test, xlen):
       make_cr_fs1_fs3_corners(test, xlen, frm = True)
     elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
       make_frm(test, xlen)
+    elif (coverpoint.startswith("cp_csr_fflags")):
+      pass # doesn't require designated tests
+    elif (coverpoint == "cp_csr_frm"):
+      pass # already covered by cp_frm tests
       
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
