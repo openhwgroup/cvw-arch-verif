@@ -882,6 +882,13 @@ def make_fd_fs2(test, xlen):
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_fd_fs3(test, xlen, frm=False):
+  for r in range(32):
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cmp_fd_fs3 (Test fd = fs3 = f" + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val, frm=frm)
+
+
 def make_frm(test, xlen):
   [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
   desc = "cp_frm"
@@ -1121,6 +1128,8 @@ def write_tests(coverpoints, test, xlen):
       make_fd_fs1(test, xlen)
     elif (coverpoint == "cmp_fd_fs2"):
       make_fd_fs2(test, xlen)
+    elif (coverpoint == "cmp_fd_fs3"):
+      make_fd_fs3(test, xlen)
     # elif (coverpoint == "cp_fs1_corners"):
     #   make_fs1_corners(test, xlen)
     # elif (coverpoint == "cp_fs2_corners"):
