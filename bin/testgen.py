@@ -458,8 +458,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "la x2, scratch" + " # base address \n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
-      lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + " # perform operation\n"
-    else:
+      rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
+      lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n"
+    else: #                                                       ^~~~~~~~~ adds nothing if test != fcvtmod
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr)
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
@@ -474,6 +475,17 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + testInstr
     else:
       lines = lines + genFrmTests(testInstr)
+  elif test in PX2Ftype: # ["fmvp.d.x"]
+    lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
+    lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load immediate value into integer register\n"
+    testInstr = f"{test} f{rd}, x{rs1}, x{rs2}"
+    if not frm:
+      lines = lines + testInstr
+    else:
+      lines = lines + genFrmTests(testInstr)
+  elif test in flitype:
+    lines = lines + f"{test} f{rd}, {flivals[rs1]} # perform operation\n"
+    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -1191,16 +1203,16 @@ if __name__ == '__main__':
             "fsd"]
   F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
              "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h",
-             "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d"]
+             "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d", "fmvh.x.d", "fcvtmod.w.d"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
              "fmadd.h", "fmsub.h", "fnmadd.h", "fnmsub.h",
              "fmadd.d", "fmsub.d", "fnmadd.d", "fnmsub.d"]
-  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", 
-            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h",
-            "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d"]
-  fitype = ["fsqrt.s", 
-            "fsqrt.h", 
-            "fsqrt.d",
+  frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", "fminm.s", "fmaxm.s",
+            "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h", "fminm.h", "fmaxm.h",
+            "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d", "fminm.d", "fmaxm.d",]
+  fitype = ["fsqrt.s", "froundnx.s", #, "fround.s"
+            "fsqrt.h", "froundnx.h", #, "fround.h" TODO: restore fround.* after resolving mismatches
+            "fsqrt.d", "fround.d", "froundnx.d",
             "fcvt.s.h", "fcvt.h.s",
             "fcvt.s.d", "fcvt.d.s", 
             "fcvt.d.h", "fcvt.h.d"]
@@ -1210,9 +1222,11 @@ if __name__ == '__main__':
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
              "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
              "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
-  fcomptype = ["feq.s", "flt.s", "fle.s",
-               "feq.h", "flt.h", "fle.h",
-               "feq.d", "flt.d", "fle.d"]
+  PX2Ftype = [] # ["fmvp.d.x"] # pair of integer registers to a single fp register
+  #                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fmvp once wally bug is fixed
+  fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
+               "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
+               "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
   citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld","c.flw"]
@@ -1231,15 +1245,15 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw"] # Zcf instructions
-  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
-
-  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype
+  flitype = [] # ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
+  #                 ^~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fli type instructions after creating new sample function
+  floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype
   # instructions with all float args
   regconfig_ffff = frtype + fr4type + fitype + flitype
   # instructions with int first arg and the rest float args
   regconfig_xfff = F2Xtype + fcomptype + fixtype
   # instructions with fp first arg and the rest int args
-  regconfig_fxxx = X2Ftype
+  regconfig_fxxx = X2Ftype + PX2Ftype
 
   # for writeHazardVectors
   rd_rs1_rs2_format = rtype + frtype + fcomptype
@@ -1247,6 +1261,40 @@ if __name__ == '__main__':
   rd_rs1_rs2_rs3_format = fr4type
   rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
   rd_imm_format = citype + cstype + ciwtype + cbptype 
+
+  # map register encodings to literal values for fli.*
+  flivals = { 0: -1.0,
+              1: "min",
+              2: "0x1p-16", 
+              3: "0x1p-15", 
+              4: "0x1p-8", 
+              5: "0x1p-7", 
+              6: 0.0625,
+              7: 0.125,
+              8: 0.25,
+              9: 0.3125,
+             10: 0.375,
+             11: 0.4375,
+             12: 0.5,
+             13: 0.625,
+             14: 0.75,
+             15: 0.875,
+             16: 1.0,
+             17: 1.25,
+             18: 1.5,
+             19: 1.75,
+             20: 2.0,
+             21: 2.5,
+             22: 3.0,
+             23: 4.0,
+             24: 8.0,
+             25: 16.0,
+             26: 128.0,
+             27: 256.0,
+             28: "0x1p15",
+             29: "0x1p16",
+             30: "inf",
+             31: "nan" }
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
@@ -1261,7 +1309,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD"]
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh"]
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
