@@ -18,10 +18,10 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_RV64VM_PMP
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_pmp_t;
+`define COVER_RV32VM_PMP
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32vm_pmp_t;
 
-covergroup PMP_cg with function sample(ins_rv64vm_pmp_t ins);
+covergroup PMP_cg with function sample(ins_rv32vm_pmp_t ins);
     option.per_instance = 1; 
     option.comment = "PMP";
     //pte permission for leaf PTEs
@@ -34,43 +34,34 @@ covergroup PMP_cg with function sample(ins_rv64vm_pmp_t ins);
         wildcard bins leaflvl_s = {8'b???01111};
     }
     //aligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
-    PPN_i: coverpoint ins.current.PPN_i[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
+    PPN_i: coverpoint ins.current.PPN_i[9:0] {
+        bins mega_zero = {10'd0};
+        bins not_zero = {!10'd0}; 
     }
-    PPN_d: coverpoint ins.current.PPN_d[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
+    PPN_d: coverpoint ins.current.PPN_d[9:0] {
+        bins mega_zero = {10'd0};
+        bins not_zero = {!10'd0}; 
     }
 
     //satp.mode for coverage of both sv39 and sv48
-    mode: coverpoint  ins.current.csr[12'h180][63:60] {
-        bins sv48   = {4'b1001};
-        bins sv39   = {4'b1000};
+    mode: coverpoint  ins.current.csr[12'h180][31] {
+        bins sv32   = {1'b1};
     }
 
     PTE_perm_s_i: cross PTE_i, PPN_i, mode  {
         ignore_bins ig1 = binsof(PTE_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
     }
 
     PTE_perm_u_i: cross PTE_i, PPN_i, mode  {
         ignore_bins ig1 = binsof(PTE_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
     }
 
     PTE_perm_s_d: cross PTE_d, PPN_d, mode  {
         ignore_bins ig1 = binsof(PTE_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
     }
 
     PTE_perm_u_d: cross PTE_d, PPN_d, mode  {
         ignore_bins ig1 = binsof(PTE_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
     }
 
     //For crosses with Read, write and execute accesses and their corresponding faults
@@ -85,14 +76,14 @@ covergroup PMP_cg with function sample(ins_rv64vm_pmp_t ins);
     }
 
     Scause: coverpoint ins.current.csr[12'h142]{
-        bins load_page_acc = {64'd5};
-        bins ins_acc_fault  = {64'd1};
-        bins store_amo_acc = {64'd7};
+        bins load_page_acc = {32'd5};
+        bins ins_acc_fault  = {32'd1};
+        bins store_amo_acc = {32'd7};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
-        bins load_page_acc = {64'd5};
-        bins ins_acc_fault  = {64'd1};
-        bins store_amo_acc = {64'd7};
+        bins load_page_acc = {32'd5};
+        bins ins_acc_fault  = {32'd1};
+        bins store_amo_acc = {32'd7};
     }
 
     PMP0_PTE: coverpoint  ins.current.csr[12'h3A0][7:0] {
@@ -173,8 +164,8 @@ covergroup PMP_cg with function sample(ins_rv64vm_pmp_t ins);
     }
 endgroup
 
-function void rv64vm_pmp_sample(int hart, int issue);
-    ins_rv64vm_pmp_t ins;
+function void rv32vm_pmp_sample(int hart, int issue);
+    ins_rv32vm_pmp_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
