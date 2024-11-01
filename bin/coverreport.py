@@ -51,31 +51,31 @@ reportdir = f"{WALLY}/addins/cvw-arch-verif/work"
 configs = {}
 ucdbs = os.listdir(ucdbdir)
 for ucdb in ucdbs:
-    if (ucdb.endswith(".ucdb")):
-        m = re.match(r'^([^_]*)_', ucdb)
-        if m:
-            config = m.group(1)
-            configs[config] = 1
+        if (ucdb.endswith(".ucdb")):
+            m = re.match(r'^([^_]*)_', ucdb)
+            if m:
+                config = m.group(1)
+                configs[config] = 1
 
 # Merge UCDBs for each configuration and generate reports
 for config in configs:
-    cmd = "vcover merge "+reportdir+"/merge_"+config+".ucdb "+ucdbdir+"/"+config+"*.ucdb"
-    #print(cmd)
-    os.system(cmd)
-    
-    cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -output "+reportdir+"/report_"+config+".txt"
-    os.system(cmd)
-    
-    cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -below 100 -output "+reportdir+"/uncovered_"+config+".txt"
-    os.system(cmd)
-    
-    cmd = "grep Covergroup "+reportdir+"/report_"+config+".txt > "+reportdir+"/summary_"+config+".txt"
-    os.system(cmd)
+        cmd = "vcover merge "+reportdir+"/merge_"+config+".ucdb "+ucdbdir+"/"+config+"*.ucdb"
+        #print(cmd)
+        os.system(cmd)
+        
+        cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -output "+reportdir+"/report_"+config+".txt"
+        os.system(cmd)
+        
+        cmd = "vcover report -details "+reportdir+"/merge_"+config+".ucdb -below 100 -output "+reportdir+"/uncovered_"+config+".txt"
+        os.system(cmd)
+        
+        cmd = "grep Covergroup "+reportdir+"/report_"+config+".txt > "+reportdir+"/summary_"+config+".txt"
+        os.system(cmd)
 
-    # Remove duplicates in generated reports
-    remove_duplicates_after_second_header(f"{reportdir}/report_{config}.txt")
-    remove_duplicates_after_second_header(f"{reportdir}/uncovered_{config}.txt")
-    remove_duplicates_after_second_header(f"{reportdir}/summary_{config}.txt")
+        # Remove duplicates in generated reports
+        remove_duplicates_after_second_header(f"{reportdir}/report_{config}.txt")
+        remove_duplicates_after_second_header(f"{reportdir}/uncovered_{config}.txt")
+        remove_duplicates_after_second_header(f"{reportdir}/summary_{config}.txt")
 
-    # skip HTML report because it is a mess doing one for each different config
-    # vcover report -details -html merge.ucdb && \
+        # skip HTML report because it is a mess doing one for each different config
+        # vcover report -details -html merge.ucdb && \
