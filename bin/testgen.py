@@ -544,22 +544,22 @@ def make_rd(test, xlen, rng):
     desc = "cp_rd (Test destination rd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_fd(test, xlen):
-  for r in range(32):
+def make_fd(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fd (Test destination fd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs1(test, xlen):
-  for r in range(32):
+def make_fs1(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs2):
       rs2 = randint(1,31)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs2(test, xlen):
-  for r in range(32):
+def make_fs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs1):
       rs1 = randint(1,31)
@@ -962,11 +962,17 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2p"):
       make_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fd"):
-      make_fd(test, xlen)
+      make_fd(test, xlen, range(32))
+    elif (coverpoint == "cp_fdp"):
+      make_fd(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1"):
-      make_fs1(test, xlen)
+      make_fs1(test, xlen, range(32))
+    elif (coverpoint == "cp_fs1p"):
+      make_fs1(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs2"):
-      make_fs2(test, xlen)
+      make_fs2(test, xlen, range(32))
+    elif (coverpoint == "cp_fs2p"):
+      make_fs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1_corners"):
       make_fs1_corners(test, xlen, fcorners)
     elif (coverpoint == "cp_fs2_corners"):
@@ -1082,7 +1088,11 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rd_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint[:13] == "cp_rd_toggle_" and coverpoint[13:] in ["clui", "slli", "srli", "auipc", "lwu", "lhu", "lbu"]):
+      pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fd_toggle"):
+      pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_fs2_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fd_toggle_lw"):
       pass #TODO toggle not needed and seems to be covered by other things
@@ -1098,6 +1108,8 @@ def write_tests(coverpoints, test, xlen):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"): 
         make_jalr_imm_ones_zeros(test, xlen)
+    elif (coverpoint == "cp_imm_ones_zeros_addi4spn"):
+       pass # not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_ones_zeros_c_jal"):
         make_j_imm_ones_zeros(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
@@ -1116,12 +1128,6 @@ def write_tests(coverpoints, test, xlen):
       make_imm_shift(test, xlen)
     elif coverpoint in ["cp_imm_mul","cp_imm_mul_8","cp_imm_mul_addi4spn","cp_imm_mul_addi16sp","cp_imm_mul_4sp","cp_imm_mul_8sp"]:
       make_imm_mul(test, xlen)
-    elif (coverpoint == "cp_fd"):
-      make_fd(test, xlen)
-    elif (coverpoint == "cp_fs1"):
-      make_fs1(test, xlen)
-    elif (coverpoint == "cp_fs2"):
-      make_fs2(test, xlen)
     elif (coverpoint == "cp_fs3"):
       make_fs3(test, xlen)
     elif (coverpoint == "cp_rd_boolean"):
