@@ -761,7 +761,12 @@ def make_imm_zero(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
 def make_j_imm_ones_zeros(test, xlen):
-  for align in range(2,12):
+  if (test == "jal"):
+    rng = range(2,12)
+  elif (test in ["c.jal", "c.j"]):
+    f.write("\n.align 2" + " # Start at an address multiple of 4. Required for covering 2 byte jump.\n")
+    rng = range(1,11)
+  for align in rng:
     lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
     if (test == "jal"):
       lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
