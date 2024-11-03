@@ -118,42 +118,49 @@ function void rv64zca_sample(int hart, int issue);
             "srli"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_imm(2);
                 c_srli_cg.sample(ins); 
             end
             "srai"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_imm(2);
                 c_srai_cg.sample(ins); 
             end
             "andi"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_imm(2);
                 c_andi_cg.sample(ins); 
             end
             "sub"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_sub_cg.sample(ins); 
             end
             "xor"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_xor_cg.sample(ins); 
             end
             "or"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_or_cg.sample(ins); 
             end
             "and"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_and_cg.sample(ins); 
             end
@@ -229,12 +236,14 @@ function void rv64zca_sample(int hart, int issue);
             "subw"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_subw_cg.sample(ins); 
             end
             "addw"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
+                ins.add_rs1(1);
                 ins.add_rs2(2);
                 c_addw_cg.sample(ins); 
             end

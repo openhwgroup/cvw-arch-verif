@@ -248,8 +248,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "nop\nnop\n"
   elif (test in ciwtype): # addi4spn
     rd = legalizecompr(rd)
+    lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = lines + test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n"
-   # lines = lines + test + " x" + str(rd) + ", sp, 32 # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     if (test in shiftiwtype):
@@ -598,8 +598,8 @@ def make_rd_rs1_rs2(test, xlen):
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_rs2(test, xlen):
-  for r in range(32):
+def make_rs1_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
@@ -1011,12 +1011,16 @@ def write_tests(coverpoints, test, xlen):
       make_rd_rs1(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs2"):
       make_rd_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rd_rs2_nx0"):
+      make_rd_rs2(test, xlen, range(1,32))
     elif (coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
     elif (coverpoint == "cmp_rs1_rs2"):
-      make_rs1_rs2(test, xlen)
+      make_rs1_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rs1_rs2_c"):
+      make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
