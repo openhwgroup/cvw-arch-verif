@@ -104,9 +104,9 @@ covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
     }
 endgroup
 
-covergroup mstatus_cg with function sample(ins_rv64vm_t ins);
+covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 1; 
-    option.comment = "mstatus";
+    option.comment = "mstatus_mprv";
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
     }
@@ -1111,7 +1111,7 @@ function void rv64vm_sample(int hart, int issue);
         PA_VA_cg.sample(ins);
         satp_cg.sample(ins);
         sfence_cg.sample(ins);
-        mstatus_cg.sample(ins);
+        mstatus_mprv_cg.sample(ins);
         vm_permissions_cg.sample(ins);
         res_global_pte_cg.sample(ins);
         add_feature_cg.sample(ins);
