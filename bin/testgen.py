@@ -1228,9 +1228,9 @@ if __name__ == '__main__':
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", "fminm.s", "fmaxm.s",
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h", "fminm.h", "fmaxm.h",
             "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d", "fminm.d", "fmaxm.d",]
-  fitype = ["fsqrt.s", # "froundnx.s", #, "fround.s"
-            "fsqrt.h", # "froundnx.h", #, "fround.h" TODO: restore fround.* after resolving mismatches
-            "fsqrt.d", # "fround.d", "froundnx.d",
+  fitype = ["fsqrt.s", "fround.s", "froundnx.s",  
+            "fsqrt.h", "froundnx.h", "fround.h",
+            "fsqrt.d", "fround.d", "froundnx.d",
             "fcvt.s.h", "fcvt.h.s",
             "fcvt.s.d", "fcvt.d.s", 
             "fcvt.d.h", "fcvt.h.d"]
