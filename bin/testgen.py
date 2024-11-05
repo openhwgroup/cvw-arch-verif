@@ -570,12 +570,14 @@ def make_fd(test, xlen, rng):
     desc = "cp_fd (Test destination fd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs1(test, xlen, rng):
+def make_fs1(test, xlen, rng, fli=False):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs2):
       rs2 = randint(1,31)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
+    if fli:
+      desc = f"cp_fs1_fli (Immediate = {flivals[r]} with fs1 encoding 5'b{format(r, f'05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2(test, xlen, rng):
@@ -1195,7 +1197,8 @@ def write_tests(coverpoints, test, xlen):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
-      
+    elif (coverpoint == "cp_fs1_fli"):
+      make_fs1(test, xlen, range(32), fli=True)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -1297,7 +1300,7 @@ if __name__ == '__main__':
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw"] # Zcf instructions
   zcdtype = ["c.fld", "c.fsd"]
-  flitype = [] # ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
+  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
   #                 ^~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fli type instructions after creating new sample function
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
