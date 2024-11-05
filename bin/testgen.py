@@ -955,6 +955,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
     while rs2 == rs1:
       rs2 = randint(1, 31)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
+    if frm:
+      desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
