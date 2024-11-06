@@ -582,14 +582,12 @@ def make_fd(test, xlen, rng):
     desc = "cp_fd (Test destination fd = x" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs1(test, xlen, rng, fli=False):
+def make_fs1(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs2):
       rs2 = randint(1,31)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
-    if fli:
-      desc = f"cp_rs1_fli (Immediate = {flivals[r]} with fs1 encoding 5'b{format(r, f'05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2(test, xlen, rng):
@@ -600,10 +598,12 @@ def make_fs2(test, xlen, rng):
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_rs1(test, xlen, rng = range(32)):
+def make_rs1(test, xlen, rng = range(32), fli=False):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs1=r, allunique=True)
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
+    if fli:
+      desc = f"cp_rs1_fli (Immediate = {flivals[r]} with rs1 encoding 5'b{format(r, f'05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs2(test, xlen, rng = range(32)):
@@ -1210,7 +1210,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
     elif (coverpoint == "cp_rs1_fli"):
-      make_fs1(test, xlen, range(32), fli=True)
+      make_rs1(test, xlen, range(32), fli=True)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
