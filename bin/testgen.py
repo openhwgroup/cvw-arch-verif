@@ -589,7 +589,7 @@ def make_fs1(test, xlen, rng, fli=False):
       rs2 = randint(1,31)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
     if fli:
-      desc = f"cp_fs1_fli (Immediate = {flivals[r]} with fs1 encoding 5'b{format(r, f'05b')})"
+      desc = f"cp_rs1_fli (Immediate = {flivals[r]} with fs1 encoding 5'b{format(r, f'05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2(test, xlen, rng):
@@ -1209,7 +1209,7 @@ def write_tests(coverpoints, test, xlen):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
-    elif (coverpoint == "cp_fs1_fli"):
+    elif (coverpoint == "cp_rs1_fli"):
       make_fs1(test, xlen, range(32), fli=True)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
