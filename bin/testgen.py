@@ -1313,7 +1313,6 @@ if __name__ == '__main__':
   zcftype = ["c.flw", "c.fsw"] # Zcf instructions
   zcdtype = ["c.fld", "c.fsd"]
   flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
-  #                 ^~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fli type instructions after creating new sample function
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
   regconfig_ffff = frtype + fr4type + fitype + flitype
