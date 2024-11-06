@@ -64,7 +64,7 @@ def SextImm6(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -181,14 +181,17 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if (immval == 0):
         immval = 16
       lines = lines + test + " sp, " + str(immval) + " # perform operation\n"
-    elif test in ["c.lwsp","c.ldsp"]:
+    elif test in ["c.lwsp","c.ldsp","c.flwsp"]:
       if (test == "c.lwsp"):
         storeop = "c.swsp"
+        mul = 4
+      elif (test == "c.flwsp"):
+        storeop = "sw"
         mul = 4
       else:
         storeop = "c.sdsp"
         mul = 8
-      while (rd == 0):
+      while (rd == 0 and (test not in ["c.flwsp"])):
         rd = randint(1,31)     
       while (rs2 == 2):
         rs2 = randint(1,31)
@@ -196,7 +199,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + storeop + " x" + str(rs2) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ")   # store value to put something in memory\n"
-      lines = lines + test + " x" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n"
+      if (test == "c.flwsp"):
+        lines = lines + test + " f" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n"
+      else:
+        lines = lines + test + " x" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n"
     else:
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = lines + test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n"
@@ -899,7 +905,7 @@ def make_imm_mul(test, xlen):
   if test in ciwtype:
     rng = range(1,256)
   elif test in citype or test in csstype:
-    if test in ["c.lwsp", "c.ldsp", "c.swsp", "c.sdsp"]:
+    if test in ["c.lwsp", "c.ldsp", "c.swsp", "c.sdsp","c.flwsp"]:
       rng = range(64)
     else:
       rng = range(-32,32)
@@ -1290,7 +1296,7 @@ if __name__ == '__main__':
   fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
                "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
                "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
-  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp"]
+  citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp","c.flwsp"]
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld","c.flw","c.fld"]
   cstype = ["c.sw","c.sd","c.fsw","c.fsd"]
@@ -1307,7 +1313,7 @@ if __name__ == '__main__':
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
-  zcftype = ["c.flw", "c.fsw"] # Zcf instructions
+  zcftype = ["c.flw", "c.fsw","c.flwsp"] # Zcf instructions
   zcdtype = ["c.fld", "c.fsd"]
   flitype = [] # ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
   #                 ^~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fli type instructions after creating new sample function
