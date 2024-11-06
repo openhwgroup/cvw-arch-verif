@@ -1285,8 +1285,7 @@ if __name__ == '__main__':
   X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
              "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
              "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
-  PX2Ftype = [] # ["fmvp.d.x"] # pair of integer registers to a single fp register
-  #                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: restore fmvp once wally bug is fixed
+  PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
   fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
                "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
                "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
