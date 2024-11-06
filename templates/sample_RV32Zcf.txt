@@ -19,7 +19,6 @@ function void rv32zcf_sample(int hart, int issue);
                     ins.add_rs1_2(); 
                     ins.add_mem_address(); 
                     c_flwsp_cg.sample(ins);   
-                    $display("---> %d",ins.current.imm);
                 end 
             end
             "fsw"     : begin 
