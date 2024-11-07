@@ -709,12 +709,13 @@ def make_rd_corners(test, xlen, corners):
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
   
-  elif (test == "divw" or test == "divuw"):
+  elif (test == "divw" or test == "divuw" or test=="mulw"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
       
+
   elif (test == "c.lui"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
@@ -1265,34 +1266,16 @@ def getcovergroups(coverdefdir, coverfiles):
 if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
-
   rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
-          "addw", "subw", "sllw", "srlw", "sraw",
-          "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
-          "mulw", "divw", "divuw", "remw", "remuw",
-          "czero.eqz", "czero.nez",
-          "sh1add", "sh2add", "sh3add",
-          "sh1add.uw", "sh2add.uw", "sh3add.uw", "add.uw",
-          "min", "minu", "max", "maxu", "orn", "andn", "xnor", "rol", "ror",
-          "rolw", "rorw",
-          "clmul", "clmulh", "clmulr",
-          "bclr", "binv", "bset", "bext"
-          # "pack", "packh",
-          # "packw",
-          # "xperm4", "xperm8",
-          # "aes32dsi", "aes32dsmi",
-          # "aes64ds", "aes64dsm",
-          # "aes32esi", "aes32esmi",
-          # "aes64es", "aes64esm",
-          # "aes64ks2",
-          # "sha512sig0h", "sha512sig0l", "sha512sig1h", "sha512sig1l", "sha512sum0r", "sha512sum1r",
-          ]  
+            "addw", "subw", "sllw", "srlw", "sraw",
+            "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
+            "mulw", "divw", "divuw", "remw", "remuw",
+            "czero.eqz", "czero.nez"
+            ]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
-          # "orc.b","zext.h","clz","cpop","ctz","sext.b","sext.h","rev8","rori"
-          # "sha512sig0", "sha512sig1", "sha512sum0", "sha512sum1"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
@@ -1411,9 +1394,7 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
-                  "Zba", "Zbb", "Zbc", "Zbs"]
-                  # "Zbkb", "Zbkc", "Zbkx", "Zkne", "Zknd", "Zknh"
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd"]
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
