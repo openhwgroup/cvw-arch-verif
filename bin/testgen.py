@@ -64,7 +64,7 @@ def SextImm6(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp","c.fswsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp","c.fswsp","c.fsdsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -395,9 +395,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
-    elif (test == "c.sdsp"):
+    elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
-    if test == "c.fswsp":
+    if (test == "c.fswsp" or test == "c.fsdsp"):
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "fmv.s.x" + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
       lines = lines + "la sp" + ", scratch" + " # base address \n"
@@ -1308,7 +1308,7 @@ if __name__ == '__main__':
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld","c.flw","c.fld"]
   cstype = ["c.sw","c.sd","c.fsw","c.fsd"]
-  csstype = ["c.sdsp","c.swsp","c.fswsp"]
+  csstype = ["c.sdsp","c.swsp","c.fswsp","c.fsdsp"]
   crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
@@ -1322,7 +1322,7 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw","c.flwsp","c.fswsp"] # Zcf instructions
-  zcdtype = ["c.fld", "c.fsd"]
+  zcdtype = ["c.fld", "c.fsd","c.fsdsp"]
   flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
