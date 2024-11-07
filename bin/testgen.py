@@ -64,7 +64,7 @@ def SextImm6(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp","c.fswsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp","c.fswsp","c.fsdsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -395,9 +395,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
-    elif (test == "c.sdsp"):
+    elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
-    if test == "c.fswsp":
+    if (test == "c.fswsp" or test == "c.fsdsp"):
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "fmv.s.x" + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
       lines = lines + "la sp" + ", scratch" + " # base address \n"
@@ -708,6 +708,13 @@ def make_rd_corners(test, xlen, corners):
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+  
+  elif (test == "divw" or test == "divuw"):
+    for v in corners:
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
+      
   elif (test == "c.lui"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
@@ -1258,16 +1265,34 @@ def getcovergroups(coverdefdir, coverfiles):
 if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
+
   rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
-            "addw", "subw", "sllw", "srlw", "sraw",
-            "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
-            "mulw", "divw", "divuw", "remw", "remuw",
-            "czero.eqz", "czero.nez"
-            ]
+          "addw", "subw", "sllw", "srlw", "sraw",
+          "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
+          "mulw", "divw", "divuw", "remw", "remuw",
+          "czero.eqz", "czero.nez",
+          "sh1add", "sh2add", "sh3add",
+          "sh1add.uw", "sh2add.uw", "sh3add.uw", "add.uw",
+          "min", "minu", "max", "maxu", "orn", "andn", "xnor", "rol", "ror",
+          "rolw", "rorw",
+          "clmul", "clmulh", "clmulr",
+          "bclr", "binv", "bset", "bext"
+          # "pack", "packh",
+          # "packw",
+          # "xperm4", "xperm8",
+          # "aes32dsi", "aes32dsmi",
+          # "aes64ds", "aes64dsm",
+          # "aes32esi", "aes32esmi",
+          # "aes64es", "aes64esm",
+          # "aes64ks2",
+          # "sha512sig0h", "sha512sig0l", "sha512sig1h", "sha512sig1l", "sha512sum0r", "sha512sum1r",
+          ]  
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
+          # "orc.b","zext.h","clz","cpop","ctz","sext.b","sext.h","rev8","rori"
+          # "sha512sig0", "sha512sig1", "sha512sum0", "sha512sum1"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
@@ -1308,7 +1333,7 @@ if __name__ == '__main__':
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld","c.flw","c.fld"]
   cstype = ["c.sw","c.sd","c.fsw","c.fsd"]
-  csstype = ["c.sdsp","c.swsp","c.fswsp"]
+  csstype = ["c.sdsp","c.swsp","c.fswsp","c.fsdsp"]
   crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
@@ -1322,7 +1347,7 @@ if __name__ == '__main__':
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw","c.flwsp","c.fswsp"] # Zcf instructions
-  zcdtype = ["c.fld", "c.fsd"]
+  zcdtype = ["c.fld", "c.fsd","c.fsdsp"]
   flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
@@ -1386,7 +1411,9 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd"]
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
+                  "Zba", "Zbb", "Zbc", "Zbs"]
+                  # "Zbkb", "Zbkc", "Zbkx", "Zkne", "Zknd", "Zknh"
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
