@@ -709,12 +709,13 @@ def make_rd_corners(test, xlen, corners):
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
   
-  elif (test == "divw" or test == "divuw"):
+  elif (test == "divw" or test == "divuw" or test=="mulw"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
       
+
   elif (test == "c.lui"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
