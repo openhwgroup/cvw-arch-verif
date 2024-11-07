@@ -64,7 +64,7 @@ def SextImm6(imm):
 
 def ZextImm6(imm):
   imm = imm % pow(2, 6) 
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.sdsp","c.swsp","c.flwsp","c.fswsp","c.fsdsp"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -393,13 +393,19 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in csstype):
-    if (test == "c.swsp"):
+    if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
-    elif (test == "c.sdsp"):
+    elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
-    lines = lines + "la sp" + ", scratch" + " # base address \n"
-    lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
+    if (test == "c.fswsp" or test == "c.fsdsp"):
+      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+      lines = lines + "fmv.s.x" + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
+      lines = lines + "la sp" + ", scratch" + " # base address \n"
+      lines = lines + test + " f" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
+    else:
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n" 
+      lines = lines + "la sp" + ", scratch" + " # base address \n"
+      lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
   elif (test in csbtype):
     rs1 = legalizecompr(rs1)
     rs2 = legalizecompr(rs2)
@@ -702,6 +708,13 @@ def make_rd_corners(test, xlen, corners):
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
+  
+  elif (test == "divw" or test == "divuw" or test=="mulw"):
+    for v in corners:
+      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+      writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
+      
 
   #checking maxm1p
   elif (test == "mulw"):
@@ -1310,7 +1323,7 @@ if __name__ == '__main__':
   c_shiftitype = ["c.slli","c.srli","c.srai"]
   cltype = ["c.lw","c.ld","c.flw","c.fld"]
   cstype = ["c.sw","c.sd","c.fsw","c.fsd"]
-  csstype = ["c.sdsp","c.swsp"]
+  csstype = ["c.sdsp","c.swsp","c.fswsp","c.fsdsp"]
   crtype = ["c.add", "c.mv", "c.jalr", "c.jr"]
   ciwtype = ["c.addi4spn"]
   cjtype = ["c.j","c.jal"]
@@ -1323,8 +1336,8 @@ if __name__ == '__main__':
   clhtype = ["c.lh","c.lhu"]
   clbtype = ["c.lbu"]
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
-  zcftype = ["c.flw", "c.fsw","c.flwsp"] # Zcf instructions
-  zcdtype = ["c.fld", "c.fsd"]
+  zcftype = ["c.flw", "c.fsw","c.flwsp","c.fswsp"] # Zcf instructions
+  zcdtype = ["c.fld", "c.fsd","c.fsdsp"]
   flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
