@@ -1267,7 +1267,7 @@ def getcovergroups(coverdefdir, coverfiles):
 if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
-   = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
+  rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
           "addw", "subw", "sllw", "srlw", "sraw",
           "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
           "mulw", "divw", "divuw", "remw", "remuw",
