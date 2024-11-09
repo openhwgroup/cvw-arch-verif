@@ -102,7 +102,7 @@ covergroup sfence_cg with function sample(ins_rv32vm_t ins); //sf.1
     }
 endgroup
 
-covergroup mstatus_cg with function sample(ins_rv32vm_t ins);
+covergroup mstatus_mprv_cg with function sample(ins_rv32vm_t ins);
     option.per_instance = 1; 
     option.comment = "mstatus";
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
