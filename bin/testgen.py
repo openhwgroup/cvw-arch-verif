@@ -1235,6 +1235,8 @@ def write_tests(coverpoints, test, xlen):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
+    elif (coverpoint.startswith("cp_NaNBox")):
+      pass # doesn't require designated tests
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(32), fli=True)
     else:
