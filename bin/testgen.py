@@ -1270,11 +1270,16 @@ if __name__ == '__main__':
   # change these to suite your tests
   WALLY = os.environ.get('WALLY')
   rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
-            "addw", "subw", "sllw", "srlw", "sraw",
-            "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
-            "mulw", "divw", "divuw", "remw", "remuw",
-            "czero.eqz", "czero.nez"
-            ]
+          "addw", "subw", "sllw", "srlw", "sraw",
+          "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
+          "mulw", "divw", "divuw", "remw", "remuw",
+          "czero.eqz", "czero.nez",
+          "sh1add", "sh2add", "sh3add",
+          "sh1add.uw", "sh2add.uw", "sh3add.uw", "add.uw",
+          "min", "minu", "max", "maxu", "orn", "andn", "xnor", "rol", "ror",
+          "rolw", "rorw",
+          "clmul", "clmulh", "clmulr",
+          "bclr", "binv", "bset", "bext"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
@@ -1397,7 +1402,8 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd"]
+    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
+                  "Zba", "Zbb", "Zbc", "Zbs"]
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
