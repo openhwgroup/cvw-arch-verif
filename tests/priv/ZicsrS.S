@@ -92,6 +92,7 @@ cp_sstatus_sd_write:
     csrrw t6, sstatus, t1   # write CSR
     csrrw t6, sstatus, s0   # restore CSR
 
+// TODO: Create a cross product of all the fields in sstatus and write them
 /////////////////////////////////
 // cp_sstatus_mxr_write
 /////////////////////////////////
