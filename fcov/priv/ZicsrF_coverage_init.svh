@@ -9,3 +9,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
     fcsr_cg = new();         fcsr_cg.set_inst_name("obj_fcsr");
+    frm_cg = new();         frm_cg.set_inst_name("obj_frm");
+    fflags_cg = new();       fflags_cg.set_inst_name("obj_fflags");
