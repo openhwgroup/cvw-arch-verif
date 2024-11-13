@@ -271,6 +271,8 @@ endgroup
 
 
 covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
+    option.per_instance = 1; 
+    option.comment = "ZicsrM mstatus";
     // *** missing cp_mstatus_sd_write
     
     cp_sd: coverpoint ins.current.insn {
@@ -315,30 +317,35 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_wordoffset: coverpoint ins.current.imm[2] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[1:0] == 2'b00)  {
         // all word offsets
     }    
-    cp_doubleoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000)  {
-        bins zero = {3'b000};
-    }
     priv_mode_m: coverpoint ins.current.mode {
        bins M_mode = {2'b11};
     }
     mstatus_mbe: coverpoint ins.current.csr[12'h300][37] { // *** in mstatush[5] in RV32
     }
-    // *** some of these only apply to RV64
     // *** should these be more explicit about outcomes to make sure appropriate parts are accessed?
-    cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd;
     cp_mstatus_mbe_endianness_sw: cross priv_mode_m, mstatus_mbe, cp_sw, cp_wordoffset;
     cp_mstatus_mbe_endianness_sh: cross priv_mode_m, mstatus_mbe, cp_sh, cp_halfoffset;
     cp_mstatus_mbe_endianness_sb: cross priv_mode_m, mstatus_mbe, cp_sb, cp_byteoffset;
-    cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld;
     cp_mstatus_mbe_endianness_lw: cross priv_mode_m, mstatus_mbe, cp_lw, cp_wordoffset;
     cp_mstatus_mbe_endianness_lh: cross priv_mode_m, mstatus_mbe, cp_lh, cp_halfoffset;
     cp_mstatus_mbe_endianness_lb: cross priv_mode_m, mstatus_mbe, cp_lb, cp_byteoffset;
-    cp_mstatus_mbe_endianness_lwu: cross priv_mode_m, mstatus_mbe, cp_lwu, cp_wordoffset;
     cp_mstatus_mbe_endianness_lhu: cross priv_mode_m, mstatus_mbe, cp_lhu, cp_halfoffset;
     cp_mstatus_mbe_endianness_lbu: cross priv_mode_m, mstatus_mbe, cp_lbu, cp_byteoffset;
+
+    // *** these only apply to RV64
+    cp_doubleoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000)  {
+        bins zero = {3'b000};
+    }
+    cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd;
+    cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld;
+    cp_mstatus_mbe_endianness_lwu: cross priv_mode_m, mstatus_mbe, cp_lwu, cp_wordoffset;
+
  endgroup
 
 covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
+    option.per_instance = 1; 
+    option.comment = "ZicsrM mprivinst";
+
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
