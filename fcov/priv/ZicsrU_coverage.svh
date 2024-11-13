@@ -88,27 +88,18 @@ covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
     option.comment = "ZicsrU uprivinst";
 
     // building blocks for the main coverpoints
-    ecall: coverpoint ins.current.insn {
-        bins ecall = {32'b00000000000000000000000001110011};
-    }
-    ebreak: coverpoint ins.current.insn {
+    instrs: coverpoint ins.current.insn {
+        bins ecall  = {32'b00000000000000000000000001110011};
         bins ebreak = {32'b00000000000100000000000001110011};
-    }
-    sret: coverpoint ins.current.insn {
-        bins sret = {32'b00010000001000000000000001110011};
-    }
-    mret: coverpoint ins.current.insn {
-        bins mret = {32'b00110000001000000000000001110011};
+        bins sret   = {32'b00010000001000000000000001110011};
+        bins mret   = {32'b00110000001000000000000001110011};
     }
     priv_mode_u: coverpoint ins.current.mode {
        bins U_mode = {2'b00};
     }
     
     // main coverpoints
-    cp_sprivinst_ecall:  cross ecall, priv_mode_u;
-    cp_sprivinst_ebreak: cross ebreak, priv_mode_u;
-    cp_sprivinst_mret:   cross mret, priv_mode_u;
-    cp_sprivinst_sret:   cross sret, priv_mode_u;
+    cp_sprivinst:  cross instrs, priv_mode_u;
 endgroup
 
 function void zicsru_sample(int hart, int issue);
