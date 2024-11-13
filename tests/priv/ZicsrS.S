@@ -79,7 +79,7 @@ cp_stvec_mode_write:
 
 /////////////////////////////////
 // cp_sstatus_sd_write
-// TODO: Chaange this to work for both 32 and 64 bit
+// TODO: Change this to work for both 32 and 64 bit
 /////////////////////////////////
 cp_sstatus_sd_write:
     csrr s0, sstatus    # save CSR
