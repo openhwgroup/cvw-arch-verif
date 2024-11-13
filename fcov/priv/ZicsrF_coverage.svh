@@ -191,6 +191,6 @@ function void zicsrf_sample(int hart, int issue);
     
     fcsr_cg.sample(ins);
     frm_cg.sample(ins);
-    fflags.sample(ins);
+    fflags_cg.sample(ins);
     
 endfunction
