@@ -84,18 +84,10 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    # Compressed instrs get passed to covergroups as 'c.li' -> 'li', 'c.addi16sp' -> 'addi'.
-    # This makes sure that cp_asm_count gets hit
-    c_instr_alias = {"c.addi16sp":"addi", "c.addi4spn":"addi", "c.nop":"addi","c.lwsp":"lw","c.ldsp":"ld","c.swsp":"sw","c.sdsp":"sd"}
     # special cases for fmv instructions being interpreted with depreciated names
     # we need to look for the old name for asm_count
     fmv_instr_alias = {"fmv.x.w":"fmv.x.s", "fmv.w.x":"fmv.s.x"}
-    if (name == "cp_asm_count" and instr.startswith("c.")):
-        if (instr in c_instr_alias):
-            template = template.replace("INSTR", c_instr_alias[instr])
-        else:
-            template = template.replace("INSTR", instr[2:]) # Just strip 'c.'
-    elif (name == "cp_asm_count" and instr in fmv_instr_alias):
+    if (name == "cp_asm_count" and instr in fmv_instr_alias):
             template = template.replace("INSTR", fmv_instr_alias[instr])
     else:
         template = template.replace("INSTR", instr)
@@ -191,7 +183,7 @@ def writeCovergroups(testPlans, covergroupTemplates):
     keys = list(testPlans.keys())
     keys.sort()
     #List of priv cover groups
-    priv_defines = ["RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", "ZicsrZicntrM", "ZicsrF", "ZicsrZicntrS", "ZicsrZicntrU"]
+    priv_defines = ["RV32VM", "RV32VM_PMP", "RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", "ZicsrZicntrM", "ZicsrF", "ZicsrZicntrS", "ZicsrZicntrU"]
     file = "coverage/RISCV_coverage_base_init.svh"
     with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:

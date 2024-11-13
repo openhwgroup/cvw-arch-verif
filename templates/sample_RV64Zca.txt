@@ -4,238 +4,228 @@ function void rv64zca_sample(int hart, int issue);
     if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
         $display("Examining compressed instruction rv64zca_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
         case (traceDataQ[hart][issue][0].inst_name)
-            // Distinguish among the three types of addi compressed instructions
-            "addi"     : begin 
-                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b000) begin // addi4spn
+            // Distinguish among "c.add" and "c.nop"
+            "c.addi"     : begin 
+                if (traceDataQ[hart][issue][0].insn[15:0] == 1) begin   // c.nop
                     ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_rs1(1);
-                    ins.add_imm(2);
-                    c_addi4spn_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // addi16sp
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_imm(2);
-                    c_addi16sp_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[15:1] == 0) begin // nop
-                    ins = new(hart, issue, traceDataQ); 
+                    ins.ins_str = "c.nop";  // Using correct inst name (c.nop instead of c.addi)
                     c_nop_cg.sample(ins); 
-                end else begin // ordinary addi
+                end else begin      // c.addi
                     ins = new(hart, issue, traceDataQ); 
                     ins.add_rd(0);
-                    ins.add_imm(2);
+                    ins.add_imm(1);
                     c_addi_cg.sample(ins); 
                 end
             end
-            "ld"     : begin 
-                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // normal ld
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_imm(1);
-                    ins.add_rs1(2);
-                    ins.current.inst_category = INST_CAT_LOAD;
-                    ins.add_mem_address();
-                    c_ld_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b011) begin // ldsp
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_imm(1);
-                    ins.add_rs1_2();
-                    ins.current.inst_category = INST_CAT_LOAD;
-                    ins.add_mem_address();
-                    c_ldsp_cg.sample(ins); 
-                end 
-            end
-            "lw"     : begin 
-                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b010) begin // normal lw
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_imm(1);
-                    ins.add_rs1(2);
-                    ins.current.inst_category = INST_CAT_LOAD;
-                    ins.add_mem_address();
-                    c_lw_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b010) begin // lwsp
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rd(0);
-                    ins.add_imm(1);
-                    ins.add_rs1_2();
-                    ins.current.inst_category = INST_CAT_LOAD;
-                    ins.add_mem_address();
-                    c_lwsp_cg.sample(ins); 
-                end 
-            end
-            "sw"     : begin 
-                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b110) begin // normal sw
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rs2(0);
-                    ins.add_imm(1);
-                    ins.add_rs1(2);
-                    ins.current.inst_category = INST_CAT_STORE;
-                    ins.add_mem_address();
-                    c_sw_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b110) begin // swsp
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rs2(0);
-                    ins.add_imm(1);
-                    ins.add_rs1_2();
-                    ins.current.inst_category = INST_CAT_STORE;
-                    ins.add_mem_address();
-                    c_swsp_cg.sample(ins); 
-                end 
-            end
-            "sd"     : begin 
-                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b00 & traceDataQ[hart][issue][0].insn[15:13] == 3'b111) begin // normal sd
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rs2(0);
-                    ins.add_imm(1);
-                    ins.add_rs1(2);
-                    ins.current.inst_category = INST_CAT_STORE;
-                    ins.add_mem_address();
-                    c_sd_cg.sample(ins); 
-                end else if (traceDataQ[hart][issue][0].insn[1:0] == 2'b10 & traceDataQ[hart][issue][0].insn[15:13] == 3'b111) begin // sdsp
-                    ins = new(hart, issue, traceDataQ); 
-                    ins.add_rs2(0);
-                    ins.add_imm(1);
-                    ins.add_rs1_2();
-                    ins.current.inst_category = INST_CAT_STORE;
-                    ins.add_mem_address();
-                    c_sdsp_cg.sample(ins); 
-                end 
-            end
-            "li"     : begin 
+            "c.addi4spn"     : begin   
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(1);
+                ins.add_imm(2);
+                c_addi4spn_cg.sample(ins); 
+            end 
+            "c.addi16sp"     : begin         
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
                 ins.add_imm(1);
-                c_li_cg.sample(ins); 
-            end
-            "lui"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(1);
-                c_lui_cg.sample(ins); 
-            end
-            "srli"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(2);
-                c_srli_cg.sample(ins); 
-            end
-            "srai"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(2);
-                c_srai_cg.sample(ins); 
-            end
-            "andi"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(2);
-                c_andi_cg.sample(ins); 
-            end
-            "sub"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_rs2(2);
-                c_sub_cg.sample(ins); 
-            end
-            "xor"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_rs2(2);
-                c_xor_cg.sample(ins); 
-            end
-            "or"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_rs2(2);
-                c_or_cg.sample(ins); 
-            end
-            "and"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_rs2(2);
-                c_and_cg.sample(ins); 
-            end
-            "j"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_imm_addr(0);
-                c_j_cg.sample(ins); 
-            end
-            "beqz"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs1(0);
-                ins.add_imm_addr(1);
-                c_beqz_cg.sample(ins); 
-            end
-            "bnez"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs1(0);
-                ins.add_imm_addr(1);
-                c_bnez_cg.sample(ins); 
-            end
-            "slli"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rd(0);
-                ins.add_imm(2);
-                c_slli_cg.sample(ins);
-            end
-            "ldsp"     : begin 
+                c_addi16sp_cg.sample(ins); 
+            end 
+            "c.ld"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
                 ins.add_imm(1);
                 ins.add_rs1(2);
                 ins.current.inst_category = INST_CAT_LOAD;
                 ins.add_mem_address();
+                c_ld_cg.sample(ins); 
+            end
+            "c.ldsp"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                ins.add_rs1_2();
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();
                 c_ldsp_cg.sample(ins); 
             end
-            "jr"     : begin 
+            "c.lw"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                ins.add_rs1(2);
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();
+                c_lw_cg.sample(ins);
+            end
+            "c.lwsp"     : begin  
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                ins.add_rs1_2();
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();
+                c_lwsp_cg.sample(ins); 
+            end
+            "c.sw"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);
+                ins.add_imm(1);
+                ins.add_rs1(2);
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();
+                c_sw_cg.sample(ins); 
+            end
+            "c.swsp"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);
+                ins.add_imm(1);
+                ins.add_rs1_2();
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();
+                c_swsp_cg.sample(ins); 
+            end
+            "c.sd"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);
+                ins.add_imm(1);
+                ins.add_rs1(2);
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();
+                c_sd_cg.sample(ins); 
+            end
+            "c.sdsp"     : begin    
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);
+                ins.add_imm(1);
+                ins.add_rs1_2();
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();
+                c_sdsp_cg.sample(ins); 
+            end
+            "c.li"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                c_li_cg.sample(ins); 
+            end
+            "c.lui"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                c_lui_cg.sample(ins); 
+            end
+            "c.srli"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_imm(1);
+                c_srli_cg.sample(ins); 
+            end
+            "c.srai"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_imm(1);
+                c_srai_cg.sample(ins); 
+            end
+            "c.andi"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_imm(1);
+                c_andi_cg.sample(ins); 
+            end
+            "c.sub"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
+                c_sub_cg.sample(ins); 
+            end
+            "c.xor"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
+                c_xor_cg.sample(ins); 
+            end
+            "c.or"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
+                c_or_cg.sample(ins); 
+            end
+            "c.and"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
+                c_and_cg.sample(ins); 
+            end
+            "c.j"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_imm_addr(0);
+                c_j_cg.sample(ins); 
+            end
+            "c.beqz"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs1(0);
+                ins.add_imm_addr(1);
+                c_beqz_cg.sample(ins); 
+            end
+            "c.bnez"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs1(0);
+                ins.add_imm_addr(1);
+                c_bnez_cg.sample(ins); 
+            end
+            "c.slli"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);
+                ins.add_imm(1);
+                c_slli_cg.sample(ins);
+            end
+            "c.jr"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rs1(0);
                 c_jr_cg.sample(ins); 
             end
-            "mv"     : begin 
+            "c.mv"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
                 ins.add_rs2(1);
                 c_mv_cg.sample(ins); 
             end
-            "jalr"     : begin 
+            "c.jalr"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rs1(0);
                 c_jalr_cg.sample(ins); 
             end
-            "add"     : begin 
+            "c.add"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(2);
+                ins.add_rs2(1);
                 c_add_cg.sample(ins); 
             end
-            "sdsp"     : begin 
-                ins = new(hart, issue, traceDataQ); 
-                ins.add_rs2(0);
-                ins.add_imm(1);  // adjust for 64-bit store operations
-                ins.add_rs1(2);
-                ins.current.inst_category = INST_CAT_STORE;
-                ins.add_mem_address();
-                c_sdsp_cg.sample(ins); 
-            end
-            "addiw"     : begin 
+            "c.addiw"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_imm(2);
+                ins.add_imm(1);
                 c_addiw_cg.sample(ins); 
             end
-            "subw"     : begin 
+            "c.subw"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(2);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
                 c_subw_cg.sample(ins); 
             end
-            "addw"     : begin 
+            "c.addw"     : begin 
                 ins = new(hart, issue, traceDataQ); 
                 ins.add_rd(0);
-                ins.add_rs2(2);
+                ins.add_rs1(0);
+                ins.add_rs2(1);
                 c_addw_cg.sample(ins); 
             end
         endcase
