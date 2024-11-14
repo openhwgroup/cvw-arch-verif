@@ -175,6 +175,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
   elif (test in fitype):
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n"
@@ -528,6 +529,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
+    lines = lines + "fsflagsi 0b00000\n # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
     if not frm:
@@ -986,6 +988,7 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
+      f.write("fsflagsi 0b00000 # clear all fflags\n")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_cr_fs1_fs3_corners(test, xlen, frm = False):
