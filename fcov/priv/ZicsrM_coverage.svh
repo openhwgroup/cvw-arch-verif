@@ -26,7 +26,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
 
     // building blocks for the main coverpoints
     nonzerord: coverpoint ins.current.insn[11:7] {
-        option.weight = 0;
+        type_option.weight = 0;
         bins nonzero = { [1:$] }; // rd != 0
     }
     csrr: coverpoint ins.current.insn  {
