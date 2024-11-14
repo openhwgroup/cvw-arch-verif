@@ -86,9 +86,11 @@ cp_sstatus_sd_write:
     li t1, 0xFFFE19FF   # mask for FS/VS/XS
     and t1, s0, t1      # clear FS/VS/XS
     csrrw t6, sstatus, t1  # write clear FS/VS/XS
-    andi t1, t1, 0x7FFFFFFF # clear SD
+    li t5, 0x7FFFFFFF   # mask for SD
+    and t1, t1, t5 # clear SD
     csrrw t6, sstatus, t1   # write CSR
-    ori t1, t1, 0x80000000 # set SD
+    li t5, 0x80000000   # mask for SD
+    or t1, t1, t5 # set SD
     csrrw t6, sstatus, t1   # write CSR
     csrrw t6, sstatus, s0   # restore CSR
 
@@ -101,7 +103,8 @@ cp_sstatus_mxr_write:
     li t1, 0xFFF7FFFF   # mask to clear MXR
     and t1, s0, t1      # clear MXR
     csrrw t6, sstatus, t1  # write clear MXR
-    ori t1, t1, 0x00080000 # set MXR
+    li t5, 0x00800000   # mask for MXR
+    or t1, t1, t5 # set MXR
     csrrw t6, sstatus, t1   # write CSR
     csrrw t6, sstatus, s0   # restore CSR
 
@@ -113,7 +116,8 @@ cp_sstatus_sum_write:
     li t1, 0xFFFBFFFF   # mask to clear SUM
     and t1, s0, t1      # clear SUM
     csrrw t6, sstatus, t1  # write clear SUM
-    ori t1, t1, 0x00040000 # set SUM
+    li t5, 0x00040000   # mask for SUM
+    or t1, t1, t5 # set SUM
     csrrw t6, sstatus, t1   # write CSR
     csrrw t6, sstatus, s0   # restore CSR
 
@@ -125,7 +129,8 @@ cp_sstatus_wpri17_write:
     li t1, 0xFFFDFFFF   # mask to clear WPRI17
     and t1, s0, t1      # clear WPRI17
     csrrw t6, sstatus, t1  # write clear WPRI17
-    ori t1, t1, 0x00020000 # set WPRI17
+    li t5, 0x00020000   # mask for WPRI17
+    or t1, t1, t5 # set WPRI17
     csrrw t6, sstatus, t1   # write CSR
     csrrw t6, sstatus, s0   # restore CSR
 
@@ -137,9 +142,11 @@ cp_sstatus_xs_write:
     li t0, 0xFFFE7FFF   # mask to clear XS
     and t0, s0, t0      # clear XS
     csrrw t6, sstatus, t0  # write clear XS
-    ori t1, t0, 0x00008000 # set XS = 1
-    ori t2, t0, 0x00010000 # set XS = 2
-    ori t3, t0, 0x00018000 # set XS = 3
+    li t4, 0x00008000 # mask to set XS[0]
+    slli t5, t4, 1 # mask to set XS[1]
+    or t1, t0, t4 # set XS[0] for XS = 1
+    or t2, t0, t4 # set xs[1] for XS = 2
+    or t3, t1, t2 # set xs[1:0] for xs = 3
     csrrw t6, sstatus, t1   # write XS = 1
     csrrw t6, sstatus, t2   # write XS = 2
     csrrw t6, sstatus, t3   # write XS = 3
@@ -153,9 +160,11 @@ cp_sstatus_fs_write:
     li t0, 0xFFFF9FFF   # mask to clear FS
     and t0, s0, t0      # clear FS
     csrrw t6, sstatus, t0  # write clear FS
-    ori t1, t0, 0x00002000 # set FS = 1
-    ori t2, t0, 0x00004000 # set FS = 2
-    ori t3, t0, 0x00006000 # set FS = 3
+    li t4, 0x00002000 # mask to set FS[0]
+    slli t5, t4, 1 # mask to set FS[1]
+    or t1, t0, t4 # set FS[0] for FS = 1
+    or t2, t0, t4 # set FS[1] for FS = 2
+    or t3, t1, t2 # set FS[1:0] for FS = 3
     csrrw t6, sstatus, t1   # write FS = 1
     csrrw t6, sstatus, t2   # write FS = 2
     csrrw t6, sstatus, t3   # write FS = 3
@@ -169,9 +178,11 @@ cp_sstatus_wpri1211_write:
     li t0, 0xFFFFE7FF   # mask to clear WPRI12-11
     and t0, s0, t0      # clear WPRI12-11
     csrrw t6, sstatus, t0  # write clear WPRI12-11
-    ori t1, t0, 0x00000800 # set WPRI11
-    ori t2, t0, 0x00001000 # set WPRI12
-    ori t3, t0, 0x00001800 # set WPRI11-12
+    li t4, 0x00000800 # mask to set WPI11
+    slli t5, t4, 1 # mask to set WPI12
+    or t1, t0, t4 # set WPI11
+    or t2, t0, t4 # set WPI12
+    or t3, t1, t2 # set WPI1211
     csrrw t6, sstatus, t1   # write WPRI11
     csrrw t6, sstatus, t2   # write WPRI12
     csrrw t6, sstatus, t3   # write WPRI11-12
@@ -185,9 +196,11 @@ cp_sstatus_vs_write:
     li t0, 0xFFFFF9FF   # mask to clear VS
     and t0, s0, t0      # clear VS
     csrrw t6, sstatus, t0  # write clear VS
-    ori t1, t0, 0x00000200 # set VS = 1
-    ori t2, t0, 0x00000400 # set VS = 2
-    ori t3, t0, 0x00000600 # set VS = 3
+    li t4, 0x00000200 # mask to set VS[0]
+    slli t5, t4, 1 # mask to set WPI12
+    or t1, t0, t4 # set WPI11
+    or t2, t0, t4 # set WPI12
+    or t3, t1, t2 # set WPI1211
     csrrw t6, sstatus, t1   # write VS = 1
     csrrw t6, sstatus, t2   # write VS = 2
     csrrw t6, sstatus, t3   # write VS = 3
@@ -249,19 +262,22 @@ cp_sstatuswpri42_write:
     li t0, 0xFFFFFFE3   # mask to clear WPRI4:2
     and t0, s0, t0      # clear WPRI4-2
     csrrw t6, sstatus, t0  # write clear WPRI4:2
-    ori t1, t0, 0x00000004 # set WPRI2
-    ori t2, t0, 0x00000008 # set WPRI3
-    ori t3, t0, 0x00000010 # set WPRI4
+    li t1, 0x00000004 # set WPRI2
+    or t1, t0, t1 # set WPRI2
+    slli t2, t1, 1 # set WPRI3
+    or t2, t0, t2 # set WPRI3
+    slli t3, t1, 2 # set WPRI4
+    or t3, t0, t3 # set WPRI4
     csrrw t6, sstatus, t1   # write WPRI2
     csrrw t6, sstatus, t2   # write WPRI3
     csrrw t6, sstatus, t3   # write WPRI4
-    ori t1, t0, 0x0000000C # set WPRI3:2
-    ori t2, t0, 0x00000018 # set WPRI4:3
-    ori t3, t0, 0x00000014 # set WPRI4,2
+    or t1, t1, t2 # set WPRI3:2
+    or t2, t2, t3 # set WPRI4:3
+    or t3, t1, t3 # set WPRI4,2
     csrrw t6, sstatus, t1   # write WPRI3:2
     csrrw t6, sstatus, t2   # write WPRI4:3
     csrrw t6, sstatus, t3   # write WPRI4,2
-    ori t1, t0, 0x0000001C # set WPRI4:2
+    or t3, t1, t3 # set WPRI4:2
     csrrw t6, sstatus, t1   # write WPRI4:2
     csrrw t6, sstatus, s0   # restore CSR
 
@@ -296,7 +312,7 @@ sretsetup:
 /////////////////////////////////
 // Sweep executing sret in supervisor mode across cross-product of spp, mprv, tsr, spie, sie
 
-    csrr s0, mstatus    # save mstatus
+    csrr s0, sstatus    # save mstatus
 
     li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
     jal srettest
@@ -367,7 +383,7 @@ sretsetup:
 srettest:
     la t1, srettest_sepc    
     csrrw t6, sepc, t1      # return to mrettest_mepc when done
-    csrrw t6, mstatus, a0   # preload mstatus with argument
+    csrrw t6, sstatus, a0   # preload mstatus with argument
     sret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
     nop                     # should be skipped
     nop                     # should be skipped
@@ -375,7 +391,7 @@ srettest:
 srettest_sepc:
     li a0, 3                
     ecall                   # make sure we return to machine mode
-    csrrw t6, mstatus, s0   # restore mstatus
+    csrrw t6, sstatus, s0   # restore mstatus
     ret
 
 postsrettest:
