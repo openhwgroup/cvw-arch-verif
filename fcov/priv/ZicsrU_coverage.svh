@@ -1,6 +1,8 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
+//
+// Written: Corey Hickson chickson@hmc.edu 13 November 2024
 // 
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
@@ -26,6 +28,11 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
     option.comment = "ZicsrU ucsr";
 
     // building blocks for the main coverpoints
+
+    nonzerord: coverpoint ins.current.insn[11:7] {
+        option.weight = 0;
+        bins nonzero = { [1:$] }; // rd != 0
+    }
     csrr: coverpoint ins.current.insn  {
         wildcard bins csrr = {32'b????????????_00000_010_?????_1110011};
     }
@@ -42,30 +49,24 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
     // automtically gives all 4096 bins
     }
     priv_mode_u: coverpoint ins.current.mode {
-       bins U_mode = {2'b00};
+        bins U_mode = {2'b00};
     }
-    csr_corners: coverpoint ins.current.rs1_val {
-        `ifdef XLEN64
-        bins ones  = {64'hffffffffffffffff};
-        bins zeros = {64'h0000000000000000};
-        `else
-        bins ones  = {32'hffffffff};
-        bins zeros = {32'h00000000};
-        `endif
+    rs1_ones: coverpoint ins.current.rs1_val {
+        bins ones = {'1};
     }
-    ones: coverpoint ins.current.rs1_val {
-        `ifdef XLEN64
-        bins ones = {64'hffffffffffffffff};
-        `else
-        bins ones = {32'hffffffff};
-        `endif
+    rs1_corners: coverpoint ins.current.rs1_val {
+        bins zero = {0};
+        bins ones = {'1};
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
     }
     
     // main coverpoints
-    cp_csrr:         cross csrr,  csr, priv_mode_u;
-    cp_csrw_corners: cross csrrw, csr, csr_corners, priv_mode_u;
-    cp_csrc:         cross csrrc, csr, ones, priv_mode_u;
-    cp_csrs:         cross csrrs, csr, ones, priv_mode_u;
+    cp_csrr:         cross csrr,  csr, priv_mode_u, nonzerord;
+    cp_csrw_corners: cross csrrw, csr, priv_mode_u, rs1_corners;
+    cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
 endgroup
 
 covergroup mstatus_u_cg with function sample(ins_zicsru_t ins);
@@ -81,6 +82,8 @@ covergroup mstatus_u_cg with function sample(ins_zicsru_t ins);
     // main coverpoints
     // cp_mstatus_ube_endianness:
     // cp_mstatus_mprv_ube_endianness:
+
+    // TODO: endianness covergroups missing
 endgroup
 
 covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
@@ -99,7 +102,7 @@ covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
     }
     
     // main coverpoints
-    cp_sprivinst:  cross instrs, priv_mode_u;
+    cp_uprivinst:  cross instrs, priv_mode_u;
 endgroup
 
 function void zicsru_sample(int hart, int issue);
