@@ -100,15 +100,27 @@ def unsignedImm1(imm):
 def loadFloatReg(reg, val, xlen, flen):
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
-  if test[-1] == "h":
-    precision = 16
-    loadop = "flh"
-  elif test[-1] == "d":
+  if test[-1] == "d" or NaNBox_tests == "D":
     precision = 64
     loadop = "fld"
+  elif NaNBox_tests == "S":
+    precision = 32
+    loadop = "flw"
+  elif test[-1] == "h":
+    precision = 16
+    loadop = "flh"
   else:
     precision = 32
     loadop = "flw"
+  # if test[-1] == "h":
+  #   precision = 16
+  #   loadop = "flh"
+  # elif test[-1] == "d":
+  #   precision = 64
+  #   loadop = "fld"
+  # else:
+  #   precision = 32
+  #   loadop = "flw"
   storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
   # loadop  = "flw" if             (flen == 32) else "fld"
   if (precision > xlen): # precision = 64, xlen = 32
@@ -997,6 +1009,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
+    if NaNBox_tests:
+      desc = f"Impropper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
@@ -1014,6 +1028,7 @@ def make_fs3_corners(test, xlen, fcorners):
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
 def write_tests(coverpoints, test, xlen):
+  global NaNBox_tests
   for coverpoint in coverpoints:
     if (coverpoint == "cp_asm_count"):
       if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
@@ -1239,6 +1254,42 @@ def write_tests(coverpoints, test, xlen):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(32), fli=True)
+    elif (coverpoint == "cp_fs1_badNB_D_S"):
+      NaNBox_tests = "D"
+      make_fs1_corners(test, xlen, badNB_corners_D_S)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs2_badNB_D_S"):
+      NaNBox_tests = "D"
+      make_fs2_corners(test, xlen, badNB_corners_D_S)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs3_badNB_D_S"):
+      NaNBox_tests = "D"
+      make_fs3_corners(test, xlen, badNB_corners_D_S)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs1_badNB_D_H"):
+      NaNBox_tests = "D"
+      make_fs1_corners(test, xlen, badNB_corners_D_H)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs2_badNB_D_H"):
+      NaNBox_tests = "D"
+      make_fs2_corners(test, xlen, badNB_corners_D_H)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs3_badNB_D_H"):
+      NaNBox_tests = "D"
+      make_fs3_corners(test, xlen, badNB_corners_D_H)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs1_badNB_S_H"):
+      NaNBox_tests = "S"
+      make_fs1_corners(test, xlen, badNB_corners_S_H)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs2_badNB_S_H"):
+      NaNBox_tests = "S"
+      make_fs2_corners(test, xlen, badNB_corners_S_H)
+      NaNBox_tests = False
+    elif (coverpoint == "cp_fs3_badNB_S_H"):
+      NaNBox_tests = "S"
+      make_fs3_corners(test, xlen, badNB_corners_S_H)
+      NaNBox_tests = False
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -1304,9 +1355,9 @@ if __name__ == '__main__':
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", "fminm.s", "fmaxm.s",
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h", "fminm.h", "fmaxm.h",
             "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d", "fminm.d", "fmaxm.d",]
-  fitype = ["fsqrt.s", "fround.s", "froundnx.s",  
-            "fsqrt.h", "froundnx.h", "fround.h",
-            "fsqrt.d", "fround.d", "froundnx.d",
+  fitype = ["fsqrt.s", "fround.s", # "froundnx.s",  TODO: Once again restore after Wally bug fix
+            "fsqrt.h", "fround.h", # "froundnx.h",
+            "fsqrt.d", "fround.d", # "froundnx.d",
             "fcvt.s.h", "fcvt.h.s",
             "fcvt.s.d", "fcvt.d.s", 
             "fcvt.d.h", "fcvt.h.d"]
@@ -1403,7 +1454,7 @@ if __name__ == '__main__':
   # generate files for each test
   for xlen in xlens:
     extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
-                  "Zba", "Zbb", "Zbc", "Zbs"]
+                  "Zba", "Zbb", "Zbc", "Zbs", "Zicsr"]
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
@@ -1559,6 +1610,54 @@ if __name__ == '__main__':
                    0xC93A]
 
       # fcornersQ = [] # TODO: Fill out quad precision F corners
+
+      badNB_corners_D_S =  [0xffffefff00000000,
+                            0xaaaaaaaa80000000,
+                            0x000000003f800000,
+                            0xdeadbeefbf800000,
+                            0xa1b2c3d400800000,
+                            0xffffffef80800000,
+                            0xfeffffef7f7fffff,
+                            0x7e7e7e7eff7fffff,
+                            0x7fffffff7f800000,
+                            0xfffffffeff800000,
+                            0xfeedbee57fc00000,
+                            0xffc0deff7fffffff,
+                            0xfeffffff7f800001,
+                            0xfffffeff7fbfffff]
+
+      badNB_corners_D_H =  [0xffffffff00000000,
+                            0xfffffffffffe8000,
+                            0x7fffffffffff3C00,
+                            0xfeedbee5beefBC00,
+                            0xffffffefffff0400,
+                            0x00000000ffff8400,
+                            0xefffffffffff7BFF,
+                            0xc0dec0dec0deFBFF,
+                            0xa83ef1cc4f1a7C00,
+                            0xffffffff0fffFC00,
+                            0xfffeffffffff7E00,
+                            0xffffffefffff7FFF,
+                            0xa1b2c3d4e5f67C01,
+                            0xfffffffcffff7DFF]
+
+      badNB_corners_S_H =  [0x00000000,
+                            0xfffe8000,
+                            0x7fff3C00,
+                            0xbeefBC00,
+                            0xfeff0400,
+                            0x0fff8400,
+                            0xefff7BFF,
+                            0xc0deFBFF,
+                            0x4f1a7C00,
+                            0x0fffFC00,
+                            0xffef7E00,
+                            0xfeef7FFF,
+                            0xa1b27C01,
+                            0x4fd77DFF]
+      
+      # global NaNBox_tests
+      NaNBox_tests = False
 
       WALLY = os.environ.get('WALLY')
       pathname = WALLY+"/addins/cvw-arch-verif/tests/rv" + str(xlen) + "/"+extension+"/"
