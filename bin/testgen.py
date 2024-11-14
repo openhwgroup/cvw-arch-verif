@@ -1454,7 +1454,7 @@ if __name__ == '__main__':
   # generate files for each test
   for xlen in xlens:
     extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
-                  "Zba", "Zbb", "Zbc", "Zbs"]
+                  "Zba", "Zbb", "Zbc", "Zbs", "Zicsr"]
     if (xlen == 64):
       extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
     if (xlen == 32):
