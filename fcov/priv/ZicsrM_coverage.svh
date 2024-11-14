@@ -60,7 +60,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
     // csrs in the csr coverpoint.  This temporary coverpoint is inserted from riscvISACOV for troubleshooting, and 
     // makes 0 hits right now.
     cp_illegal_inst : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "mcause", "") == `MCAUSE_ILLEGAL_INST  iff (ins.trap == 1 )  {
-        option.comment = "Number of illegal instructions";
+        //Number of illegal instructions
         bins count[]  = {1};
     }
 
