@@ -1,17 +1,22 @@
+NUM_THREADS=$(nproc --ignore 1)
+
 all:
 	${WALLY}/addins/cvw-arch-verif/bin/covergroupgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/testgen.py
 	${WALLY}/addins/cvw-arch-verif/bin/combinetests.py
 	${WALLY}/addins/cvw-arch-verif/bin/csrtests.py
-	make -j 8 build
+	make -j ${NUM_THREADS} build
 
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
+	wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/priv/ZicsrM.elf --fcov
+	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
+	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv64gc ${WALLY}/addins/cvw-arch-verif/tests/rv64/I/WALLY-COV-add.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/Zicond/WALLY-COV-czero.eqz.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/M/WALLY-COV-div.elf --fcov
 
-	wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-ALL.elf --fcov
+	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lui.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-addi.elf --fcov
 	#wsim rv32gc ${WALLY}/addins/cvw-arch-verif/tests/rv32/I/WALLY-COV-lw.elf --fcov
@@ -69,14 +74,14 @@ $(SRCDIR64)/%.elf: $(SRCDIR64)/%.$(SEXT)
 
 $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT) 
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv32g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=ilp32 -mcmodel=medany \
-	    -nostartfiles -T${WALLY}/examples/link/link.ld $<
+	    -nostartfiles -T${BASEDIR}/tests/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 32 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
 
 $(SRCDIRPRIV)/%.elf: $(SRCDIRPRIV)/%.$(SEXT) tests/priv/Zicsr-CSR-Tests.h
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv64g_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
-	    -nostartfiles -I${WALLY}/tests/coverage -T${WALLY}/examples/link/link.ld $<
+	    -nostartfiles -I${BASEDIR}/tests/WALLY-init-lib.h -T${BASEDIR}/tests/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump

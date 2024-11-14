@@ -36,12 +36,6 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
-    csrrs: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_010_?????_1110011};
-    }
-    csrrc: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_011_?????_1110011};
-    }
     csr: coverpoint ins.current.insn[31:20]  {
         // automtically gives all 4096 bins
     }
@@ -275,9 +269,6 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     option.comment = "ZicsrM mstatus";
     // *** missing cp_mstatus_sd_write
     
-    cp_sd: coverpoint ins.current.insn {
-        wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
-    }
     cp_sw: coverpoint ins.current.insn {
         wildcard bins sd = {32'b????????????_?????_010_?????_0100011}; 
     }
@@ -287,14 +278,8 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_sb: coverpoint ins.current.insn {
         wildcard bins sd = {32'b????????????_?????_000_?????_0100011}; 
     }
-    cp_ld: coverpoint ins.current.insn {
-        wildcard bins sd = {32'b????????????_?????_001_?????_0000011}; 
-    }
     cp_lw: coverpoint ins.current.insn {
         wildcard bins sd = {32'b????????????_?????_010_?????_0000011}; 
-    }
-    cp_lwu: coverpoint ins.current.insn {
-        wildcard bins sd = {32'b????????????_?????_110_?????_0000011}; 
     }
     cp_lh: coverpoint ins.current.insn {
         wildcard bins sd = {32'b????????????_?????_001_?????_0000011}; 
@@ -327,7 +312,6 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
         mstatus_mbe: coverpoint ins.current.csr[12'h310][5] { // mbe is mstatush[5] in RV32
         }
     `endif
-    // *** should these be more explicit about outcomes to make sure appropriate parts are accessed?
     cp_mstatus_mbe_endianness_sw: cross priv_mode_m, mstatus_mbe, cp_sw, cp_wordoffset;
     cp_mstatus_mbe_endianness_sh: cross priv_mode_m, mstatus_mbe, cp_sh, cp_halfoffset;
     cp_mstatus_mbe_endianness_sb: cross priv_mode_m, mstatus_mbe, cp_sb, cp_byteoffset;
@@ -338,11 +322,20 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_mstatus_mbe_endianness_lbu: cross priv_mode_m, mstatus_mbe, cp_lbu, cp_byteoffset;
 
     `ifdef XLEN64
+        cp_sd: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
+        }
+        cp_ld: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_001_?????_0000011}; 
+        }
+        cp_lwu: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_110_?????_0000011}; 
+        }
         cp_doubleoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000)  {
             bins zero = {3'b000};
         }
-        cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd;
-        cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld;
+        cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd, cp_doubleoffset;
+        cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld, cp_doubleoffset;
         cp_mstatus_mbe_endianness_lwu: cross priv_mode_m, mstatus_mbe, cp_lwu, cp_wordoffset;
     `endif
 
