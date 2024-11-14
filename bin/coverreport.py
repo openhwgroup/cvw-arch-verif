@@ -75,7 +75,7 @@ for config in configs:
 
         # Process each line and replace the specified path pattern
         with open(reportdir + "/temp_summary_" + config + ".txt", "r") as infile, open(reportdir + "/summary_" + config + ".txt", "w") as outfile:
-    
+            
             previous_line = None  # To keep track of the previous line
 
             for line in infile:
@@ -87,25 +87,45 @@ for config in configs:
                         cg_index = line.index('_cg') + len('_cg')
 
                         # Calculate the starting position of the percentage
-                        percent_start_pos = 56
-
                         match = re.search(r'\b((100|[0-9]{1,2})\.[0-9]{2})%', line)
                         if match:
+                            percentage_value = match.group(0)  # Get the matched percentage
+                            percentage_num = float(percentage_value.strip('%'))  # Convert to float
+
+                            # Adjust percentage_start_pos based on the value of percentage_num
+                            if percentage_num < 10.00:
+                                percentage_start_pos = 56
+                            elif percentage_num < 100.00:
+                                percentage_start_pos = 55
+                            else:
+                                percentage_start_pos = 54
                             
+                            # Calculate necessary padding based on current position of the percentage
                             percentage_index = match.start()
 
-                            # Calculate necessary padding based on current position of the percentage
-                            if percentage_index < percent_start_pos:
-                                line = line[:cg_index] + ' ' * (percent_start_pos - cg_index) + line[cg_index:].lstrip()
-                            elif percentage_index > percent_start_pos:
+                            if percentage_index < percentage_start_pos:
+                                line = line[:cg_index] + ' ' * (percentage_start_pos - cg_index) + line[cg_index:].lstrip()
+                            elif percentage_index > percentage_start_pos:
                                 line = line[:cg_index] + line[cg_index:].lstrip()
 
                 # Check if the current line starts with multiple spaces followed by a percentage
-                if re.match(r'^ +\b((100|[0-9]{1,2})\.[0-9]{2})%', line) and previous_line:
+                match = re.match(r'^ +\b((100|[0-9]{1,2})\.[0-9]{2})%', line) 
+                if match and previous_line:
                     previous_line = previous_line.rstrip()
-                    if len(previous_line) < percent_start_pos:
+                    percentage_value = match.group(0)  # Get the matched percentage
+                    percentage_num = float(percentage_value.strip('%'))  # Convert to float
+
+                    # Adjust percentage_start_pos based on the value of percentage_num
+                    if percentage_num < 10.00:
+                        percentage_start_pos = 56
+                    elif percentage_num < 100.00:
+                        percentage_start_pos = 55
+                    else:
+                        percentage_start_pos = 54
+
+                    if len(previous_line) < percentage_start_pos:
                         # Pad with spaces if previous line is shorter than the percentage start position
-                        previous_line = previous_line + " " * (percent_start_pos - len(previous_line))
+                        previous_line = previous_line + " " * (percentage_start_pos - len(previous_line))
 
                     # Find the position of the percentage in the current line
                     match_percentage = re.search(r'\b((100|[0-9]{1,2})\.[0-9]{2})%', line)
@@ -113,7 +133,7 @@ for config in configs:
                         percentage_index = match_percentage.start()
 
                         # Merge the previous line and current line starting from the percentage index
-                        merged_line = previous_line + line[percentage_index:].strip()  # Start from the percentage
+                        merged_line = previous_line + line[percentage_index:].strip()
 
                     outfile.write(merged_line + "\n")
 
@@ -127,7 +147,6 @@ for config in configs:
 
         # Step 3: Remove the temporary file
         os.remove(reportdir + "/temp_summary_" + config + ".txt")
-
 
         # Remove duplicates in generated reports
         remove_duplicates_after_second_header(f"{reportdir}/report_{config}.txt")
