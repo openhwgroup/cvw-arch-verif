@@ -81,7 +81,7 @@ $(SRCDIR32)/%.elf: $(SRCDIR32)/%.$(SEXT)
 
 $(SRCDIRPRIV)/%.elf: $(SRCDIRPRIV)/%.$(SEXT) tests/priv/Zicsr-CSR-Tests.h
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv64g_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=lp64 -mcmodel=medany \
-	    -nostartfiles -I${BASEDIR}/tests/WALLY-init-lib.h -T${BASEDIR}/tests/link.ld $<
+	    -nostartfiles -I${BASEDIR}/tests -T${BASEDIR}/tests/link.ld $<
 	riscv64-unknown-elf-objdump -S -D $@ > $@.objdump
 	riscv64-unknown-elf-elf2hex --bit-width 64 --input $@ --output $@.memfile
 	extractFunctionRadix.sh $@.objdump
