@@ -22,8 +22,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrm_t;
 
 covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM csr";
+    option.per_instance = 0; 
 
     // building blocks for the main coverpoints
     nonzerord: coverpoint ins.current.insn[11:7] {
@@ -204,8 +203,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
 endgroup
 
 covergroup mcause_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mcause";
+    option.per_instance = 0; 
  
     csrrw_mcause: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b001101000010_?????_001_?????_1110011};  // csrrw to mcause
@@ -271,8 +269,7 @@ endgroup
 
 
 covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mstatus";
+    option.per_instance = 0; 
     // *** missing cp_mstatus_sd_write
     
     cp_sd: coverpoint ins.current.insn {
@@ -349,8 +346,7 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
  endgroup
 
 covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mprivinst";
+    option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};

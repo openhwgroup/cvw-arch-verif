@@ -1,5 +1,5 @@
     cmp_rs1_rs2 : coverpoint ins.current.rs1 == ins.current.rs2  iff (ins.trap == 0 )  {
-        option.comment = "Compare RS1 and RS2 register assignment";
+        //Compare RS1 and RS2 register assignment
         bins x0  = {1} iff (ins.current.rs1 == "x0");
         bins x1  = {1} iff (ins.current.rs1 == "x1");
         bins x2  = {1} iff (ins.current.rs1 == "x2");
