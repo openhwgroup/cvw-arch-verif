@@ -75,10 +75,18 @@ for config in configs:
 
         # Process each line and replace the specified path pattern
         with open(reportdir + "/temp_summary_" + config + ".txt", "r") as infile, open(reportdir + "/summary_" + config + ".txt", "w") as outfile:
-            
+            metric_start_pos = None
             previous_line = None  # To keep track of the previous line
+            # Read the header line and calculate the starting index of "Metric"
 
             for line in infile:
+                if "Metric" in line and metric_start_pos is None:
+                    # Find the index of the start of "Metric" in this line
+                    metric_match = re.search(r'\bMetric\b', line)
+                    if metric_match:
+                        metric_start_pos = metric_match.start()  # Store the starting position of "Metric"
+                        print("Metric starts at index:", metric_start_pos)  # Output the position for verification
+                    
                 if "TYPE" in line:
                     # Replace the pattern with spaces after '_cg'
                     line = re.sub(r'/RISCV_coverage_pkg/RISCV_coverage__1/', '', line)
@@ -94,11 +102,11 @@ for config in configs:
 
                             # Adjust percentage_start_pos based on the value of percentage_num
                             if percentage_num < 10.00:
-                                percentage_start_pos = 56
+                                percentage_start_pos = metric_start_pos + 2
                             elif percentage_num < 100.00:
-                                percentage_start_pos = 55
+                                percentage_start_pos = metric_start_pos + 1
                             else:
-                                percentage_start_pos = 54
+                                percentage_start_pos = metric_start_pos
                             
                             # Calculate necessary padding based on current position of the percentage
                             percentage_index = match.start()
@@ -117,11 +125,11 @@ for config in configs:
 
                     # Adjust percentage_start_pos based on the value of percentage_num
                     if percentage_num < 10.00:
-                        percentage_start_pos = 56
+                        percentage_start_pos = metric_start_pos + 2
                     elif percentage_num < 100.00:
-                        percentage_start_pos = 55
+                        percentage_start_pos = metric_start_pos + 1
                     else:
-                        percentage_start_pos = 54
+                        percentage_start_pos = metric_start_pos
 
                     if len(previous_line) < percentage_start_pos:
                         # Pad with spaces if previous line is shorter than the percentage start position
