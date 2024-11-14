@@ -8,5 +8,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    csr_cg = new();csr_cg.set_inst_name("obj_csr");
-    mcause_cg = new();mcause_cg.set_inst_name("obj_mcause");
+    mcsr_cg = new();        mcsr_cg.set_inst_name("obj_mcsr");
+    mcause_cg = new();      mcause_cg.set_inst_name("obj_mcause");
+    mstatus_cg = new();     mstatus_cg.set_inst_name("obj_mstatus");
+    mprivinst_cg = new();   mprivinst_cg.set_inst_name("obj_mprivinst");
+
+ 
