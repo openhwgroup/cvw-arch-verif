@@ -49,15 +49,6 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
         bins ones = {'1};
     }
 
-    // we don't seem to be getting hits on many CSRs.  We are suspicious it is because they are unimplemented and cause
-    // illegal instruction traps when accessed (but still need to prove this, possibly by making a list of good and illegal
-    // csrs in the csr coverpoint.  This temporary coverpoint is inserted from riscvISACOV for troubleshooting, and 
-    // makes 0 hits right now.
-    cp_illegal_inst : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "mcause", "") == `MCAUSE_ILLEGAL_INST  iff (ins.trap == 1 )  {
-        //Number of illegal instructions
-        bins count[]  = {1};
-    }
-
     `ifdef XLEN64
         walking_ones : coverpoint ins.current.rs1_val {
             bins b_0  = {64'b0000000000000000000000000000000000000000000000000000000000000001};
@@ -344,8 +335,6 @@ covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
-        bins mret   = {32'h30200073};
-        bins sret   = {32'h10200073};
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -353,31 +342,35 @@ covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
-    priv_mode_m: coverpoint ins.current.mode {
+    priv_mode_m: coverpoint ins.current.mode { 
+       bins M_mode = {2'b11};
+    }    
+    // mret and sret change the privilege mode, so check the old mode it was coming from for these coverpoints used in sret/mret cross products
+    old_priv_mode_m: coverpoint ins.prev.mode { 
        bins M_mode = {2'b11};
     }
-    mstatus_mpp: coverpoint ins.current.csr[12'h300][12:11] {         // *** how to handle S or U not always supported
+    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {         // *** how to handle S or U not always supported
         bins U_mode = {2'b00};
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    mstatus_mprv: coverpoint ins.current.csr[12'h300][17] {
+    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
     }
-    mstatus_tsr: coverpoint ins.current.csr[12'h300][22] {
+    old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
     }
-    mstatus_mpie: coverpoint ins.current.csr[12'h300][7] {
+    old_mstatus_mpie: coverpoint ins.prev.csr[12'h300][7] {
     }
-    mstatus_mie: coverpoint ins.current.csr[12'h300][3] {
+    old_mstatus_mie: coverpoint ins.prev.csr[12'h300][3] {
     }
-    mstatus_spp: coverpoint ins.current.csr[12'h300][8] {
+    old_mstatus_spp: coverpoint ins.prev.csr[12'h300][8] {
     }
-    mstatus_spie: coverpoint ins.current.csr[12'h300][5] {
+    old_mstatus_spie: coverpoint ins.prev.csr[12'h300][5] {
     }
-    mstatus_sie: coverpoint ins.current.csr[12'h300][1] {
+    old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
     }
     cp_mprivinst: cross privinstrs, priv_mode_m;
-    cp_mret: cross mret, priv_mode_m, mstatus_mpp, mstatus_mprv, mstatus_mpie, mstatus_mie;
-    cp_sret: cross sret, priv_mode_m, mstatus_spp, mstatus_mprv, mstatus_spie, mstatus_sie, mstatus_tsr;
+    cp_mret: cross mret, old_priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
+    cp_sret: cross sret, old_priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrm_sample(int hart, int issue);
@@ -387,7 +380,7 @@ function void zicsrm_sample(int hart, int issue);
     ins.add_rd(0);
     ins.add_rs1(2);
     ins.add_csr(1);
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.csr[12'hB02]);
+    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
 
     mcsr_cg.sample(ins);
     mcause_cg.sample(ins);

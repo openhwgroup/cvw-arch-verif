@@ -428,7 +428,7 @@ postendian:
 // cp_ecall
 /////////////////////////////////
 
-    li t0, 3
+    li a0, 3
     ecall       # switch from machine mode to machine mode
 
 /////////////////////////////////
