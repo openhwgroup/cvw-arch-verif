@@ -62,12 +62,12 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
         wildcard bins csrrc = {32'b000110000000_?????_011_?????_1110011};
     }
 
-    access_u: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
+    access_u: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 1) { //sat.1
         ignore_bins ig1 = binsof(priv_mode.S_mode);
         ignore_bins ig2 = binsof(priv_mode.M_mode);
         ignore_bins ig3 = binsof(Mcause.no_exception);
     }
-    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
+    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 0) { //sat.1
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(Mcause.illegal_ins);
     }
@@ -110,7 +110,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    Scause: coverpoint ins.current.csr[12'h142]{
+    Scause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins illegal_ins = {64'd2};
     }
     ins: coverpoint ins.current.insn {
@@ -559,12 +559,12 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-    Scause: coverpoint  ins.current.csr[12'h142] {
+    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
         bins store_amo_page_fault = {64'd15};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
         bins store_amo_page_fault = {64'd15};
@@ -1009,32 +1009,31 @@ covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess {
         bins set = {1};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
         bins store_amo_page_fault = {64'd15};
-        bins no_page_fault = {64'd0};
+    }
+    Nopagefault: coverpoint  ins.current.csr[12'h143]{
+        bins no_fault  = {32'd0};
     }
 
     //pte.17&20
     svnapot_read_fault: cross PTE_d, Mcause, read_acc, mode {
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_d.all_zeros);
         ignore_bins ig5 = binsof(PTE_d.svpbmt);
     }
     svnapot_write_fault: cross PTE_d, Mcause, write_acc, mode {
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_d.all_zeros);
         ignore_bins ig5 = binsof(PTE_d.svpbmt);
     }
     svnapot_exec_fault: cross PTE_i, Mcause, exec_acc, mode {
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_i.all_zeros);
         ignore_bins ig5 = binsof(PTE_i.svpbmt);
     }
@@ -1043,46 +1042,34 @@ covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
     svpbmt_read_fault: cross PTE_d, Mcause, read_acc, mode, svpbmt_support {
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_d.all_zeros);
         ignore_bins ig5 = binsof(PTE_d.svnapot);
     }
     svpbmt_write_fault: cross PTE_d, Mcause, write_acc, mode, svpbmt_support {
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_d.all_zeros);
         ignore_bins ig5 = binsof(PTE_d.svnapot);
     }
     svpbmt_exec_fault: cross PTE_i, Mcause, exec_acc, mode, svpbmt_support {
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.no_page_fault);
         ignore_bins ig4 = binsof(PTE_i.all_zeros);
         ignore_bins ig5 = binsof(PTE_i.svnapot);
     }
 
     //pte.17&19&20
-    read_nofault: cross PTE_d, Mcause, read_acc, mode {
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    read_nofault: cross PTE_d, Nopagefault, read_acc, mode {
         ignore_bins ig4 = binsof(PTE_d.svnapot); 
         ignore_bins ig5 = binsof(PTE_d.svpbmt); 
         ignore_bins ig6 = binsof(PTE_d.reserved); 
     }
-    write_nofault: cross PTE_d, Mcause, write_acc, mode{
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    write_nofault: cross PTE_d, Nopagefault, write_acc, mode{
         ignore_bins ig4 = binsof(PTE_d.svnapot); 
         ignore_bins ig5 = binsof(PTE_d.svpbmt); 
         ignore_bins ig6 = binsof(PTE_d.reserved); 
     }
-    exec_nofault: cross PTE_i, Mcause, exec_acc, mode {
-        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    exec_nofault: cross PTE_i, Nopagefault, exec_acc, mode {
         ignore_bins ig4 = binsof(PTE_i.svnapot); 
         ignore_bins ig5 = binsof(PTE_i.svpbmt); 
         ignore_bins ig6 = binsof(PTE_i.reserved); 

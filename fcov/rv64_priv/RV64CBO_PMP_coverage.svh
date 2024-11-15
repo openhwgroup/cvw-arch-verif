@@ -56,10 +56,10 @@ covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
         bins set = {1};
     }
 
-    Scause: coverpoint ins.current.csr[12'h142]{
+    Scause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1){
         bins store_amo_acc = {64'd7};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins store_amo_acc = {64'd7};
     }
 

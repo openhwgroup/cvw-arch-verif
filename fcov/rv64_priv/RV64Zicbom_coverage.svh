@@ -39,7 +39,7 @@ covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
     cbo: coverpoint ins.current.insn{
         wildcard bins inval = {32'b000000000000_?????_010_00000_0001111};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342]{
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins illegal_ins = {64'd2};
     }
     illegal_ins_exception_m: cross priv_mode, menvcfg_cbie, cbo, Mcause{ //inv.1
@@ -91,7 +91,7 @@ covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
     cbo: coverpoint ins.current.insn {
         wildcard bins clean = {32'b000000000001_?????_010_00000_0001111};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins illegal_ins = {64'd2};
     }
     illegal_ins_exception_m: cross priv_mode, menvcfg_cbcfe, cbo, Mcause{ //cl.1
@@ -129,7 +129,7 @@ covergroup cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
     cbo: coverpoint ins.current.insn {
         wildcard bins flush = {32'b000000000010_?????_010_00000_0001111};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins illegal_ins = {64'd2};
     }
     illegal_ins_exception_m: cross priv_mode, menvcfg_cbcfe, cbo, Mcause{ //fl.1
