@@ -77,7 +77,6 @@ for config in configs:
         with open(reportdir + "/temp_summary_" + config + ".txt", "r") as infile, open(reportdir + "/summary_" + config + ".txt", "w") as outfile:
             metric_start_pos = None
             previous_line = None  # To keep track of the previous line
-            # Read the header line and calculate the starting index of "Metric"
 
             for line in infile:
                 if "Metric" in line and metric_start_pos is None:
@@ -85,7 +84,6 @@ for config in configs:
                     metric_match = re.search(r'\bMetric\b', line)
                     if metric_match:
                         metric_start_pos = metric_match.start()  # Store the starting position of "Metric"
-                        print("Metric starts at index:", metric_start_pos)  # Output the position for verification
                     
                 if "TYPE" in line:
                     # Replace the pattern with spaces after '_cg'
