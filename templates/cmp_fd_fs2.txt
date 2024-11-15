@@ -1,5 +1,5 @@
     cmp_fd_fs2 : coverpoint ins.current.fd == ins.current.fs2  iff (ins.trap == 0 )  {
-        option.comment = "FD and FS2 register (assignment) WAR Hazard";
+        //FD and FS2 register (assignment) WAR Hazard
         bins f0  = {1} iff (ins.current.fd == "f0");
         bins f1  = {1} iff (ins.current.fd == "f1");
         bins f2  = {1} iff (ins.current.fd == "f2");
