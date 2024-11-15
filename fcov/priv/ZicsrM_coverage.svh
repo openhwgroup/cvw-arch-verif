@@ -49,15 +49,6 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
         bins ones = {'1};
     }
 
-    // we don't seem to be getting hits on many CSRs.  We are suspicious it is because they are unimplemented and cause
-    // illegal instruction traps when accessed (but still need to prove this, possibly by making a list of good and illegal
-    // csrs in the csr coverpoint.  This temporary coverpoint is inserted from riscvISACOV for troubleshooting, and 
-    // makes 0 hits right now.
-    cp_illegal_inst : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "mcause", "") == `MCAUSE_ILLEGAL_INST  iff (ins.trap == 1 )  {
-        //Number of illegal instructions
-        bins count[]  = {1};
-    }
-
     `ifdef XLEN64
         walking_ones : coverpoint ins.current.rs1_val {
             bins b_0  = {64'b0000000000000000000000000000000000000000000000000000000000000001};
@@ -387,7 +378,7 @@ function void zicsrm_sample(int hart, int issue);
     ins.add_rd(0);
     ins.add_rs1(2);
     ins.add_csr(1);
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.csr[12'hB02]);
+    //$display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b.  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.current.csr[12'hB02]);
 
     mcsr_cg.sample(ins);
     mcause_cg.sample(ins);
