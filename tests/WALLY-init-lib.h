@@ -162,7 +162,16 @@ updateepc:
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    sd t0, 0(t1)        # send success code
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd t0, 0(t1)        # send success code
+        #elif __riscv_xlen == 32
+            sw t0, 0(t1)        # send success code
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+   
 
 self_loop:
     j self_loop         # wait

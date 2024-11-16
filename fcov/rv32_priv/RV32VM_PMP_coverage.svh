@@ -74,12 +74,12 @@ covergroup PMP_cg with function sample(ins_rv32vm_pmp_t ins);
         bins set = {1};
     }
 
-    Scause: coverpoint ins.current.csr[12'h142]{
+    Scause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins load_page_acc = {32'd5};
         bins ins_acc_fault  = {32'd1};
         bins store_amo_acc = {32'd7};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_acc = {32'd5};
         bins ins_acc_fault  = {32'd1};
         bins store_amo_acc = {32'd7};

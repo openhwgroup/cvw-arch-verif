@@ -178,10 +178,10 @@ covergroup exceptions_vm_cg with function sample(ins_rv64cbo_vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-    Scause: coverpoint  ins.current.csr[12'h142] {
+    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins store_amo_page_fault = {64'd15};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins store_amo_page_fault = {64'd15};
     }
     Nopagefault: coverpoint  ins.current.csr[12'h143]{
