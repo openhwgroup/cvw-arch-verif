@@ -255,8 +255,27 @@ endgroup
 
 covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 0; 
-    // *** missing cp_mstatus_sd_write
+
+    // SD COVERPOINTS
+    // Cross-product of trying to write mstatus.SD, .FS, .XS, .VS
+    cp_mstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
+    }
+    cp_mstatus_fs: coverpoint ins.current.rs1_val[14:13] {
+    }    
+    cp_mstatus_vs: coverpoint ins.current.rs1_val[10:9] {
+    }    
+    cp_mstatus_xs: coverpoint ins.current.rs1_val[16:15] {
+    }
+    csrrw_mstatus: coverpoint ins.current.insn {
+        wildcard bins csrrw = {32'b001100000000_?????_001_?????_1110011};  // csrrw to mstatus
+    }
+    priv_mode_m: coverpoint ins.current.mode {
+       bins M_mode = {2'b11};
+    }
+    cp_mstatus_sd_write: cross priv_mode_m, csrrw_mstatus, cp_mstatus_sd, cp_mstatus_fs, cp_mstatus_vs, cp_mstatus_xs;
+
     
+    // ENDIANNESS COVERPOINTS: check writes and reads with various endianness
     cp_sw: coverpoint ins.current.insn {
         wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
     }
@@ -290,9 +309,6 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_wordoffset: coverpoint ins.current.imm[2] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[1:0] == 2'b00)  {
         // all word offsets
     }    
-    priv_mode_m: coverpoint ins.current.mode {
-       bins M_mode = {2'b11};
-    }
     `ifdef XLEN64
         mstatus_mbe: coverpoint ins.current.csr[12'h300][37] { // mbe is mstatus[37] in RV64
         }
