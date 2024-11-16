@@ -22,12 +22,11 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrm_t;
 
 covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM csr";
+    option.per_instance = 0; 
 
     // building blocks for the main coverpoints
     nonzerord: coverpoint ins.current.insn[11:7] {
-        option.weight = 0;
+        type_option.weight = 0;
         bins nonzero = { [1:$] }; // rd != 0
     }
     csrr: coverpoint ins.current.insn  {
@@ -35,12 +34,6 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
     }
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
-    }
-    csrrs: coverpoint ins.current.insn {
-        wildcard bins csrrs = {32'b????????????_?????_010_?????_1110011};
-    }
-    csrrc: coverpoint ins.current.insn {
-        wildcard bins csrrc = {32'b????????????_?????_011_?????_1110011};
     }
     csr: coverpoint ins.current.insn[31:20]  {
         // automtically gives all 4096 bins
@@ -54,15 +47,6 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
     rs1_corners: coverpoint ins.current.rs1_val {
         bins zero = {0};
         bins ones = {'1};
-    }
-
-    // we don't seem to be getting hits on many CSRs.  We are suspicious it is because they are unimplemented and cause
-    // illegal instruction traps when accessed (but still need to prove this, possibly by making a list of good and illegal
-    // csrs in the csr coverpoint.  This temporary coverpoint is inserted from riscvISACOV for troubleshooting, and 
-    // makes 0 hits right now.
-    cp_illegal_inst : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "mcause", "") == `MCAUSE_ILLEGAL_INST  iff (ins.trap == 1 )  {
-        option.comment = "Number of illegal instructions";
-        bins count[]  = {1};
     }
 
     `ifdef XLEN64
@@ -204,8 +188,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
 endgroup
 
 covergroup mcause_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mcause";
+    option.per_instance = 0; 
  
     csrrw_mcause: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b001101000010_?????_001_?????_1110011};  // csrrw to mcause
@@ -271,13 +254,9 @@ endgroup
 
 
 covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mstatus";
+    option.per_instance = 0; 
     // *** missing cp_mstatus_sd_write
     
-    cp_sd: coverpoint ins.current.insn {
-        wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
-    }
     cp_sw: coverpoint ins.current.insn {
         wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
     }
@@ -287,14 +266,8 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_sb: coverpoint ins.current.insn {
         wildcard bins sb = {32'b????????????_?????_000_?????_0100011}; 
     }
-    cp_ld: coverpoint ins.current.insn {
-        wildcard bins ld = {32'b????????????_?????_001_?????_0000011}; 
-    }
     cp_lw: coverpoint ins.current.insn {
         wildcard bins lw = {32'b????????????_?????_010_?????_0000011}; 
-    }
-    cp_lwu: coverpoint ins.current.insn {
-        wildcard bins lwu = {32'b????????????_?????_110_?????_0000011}; 
     }
     cp_lh: coverpoint ins.current.insn {
         wildcard bins lh = {32'b????????????_?????_001_?????_0000011}; 
@@ -327,7 +300,6 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
         mstatus_mbe: coverpoint ins.current.csr[12'h310][5] { // mbe is mstatush[5] in RV32
         }
     `endif
-    // *** should these be more explicit about outcomes to make sure appropriate parts are accessed?
     cp_mstatus_mbe_endianness_sw: cross priv_mode_m, mstatus_mbe, cp_sw, cp_wordoffset;
     cp_mstatus_mbe_endianness_sh: cross priv_mode_m, mstatus_mbe, cp_sh, cp_halfoffset;
     cp_mstatus_mbe_endianness_sb: cross priv_mode_m, mstatus_mbe, cp_sb, cp_byteoffset;
@@ -338,25 +310,31 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     cp_mstatus_mbe_endianness_lbu: cross priv_mode_m, mstatus_mbe, cp_lbu, cp_byteoffset;
 
     `ifdef XLEN64
+        cp_sd: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
+        }
+        cp_ld: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_001_?????_0000011}; 
+        }
+        cp_lwu: coverpoint ins.current.insn {
+            wildcard bins sd = {32'b????????????_?????_110_?????_0000011}; 
+        }
         cp_doubleoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000)  {
             bins zero = {3'b000};
         }
-        cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd;
-        cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld;
+        cp_mstatus_mbe_endianness_sd: cross priv_mode_m, mstatus_mbe, cp_sd, cp_doubleoffset;
+        cp_mstatus_mbe_endianness_ld: cross priv_mode_m, mstatus_mbe, cp_ld, cp_doubleoffset;
         cp_mstatus_mbe_endianness_lwu: cross priv_mode_m, mstatus_mbe, cp_lwu, cp_wordoffset;
     `endif
 
  endgroup
 
 covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrM mprivinst";
+    option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
-        bins mret   = {32'h30200073};
-        bins sret   = {32'h10200073};
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -364,31 +342,35 @@ covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
-    priv_mode_m: coverpoint ins.current.mode {
+    priv_mode_m: coverpoint ins.current.mode { 
+       bins M_mode = {2'b11};
+    }    
+    // mret and sret change the privilege mode, so check the old mode it was coming from for these coverpoints used in sret/mret cross products
+    old_priv_mode_m: coverpoint ins.prev.mode { 
        bins M_mode = {2'b11};
     }
-    mstatus_mpp: coverpoint ins.current.csr[12'h300][12:11] {         // *** how to handle S or U not always supported
+    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {         // *** how to handle S or U not always supported
         bins U_mode = {2'b00};
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    mstatus_mprv: coverpoint ins.current.csr[12'h300][17] {
+    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
     }
-    mstatus_tsr: coverpoint ins.current.csr[12'h300][22] {
+    old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
     }
-    mstatus_mpie: coverpoint ins.current.csr[12'h300][7] {
+    old_mstatus_mpie: coverpoint ins.prev.csr[12'h300][7] {
     }
-    mstatus_mie: coverpoint ins.current.csr[12'h300][3] {
+    old_mstatus_mie: coverpoint ins.prev.csr[12'h300][3] {
     }
-    mstatus_spp: coverpoint ins.current.csr[12'h300][8] {
+    old_mstatus_spp: coverpoint ins.prev.csr[12'h300][8] {
     }
-    mstatus_spie: coverpoint ins.current.csr[12'h300][5] {
+    old_mstatus_spie: coverpoint ins.prev.csr[12'h300][5] {
     }
-    mstatus_sie: coverpoint ins.current.csr[12'h300][1] {
+    old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
     }
     cp_mprivinst: cross privinstrs, priv_mode_m;
-    cp_mret: cross mret, priv_mode_m, mstatus_mpp, mstatus_mprv, mstatus_mpie, mstatus_mie;
-    cp_sret: cross sret, priv_mode_m, mstatus_spp, mstatus_mprv, mstatus_spie, mstatus_sie, mstatus_tsr;
+    cp_mret: cross mret, old_priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
+    cp_sret: cross sret, old_priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrm_sample(int hart, int issue);
@@ -398,7 +380,7 @@ function void zicsrm_sample(int hart, int issue);
     ins.add_rd(0);
     ins.add_rs1(2);
     ins.add_csr(1);
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.csr[12'hB02]);
+    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
 
     mcsr_cg.sample(ins);
     mcause_cg.sample(ins);

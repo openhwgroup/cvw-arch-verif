@@ -22,8 +22,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_t;
 
 covergroup satp_cg with function sample(ins_rv64vm_t ins);
-    option.per_instance = 1; 
-    option.comment = "satp";
+    option.per_instance = 0; 
 
     mode_supported: coverpoint ins.current.csr[12'h180][63:60] { //sat.2
         bins sv39   = {4'b1000};
@@ -75,8 +74,7 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
 endgroup
 
 covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
-    option.per_instance = 1; 
-    option.comment = "PA_VA";
+    option.per_instance = 0; 
     VA_i: coverpoint ins.current.VAdrI { 
         bins all_zeros = {64'd0};
         bins all_ones  = {64'hFFFFFFFF_FFFFFFFF};
@@ -97,16 +95,14 @@ covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all 
 endgroup
 
 covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
-    option.per_instance = 1; 
-    option.comment = "sfence";
+    option.per_instance = 0; 
     ins: coverpoint ins.current.insn { 
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
 
 covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
-    option.per_instance = 1; 
-    option.comment = "mstatus_mprv";
+    option.per_instance = 0; 
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
     }
@@ -162,8 +158,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
 endgroup
 
 covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
-    option.per_instance = 1; 
-    option.comment = "vm_permissions";
+    option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.PTE_i[7:0] { //pte.2
         wildcard bins leaflvl_u = {8'b???11000};
@@ -910,8 +905,7 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
 endgroup
 
 covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins); 
-    option.per_instance = 1; 
-    option.comment = "res_global_pte";
+    option.per_instance = 0; 
     //pte.1
     RSW: coverpoint ins.current.PTE_i[9:8] {
         bins all_comb[] = {[2'd0:2'd3]}; 
@@ -986,8 +980,7 @@ covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins);
 endgroup
 
 covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
-    option.per_instance = 1; 
-    option.comment = "add_features";
+    option.per_instance = 0; 
     PTE_i: coverpoint ins.current.PTE_i[63:54] {
         bins all_zeros = {10'd0};
         bins svnapot = {10'b10000_00000}; 

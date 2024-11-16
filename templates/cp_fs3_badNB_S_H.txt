@@ -1,5 +1,5 @@
     cp_fs3_badNB_S_H : coverpoint unsigned'(ins.current.fs3_val[31:0])  iff (ins.trap == 0 )  {
-        option.comment = "FS3 Bad NaNBox corners (half NaNBoxed to 32 bits)";
+        // "FS3 Bad NaNBox corners (half NaNBoxed to 32 bits)";
         bins pos0             = {32'h0000_0000};
         bins neg0             = {32'hfffe_8000};
         bins pos1             = {32'h7fff_3C00};

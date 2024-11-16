@@ -21,8 +21,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_pmp_t;
 
 covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
-    option.per_instance = 1; 
-    option.comment = "exceptions_pmp";
+    option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d: coverpoint ins.current.PTE_d[7:0] {
         wildcard bins leaflvl_u = {8'b???11111};
