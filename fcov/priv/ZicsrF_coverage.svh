@@ -161,23 +161,43 @@ covergroup fcsr_cg with function sample(ins_zicsrf_t ins);
         wildcard bins DZ = (5'b?0??? => 5'b?1???);
         wildcard bins NV = (5'b0???? => 5'b1????);
     }
+    instrs: coverpoint ins.current.insn {
+        wildcard bins fsw          = {32'b????????????_?????_010_?????_0100111};
+        wildcard bins flw          = {32'b????????????_?????_010_?????_0000111};
+        wildcard bins fadd         = {32'b00000??_?????_?????_???_?????_1010011};
+        wildcard bins fsub         = {32'b00001??_?????_?????_???_?????_1010011};
+        wildcard bins fmul         = {32'b00010??_?????_?????_???_?????_1010011};
+        wildcard bins fdiv         = {32'b00011??_?????_?????_???_?????_1010011};
+        wildcard bins fcvt         = {32'b???????_?????_?????_???_?????_1010011};
+        wildcard bins add          = {32'b0000000_?????_?????_000_?????_0110011};
+        wildcard bins csrrw_fcsr   = {32'b000000000011_?????_001_?????_1110011};
+        wildcard bins csrrw_frm    = {32'b000000000010_?????_001_?????_1110011};
+        wildcard bins csrrw_fflags = {32'b000000000001_?????_001_?????_1110011};
+        wildcard bins csrrs_fcsr   = {32'b000000000011_?????_010_?????_1110011};
+        wildcard bins csrrs_frm    = {32'b000000000010_?????_010_?????_1110011};
+        wildcard bins csrrs_fflags = {32'b000000000001_?????_010_?????_1110011};
+        wildcard bins csrrc_fcsr   = {32'b000000000011_?????_011_?????_1110011};
+        wildcard bins csrrc_frm    = {32'b000000000010_?????_011_?????_1110011};
+        wildcard bins csrrc_fflags = {32'b000000000001_?????_011_?????_1110011};
+    }
     mstatus_FS: coverpoint ins.current.csr[12'h300][14:13] {
-        bins not_zero = {!3'b000};
-        bins zero     =  {3'b000};
     }
     mstatus_FS_n0: coverpoint ins.current.csr[12'h300][14:13] {
-        bins not_zero = {!3'b000};
+        bins one   = {2'b01};
+        bins two   = {2'b10};
+        bins three = {2'b11};
     }
     
     // main coverpoints
-    cp_fcsr_frm_write:        cross csrrw, fcsr,   fcsr_frm_corners, mstatus_FS;
-    cp_fcsr_fflags_write:     cross csrrw, fcsr,   fflags_corners,   mstatus_FS;
-    cp_fcsr_reserved:         cross csrop, fcsr,   walking_ones,     mstatus_FS;
-    cp_frm_write:             cross csrrw, frm,    frm_corners,      mstatus_FS;
-    cp_frm_write_reserved:    cross csrop, frm,    walking_ones,     mstatus_FS;
-    cp_fflags_write:          cross csrrw, fflags, fflags_corners,   mstatus_FS;
-    cp_fflags_write_reserved: cross csrop, fflags, walking_ones,     mstatus_FS;
+    cp_fcsr_frm_write:        cross csrrw, fcsr,   fcsr_frm_corners, mstatus_FS_n0;
+    cp_fcsr_fflags_write:     cross csrrw, fcsr,   fflags_corners,   mstatus_FS_n0;
+    cp_fcsr_reserved:         cross csrop, fcsr,   walking_ones,     mstatus_FS_n0;
+    cp_frm_write:             cross csrrw, frm,    frm_corners,      mstatus_FS_n0;
+    cp_frm_write_reserved:    cross csrop, frm,    walking_ones,     mstatus_FS_n0;
+    cp_fflags_write:          cross csrrw, fflags, fflags_corners,   mstatus_FS_n0;
+    cp_fflags_write_reserved: cross csrop, fflags, walking_ones,     mstatus_FS_n0;
     cp_fflags_set_m:          cross fflags_toggle,                   mstatus_FS_n0;
+    cp_mstatus_FS_transition: cross instrs,                          mstatus_FS;
 endgroup
 
 function void zicsrf_sample(int hart, int issue);
