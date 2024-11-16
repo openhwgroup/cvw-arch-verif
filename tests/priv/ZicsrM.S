@@ -266,8 +266,7 @@ formbits:
 //
 // Registers used:
 //   s0: saved value of mstatus
-//   s1: a 1 in bit 5 to set/clear mstatush.MBE (RV32)
-//   s2: a 1 in bit 37 to set/clear mstatus.MBE (RV64)
+//   s1: a 1 in bit 5 to set/clear mstatush.MBE (RV32) or bit 37 to set/clear mstatus.MBE (RV64)
 //   s3: scratch address
 //   s4: endianness for write test
 //   s5: endianness for read test
@@ -280,10 +279,15 @@ formbits:
     # avoids needing separate code for the two architectures
     # code assumes s registers are saved during these tests
     csrr s0, mstatus    # save CSR
-    li s1, 0x20 # s1 = 1 in bit 5 for mstatush.MBE
-    li s2, 0x1
-    slli s2, s2, 30
-    slli s2, s2, 7  # s2 = 1 in bit 37 for mstatus.MBE
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            li s1, 0x2000000000     # 1 in bit 37 for mstatus.MBE
+        #elif __riscv_xlen == 32
+            li s1, 0x20             # 1 in bit 5 for mstatush.MBE
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     la s3, scratch  # s3 = pointer to scratch
 
     # iterate over each endianness, doing all sizes of stores and loads
@@ -341,18 +345,39 @@ endiantest:
     mv a0, s4       # setEndianness(write)
     jal setendianness
     li t0, 0x3132333435363738
-    sd t0, 0(s3)
-    jal s7, endianaccess
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd t0, 0(s3)            # sd only in RV64
+            jal s7, endianaccess
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     jr s6   # return (return address was stored in s6)
 
 setendianness:
     // if a0 = 1, bigendian, otherwise littleendian
     beqz a0, 1f      # little endian
-    csrrs t6, mstatush, s1  # for RV32, set mstatush.MBE.  Will trap in RV64, but that's harmless.
-    csrrs t6, mstatus, s2   # for RV64, set mstatus.MBE
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            csrrs t6, mstatus, s1   # for RV64, set mstatus.MBE
+        #elif __riscv_xlen == 32
+            csrrs t6, mstatush, s1  # for RV32, set mstatush.MBE
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     ret
-1:  csrrc t6, mstatush, s1  # for RV32, clear mstatush.MBE.  Will trap in RV64, but that's harmless.
-    csrrc t6, mstatus, s2   # for RV64, clear mstatus.MBE
+1:  
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            csrrc t6, mstatus, s2   # for RV64, clear mstatus.MBE
+        #elif __riscv_xlen == 32
+            csrrc t6, mstatush, s1  # for RV32, clear mstatush.MBE.
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     ret
 
 endianaccess:
@@ -385,9 +410,15 @@ endianaccess:
     lhu t3, 6(s3)
     lw t3, 0(s3)
     lw t3, 4(s3)
-    lwu t3, 0(s3) # will trap in RV32, but that's ok
-    lwu t3, 4(s3) # will trap in RV32
-    ld t3, 0(s3) # will trap in RV32
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64    
+            lwu t3, 0(s3) # long loads for RV64
+            lwu t3, 4(s3) 
+            ld t3, 0(s3) 
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     jr s7   # return (return address was stored in s7)
 
 postendian: 
@@ -397,14 +428,14 @@ postendian:
 // cp_ecall
 /////////////////////////////////
 
-li t0, 3
-ecall       # switch from machine mode to machine mode
+    li a0, 3
+    ecall       # switch from machine mode to machine mode
 
 /////////////////////////////////
 // cp_ebreak
 /////////////////////////////////
 
-ebreak       # take a trap, and the trap handler returns
+    ebreak       # take a trap, and the trap handler returns
 
 /////////////////////////////////
 // cp_mret
@@ -610,8 +641,17 @@ finished:
 trap_handler_fastuncompressedillegalinstr:
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
-    sd t0, 0(tp)        # Save t0 and t1 on the stack
-    sd t1, -8(tp)
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd t0, 0(tp)        # Save t0 and t1 on the stack
+            sd t1, -8(tp)
+        #elif __riscv_xlen == 32
+            sw t0, 0(tp)        # Save t0 and t1 on the stack
+            sw t1, -4(tp)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     csrr t0, mcause     # Check the cause
     li t1, 2            # Illegal Instruction cause
     beq t0, t1, uncompressedillegalinstructionreturn
@@ -624,7 +664,16 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     csrr t0, mepc  # get address of instruction that caused exception
     addi t0, t0, 4
     csrw mepc, t0
-    ld t1, -8(tp)       # restore t1 and t0
-    ld t0, 0(tp)
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            ld t0, 0(tp)        # Restore t0 and t1
+            ld t1, -8(tp)
+        #elif __riscv_xlen == 32
+            lw t0, 0(tp)        # Restore t0 and t1
+            lw t1, -4(tp)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
     csrrw tp, mscratch, tp  # restore tp
     mret                # return from trap

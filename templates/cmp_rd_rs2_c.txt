@@ -1,5 +1,5 @@
     cmp_rd_rs2_c : coverpoint ins.current.rd == ins.current.rs2  iff (ins.trap == 0 )  {
-        option.comment = "RD and RS1 register (assignment) WAR Hazard";
+        //RD and RS1 register (assignment) WAR Hazard
         bins x8  = {1} iff (ins.current.rd == "x8");
         bins x9  = {1} iff (ins.current.rd == "x9");
         bins x10  = {1} iff (ins.current.rd == "x10");

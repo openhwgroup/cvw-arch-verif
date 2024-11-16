@@ -1,5 +1,5 @@
     cp_fs2_corners_H : coverpoint unsigned'(ins.current.fs2_val[15:0])  iff (ins.trap == 0 )  {
-        option.comment = "FS2 corners (Half Precision)";
+        //FS2 corners (Half Precision)
         bins pos0             = {16'h0000};
         bins neg0             = {16'h8000};
         bins pos1             = {16'h3C00};

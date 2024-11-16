@@ -41,8 +41,8 @@ def csrtests(pathname, US):
         rng = range(0x3A0, 0x3F0)
         print("// Additional tests to (unsuccessfully) write PMP from S and U mode; running these in M mode mucks up the PMP and hangs the DUT")
     else:
-        #rng = range(4096)
-        rng = range(512) # reduced range for testing
+        rng = range(4096)
+        #rng = range(512) # reduced range for testing
     for i in rng:
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)

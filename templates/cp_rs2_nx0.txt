@@ -1,5 +1,5 @@
     cp_rs2_nx0 : coverpoint ins.get_gpr_reg(ins.current.rs2)  iff (ins.trap == 0 )  {
-        option.comment = "RS2 register assignment";
+        //RS2 register assignment
         bins x1 = {1};
         bins x2 = {2};
         bins x3 = {3};

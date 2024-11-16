@@ -22,8 +22,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrf_t;
 
 covergroup fcsr_cg with function sample(ins_zicsrf_t ins);
-    option.per_instance = 1; 
-    option.comment = "ZicsrF fcsr";
+    option.per_instance = 0; 
 
     // building blocks for the main coverpoints
     csrrw: coverpoint ins.current.insn {
