@@ -59,12 +59,12 @@ covergroup satp_cg with function sample(ins_rv32vm_t ins);
         wildcard bins csrrc = {32'b000110000000_?????_011_?????_1110011};
     }
 
-    access_u: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
+    access_u: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 1) { //sat.1
         ignore_bins ig1 = binsof(priv_mode.S_mode);
         ignore_bins ig2 = binsof(priv_mode.M_mode);
         ignore_bins ig3 = binsof(Mcause.no_exception);
     }
-    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
+    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 0) { //sat.1
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(Mcause.illegal_ins);
     }
@@ -107,7 +107,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv32vm_t ins);
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    Scause: coverpoint ins.current.csr[12'h142]{
+    Scause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins illegal_ins = {32'd2};
     }
     ins: coverpoint ins.current.insn {
@@ -451,12 +451,12 @@ covergroup vm_permissions_cg with function sample(ins_rv32vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-    Scause: coverpoint  ins.current.csr[12'h142] {
+    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins load_page_fault = {32'd13};
         bins ins_page_fault  = {32'd12};
         bins store_amo_page_fault = {32'd15};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_fault = {32'd13};
         bins ins_page_fault  = {32'd12};
         bins store_amo_page_fault = {32'd15};
