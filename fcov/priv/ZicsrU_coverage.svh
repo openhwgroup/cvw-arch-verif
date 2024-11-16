@@ -30,7 +30,7 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
     // building blocks for the main coverpoints
 
     nonzerord: coverpoint ins.current.insn[11:7] {
-        option.weight = 0;
+        type_option.weight = 0;
         bins nonzero = { [1:$] }; // rd != 0
     }
     csrr: coverpoint ins.current.insn  {
@@ -129,8 +129,6 @@ covergroup mstatus_u_cg with function sample(ins_zicsru_t ins);
     cp_mstatus_ube_endianness_lb:  cross priv_mode_u, mstatus_ube, cp_lb,  cp_byteoffset;
     cp_mstatus_ube_endianness_lhu: cross priv_mode_u, mstatus_ube, cp_lhu, cp_halfoffset;
     cp_mstatus_ube_endianness_lbu: cross priv_mode_u, mstatus_ube, cp_lbu, cp_byteoffset;
-
-
     cp_mstatus_mprv_ube_endianness_sw:  cross priv_mode_u, mstatus_ube, cp_sw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     cp_mstatus_mprv_ube_endianness_sh:  cross priv_mode_u, mstatus_ube, cp_sh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     cp_mstatus_mprv_ube_endianness_sb:  cross priv_mode_u, mstatus_ube, cp_sb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
@@ -157,8 +155,8 @@ covergroup mstatus_u_cg with function sample(ins_zicsru_t ins);
         cp_mstatus_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, cp_doubleoffset;
         cp_mstatus_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, cp_doubleoffset;
         cp_mstatus_ube_endianness_lwu: cross priv_mode_u, mstatus_ube, cp_lwu, cp_wordoffset;
-        cp_mstatus_mpr_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mpr_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mpr_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
         cp_mstatus_mpr_ube_endianness_lwu: cross priv_mode_u, mstatus_ube, cp_lwu, cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     `endif
 endgroup
@@ -168,18 +166,26 @@ covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
     // "ZicsrU uprivinst"
 
     // building blocks for the main coverpoints
-    instrs: coverpoint ins.current.insn {
-        bins ecall  = {32'b00000000000000000000000001110011};
-        bins ebreak = {32'b00000000000100000000000001110011};
-        bins sret   = {32'b00010000001000000000000001110011};
-        bins mret   = {32'b00110000001000000000000001110011};
+    privinstrs: coverpoint ins.current.insn  {
+        bins ecall  = {32'h00000073};
+        bins ebreak = {32'h00100073};
+    }
+    mret: coverpoint ins.current.insn  {
+        bins mret   = {32'h30200073};
+    }
+    sret: coverpoint ins.current.insn  {
+        bins sret   = {32'h10200073};
     }
     priv_mode_u: coverpoint ins.current.mode {
        bins U_mode = {2'b00};
     }
-    
+    old_priv_mode_u: coverpoint ins.prev.mode {
+       bins U_mode = {2'b00};
+    }
     // main coverpoints
-    cp_uprivinst:  cross instrs, priv_mode_u;
+    cp_uprivinst:  cross privinstrs, priv_mode_u;
+    cp_mret:       cross mret, old_priv_mode_u; // should trap 
+    cp_sret:       cross sret, old_priv_mode_u; // should trap 
 endgroup
 
 function void zicsru_sample(int hart, int issue);
