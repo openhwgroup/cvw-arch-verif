@@ -258,13 +258,13 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
 
     // SD COVERPOINTS
     // Cross-product of trying to write mstatus.SD, .FS, .XS, .VS
-    cp_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
+    cp_mstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
     }
-    cp_fs: coverpoint ins.current.rs1_val[14:13] {
+    cp_mstatus_fs: coverpoint ins.current.rs1_val[14:13] {
     }    
-    cp_vs: coverpoint ins.current.rs1_val[10:9] {
+    cp_mstatus_vs: coverpoint ins.current.rs1_val[10:9] {
     }    
-    cp_xs: coverpoint ins.current.rs1_val[16:15] {
+    cp_mstatus_xs: coverpoint ins.current.rs1_val[16:15] {
     }
     csrrw_mstatus: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b001100000000_?????_001_?????_1110011};  // csrrw to mstatus
@@ -272,7 +272,7 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
     priv_mode_m: coverpoint ins.current.mode {
        bins M_mode = {2'b11};
     }
-    cp_mstatus_sd_write: cross priv_mode_m, csrrw_mstatus, cp_sd, cp_fs, cp_vs, cp_xs;
+    cp_mstatus_sd_write: cross priv_mode_m, csrrw_mstatus, cp_mstatus_sd, cp_mstatus_fs, cp_mstatus_vs, cp_mstatus_xs;
 
     
     // ENDIANNESS COVERPOINTS: check writes and reads with various endianness
