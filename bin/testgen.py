@@ -417,8 +417,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
     if (test == "c.fswsp" or test == "c.fsdsp"):
+      mv = "fmv.d.x" if (xlen == 64) else "fmv.s.x"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-      lines = lines + "fmv.s.x" + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
       lines = lines + "la sp" + ", scratch" + " # base address \n"
       lines = lines + test + " f" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
     else:
