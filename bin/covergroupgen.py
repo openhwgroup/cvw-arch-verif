@@ -84,13 +84,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    # special cases for fmv instructions being interpreted with depreciated names
-    # we need to look for the old name for asm_count
-    fmv_instr_alias = {"fmv.x.w":"fmv.x.s", "fmv.w.x":"fmv.s.x"}
-    if (name == "cp_asm_count" and instr in fmv_instr_alias):
-            template = template.replace("INSTR", fmv_instr_alias[instr])
-    else:
-        template = template.replace("INSTR", instr)
+    template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
@@ -131,10 +125,10 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # if name.startswith('sample_') and instr == 'sltiu': 
     #     template += template.replace(instr, 'seqz', 1).replace("add_imm","add_imm_one",1)    
     # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
-    if name.startswith('sample_') and instr == 'fmv.x.w':
-        template += template.replace(instr, 'fmv.x.s',1)
-    if name.startswith('sample_') and instr == 'fmv.w.x':
-        template += template.replace(instr, 'fmv.s.x',1)                
+    # if name.startswith('sample_') and instr == 'fmv.x.w':
+    #     template += template.replace(instr, 'fmv.x.s',1)
+    # if name.startswith('sample_') and instr == 'fmv.w.x':
+    #     template += template.replace(instr, 'fmv.s.x',1)                
     return template
 
      
