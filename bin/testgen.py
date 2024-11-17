@@ -417,7 +417,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
     if (test == "c.fswsp" or test == "c.fsdsp"):
-      mv = "fmv.d.x" if (xlen == 64) else "fmv.s.x"
+      mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
       lines = lines + "la sp" + ", scratch" + " # base address \n"
@@ -1350,7 +1350,7 @@ if __name__ == '__main__':
   fstype = ["fsw", 
             "fsh",
             "fsd"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.w", "fcvt.l.s", "fcvt.lu.s",
              "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h",
              "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d", "fmvh.x.d", "fcvtmod.w.d"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
@@ -1368,7 +1368,7 @@ if __name__ == '__main__':
   fixtype = ["fclass.s", 
              "fclass.h",
              "fclass.d"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x", "fcvt.s.l", "fcvt.s.lu", 
              "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
              "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
   PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
