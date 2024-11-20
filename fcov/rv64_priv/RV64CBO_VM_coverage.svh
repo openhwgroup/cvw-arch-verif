@@ -21,8 +21,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_vm_t;
 
 covergroup exceptions_vm_cg with function sample(ins_rv64cbo_vm_t ins);
-    option.per_instance = 1; 
-    option.comment = "exceptions_vm";
+    option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.PTE_d[7:0] { //pte.1
         wildcard bins leaflvl_u_w = {8'b???10110};
@@ -179,10 +178,10 @@ covergroup exceptions_vm_cg with function sample(ins_rv64cbo_vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-    Scause: coverpoint  ins.current.csr[12'h142] {
+    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
         bins store_amo_page_fault = {64'd15};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] {
+    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins store_amo_page_fault = {64'd15};
     }
     Nopagefault: coverpoint  ins.current.csr[12'h143]{

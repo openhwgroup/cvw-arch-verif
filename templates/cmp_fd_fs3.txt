@@ -1,5 +1,5 @@
     cmp_fd_fs3 : coverpoint ins.current.fd == ins.current.fs3  iff (ins.trap == 0 )  {
-        option.comment = "FD and FS3 register (assignment) WAR Hazard";
+        //FD and FS3 register (assignment) WAR Hazard
         bins f0  = {1} iff (ins.current.fd == "f0");
         bins f1  = {1} iff (ins.current.fd == "f1");
         bins f2  = {1} iff (ins.current.fd == "f2");

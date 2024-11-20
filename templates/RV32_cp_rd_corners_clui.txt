@@ -1,5 +1,5 @@
     cp_rd_corners_clui : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
-        option.comment = "RD Corners";
+        //RD Corners
         wildcard bins one      = {32'b0000000000000000001000000000000};
         wildcard bins two      = {32'b0000000000000000010000000000000};
         wildcard bins min      = {32'b11111111111111100000000000000000};

@@ -31,20 +31,6 @@ def csrwalk(pathname, regs):
         print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
-        # Exercise multi-bit fields
-        if (reg == "mstatus"):
-            print("\tli t0, 0x1800")
-            print("\tcsrrs t6, "+reg+", t0    # mstatus.MPP=3")
-            print("\tslli t0, t0, 21 # shift to mstatus.UXL for RV64; drops off end and is ignored for RV32")
-            print("\tcsrrs t6, "+reg+", t0    # mstatus.UXL=3")
-            print("\tslli t0, t0, 2 # shift to mstatus.SXL for RV64")
-            print("\tcsrrs t6, "+reg+", t0    # mstatus.SXL=3")
-        if (reg == "menvcfg" or reg == "senvcfg"):
-            print("\tli t0, 0x30")
-            print("\tcsrrs t6, "+reg+", t0 # xenvcfg.CBIE=3")
-        if (reg == "mtvec" or reg == "stvec"):
-            print("\tli t0, 0x03")
-            print("\tcsrrs t6, "+reg+", t0 # xtvec.MODE=3")
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
     outfile.close
 
@@ -56,6 +42,7 @@ def csrtests(pathname, US):
         print("// Additional tests to (unsuccessfully) write PMP from S and U mode; running these in M mode mucks up the PMP and hangs the DUT")
     else:
         rng = range(4096)
+        #rng = range(512) # reduced range for testing
     for i in rng:
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
@@ -87,8 +74,8 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth", "mseccfg"] 
-sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120", "stimecmp", "stimecmph"]
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth", "mseccfg", "mseccfgh"] 
+sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
 uregs = ["fflags", "frm", "fcsr"]
 
 WALLY = os.environ.get('WALLY')

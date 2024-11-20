@@ -115,11 +115,11 @@ regression-wally
 
 * To run functional coverage per test\_suite
 
-wsim rv64gc \<test\_suite\> \--fcovrvvi
+wsim rv64gc \<test\_suite\> \--fcov
 
 * To run functional coverage in regression
 
-Regression-wally \--fcovrvvi
+Regression-wally \--fcov
 
 * To merge all fcov files and create a merge html report, in the fcov folder run:
 
