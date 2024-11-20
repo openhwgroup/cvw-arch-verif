@@ -1014,7 +1014,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
-      desc = f"Impropper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+      desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+    f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
