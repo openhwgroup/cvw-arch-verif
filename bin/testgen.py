@@ -160,7 +160,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n"
+  elif (test in rbtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"  
   elif (test in frtype):
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -284,6 +287,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in itype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
+  elif (test in ibtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + unsignedImm5(immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -1472,10 +1478,13 @@ if __name__ == '__main__':
           "rolw", "rorw",
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
+  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8", "rori"
+            "roriw", "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
+  ibtype=["slli.uw","bclri","binvi","bseti","bexti"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
