@@ -85,12 +85,12 @@ covergroup endians_cg with function sample(ins_endians_t ins);
        bins S_mode = {2'b01};
     }
     priv_mode_u: coverpoint ins.current.mode { 
-       bins S_mode = {2'b00};
+       bins U_mode = {2'b00};
     }   
     mstatus_mprv: coverpoint ins.current.csr[12'h300][17] { // mprv is mstatus[17]
     }
     mstatus_mpp: coverpoint ins.current.csr[12'h300][12:11] { // mpp is mstatus[12:11]
-        bins U_Mode = {2'b00};
+        bins S_Mode = {2'b01};
         bins M_Mode = {2'b11};
     }
     // main coverpoints
