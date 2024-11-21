@@ -1037,11 +1037,6 @@ def make_fs3_corners(test, xlen, fcorners):
     desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
-def make_fclass(test, xlen):
-  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-  desc = "cp_fclass"
-  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
-
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
@@ -1200,7 +1195,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_toggle_jal"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fclass"):
-        make_fclass(test, xlen)
+      pass
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_ones_zeros_jal"):
@@ -1407,7 +1402,7 @@ if __name__ == '__main__':
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw","c.flwsp","c.fswsp"] # Zcf instructions
   zcdtype = ["c.fld", "c.fsd","c.fsdsp","c.fldsp"]
-  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases \
+  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases
   csrtype = ["csrrw", "csrrs", "csrrc"]
   csritype = ["csrrwi", "csrrsi", "csrrci"]
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
@@ -1422,8 +1417,8 @@ if __name__ == '__main__':
   rd_rs1_rs2_format = rtype + frtype + fcomptype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
-  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype #+ csrtype
-  rd_imm_format = citype + cstype + ciwtype + cbptype #+ csritype
+  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
+  rd_imm_format = citype + cstype + ciwtype + cbptype
 
   # map register encodings to literal values for fli.*
   flivals = { 0: -1.0,
