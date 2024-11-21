@@ -552,32 +552,128 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None):
+def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1list, rs2list, rs3list, commentlist):
+  
+    #TODO: add input prechecks here later
+
+  lines = "\n# Testcase " + str(desc) + "\n"
+  
+  for index, test in enumerate(testlist):
+    reg0 = regconfiglist[index][0]
+    reg1 = regconfiglist[index][1]
+    reg2 = regconfiglist[index][2]
+    reg3 = regconfiglist[index][3]
+
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + ", " + reg3 + str(rs3list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in rd_rs1_format):
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in flitype):
+      lines = lines + f"{test} f{rdlist[index]}, {flivals[rs1list[index]]} " + " # " + commentlist[index] + "\n"
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format): 
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + " # " + commentlist[index] + "\n"
+    else:
+      print("instruction " + test + "not implemented for writeSingleInstructionSequence")
+  return lines
+
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None, haz_type='waw'):
   # consecutive R-type instructions to trigger hazards                           ^~~~~~~~~ the types of the registers {rd, rs1, rs2, rs3} (x for int, f for float)
+  test2 = test
   reg0 = regconfig[0]
   reg1 = regconfig[1]
   reg2 = regconfig[2]
   reg3 = regconfig[3]
+  reg0_2 = reg0
+  reg1_2 = reg1
+  reg2_2 = reg2
+  reg3_2 = reg3
 
   lines = "\n# Testcase " + str(desc) + "\n"
-  if (test in rd_rs1_rs2_rs3_format): 
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-  elif (test in rd_rs1_format):
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
-  elif (test in flitype):
-    lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
-    lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
-    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
-  elif (test in rd_rs1_rs2_format):
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
-  else:
-    # TODO: need to make new cases for instruction formats not accounted for above
-    print(f"Warning: Hazard tests not yet implemented for {test}")
-    pass
-  f.write(lines)
+
+  match haz_type:
+    case 'nohaz':
+      test2 = test
+      reg0_2 = reg0
+      reg1_2 = reg1
+      reg2_2 = reg2
+      reg3_2 = reg3
+    case 'waw':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'war':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else: 
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'raw':
+      if reg1 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+        
+  if test in floattypes:
+    lines = lines + writeSingleInstructionSequence(desc, [test2, test], [reg0_2+reg1_2+reg2_2+reg3_2, reg0+reg1+reg2+reg3], [rdb, rda], [rs1b, rs1a], [rs2b, rs2a], [rs3b, rs3a], ["perform first operation", "perform second (triggering) operation"])
+    '''
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform second (triggering) operation\n" 
+    elif (test in rd_rs1_format):
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform second (triggering) operation\n"
+    elif (test in flitype):
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + f"{test} f{rda}, {flivals[rs1a]} " + " # perform second (triggering) operation\n" 
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format): 
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform second (triggering) operation\n" 
+    '''
+    if writeSingleInstructionSequence == None:
+      # TODO: need to make new cases for instruction formats not accounted for above
+      print(f"Warning: Hazard tests not yet implemented for {test}")
+      pass
+    f.write(lines)
+    
+  else: 
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
+    elif (test in rd_rs1_format):
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
+    elif (test in flitype):
+      lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
+      lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format):
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
+    else:
+      # TODO: need to make new cases for instruction formats not accounted for above
+      print(f"Warning: Hazard tests not yet implemented for {test}")
+      pass
+    f.write(lines)
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
     if rs1 is None: 
@@ -779,19 +875,24 @@ def make_rs1_rs2_eqval(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs1val, immval, rdval, test, xlen)
 
 def make_cp_gpr_hazard(test, xlen):
-  for haz in ["raw", "waw", "war"]:
+  for haz in ["nohaz", "raw", "waw", "war"]:
     for src in range(2):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
       # set up hazard
-      if (haz == "raw"):
+      if (haz == "nohaz"):
+        bregs = [rs1b, rs2b, rs3b, rdb]
+        while (rs1a in bregs) or (rs2a in bregs) or (rs3a in bregs) or (rda in bregs):
+          [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+          bregs = [rs1b, rs2b, rs3b, rdb]
+      if (haz == "war"):
         if (src):
           rs2b = rda
         else:
           rs1b = rda
       elif (haz == "waw"):  
         rdb = rda
-      elif (haz == "war"):
+      elif (haz == "raw"):
         if (src):
           rdb = rs2a
         else:
@@ -804,7 +905,7 @@ def make_cp_gpr_hazard(test, xlen):
         regconfig = 'xfff'
       if (test in regconfig_fxxx):
         regconfig = 'fxxx'
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b)
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
 
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
@@ -1014,7 +1115,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
-      desc = f"Impropper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+      desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+    f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
@@ -1170,6 +1272,8 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint == "cp_gpr_hazard_no_war"):
+      make_cp_gpr_hazard_no_war(test, xlen)
     elif (coverpoint == "cp_fpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
