@@ -555,9 +555,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
 def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1list, rs2list, rs3list, commentlist):
   
     #TODO: add input prechecks here later
-
-  lines = "\n# Testcase " + str(desc) + "\n"
   
+  lines = ""
+
   for index, test in enumerate(testlist):
     reg0 = regconfiglist[index][0]
     reg1 = regconfiglist[index][1]
@@ -897,7 +897,40 @@ def make_cp_gpr_hazard(test, xlen):
           rdb = rs2a
         else:
           rdb = rs1a
-      desc = "cmp_gpr_hazard " + haz +  " test"
+      desc = "cp_gpr/fpr_hazard " + haz + " test"
+      regconfig = 'xxxx' # default to all int registers
+      if (test in regconfig_ffff):
+        regconfig = 'ffff'
+      if (test in regconfig_xfff):
+        regconfig = 'xfff'
+      if (test in regconfig_fxxx):
+        regconfig = 'fxxx'
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
+
+def make_cp_gpr_hazard_noraw(test, xlen):
+  for haz in ["nohaz", "waw", "war"]:
+    for src in range(2):
+      [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
+      [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+      # set up hazard
+      if (haz == "nohaz"):
+        bregs = [rs1b, rs2b, rs3b, rdb]
+        while (rs1a in bregs) or (rs2a in bregs) or (rs3a in bregs) or (rda in bregs):
+          [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+          bregs = [rs1b, rs2b, rs3b, rdb]
+      if (haz == "war"):
+        if (src):
+          rs2b = rda
+        else:
+          rs1b = rda
+      elif (haz == "waw"):  
+        rdb = rda
+      elif (haz == "raw"):
+        if (src):
+          rdb = rs2a
+        else:
+          rdb = rs1a
+      desc = "cp_gpr/fpr_hazard " + haz + " test"
       regconfig = 'xxxx' # default to all int registers
       if (test in regconfig_ffff):
         regconfig = 'ffff'
@@ -1272,10 +1305,10 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint == "cp_gpr_hazard_no_war"):
-      make_cp_gpr_hazard_no_war(test, xlen)
     elif (coverpoint == "cp_fpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint == "cp_fpr_hazard_noraw"):
+      make_cp_gpr_hazard_noraw(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rs2_toggle"):
@@ -1508,7 +1541,7 @@ if __name__ == '__main__':
   regconfig_fxxx = X2Ftype + PX2Ftype
 
   # for writeHazardVectors
-  rd_rs1_rs2_format = rtype + frtype + fcomptype
+  rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
   rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
