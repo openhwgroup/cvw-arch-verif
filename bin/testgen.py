@@ -47,9 +47,20 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd", "bclri", "binvi", "bseti", "bexti"]:
     if imm == 0:
       imm = 8
+  return str(imm)
+
+def Zbs_unsignedImm(xlen, imm):
+  if (xlen == 32):
+    imm = imm % pow(2, 5)
+  elif (xlen == 64):
+    imm = imm % pow(2, 6)
+  # zero immediates are prohibited
+  # if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd", "bclri", "binvi", "bseti", "bexti"]:
+  #   if imm == 0:
+  #     imm = 8
   return str(imm)
 
 def SextImm6(imm):
@@ -160,10 +171,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n"
-  elif (test in rbtype):
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+  if (test in rbtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"  
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"
   elif (test in frtype):
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -295,7 +306,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
   elif (test in ibtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + unsignedImm5(immval) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + Zbs_unsignedImm(xlen, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -755,6 +766,14 @@ def make_rs2(test, xlen, rng = range(32)):
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
+def make_uimm(test, xlen, rng = range(32)):
+  if (xlen == 64):
+    rng = range(64) 
+  for r in rng:
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
+    desc = "cp_uimm (Test bit = " + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
+
 def make_rd_rs1(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -1202,9 +1221,11 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs1_nx0"):
       make_rs1(test, xlen, range(1,32))
     elif (coverpoint == "cp_rs2"):
-      make_rs2(test, xlen, range(32)) 
+      make_rs2(test, xlen, range(32))
     elif (coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(1,32))
+    elif (coverpoint == "cp_uimm"):
+      make_uimm(test, xlen, range(32)) 
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
     elif (coverpoint == "cmp_rd_rs1_c"):
@@ -1255,9 +1276,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_32bit"):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bits)            
-    elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen)
+      make_rd_corners_lui(test, xlen, corners_20bits)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):

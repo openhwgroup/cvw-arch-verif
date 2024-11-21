@@ -1,0 +1,3 @@
+    cp_uimm : coverpoint unsigned'(ins.current.imm[5:0])  iff (ins.trap == 0 )  { 
+        //uimm[5:0] value assignment
+    }
