@@ -47,7 +47,7 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd", "bclri", "binvi", "bseti", "bexti"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"]:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -57,10 +57,6 @@ def Zbs_unsignedImm(xlen, imm):
     imm = imm % pow(2, 5)
   elif (xlen == 64):
     imm = imm % pow(2, 6)
-  # zero immediates are prohibited
-  # if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd", "bclri", "binvi", "bseti", "bexti"]:
-  #   if imm == 0:
-  #     imm = 8
   return str(imm)
 
 def SextImm6(imm):
@@ -172,7 +168,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
-  if (test in rbtype):
+  elif (test in rbtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"
   elif (test in frtype):
@@ -989,11 +985,6 @@ def make_jalr_imm_ones_zeros(test, xlen):
     imm_value = 2**i # immediate value from 2^0 to 2^11        
     lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
     lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
-    # if (imm_value >= 2047):
-    #   lines = lines + "addi x21, x21, 2047\n"
-    #   new_imm = imm_value - 2047
-    #   lines = lines + "addi x21, x21, " + signedImm12(new_imm, immOffset=True)  + "\n"
-    # else:
     lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
 
     lines = lines + "jalr x20, x21, "+ signedImm12(imm_value, immOffset=True) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
