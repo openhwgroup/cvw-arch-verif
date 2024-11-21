@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    exceptionM_cg = new();         exceptionM_cg.set_inst_name("obj_exceptionM");
+    exceptionsM_cg = new();         exceptionsM_cg.set_inst_name("obj_exceptionsM");
