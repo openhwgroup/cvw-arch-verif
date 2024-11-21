@@ -913,39 +913,6 @@ def make_cp_gpr_hazard(test, xlen):
         regconfig = 'fxxx'
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
 
-def make_cp_gpr_hazard_noraw(test, xlen):
-  for haz in ["nohaz", "waw", "war"]:
-    for src in range(2):
-      [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
-      [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
-      # set up hazard
-      if (haz == "nohaz"):
-        bregs = [rs1b, rs2b, rs3b, rdb]
-        while (rs1a in bregs) or (rs2a in bregs) or (rs3a in bregs) or (rda in bregs):
-          [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
-          bregs = [rs1b, rs2b, rs3b, rdb]
-      if (haz == "war"):
-        if (src):
-          rs2b = rda
-        else:
-          rs1b = rda
-      elif (haz == "waw"):  
-        rdb = rda
-      elif (haz == "raw"):
-        if (src):
-          rdb = rs2a
-        else:
-          rdb = rs1a
-      desc = "cp_gpr/fpr_hazard " + haz + " test"
-      regconfig = 'xxxx' # default to all int registers
-      if (test in regconfig_ffff):
-        regconfig = 'ffff'
-      if (test in regconfig_xfff):
-        regconfig = 'xfff'
-      if (test in regconfig_fxxx):
-        regconfig = 'fxxx'
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
-
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
@@ -1313,8 +1280,6 @@ def write_tests(coverpoints, test, xlen):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_fpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint == "cp_fpr_hazard_noraw"):
-      make_cp_gpr_hazard_noraw(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rs2_toggle"):
