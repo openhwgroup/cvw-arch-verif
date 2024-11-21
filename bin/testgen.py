@@ -160,7 +160,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n"
+  elif (test in rbtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"  
   elif (test in frtype):
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -284,6 +287,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in itype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
+  elif (test in ibtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + unsignedImm5(immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -555,9 +561,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
 def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1list, rs2list, rs3list, commentlist):
   
     #TODO: add input prechecks here later
-
-  lines = "\n# Testcase " + str(desc) + "\n"
   
+  lines = ""
+
   for index, test in enumerate(testlist):
     reg0 = regconfiglist[index][0]
     reg1 = regconfiglist[index][1]
@@ -897,7 +903,7 @@ def make_cp_gpr_hazard(test, xlen):
           rdb = rs2a
         else:
           rdb = rs1a
-      desc = "cmp_gpr_hazard " + haz +  " test"
+      desc = "cp_gpr/fpr_hazard " + haz + " test"
       regconfig = 'xxxx' # default to all int registers
       if (test in regconfig_ffff):
         regconfig = 'ffff'
@@ -1272,8 +1278,6 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_gpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint == "cp_gpr_hazard_no_war"):
-      make_cp_gpr_hazard_no_war(test, xlen)
     elif (coverpoint == "cp_fpr_hazard"):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
@@ -1439,10 +1443,13 @@ if __name__ == '__main__':
           "rolw", "rorw",
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
+  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8", "rori"
+            "roriw", "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
+  ibtype=["slli.uw","bclri","binvi","bseti","bexti"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
@@ -1508,7 +1515,7 @@ if __name__ == '__main__':
   regconfig_fxxx = X2Ftype + PX2Ftype
 
   # for writeHazardVectors
-  rd_rs1_rs2_format = rtype + frtype + fcomptype
+  rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
   rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
