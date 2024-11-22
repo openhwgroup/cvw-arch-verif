@@ -1452,7 +1452,7 @@ if __name__ == '__main__':
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
   rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8", "rori"
-            "roriw", "clzw", "cpopw", "ctzw"]
+          "roriw", "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
