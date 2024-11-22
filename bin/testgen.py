@@ -1310,8 +1310,6 @@ def write_tests(coverpoints, test, xlen):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
       make_rd_corners(test,xlen,corners_sraiw)
-    elif (coverpoint == "cp_rd_corners_rev8"):
-      make_rd_corners(test,xlen,corners)
     elif (coverpoint == "cp_imm_ones_zeros"):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"): 
