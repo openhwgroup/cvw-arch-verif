@@ -1461,13 +1461,13 @@ if __name__ == '__main__':
           "rolw", "rorw",
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
-  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8", "rori"
-            "roriw", "clzw", "cpopw", "ctzw"]
+  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8" 
+          "roriw", "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
-  ibtype=["slli.uw","bclri","binvi","bseti","bexti"]
+  ibtype=["slli.uw","bclri","binvi","bseti","bexti","rori"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
