@@ -762,10 +762,8 @@ def make_rs2(test, xlen, rng = range(32)):
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_uimm(test, xlen, rng = range(32)):
-  if (xlen == 64):
-    rng = range(64) 
-  for r in rng:
+def make_uimm(test, xlen):
+  for r in range(xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
     desc = "cp_uimm (Test bit = " + str(r) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
@@ -1216,7 +1214,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(1,32))
     elif (coverpoint == "cp_uimm"):
-      make_uimm(test, xlen, range(32)) 
+      make_uimm(test, xlen) 
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
     elif (coverpoint == "cmp_rd_rs1_c"):
