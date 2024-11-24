@@ -33,6 +33,8 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     branch: coverpoint ins.current.insn {
         wildcard bins beq = {32'b???????_?????_?????_???_?????_1100011};
     }
+    // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
+    //       we aught to test this for a sanity check to both of these assumptions
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                 ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
@@ -42,10 +44,10 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
         wildcard bins blt_taken  = {3'b100, 1'b?, 1'b1, 1'b?};
         wildcard bins bge_taken  = {3'b101, 1'b?, 1'b0, 1'b?};
         wildcard bins bltu_taken = {3'b110, 1'b?, 1'b?, 1'b1};
-        wildcard bins bqeu_taken = {3'b111, 1'b?, 1'b?, 1'b0};
+        wildcard bins bgeu_taken = {3'b111, 1'b?, 1'b?, 1'b0};
     }
     branches_nottaken: coverpoint {ins.current.insn[14:12],                                     // funct3
-                                   ins.current.rs1_val != ins.current.rs2_val,                  // A == B  
+                                   ins.current.rs1_val == ins.current.rs2_val,                  // A == B  
                                    $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                    ins.current.rs1_val < ins.current.rs2_val} {                 // A < B (unsigned)
         wildcard bins beq_nottaken  = {3'b000, 1'b0, 1'b?, 1'b?};
@@ -53,7 +55,7 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
         wildcard bins blt_nottaken  = {3'b100, 1'b?, 1'b0, 1'b?};
         wildcard bins bge_nottaken  = {3'b101, 1'b?, 1'b1, 1'b?};
         wildcard bins bltu_nottaken = {3'b110, 1'b?, 1'b?, 1'b0};
-        wildcard bins bqeu_nottaken = {3'b111, 1'b?, 1'b?, 1'b1};
+        wildcard bins bgeu_nottaken = {3'b111, 1'b?, 1'b?, 1'b1};
     }
     jal: coverpoint ins.current.insn {
         wildcard bins jal = {32'b????????????????????_?????_1101111};
@@ -99,12 +101,6 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     rs1_zero: coverpoint ins.current.insn[19:15] {
         bins zero = {5'b00000};
     }
-    // rs1_rs2_eq: coverpoint ins.current.rs1_val == ins.current.rs2_val {
-    //     bins equal = {1};
-    // }
-    // rs1_rs2_ne: coverpoint ins.current.rs1_val == ins.current.rs2_val {
-    //     bins notequal = {0};
-    // }
     seed: coverpoint ins.current.insn[31:20] {
         bins seed = {12'h015};
     }
@@ -126,18 +122,10 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
-    `ifdef XLEN64
-        illegal_address_priority: coverpoint {ins.current.imm + ins.current.rs1_val}[63-1:3] {
-            bins illegal = {`ACCESS_FAULT_ADDRESS};
-        }
-    `else
-        illegal_address_priority: coverpoint {ins.current.imm + ins.current.rs1_val}[31-1:3] {
-            bins illegal = {`ACCESS_FAULT_ADDRESS};
-        }
-    `endif
-    // medeleg_ones: coverpoint ins.current.csr[12'h302] {
-    //     bins ones = {'1};
-    // }
+    // TODO: this has some complicated bit swizzling, aught to be human tested to ensure it accurately reflects test plan
+    illegal_address_priority: coverpoint {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000} {
+        bins illegal = {`ACCESS_FAULT_ADDRESS};
+    }
     
     // main coverpoints
     cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_m; 
@@ -156,13 +144,6 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     cp_ecall_m:                              cross ecall, priv_mode_m;
     cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_m;
     cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_m;
-    // cp_medeleg_loadmisaligned:               cross cp_load_address_misaligned, medeleg_ones;
-    // cp_medeleg_storemisaligned:              cross cp_store_address_misaligned, medeleg_ones;
-    // cp_medeleg_loadaccessfault:              cross cp_load_access_fault, medeleg_ones;
-    // cp_medeleg_storeaccessfault:             cross cp_store_access_fault, medeleg_ones;
-    // cp_medeleg_illegalinstruction:           cross cp_illegal_instruction, medeleg_ones;
-    // cp_medeleg_ecall:                        cross cp_ecall_m, medeleg_ones;
-    // cp_medeleg_ebreak:                       cross cp_breakpoint, medeleg_ones;
     cp_mstatus_ie:                           cross ecall, mstatus_MIE;
 
 endgroup
