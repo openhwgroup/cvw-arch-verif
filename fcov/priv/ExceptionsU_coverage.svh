@@ -2,7 +2,7 @@
 //
 // RISC-V Architectural Functional Coverage Covergroups
 // 
-// Written: Corey Hickson chickson@hmc.edu 18 November 2024
+// Written: Corey Hickson chickson@hmc.edu 24 November 2024
 // 
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
@@ -20,10 +20,10 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_EXCEPTIONSM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsm_t;
+`define COVER_EXCEPTIONSU
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsu_t;
 
-covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
+covergroup exceptionsU_cg with function sample(ins_exceptionsu_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -110,8 +110,13 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     mstatus_MIE: coverpoint ins.prev.csr[12'h300][3] {
         // auto fills 1 and 0
     }
-    priv_mode_m: coverpoint ins.current.mode {
-       bins M_mode = {2'b11};
+    mstatus_SIE: coverpoint ins.prev.csr[12'h300][1] {
+        // auto fills 1 and 0
+    }
+    priv_mode_u: coverpoint ins.current.mode {
+       bins U_mode = {2'b00};
+    }
+    medelegb8: coverpoint ins.current.csr[12'h302][8]{
     }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
     }
@@ -128,28 +133,28 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     }
     
     // main coverpoints
-    cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_m; 
-    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_m;  
-    cp_instr_adr_misaligned_jal:             cross jal, pc_bit_1, imm_bit_1, priv_mode_m;
-    cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, imm_bit_1, priv_mode_m;
-    cp_instr_access_fault:                   cross jalr, illegal_address, priv_mode_m;
-    cp_illegal_instruction:                  cross illegalops, priv_mode_m;
-    cp_illegal_instruction_seed:             cross csrops, rs1_zero, seed, priv_mode_m;
-    cp_illegal_instruction_csr:              cross csrops, csr_0x000, priv_mode_m;
-    cp_breakpoint:                           cross ebreak, priv_mode_m;
-    cp_load_address_misaligned:              cross loadops, adr_LSBs, priv_mode_m;
-    cp_load_access_fault:                    cross loadops, illegal_address, priv_mode_m;
-    cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_m;
-    cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_m;
-    cp_ecall_m:                              cross ecall, priv_mode_m;
-    cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_m;
-    cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_m;
-    cp_mstatus_ie:                           cross ecall, mstatus_MIE, priv_mode_m;
+    cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_u; 
+    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_u;  
+    cp_instr_adr_misaligned_jal:             cross jal, pc_bit_1, imm_bit_1, priv_mode_u;
+    cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, imm_bit_1, priv_mode_u;
+    cp_instr_access_fault:                   cross jalr, illegal_address, priv_mode_u;
+    cp_illegal_instruction:                  cross illegalops, priv_mode_u;
+    cp_illegal_instruction_seed:             cross csrops, rs1_zero, seed, priv_mode_u;
+    cp_illegal_instruction_csr:              cross csrops, csr_0x000, priv_mode_u;
+    cp_breakpoint:                           cross ebreak, priv_mode_u;
+    cp_load_address_misaligned:              cross loadops, adr_LSBs, priv_mode_u;
+    cp_load_access_fault:                    cross loadops, illegal_address, priv_mode_u;
+    cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_u;
+    cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_u;
+    cp_ecall_m:                              cross ecall, priv_mode_u;
+    cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_u;
+    cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_u;
+    cp_mstatus_ie:                           cross ecall, mstatus_MIE, mstatus_SIE, priv_mode_u, medelegb8;
 
 endgroup
 
-function void exceptionsm_sample(int hart, int issue);
-    ins_exceptionsm_t ins;
+function void exceptionsu_sample(int hart, int issue);
+    ins_exceptionsu_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_rd(0);
@@ -158,6 +163,6 @@ function void exceptionsm_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsM_cg.sample(ins);
+    exceptionsU_cg.sample(ins);
     
 endfunction
