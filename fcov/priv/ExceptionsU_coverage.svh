@@ -116,6 +116,8 @@ covergroup exceptionsU_cg with function sample(ins_exceptionsu_t ins);
     priv_mode_u: coverpoint ins.current.mode {
        bins U_mode = {2'b00};
     }
+    medelegb8: coverpoint ins.current.csr[12'h302][8]{
+    }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
@@ -147,7 +149,7 @@ covergroup exceptionsU_cg with function sample(ins_exceptionsu_t ins);
     cp_ecall_m:                              cross ecall, priv_mode_u;
     cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_u;
     cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_u;
-    cp_mstatus_ie:                           cross ecall, mstatus_MIE, mstatus_SIE;
+    cp_mstatus_ie:                           cross ecall, mstatus_MIE, mstatus_SIE, priv_mode_u, medelegb8;
 
 endgroup
 

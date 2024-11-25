@@ -144,7 +144,7 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
     cp_ecall_m:                              cross ecall, priv_mode_m;
     cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_m;
     cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_m;
-    cp_mstatus_ie:                           cross ecall, mstatus_MIE;
+    cp_mstatus_ie:                           cross ecall, mstatus_MIE, priv_mode_m;
 
 endgroup
 
