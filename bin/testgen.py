@@ -47,7 +47,7 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"] + csritype:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -158,7 +158,7 @@ def genFrmTests(testInstr):
   return lines
 
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
-  lines = "\n# Testcase " + str(desc) + "\n"
+  lines = "\n# Testcase " + str(desc) + "\n" if desc is not None else ""
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
@@ -592,6 +592,8 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
     elif (test in rd_rs1_rs2_format): 
       lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in csrtype + csritype):
+      lines = lines + f"{test} x{rdlist[index]}, mscratch, {(rs1list[index] if test in csrtype else 0x000)}"
     else:
       print("instruction " + test + "not implemented for writeSingleInstructionSequence")
   return lines
@@ -1153,6 +1155,24 @@ def make_fs3_corners(test, xlen, fcorners):
     desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
+def make_imm5_corners(test, xlen):
+  for v in range(32):
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
+def make_csr_toggle(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+  f.write(f"\n# Testcase cp_rd_toggle (set CSR to 1s)\n")
+  f.write(f"li x{rd}, -1\n")
+  f.write(f"csrw mscratch, x{rd}\n")
+  desc = None
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+  f.write(f"\n# Testcase cp_rd_toggle (set CSR to 0s)\n")
+  f.write(f"li x{rd}, 0\n")
+  f.write(f"csrw mscratch, x{rd}\n")
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
@@ -1298,6 +1318,8 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rs2_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif ((coverpoint == "cp_rd_toggle") and (test in csrtype + csritype)):
+      make_csr_toggle(test, xlen)
     elif (coverpoint == "cp_rd_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint[:13] == "cp_rd_toggle_" and coverpoint[13:] in ["clui", "slli", "srli", "auipc", "lwu", "lhu", "lbu"]):
@@ -1418,6 +1440,8 @@ def write_tests(coverpoints, test, xlen):
       NaNBox_tests = "S"
       make_fs3_corners(test, xlen, badNB_corners_S_H)
       NaNBox_tests = False
+    elif (coverpoint == "cp_imm5_corners"):
+      make_imm5_corners(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -1536,7 +1560,7 @@ if __name__ == '__main__':
   rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
-  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
+  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype # + csrtype 
   rd_imm_format = citype + cstype + ciwtype + cbptype
 
   # map register encodings to literal values for fli.*
