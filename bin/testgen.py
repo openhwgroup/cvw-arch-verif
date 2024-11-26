@@ -158,7 +158,7 @@ def genFrmTests(testInstr):
   return lines
 
 def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=None, rs3val=None, frm=False):
-  lines = "\n# Testcase " + str(desc) + "\n" if desc is not None else ""
+  lines = "\n# Testcase " + str(desc) + "\n"
   if (rs1val < 0):
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
@@ -1158,7 +1158,7 @@ def make_fs3_corners(test, xlen, fcorners):
 def make_imm5_corners(test, xlen):
   for v in range(32):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-    desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
+    desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def write_tests(coverpoints, test, xlen):
@@ -1304,7 +1304,7 @@ def write_tests(coverpoints, test, xlen):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_rs2"):
+    elif (coverpoint == "cp_rs2_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rd_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
@@ -1546,7 +1546,7 @@ if __name__ == '__main__':
   rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
-  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype # + csrtype 
+  rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
   rd_imm_format = citype + cstype + ciwtype + cbptype
 
   # map register encodings to literal values for fli.*
