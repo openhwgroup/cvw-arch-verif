@@ -593,7 +593,7 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
     elif (test in rd_rs1_rs2_format): 
       lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + " # " + commentlist[index] + "\n"
     elif (test in csrtype + csritype):
-      lines = lines + f"{test} x{rdlist[index]}, mscratch, {(rs1list[index] if test in csrtype else 0x000)}"
+      lines = lines + f"{test} x{rdlist[index]}, mscratch, {(rs1list[index] if test in csrtype else 0x1)}"
     else:
       print("instruction " + test + "not implemented for writeSingleInstructionSequence")
   return lines
@@ -1161,18 +1161,6 @@ def make_imm5_corners(test, xlen):
     desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_csr_toggle(test, xlen):
-  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
-  f.write(f"\n# Testcase cp_rd_toggle (set CSR to 1s)\n")
-  f.write(f"li x{rd}, -1\n")
-  f.write(f"csrw mscratch, x{rd}\n")
-  desc = None
-  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-  f.write(f"\n# Testcase cp_rd_toggle (set CSR to 0s)\n")
-  f.write(f"li x{rd}, 0\n")
-  f.write(f"csrw mscratch, x{rd}\n")
-  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
-
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
@@ -1316,10 +1304,8 @@ def write_tests(coverpoints, test, xlen):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint == "cp_rs1_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_rs2_toggle"):
+    elif (coverpoint == "cp_rs2"):
       pass #TODO toggle not needed and seems to be covered by other things
-    elif ((coverpoint == "cp_rd_toggle") and (test in csrtype + csritype)):
-      make_csr_toggle(test, xlen)
     elif (coverpoint == "cp_rd_toggle"):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint[:13] == "cp_rd_toggle_" and coverpoint[13:] in ["clui", "slli", "srli", "auipc", "lwu", "lhu", "lbu"]):
