@@ -8,5 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ucsr_cg = new();         ucsr_cg.set_inst_name("obj_ucsr");
-    uprivinst_cg = new();    uprivinst_cg.set_inst_name("obj_uprivinst");
+    endianm_cg = new();         endianm_cg.set_inst_name("obj_endianm");

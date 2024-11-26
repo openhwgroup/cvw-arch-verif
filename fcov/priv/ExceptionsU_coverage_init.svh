@@ -8,5 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ucsr_cg = new();         ucsr_cg.set_inst_name("obj_ucsr");
-    uprivinst_cg = new();    uprivinst_cg.set_inst_name("obj_uprivinst");
+    exceptionsU_cg = new();         exceptionsU_cg.set_inst_name("obj_exceptionsU");
