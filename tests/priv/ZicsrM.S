@@ -249,17 +249,20 @@ formbits:
     csrrw t6, mstatus, s0    # restore CSR
 
 /////////////////////////////////
-// cp_ecall
+// cp_privinst
 /////////////////////////////////
 
+    // ecall
     li a0, 3
     ecall       # switch from machine mode to machine mode
 
-/////////////////////////////////
-// cp_ebreak
-/////////////////////////////////
-
+    // ebreak
     ebreak       # take a trap, and the trap handler returns
+
+    // fences.  These aren't really privileged instructions, but don't have a better place to test
+    fence
+    fence rw, rw
+    fence.tso
 
 /////////////////////////////////
 // cp_mret

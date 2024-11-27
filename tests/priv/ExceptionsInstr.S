@@ -61,6 +61,19 @@ main:
 
     // illegal fence/cbo
     .word 0b00000000000000000011000000001111 # fence/cbo with funct3 = 3
+    .word 0b00000000000000000100000000001111 # fence/cbo with funct3 = 4
+    .word 0b00000000000000000101000000001111 # fence/cbo with funct3 = 5
+    .word 0b00000000000000000111000000001111 # fence/cbo with funct3 = 7
+    .word 0b10000000000000000010000000001111 # cbo with illegal imm field
+    .word 0b00000000000000000010000010001111 # cbo with illegal rd field
+
+/////////////////////////////////
+// cp_reserved
+/////////////////////////////////
+    .word 0b00010000000000000000000000001111 # fence with reserved fm
+    .word 0b10000000000000000000000000001111 # fence.tso with reserved ordering
+    .word 0b00001111111100001000000000001111 # fence with reserved rs1
+    .word 0b00001111111100000000000010001111 # fence with reserved rd
 
 finished:
     j done
