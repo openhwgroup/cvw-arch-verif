@@ -47,7 +47,7 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"] + csritype:
     if imm == 0:
       imm = 8
   return str(imm)
@@ -592,6 +592,8 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
     elif (test in rd_rs1_rs2_format): 
       lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in csrtype + csritype):
+      lines = lines + f"{test} x{rdlist[index]}, mscratch, {(rs1list[index] if test in csrtype else 0x1)}"
     else:
       print("instruction " + test + "not implemented for writeSingleInstructionSequence")
   return lines
@@ -1153,6 +1155,12 @@ def make_fs3_corners(test, xlen, fcorners):
     desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
+def make_imm5_corners(test, xlen):
+  for v in range(32):
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
@@ -1418,6 +1426,8 @@ def write_tests(coverpoints, test, xlen):
       NaNBox_tests = "S"
       make_fs3_corners(test, xlen, badNB_corners_S_H)
       NaNBox_tests = False
+    elif (coverpoint == "cp_imm5_corners"):
+      make_imm5_corners(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
