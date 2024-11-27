@@ -52,7 +52,8 @@ def unsignedImm5(imm):
       imm = 8
   return str(imm)
 
-def Zbs_unsignedImm(xlen, imm):
+def ibtype_unsignedImm(xlen, imm):
+  if test == "roriw": xlen = 32
   if (xlen == 32):
     imm = imm % pow(2, 5)
   elif (xlen == 64):
@@ -302,7 +303,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
   elif (test in ibtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + Zbs_unsignedImm(xlen, immval) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -765,6 +766,7 @@ def make_rs2(test, xlen, rng = range(32)):
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_uimm(test, xlen):
+  if test == "roriw": xlen = 32
   for r in range(xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
     desc = "cp_uimm (Test bit = " + str(r) + ")"
@@ -1221,7 +1223,7 @@ def write_tests(coverpoints, test, xlen):
       make_rs2(test, xlen, range(32))
     elif (coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(1,32))
-    elif (coverpoint == "cp_uimm"):
+    elif (coverpoint == "cp_uimm" or coverpoint == "cp_uimm_roriw" ):
       make_uimm(test, xlen) 
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
@@ -1470,12 +1472,12 @@ if __name__ == '__main__':
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
   rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8" 
-          "roriw", "clzw", "cpopw", "ctzw"]
+          , "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
-  ibtype=["slli.uw","bclri","binvi","bseti","bexti","rori"]
+  ibtype=["slli.uw","bclri","binvi","bseti","bexti","rori", "roriw"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
