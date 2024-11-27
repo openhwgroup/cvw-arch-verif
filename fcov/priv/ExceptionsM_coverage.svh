@@ -185,8 +185,14 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
     	wildcard bins illegal_fence7 = {32'b????????????_?????_111_?????_0001111}; // fence/cbo with funct3 = 7
         wildcard bins illegal_cbo_imm = {32'b1???????????_?????_010_00000_0001111}; // cbo with illegal imm field
         wildcard bins illegal_cbo_rm = {32'b000000000000_?????_010_00001_0001111}; // cbo with illegal rd field
+        // arithemetic with immediate
+        `ifdef XLEN32
+    	    wildcard bins illegal_slli_amt =  {32'b0000001?????_?????_001_?????_0010011}; // slli with uimm > 31
+    	    wildcard bins illegal_srli_amt =  {32'b0000001?????_?????_101_?????_0010011}; // srli with uimm > 31
+    	    wildcard bins illegal_srai_amt =  {32'b0100001?????_?????_101_?????_0010011}; // srai with uimm > 31
+        `endif
     }
-    cp_reserved : coverpoint ins.current.isn { // reserved but not illegal
+    cp_reserved : coverpoint ins.current.insn { // reserved but not illegal
         wildcard bins reserved_fence_fm  = {32'b0001_00000000_?????_000_?????_0001111}; // fence with reserved fm
         wildcard bins reserved_fence_tso = {32'b1000_00000000_?????_000_?????_0001111}; // fence.tso with reserved ordering
         wildcard bins reserved_fence_rs1 = {32'b0000_11111111_00001_000_?????_0001111}; // fence with reserved rs1

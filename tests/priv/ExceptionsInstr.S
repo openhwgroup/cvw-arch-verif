@@ -52,7 +52,7 @@ main:
     .word 0b00000000000000000111000000000011 # load with illegal funct3 = 7
     .word 0b00000000000000000011000000000011 # ld, illegal in rv32
     .word 0b00000000000000000110000000000011 # lwu, illegal in rv32
-
+ 
     // illegal floating-point
     .word 0b00000000000000000000000000000111 # fp load with funct3 = 0
     .word 0b00000000000000000101000000000111 # fp load with funct3 = 5
@@ -66,6 +66,11 @@ main:
     .word 0b00000000000000000111000000001111 # fence/cbo with funct3 = 7
     .word 0b10000000000000000010000000001111 # cbo with illegal imm field
     .word 0b00000000000000000010000010001111 # cbo with illegal rd field
+
+    // shifts with amount > 31 (illegal for rv32)
+    .word 0b00000010000000000001000000010011 # slli with uimm = 32
+    .word 0b00000010000000000101000000010011 # srli with uimm = 32
+    .word 0b01000010000000000101000000010011 # srai with uimm = 32
 
 /////////////////////////////////
 // cp_reserved
