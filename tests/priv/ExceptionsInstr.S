@@ -15,10 +15,12 @@
 main:
 
     # set up fast trap handler for uncompressed illegal instructions
-    # because Zicsr tests will throw a lot of illegal instruction traps while attempting to access CSRs
-    # This cuts the instruction count and runtime by nearly 2x
-    # However, don't blindly use this handler in other privileged tests
-    la t0, trap_handler_fastuncompressedillegalinstr
+    # because these tests will throw a huge number of traps
+    # This handler just adds 4 to PC and returns.  It cannot
+    # handle other functions, so substitute the normal trap handler
+    # at the end of the program
+
+    la t0, trap_handler_returnplus4
     csrw mtvec, t0
 
     # set mstatus.FS to 01 to enable fp
@@ -26,51 +28,10 @@ main:
     csrs mstatus, t0
 
 /////////////////////////////////
-// cp_legalI: legal integer instructions
+// Test illegal uncompressed instructions
 /////////////////////////////////
-    auipc t0, 0
-    lb t1, 4(t0)    # legal lb
-    lh t2, 8(t0)    # legal lh
-
-/////////////////////////////////
-// cp_illegal
-/////////////////////////////////
-    // op[6:2] unused ops
-    .word 0b00000000000000000000000000001011 # illegal op2
-    .word 0b00000000000000000000000000011111 # illegal op7
-    .word 0b00000000000000000000000000101011 # illegal op10
-    .word 0b00000000000000000000000000111111 # illegal op15
-    .word 0b00000000000000000000000001010111 # illegal op21
-    .word 0b00000000000000000000000001011011 # illegal op22
-    .word 0b00000000000000000000000001011111 # illegal op23
-    .word 0b00000000000000000000000001101011 # illegal op26
-    .word 0b00000000000000000000000001110111 # illegal op29
-    .word 0b00000000000000000000000001111011 # illegal op30
-    .word 0b00000000000000000000000001111111 # illegal op31
-
-    // illegal loads
-    .word 0b00000000000000000111000000000011 # load with illegal funct3 = 7
-    .word 0b00000000000000000011000000000011 # ld, illegal in rv32
-    .word 0b00000000000000000110000000000011 # lwu, illegal in rv32
  
-    // illegal floating-point
-    .word 0b00000000000000000000000000000111 # fp load with funct3 = 0
-    .word 0b00000000000000000101000000000111 # fp load with funct3 = 5
-    .word 0b00000000000000000110000000000111 # fp load with funct3 = 6
-    .word 0b00000000000000000111000000000111 # fp load with funct3 = 7
-
-    // illegal fence/cbo
-    .word 0b00000000000000000011000000001111 # fence/cbo with funct3 = 3
-    .word 0b00000000000000000100000000001111 # fence/cbo with funct3 = 4
-    .word 0b00000000000000000101000000001111 # fence/cbo with funct3 = 5
-    .word 0b00000000000000000111000000001111 # fence/cbo with funct3 = 7
-    .word 0b10000000000000000010000000001111 # cbo with illegal imm field
-    .word 0b00000000000000000010000010001111 # cbo with illegal rd field
-
-    // shifts with amount > 31 (illegal for rv32)
-    .word 0b00000010000000000001000000010011 # slli with uimm = 32
-    .word 0b00000010000000000101000000010011 # srli with uimm = 32
-    .word 0b01000010000000000101000000010011 # srai with uimm = 32
+    #include "ExceptionInstr-Tests.h"
 
 /////////////////////////////////
 // cp_reserved
@@ -79,6 +40,11 @@ main:
     .word 0b10000000000000000000000000001111 # fence.tso with reserved ordering
     .word 0b00001111111100001000000000001111 # fence with reserved rs1
     .word 0b00001111111100000000000010001111 # fence with reserved rd
+
+// Restore trap handler before returning
+
+    la t0, trap_handler
+    csrw mtvec, t0
 
 finished:
     j done

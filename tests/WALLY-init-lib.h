@@ -230,6 +230,20 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     csrrw tp, mscratch, tp  # restore tp
     mret                # return from trap
 
+/////////////////////////////////
+// Fast trap to return to the next uncompressed 
+// This handler is just meant for speedy illegal instruction handling.
+// It can't handle anything else including compressed instructions, 
+// so point to a regular trap handler before needing others.
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_returnplus4:
+    csrr t0, mepc
+    addi t0, t0, 4
+    csrw mepc, t0
+    mret
+
 // utility routines
 
 # put a 1 in msb of a0 (position XLEN-1); works for both RV32 and RV64
