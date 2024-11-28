@@ -1,0 +1,3 @@
+[submodule "riscvISACOV"]
+	path = riscvISACOV
+	url = https://github.com/riscv-verification/riscvISACOV.git
