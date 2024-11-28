@@ -178,7 +178,8 @@ def writeCovergroups(testPlans, covergroupTemplates):
     keys.sort()
     #List of priv cover groups
     priv_defines = ["RV32VM", "RV32VM_PMP", "RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", 
-                    "ZicntrM", "ZicsrF", "ZicntrS", "ZicntrU", "EndianU", "EndianS", "EndianM", "ExceptionsM", "ExceptionsS", "ExceptionsU"]
+                    "ZicntrM", "ZicsrF", "ZicntrS", "ZicntrU", "EndianU", "EndianS", "EndianM", "ExceptionsM", "ExceptionsS", "ExceptionsU",
+                    "ExceptionsF"]
     file = "coverage/RISCV_coverage_base_init.svh"
     with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:
