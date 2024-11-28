@@ -24,7 +24,10 @@ import re
 
 def legalizecompr(r):
   # bring into range 8-15 for compressed instructions with limited
-  return r % 8 + 8
+  if hasattr(r, '__getitem__'):
+    return [rval % 8 + 8 for rval in r]
+  else:
+    return r % 8 + 8
 
 def shiftImm(imm, xlen):
   imm = imm % xlen
@@ -301,16 +304,19 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n"
   elif (test in shiftitype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    if (test in shiftiwtype):
-      lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + shiftImm(immval, 32) + " # perform operation\n"
-    else:
-      lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + shiftImm(immval, xlen) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + shiftImm(immval, xlen) + " # perform operation\n"
+  elif (test in shiftiwtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + shiftImm(immval, 32) + " # perform operation\n"
   elif (test in itype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
   elif (test in ibtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + Zbs_unsignedImm(xlen, immval) + " # perform operation\n"
+  elif (test in ibwtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + Zbs_unsignedImm(32, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -584,6 +590,7 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
     #TODO Hamza: add input prechecks here later
   
   registerArray = [rdlist, rs1list, rs2list, rs3list]
+  global hazardLabel
 
   lines = ""
 
@@ -592,108 +599,121 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
     regconfig = regconfiglist[testindex]
 
     if insMap[instype].get('loadstore') == 'load':
-      lines = (lines + test + " " + regconfig[0] + str(registerArray[0][testindex]) +
+      lines += ( test + " " + regconfig[0] + str(registerArray[0][testindex]) +
         ", " + signedImm12(immvalslist[testindex]) +
         "(" + regconfig[1] + str(registerArray[1][testindex]) + ")" + " # " + commentlist[testindex] + "\n")
 
     elif insMap[instype].get('loadstore') == 'store':
-      lines = (lines + test + " " + regconfig[2] + str(registerArray[2][testindex]) +
+      lines += (test + " " + regconfig[2] + str(registerArray[2][testindex]) +
         ", " + signedImm12(immvalslist[testindex]) + 
         "(" + regconfig[1] + str(registerArray[1][testindex]) + ")" + " # " + commentlist[testindex] + "\n")
 
     else:
-      lines = lines + test
+      lines += test
       for regindex, reg in enumerate(regconfiglist[testindex]):
         match reg:
           case 'x' | 'f':
-            lines = lines + ","*(lines[-1] != test[-1]) + " " + reg + str(registerArray[regindex][testindex])
+            lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
           case 'i':
-            if test == "lui" or test == "auipc":
-              lines = lines + ","*(lines[-1] != test[-1]) + " " + unsignedImm20(immvalslist[testindex])
-            elif instype == 'shiftitype':
-              lines = lines + ","*(lines[-1] != test[-1]) + " " + shiftImm(immvalslist[testindex], xlen)
+            if insMap[instype].get('compressed', 0) != 0:
+              immval = signedImm6(immvalslist[testindex])
+            elif test == "lui" or test == "auipc":
+              immval = unsignedImm20(immvalslist[testindex])
+            elif instype in ['shiftiwtype', 'ibwtype']:
+              immval = shiftImm(immvalslist[testindex], 32)
+            elif instype in ['shiftitype', 'ibtype']:
+              immval = shiftImm(immvalslist[testindex], xlen)
+            elif instype == 'flitype':
+              immval = flivals[immvalslist[testindex] % 32]
             else:
-              lines = lines + ","*(lines[-1] != test[-1]) + " " + signedImm12(immvalslist[testindex])
+              immval = signedImm12(immvalslist[testindex])
+            lines += ","*(lines[-1*len(test):] != test) + " " + str(immval)
           case 'l':
-            lines = lines + ","*(lines[-1] != test[-1]) + " " + unsignedImm20(immvalslist[testindex])
-      lines = lines + " # " + commentlist[testindex] + "\n"
+            lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\nnop\n"
+            lines += "arbitraryLabel" + str(hazardLabel) + ":\nnop\n"
+            hazardLabel += 1
+      if test == 'fcvtmod.w.d' :
+        lines += ", rtz"
+      lines += " # " + commentlist[testindex] + "\n"
   
   return lines
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, regtotest, rs3a=None, rs3b=None, haz_type='waw', xlen=32):
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, immvalb, regtotest, rs3a=None, rs3b=None, haz_type='waw', xlen=32):
   # consecutive instructions to trigger hazards
   
-  instype = findInstype('instructions', test, insMap)
+  instype = findInstype('instructions', testb, insMap)
   regconfig = insMap[instype].get('regconfig','xxx_')
   implicitxreg = insMap[instype].get('implicitxreg', '____')
+  global hazardLabel
   
-  test2 = test
+  testa = 'add'
 
   lines = "\n# Testcase " + str(desc) + "\n"
 
   match haz_type:
     case 'nohaz':
-      pass
+        pass
     case 'waw' | 'war':
       if regconfig[0] == 'f':
-        test2 = 'fmul.s'
+        testa = 'fmul.s'
       elif regconfig[0] == 'x':
-        test2 = 'add'
+        testa = 'add'
     case 'raw':
       if regconfig[regtotest] == 'f':
-        test2 = 'fmul.s'
+        testa = 'fmul.s'
       elif regconfig[regtotest] == 'x':
-        test2 = 'add'
+        testa = 'add'
     case _:
-      print('invalid hazard type' + haz_type + ' for instruction ' + test)
+      print('invalid hazard type' + haz_type + ' for instruction ' + testb)
 
-  ins2type = findInstype('instructions', test2, insMap)
+  ins2type = findInstype('instructions', testa, insMap)
   regconfig2 = insMap[ins2type].get('regconfig','xxx_')
 
-  instructionSequence = writeSingleInstructionSequence(desc, 
-                                                      [test2, test],
-                                                      [regconfig2, regconfig],
-                                                      [rdb, rda], [rs1b, rs1a],
-                                                      [rs2b, rs2a], [rs3b, rs3a],
-                                                      [immvala, immvalb],
-                                                      ["perform first operation", "perform second (triggering) operation"],
-                                                      xlen)
-  if instructionSequence == None:
-    # TODO: need to make new cases for instruction formats not accounted for above
-    print(f"Warning: Hazard tests not yet implemented for {test}")
-  lines = lines + instructionSequence
-  f.write(lines)
+  if test in jalrtype:
+    if haz_type != "raw":
+      lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
+      immvalb = 0
+    lines += writeSingleInstructionSequence(desc, 
+                                [testa],
+                                [regconfig2],
+                                [rda], [rs1a],
+                                [rs2a], [rs3a],
+                                [immvala],
+                                ["perform first operation"],
+                                xlen)
+    if haz_type == "raw":
+      lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
+      immvalb = 0
+    lines += writeSingleInstructionSequence(desc, 
+                                [testb],
+                                [regconfig],
+                                [rdb], [rs1b],
+                                [rs2b], [rs3b],
+                                [immvalb],
+                                ["perform second (triggering) operation"],
+                                xlen)
+    lines += "arbitraryLabel" + str(hazardLabel) + ":\nnop\n"
+    hazardLabel += 1
 
-  '''
-  #TODO Hamza: add compressed instructions in generator here
-  if test in floattypes:
-    instructionSequence = writeSingleInstructionSequence(desc, [test2, test], [reg0_2+reg1_2+reg2_2+reg3_2, reg0+reg1+reg2+reg3], [rdb, rda], [rs1b, rs1a], [rs2b, rs2a], [rs3b, rs3a], ["perform first operation", "perform second (triggering) operation"])
-    if instructionSequence == None:
-      # TODO: need to make new cases for instruction formats not accounted for above
-      print(f"Warning: Hazard tests not yet implemented for {test}")
-    lines = lines + instructionSequence
-    f.write(lines)
-    
   else: 
-    if (test in rd_rs1_rs2_rs3_format): 
-      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
-      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-    elif (test in rd_rs1_format):
-      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
-      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
-    elif (test in flitype):
-      lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
-      lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
-      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
-    elif (test in rd_rs1_rs2_format):
-      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
-      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
-    else:
-      # TODO: need to make new cases for instruction formats not accounted for above
-      print(f"Warning: Hazard tests not yet implemented for {test}")
-      pass
-    f.write(lines)
-    '''
+
+    if test in fstype + fltype + stype + loaditype:
+      lines += "la " + regconfig[1] + str(rs1b) + ", scratch\n"
+      lines += "addi " + 2*(regconfig[1] + str(rs1b) + ", ") + str(signedImm12(-immvalb)) + "\n"
+      if haz_type != "war":
+        rs1a = rda
+        rs2a = 0
+
+    lines += writeSingleInstructionSequence(desc, 
+                    [testa, testb],
+                    [regconfig2, regconfig],
+                    [rda, rdb], [rs1a, rs1b],
+                    [rs2a, rs2b], [rs3a, rs3b],
+                    [immvala, immvalb],
+                    ["perform first operation", "perform second (triggering) operation"],
+                    xlen)
+
+  f.write(lines)
 
 def findInstype(key, instruction, insMap):
     # within sublists with the key provided, find the first instance of the instruction
@@ -706,29 +726,50 @@ def findInstype(key, instruction, insMap):
     print('instruction ' + instruction + ' not found in insMap')
     return 0
 
-def make_unique_hazard(regsA, haz_type='nohaz', regchoice=1):
+def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
   # set up hazard
   [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
   regsB = [rdb, rs1b, rs2b, rs3b]
-  
+  compression = insMap[findInstype('instructions', test, insMap)].get('compressed', 0)
+
+  if compression == 2:
+    regsA = legalizecompr(regsA)
+    regsB = legalizecompr(regsB)
+
   match haz_type:
     case "nohaz":
       while (set(regsA) & set(regsB)):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
+        if compression == 2:
+          regsB = legalizecompr(regsB)
 
-    case "waw" | "war":
+    case "waw":
       while (set(regsA[1:]) & set(regsB[1:])):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
-        regsB = [regsA[0], rs1b, rs2b, rs3b]
+        regsB = [rdb, rs1b, rs2b, rs3b]
+        if compression == 2:
+          regsB = legalizecompr(regsB)
+      regsB[0] = regsA[0]
+    
+    case "war":
+      while (set(regsA) & set(regsB)):
+        [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+        regsB = [rdb, rs1b, rs2b, rs3b]
+        if compression == 2:
+          regsB = legalizecompr(regsB) 
+      regsB[0] = regsA[regchoice]
+      
 
-    case 'raw':
+    case "raw":
       while (regsB[0] not in regsA):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
+        if compression == 2:
+          regsB = legalizecompr(regsB)
         regsB[regchoice] = regsA[0]
 
-  return regsB
+  return regsA, regsB
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
     if rs1 is None: 
@@ -936,12 +977,19 @@ def make_rs1_rs2_eqval(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs1val, immval, rdval, test, xlen)
 
 def make_cp_gpr_hazard(test, xlen):
+  if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
+    print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
+    return
+  if findInstype('instructions', test, insMap) == 'csrtype' or findInstype('instructions', test, insMap) == 'csritype':
+    print("Zicsr hazards not yet implemented")
+    return
   for haz in ["nohaz", "raw", "waw", "war"]:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
       # set up hazard
-      regsB = make_unique_hazard(regsA=[rda, rs1a, rs2a, rs3a], haz_type=haz, regchoice=src)
+      regsA, regsB = make_unique_hazard(test, regsA=[rda, rs1a, rs2a, rs3a], haz_type=haz, regchoice=src)
+      [rda, rs1a, rs2a, rs3a] = regsA
       [rdb, rs1b, rs2b, rs3b] = regsB
 
       desc = "cp_gpr/fpr_hazard " + haz + " test"
@@ -1040,6 +1088,7 @@ def make_mem_hazard(test, xlen):
 def make_f_mem_hazard(test, xlen):
   lines = "\n# Testcase f_mem_hazard (no dependency)\n"
   lines = lines + "la x1, scratch\n"
+  lines = lines + "fsd f2, 0(x1)\n"
   lines = lines + test + " f2, 0(x1)\n"
   f.write(lines)
 
@@ -1485,10 +1534,11 @@ rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
 rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8",
         "clzw", "cpopw", "ctzw"]
 loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
-shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
+shiftitype = ["slli", "srli", "srai"]
 shiftiwtype = ["slliw", "srliw", "sraiw"]
 itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
-ibtype=["slli.uw","bclri","binvi","bseti","bexti","rori", "roriw",]
+ibtype = ["slli.uw","bclri","binvi","bseti","bexti","rori"]
+ibwtype = ["roriw"] 
 stype = ["sb", "sh", "sw", "sd"]
 btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
 jtype = ["jal"]
@@ -1556,6 +1606,9 @@ regconfig_xfff = F2Xtype + fcomptype + fixtype
 # instructions with fp first arg and the rest int args
 regconfig_fxxx = X2Ftype + PX2Ftype
 
+global hazardLabel 
+hazardLabel = 1
+
 # for writeHazardVectors
 rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
 rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
@@ -1564,13 +1617,19 @@ rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
 rd_imm_format = citype + cstype + ciwtype + cbptype
 
 insMap = {
+  # 'loadstore': whether a function is a load or store, leave empty for neither
+  # 'compressed': 3 levels, which are 0 for uncompressed (implicit value), 1 for compressed instruction,
+  #   2 for compressed instruction with 3-bit register fields
+  # 'implicitxreg': which reads and writes don't appear in the instruction fields but still occur
+  #   once the instruction is expanded
   'rtype' : {'instructions' : rtype, 'regconfig' : 'xxx_'},
-  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxx_'},
+  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xx__'},
   'loaditype' : {'instructions' : loaditype, 'regconfig' : 'xxi_', 'loadstore' : 'load'},
-  'shiftitype' : {'instructions' : shiftitype, 'regconfig' : 'xxi_'},
   'shiftiwtype' : {'instructions' : shiftiwtype, 'regconfig' : 'xxi_'},
+  'shiftitype' : {'instructions' : shiftitype, 'regconfig' : 'xxi_'},
   'itype' : {'instructions' : itype, 'regconfig' : 'xxi_'},
   'ibtype' : {'instructions' : ibtype, 'regconfig' : 'xxi_'},
+  'ibwtype' : {'instructions' : ibwtype, 'regconfig' : 'xxi_'},
   'stype' : {'instructions' : stype, 'regconfig' : '_xx_', 'loadstore' : 'store'},
   'btype' : {'instructions' : btype, 'regconfig' : '_xxl'},
   'jtype' : {'instructions' : jtype, 'regconfig' : 'xl__'},
@@ -1586,28 +1645,30 @@ insMap = {
   'X2Ftype' : {'instructions' : X2Ftype, 'regconfig' : 'fx__'},
   'PX2Ftype' : {'instructions' : PX2Ftype, 'regconfig' : 'fxx_'},
   'fcomptype' : {'instructions' : fcomptype, 'regconfig' : 'xff_'},
-  'citype' : {'instructions' : citype, 'regconfig' : 'x___', 'compressed' : True, 'implicitxreg' : '_x__'},
-  'c_shiftitype' : {'instructions' : c_shiftitype, 'regconfig' : 'x___', 'compressed' : True},
-  'cltype' : {'instructions' : cltype, 'regconfig' : 'xxi_', 'compressed' : True, 'loadstore' : 'load'},
-  'cstype' : {'instructions' : cstype, 'regconfig' : '_xxi', 'compressed' : True, 'loadstore' : 'store'},
-  'csstype' : {'instructions' : csstype, 'regconfig' : '_x__', 'compressed' : True, 'loadstore' : 'store'},
-  'crtype' : {'instructions' : crtype, 'regconfig' : '_x__', 'compressed' : True},
-  'ciwtype' : {'instructions' : ciwtype, 'regconfig' : 'xxi_', 'compressed' : True},
-  'cjtype' : {'instructions' : cjtype, 'regconfig' : '____'}, 'compressed' : True,
-  'catype' : {'instructions' : catype, 'regconfig' : 'x_x_', 'compressed' : True, 'implicitxreg' : '_x__'},
-  'cbptype' : {'instructions' : cbptype, 'regconfig' : 'x___', 'compressed' : True},
-  'cbtype' : {'instructions' : cbtype, 'regconfig' : '_x__', 'compressed' : True},
+  'citype' : {'instructions' : ["c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw", "c.lwsp", "c.ldsp", "c.flwsp", "c.fldsp"], 'regconfig' : 'xi__', 'compressed' : 1, 'implicitxreg' : '_x__'},
+  'cnoptype' : {'instructions' : ["c.nop"], 'regconfig' : '____', 'compressed' : 1, 'implicitxreg' : '____'},
+  'c_shiftitype' : {'instructions' : c_shiftitype, 'regconfig' : 'x___', 'compressed' : 1},
+  'cltype' : {'instructions' : cltype, 'regconfig' : 'xxi_', 'compressed' : 1, 'loadstore' : 'load'},
+  'cstype' : {'instructions' : cstype, 'regconfig' : '_xxi', 'compressed' : 1, 'loadstore' : 'store'},
+  'csstype' : {'instructions' : csstype, 'regconfig' : '_x__', 'compressed' : 1, 'loadstore' : 'store'},
+  'crtype' : {'instructions' : ['c.add', 'c.mv'], 'regconfig' : 'xx__', 'compressed' : 1},
+  'cjrtype' : {'instructions' : ['c.jr', 'c.jalr'], 'regconfig' : '_x__', 'compressed' : 1, 'implicitxreg' : 'x___'},
+  'ciwtype' : {'instructions' : ciwtype, 'regconfig' : 'xxi_', 'compressed' : 1},
+  'cjtype' : {'instructions' : cjtype, 'regconfig' : 'l___'}, 'compressed' : 1,
+  'catype' : {'instructions' : catype, 'regconfig' : 'x_x_', 'compressed' : 2, 'implicitxreg' : '_x__'},
+  'cbptype' : {'instructions' : cbptype, 'regconfig' : 'xi__', 'compressed' : 2},
+  'cbtype' : {'instructions' : cbtype, 'regconfig' : '_xl_', 'compressed' : 2},
   'shiftwtype' : {'instructions' : shiftwtype, 'regconfig' : 'xx__'},
-  'csbtype' : {'instructions' : csbtype, 'regconfig' : '_xxi', 'compressed' : True, 'loadstore' : 'store'},
-  'cshtype' : {'instructions' : cshtype, 'regconfig' : '_xxi', 'compressed' : True, 'loadstore' : 'store'},
-  'clhtype' : {'instructions' : clhtype, 'regconfig' : 'xxi_', 'compressed' : True, 'loadstore' : 'load'},
-  'clbtype' : {'instructions' : clbtype, 'regconfig' : 'xxi_', 'compressed' : True, 'loadstore' : 'load'},
-  'cutype' : {'instructions' : cutype, 'regconfig' : 'x___', 'compressed' : True},
+  'csbtype' : {'instructions' : csbtype, 'regconfig' : '_xxi', 'compressed' : 1, 'loadstore' : 'store'},
+  'cshtype' : {'instructions' : cshtype, 'regconfig' : '_xxi', 'compressed' : 1, 'loadstore' : 'store'},
+  'clhtype' : {'instructions' : clhtype, 'regconfig' : 'xxi_', 'compressed' : 1, 'loadstore' : 'load'},
+  'clbtype' : {'instructions' : clbtype, 'regconfig' : 'xxi_', 'compressed' : 1, 'loadstore' : 'load'},
+  'cutype' : {'instructions' : cutype, 'regconfig' : 'x___', 'compressed' : 1},
   'zcftype' : {'instructions' : zcftype, 'regconfig' : 'uuuu'},
   'zcdtype' : {'instructions' : zcdtype, 'regconfig' : 'uuuu'},
   'flitype' : {'instructions' : flitype, 'regconfig' : 'fi__'},
   'csrtype' : {'instructions' : csrtype, 'regconfig' : 'xx__'},
-  'csritype' : {'instructions' : csrtype, 'regconfig' : 'xi__'}
+  'csritype' : {'instructions' : csritype, 'regconfig' : 'xi__'}
 }
 
 if __name__ == '__main__':
