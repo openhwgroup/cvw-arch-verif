@@ -20,10 +20,10 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_EXCEPTIONSZCA
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszca_t;
+`define COVER_EXCEPTIONSZC
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszc_t;
 
-covergroup exceptionsZca_cg with function sample(ins_exceptionszca_t ins);
+covergroup exceptionsZc_cg with function sample(ins_exceptionszc_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -60,8 +60,8 @@ covergroup exceptionsZca_cg with function sample(ins_exceptionszca_t ins);
 
 endgroup
 
-function void exceptionszca_sample(int hart, int issue);
-    ins_exceptionszca_t ins;
+function void exceptionszc_sample(int hart, int issue);
+    ins_exceptionszc_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_rd(0);
@@ -70,6 +70,6 @@ function void exceptionszca_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsZca_cg.sample(ins);
+    exceptionsZc_cg.sample(ins);
     
 endfunction
