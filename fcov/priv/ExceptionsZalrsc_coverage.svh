@@ -45,11 +45,15 @@ covergroup exceptionslrsc_cg with function sample(ins_exceptionszalrsc_t ins);
     adr_LSBs: coverpoint ins.current.rs1_val[2:0]  {
         // auto fills 000 through 111
     }
+    rd_boolean: coverpoint ins.current.rd_val {
+        bins one  = {1};
+        bins zero = {0};
+    }
     // main coverpoints
     cp_load_address_misaligned:  cross lr, adr_LSBs;
     cp_load_access_fault:        cross lr, illegal_address;
-    cp_store_address_misaligned: cross sc, adr_LSBs;
-    cp_store_access_fault:       cross sc, illegal_address;
+    cp_store_address_misaligned: cross sc, adr_LSBs, rd_boolean;
+    cp_store_access_fault:       cross sc, illegal_address, rd_boolean;
     
 endgroup
 
