@@ -54,15 +54,7 @@ def gen(comment, template, len = 32, exclusion = []):
             print("     ."+keyword+" 0b"+instrstr)
         else:
             print("#     ."+keyword+" 0b"+instrstr+" // excluded by "+str(exclusion))
- 
-        # if (instrstr == "00010000001000000000000001110011" or instrstr == "00110000001000000000000001110011" or # sret, mret
-        #     instr[1] == '0' and instr[0] == '1' and instr[15] == '1' and instr[14] == '0' and instr[13] == '1' or
-        #     instr[1] == '1' and instr[0] == '0' and instr[15] == '1' and instr[14] == '0' and instr[13] == '0' and instr[12] == '0'
-        #     ):
-        #     return # skip sret and mret
-        # print("     .word 0b"+instrstr)
-
-  
+   
 # setup
 seed(0) # make tests reproducible
 WALLY = os.environ.get('WALLY')
