@@ -244,6 +244,20 @@ trap_handler_returnplus4:
     csrw mepc, t0
     mret
 
+/////////////////////////////////
+// Fast trap to return to the next compressed 
+// This handler is just meant for speedy illegal instruction handling.
+// It can't handle anything else including uncompressed instructions, 
+// so point to a regular trap handler before needing others.
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_returnplus2:
+    csrr t0, mepc
+    addi t0, t0, 2
+    csrw mepc, t0
+    mret
+
 // utility routines
 
 # put a 1 in msb of a0 (position XLEN-1); works for both RV32 and RV64

@@ -184,7 +184,7 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
         // check all 2^5 rd for cbo instructions; only 0 should be legal
     }
     // I-type instructions
-    cp_Itype: coverpoint {ins.current.insn[14], ins.current.insn[31:20]} iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[13:12] == 2'b01) { 
+    cp_Itype : coverpoint {ins.current.insn[14], ins.current.insn[31:20]} iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[13:12] == 2'b01) { 
         // Exhaustive test of 2 * 2^12 complicated bins for I-type instructions with op = 00100011 and funct3 = 1 or 5, and any imm_11:0
         // includes integer shifts, Zbb, Zbs, Zbkb, Zknd, Zkne, Zknh
     }
@@ -208,7 +208,7 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
     }
     // Atomic op = 0101111
     cp_atomic_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0101111) { 
-        // Check all 8 types of atomic funct3; only funct2 is legal, and only when A supported
+        // Check all 8 types of atomic funct3; only funct3 = 2 is legal, and only when A supported
     }
     cp_atomic_funct7 : coverpoint {ins.current.insn[12], ins.current.insn[31:27]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 3'b01) { 
         // Check all 2 flavors (w/d) * 32 flavors of atomics
@@ -293,7 +293,7 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
     cp_privileged_rd : coverpoint ins.current.insn[11:7] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[14:12] == 3'b000) {
         // Exhaustive test of 2^5 rd values, only 00000 is legal
     }
-    // if funct3 = 0, rd must be 0
+    // if funct3 = 0, rs2 must be 0
     cp_privileged_rs2 : coverpoint ins.current.insn[24:20] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[14:12] == 3'b000) {
         // Exhaustive test of 2^5 rs2 values, only 00000 is legal except on sfence.vma
     }
