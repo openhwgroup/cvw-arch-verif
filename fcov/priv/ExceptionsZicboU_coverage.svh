@@ -38,6 +38,7 @@ covergroup exceptionsZicboU_cg with function sample(ins_exceptionszicbou_t ins);
         bins cbo_zero = {32'b000000000100_?????_010_00000_0001111};
     }
     menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4] {
+        ignore_bins reserved = {2'b10};
     }
     menvcfg_cbcfe: coverpoint ins.current.csr[12'h30A][6] {
     }
