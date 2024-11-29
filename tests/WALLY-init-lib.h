@@ -176,6 +176,88 @@ write_tohost:
 self_loop:
     j self_loop         # wait
 
+/////////////////////////////////
+// Fast trap handler for illegal instructions (when testing writes to CSRs that may be non-existent)
+// This handler processes illegal instructions by adding 4 to mepc and returning.  It only works
+// for uncompressed instructions, and will behave in unpredictable ways for illegal compressed
+// isntructions.  It handles other traps by calling the regular trap handler.
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_fastuncompressedillegalinstr:
+    # Load trap handler stack pointer tp
+    csrrw tp, mscratch, tp  # swap MSCRATCH and tp
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd t0, 0(tp)        # Save t0 and t1 on the stack
+            sd t1, -8(tp)
+        #elif __riscv_xlen == 32
+            sw t0, 0(tp)        # Save t0 and t1 on the stack
+            sw t1, -4(tp)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    csrr t0, mcause     # Check the cause
+    li t1, 2            # Illegal Instruction cause
+    beq t0, t1, illegalinstruction # check if this is an uncompressed illegal instruction, then return fast
+othertrap:
+    # Otherwise use the regular trap handler
+    csrr t1, mtval      # And the trap value
+    bgez t0, exception  # if msb is clear, it is an exception
+    j interrupt         # otherwise interrupt.
+
+illegalinstruction:
+    csrr t0, mtval      # get the instruction that caused the exception (assumes mtval is implemented to return instruction)
+    li t1, 3            # mask for uncompressed instruction op
+    and t0, t0, t1      # mask off upper bits
+    bne t0, t1, othertrap   # compressed instructions use regular trap handler
+uncompressedillegalinstructionreturn:            # return from trap handler.  Fast because it knows instructions are 4-byte aligned
+    csrr t0, mepc  # get address of instruction that caused exception
+    addi t0, t0, 4
+    csrw mepc, t0
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            ld t0, 0(tp)        # Restore t0 and t1
+            ld t1, -8(tp)
+        #elif __riscv_xlen == 32
+            lw t0, 0(tp)        # Restore t0 and t1
+            lw t1, -4(tp)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    csrrw tp, mscratch, tp  # restore tp
+    mret                # return from trap
+
+/////////////////////////////////
+// Fast trap to return to the next uncompressed 
+// This handler is just meant for speedy illegal instruction handling.
+// It can't handle anything else including compressed instructions, 
+// so point to a regular trap handler before needing others.
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_returnplus4:
+    csrr t0, mepc
+    addi t0, t0, 4
+    csrw mepc, t0
+    mret
+
+/////////////////////////////////
+// Fast trap to return to the next compressed 
+// This handler is just meant for speedy illegal instruction handling.
+// It can't handle anything else including uncompressed instructions, 
+// so point to a regular trap handler before needing others.
+/////////////////////////////////
+
+.align 4                # trap handlers must be aligned to multiple of 4
+trap_handler_returnplus2:
+    csrr t0, mepc
+    addi t0, t0, 2
+    csrw mepc, t0
+    mret
+
 // utility routines
 
 # put a 1 in msb of a0 (position XLEN-1); works for both RV32 and RV64
