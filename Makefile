@@ -24,6 +24,11 @@ RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
 UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
+# Add headers for priv tests here. They will all be prepended with PRIVDIR
+# Make sure to add a rule to generate the header file if necessary. 
+# See $(PRIVDIR)/Zicsr-CSR-Tests.h for an example
+PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
+
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
 # Main targets
@@ -45,6 +50,9 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 	bin/csrtests.py
 
+$(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
+	bin/illegalinstrtests.py
+
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
 ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
@@ -58,14 +66,15 @@ MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
-EXTRADEPS  = $(if $(findstring priv,$*),$(PRIVDIR)/Zicsr-CSR-Tests.h $(PRIVDIR$(BITWIDTH)))
+PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVDIR)/, $(PRIV_HEADERS))
+EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
 .PRECIOUS: %.elf %.elf.objdump %.elf.memfile
 
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond -mabi=$(MABI) -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
 	$(MAKE) $@.objdump $@.memfile
 
@@ -79,7 +88,8 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIVDIR)/Zicsr-CSR-Tests.h $(PRIVDIR$(
 # Run tests while collecting functional coverage
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
+	wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
+	#wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
 	#wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
