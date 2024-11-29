@@ -27,7 +27,7 @@ UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 # Add headers for priv tests here. They will all be prepended with PRIVDIR
 # Make sure to add a rule to generate the header file if necessary. 
 # See $(PRIVDIR)/Zicsr-CSR-Tests.h for an example
-PRIV_HEADERS  = Zicsr-CSR-Tests.h
+PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
@@ -50,7 +50,7 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 	bin/csrtests.py
 
-$(PRIVDIR)/ExceptionInstr-Tests.h: bin/illegalinstrtests.py
+$(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
 	bin/illegalinstrtests.py
 
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
