@@ -264,7 +264,7 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
     cp_fli : coverpoint ins.current.insn[26:20] iff (ins.current.insn[6:0] == 7'b1010011 & ins.current.insn[31:27] == 5'b11110 & ins.current.insn[14:12] == 3'b000) {
         // Exhaustive test of 2^2 formats * 2^5 encodings; only rs2 = 00001 is legal
     }
-    cp_fmvh : coverpoint ins.current.insn[26:20] iff (ins.current.insn[6:0] == 7'b1010011 & ins.current.insn[31:25] == 7'b1110001 & ins.current.insn[14:12] == 3'b000) {
+    cp_fmvh : coverpoint ins.current.insn[26:20] iff (ins.current.insn[6:0] == 7'b1010011 & ins.current.insn[31:27] == 5'b11100 & ins.current.insn[14:12] == 3'b000) {
         // Exhaustive test of 2^2 formats * 2^5 encodings; only rs2 = 00001 is possibly legal
     }
      cp_fmvp : coverpoint ins.current.insn[26:25] iff (ins.current.insn[6:0] == 7'b1010011 & ins.current.insn[31:27] == 5'b11100 & ins.current.insn[14:12] == 3'b000) {
@@ -296,15 +296,6 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
     // if funct3 = 0, rs2 must be 0
     cp_privileged_rs2 : coverpoint ins.current.insn[24:20] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[14:12] == 3'b000) {
         // Exhaustive test of 2^5 rs2 values, only 00000 is legal except on sfence.vma
-    }
-    cp_compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {
-        // exhaustive test of 2^14 compressed instructions with op=00
-    }
-    cp_compressed01 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b01) {
-        // exhaustive test of 2^14 compressed instructions with op = 01
-    }
-    cp_compressed10 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b10) {
-        // exhaustive test of 2^14 compressed instructions with op = 10
     }
     cp_reserved : coverpoint ins.current.insn { // reserved but not illegal
         wildcard bins reserved_fence_fm  = {32'b0001_00000000_?????_000_?????_0001111}; // fence with reserved fm

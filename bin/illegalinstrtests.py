@@ -36,18 +36,35 @@ def gen(comment, template, len = 32, exclusion = []):
             elif (template[i] == '1'):
                 instr[i] = '1'
         instrstr = "".join(instr)
-
-        if (instrstr == "00010000001000000000000001110011" or instrstr == "00110000001000000000000001110011" or # sret, mret
-            instrstr == "00010001100000100010011110101111" or # bad lr.w being garbled at ImperasDV issue #1151
-            instr[1] == '0' and instr[0] == '1' and instr[15] == '1' and instr[14] == '0' and instr[13] == '1' or
-            instr[1] == '1' and instr[0] == '0' and instr[15] == '1' and instr[14] == '0' and instr[13] == '0' and instr[12] == '0'
-            ):
-            return # skip sret and mret
-        print("     .word 0b"+instrstr)
+        
+        anymatch = 0
+        for exclude in exclusion:
+            match = 1
+            for i in range(len):
+                if (exclude[i] != 'X' and exclude[i] != instrstr[i]):
+                    match = 0
+            anymatch = anymatch or match
+        if (len == 32):
+            keyword = "word"
+        elif (len == 16):
+            keyword = "hword"
+        else:
+            keyword = "len should be 16 or 32"
+        if not anymatch: # print the instruction if it isn't on exclusion list
+            print("     ."+keyword+" 0b"+instrstr)
+        else:
+            print("#     ."+keyword+" 0b"+instrstr+" // excluded by "+str(exclusion))
+ 
+        # if (instrstr == "00010000001000000000000001110011" or instrstr == "00110000001000000000000001110011" or # sret, mret
+        #     instr[1] == '0' and instr[0] == '1' and instr[15] == '1' and instr[14] == '0' and instr[13] == '1' or
+        #     instr[1] == '1' and instr[0] == '0' and instr[15] == '1' and instr[14] == '0' and instr[13] == '0' and instr[12] == '0'
+        #     ):
+        #     return # skip sret and mret
+        # print("     .word 0b"+instrstr)
 
   
 # setup
-seed(1) # make tests reproducible
+seed(0) # make tests reproducible
 WALLY = os.environ.get('WALLY')
 pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
@@ -66,17 +83,24 @@ gen("Illegal op31", "RRRRRRRRRRRRRRRRRRRRRRRRR1111111")
 gen("cp_load",      "RRRRRRRRRRRRRRRRREEERRRRR0000011")
 gen("cp_fload",     "RRRRRRRRRRRRRRRRREEERRRRR0000111")
 gen("cp_fence_cbo", "RRRRRRRRRRRRRRRRREEERRRRR0001111")
-# gen("cp_cbo_immediate", "EEEEEEEEEEEERRRRR010000000001111") # *** mismatching imperasDV per issue 1145
+gen("cp_cbo_immediate", "EEEEEEEEEEEE00000010000000001111") # tie rs1 = 0 to avoid overwriting program on cbo.zero
 gen("cp_cbo_rd",        "00000000000RRRRRR010EEEEE0001111")
-# gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011") # *** mismatching imperasDV on zip and unzip per issue 1146
+gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011", 32, 
+                    ["000010001111XXXXXX01XXXXX0010011", # Exclude zip and unzip until ImperasDV is fixed per issue #1164 
+                     "00010000100XXXXXX001XXXXX0010011" # Exclude sm3p0 and sm3p1 until disabled in imperas.ic
+                     ])
 gen("cp_IWtype",        "RRRRRRRRRRRRRRRRREEERRRRR0011011")
 gen("cp_IWshift",       "EEEEEEERRRRRRRRRRE01RRRRR0011011")
-gen("cp_store",         "RRRRRRRRRRRRRRRRREEERRRRR0100011")
-gen("cp_fstore",        "RRRRRRRRRRRRRRRRREEERRRRR0100111")
-gen("cp_atomic_funct3", "RRRRRRRRRRRRRRRRREEERRRRR0101111")
-gen("cp_atomic_funct7", "EEEEERRRRRRRRRRRR01ERRRRR0101111")
-gen("cp_lrsc",          "00010RREEEEERRRRR01ERRRRR0101111")
-# gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011") # *** mismatching ImperasDV per issue 1148
+gen("cp_store",         "RRRRRRRRRRRR00000EEERRRRR0100011") # use rs1 = 0 for stores to avoid overwriting program
+gen("cp_fstore",        "RRRRRRRRRRRR00000EEERRRRR0100111") # use rs1 = 0 for stores to avoid overwriting program
+gen("cp_atomic_funct3", "RRRRRRRRRRRR00000EEERRRRR0101111") # use rs1 = 0 for atomics to avoid overwriting program
+gen("cp_atomic_funct7", "EEEEERRRRRRR0000001ERRRRR0101111") # use rs1 = 0 for atomics to avoid overwriting program
+gen("cp_lrsc",          "00010RREEEEE0000001ERRRRR0101111")
+gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011", 32,
+                        ["0000100XXXXXXXXXX100XXXXX0110011", # Exclude pack until ImperasDV is fixed per issue #1148
+                         "0000100XXXXXXXXXX111XXXXX0110011", # also packh per 1148
+                         "XX110X0XXXXXXXXXX000XXXXX0110011" # Exclude sm4ks and sm4ed until disabled in imperas.ic
+    ]) 
 gen("cp_rwtype",        "EEEEEEERRRRRRRRRREEERRRRR0111011")
 gen("cp_ftype",         "EEEEERRRRRRRRRRRREEERRRRR1010011")
 gen("cp_fsqrt",         "0101100EEEEERRRRRRRRRRRRR1010011") 
@@ -95,12 +119,14 @@ gen("cp_fmvp",          "10110EERRRRRRRRRR000RRRRR1010011")
 gen("cp_fcvtmodwd",     "11000EEEEEEERRRRR001RRRRR1010011")
 gen("cp_branch2",       "RRRRRRRRRRRRRRRRR010RRRRR1100011")
 gen("cp_branch3",       "RRRRRRRRRRRRRRRRR011RRRRR1100011")
-gen("cp_jalr0",          "RRRRRRRRRRRRRRRRREE1RRRRR1100111")
-gen("cp_jalr1",          "RRRRRRRRRRRRRRRRR010RRRRR1100111")
-gen("cp_jalr2",          "RRRRRRRRRRRRRRRRR100RRRRR1100111")
-gen("cp_jalr3",          "RRRRRRRRRRRRRRRRR110RRRRR1100111")
+gen("cp_jalr0",         "RRRRRRRRRRRRRRRRREE1RRRRR1100111")
+gen("cp_jalr1",         "RRRRRRRRRRRRRRRRR010RRRRR1100111")
+gen("cp_jalr2",         "RRRRRRRRRRRRRRRRR100RRRRR1100111")
+gen("cp_jalr3",         "RRRRRRRRRRRRRRRRR110RRRRR1100111")
 gen("cp_privileged_f3", "00000000000100000EEE000001110011")
-gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011")
+gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32, 
+    ["00X10000001000000000000001110011", # exclude mret and sret because there is no trap to return from
+     "00010000010100000000000001110011"]) # exclude wfi because it may not wake up
 gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
 gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
@@ -110,6 +136,14 @@ pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstrCompressed-Tes
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)
-gen("compressed01", "EEEEEEEEEEEEEE01", 16, ["101EEEEEEEEEEE01", "11EEEEEEEEEEEE01"])
-gen("compressed10", "EEEEEEEEEEEEEE10", 16)
+gen("compressed01", "EEEEEEEEEEEEEE01", 16, 
+    ["101XXXXXXXXXXX01", # skip c.j because it causes the test program to go to a random place
+     "11XXXXXXXXXXXX01", # skip c.beqz and c.bnez because they cause program to go to a random place
+     "001XXXXXXXXXXX01", # skip c.jr because it causes the test program to go to a random place
+     ])
+gen("compressed10", "EEEEEEEEEEEEEE10", 16,
+    ["1000XXXXX0000010", # skip c.jr because it causes the test program to go to a random place
+     "1001XXXXX0000010", # skip c.jalr because it causes the test program to go to a random place
+     "1001000000000010"
+               ])
 outfile.close

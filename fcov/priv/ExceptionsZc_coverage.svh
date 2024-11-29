@@ -75,6 +75,31 @@ covergroup exceptionsZc_cg with function sample(ins_exceptionszc_t ins);
 
 endgroup
 
+// more detailed illegal instruction testing
+covergroup exceptionsInstrC_cg with function sample(ins_exceptionsm_t ins);
+    option.per_instance = 0; 
+
+    cp_compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {
+        bins c00[] = {[0:$]};
+        // exhaustive test of 2^14 compressed instructions with op=00
+    }
+    cp_compressed01 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b01) {
+        // exhaustive test of 2^14 compressed instructions with op = 01 with following exceptions that would be hard to test
+        bins c01[] = {[0:14'b00011111111111]};
+        ignore_bins c_jal = {[14'b00100000000000:14'b00111111111111]};
+        bins c01b[] = {[14'b01000000000000:14'b10011111111111]};
+        ignore_bins c_j = {[14'b10100000000000:14'b10111111111111]};
+        ignore_bins c_bez_bez = {[14'b11000000000000:14'b11111111111111]};
+     }
+    cp_compressed10 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b10) {
+        // exhaustive test of 2^14 compressed instructions with op = 10
+        bins c10a[] = {[0:14'b01111111111111]};
+        ignore_bins c_jr = {[14'b10000000000000:14'b10001111111111]};
+        ignore_bins c_jalr = {[14'b10010000000000:14'b10011111111111]};
+        bins c10b[] = {[14'b10100000000000:$]};
+    }
+endgroup
+
 function void exceptionszc_sample(int hart, int issue);
     ins_exceptionszc_t ins;
 
@@ -86,5 +111,6 @@ function void exceptionszc_sample(int hart, int issue);
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
     exceptionsZc_cg.sample(ins);
-    
+    exceptionsInstrC_cg.sample(ins);
+
 endfunction
