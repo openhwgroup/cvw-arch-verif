@@ -2,7 +2,7 @@
 //
 // RISC-V Architectural Functional Coverage Covergroups
 // 
-// Written: Corey Hickson chickson@hmc.edu 24 November 2024
+// Written: Corey Hickson chickson@hmc.edu 29 November 2024
 // 
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
