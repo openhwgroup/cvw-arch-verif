@@ -285,6 +285,10 @@ covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
+        // fences are not really privileged instructions, but are tested here for lack of a more convenient place
+        bins fence =  {32'h0ff0000f}; // iowr, iowr
+        bins fence_rw_rw = {32'h0330000f}; // iowr, iowr
+        bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
