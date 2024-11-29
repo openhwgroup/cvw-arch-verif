@@ -15,7 +15,7 @@ from random import seed
 import os, sys
 from os import environ
 
-def gen(comment, template, len = 32):
+def gen(comment, template, len = 32, exclusion = []):
     ebits = template.count('E')
     print("\n// "+comment + " with 2^"+str(ebits)+" exhaustive bits\n// Template: "+template)
     # Find out how many exhaustive bits are needed
@@ -36,14 +36,18 @@ def gen(comment, template, len = 32):
             elif (template[i] == '1'):
                 instr[i] = '1'
         instrstr = "".join(instr)
-        
-        if (instrstr == "00010000001000000000000001110011" or instrstr == "00110000001000000000000001110011"):
+
+        if (instrstr == "00010000001000000000000001110011" or instrstr == "00110000001000000000000001110011" or # sret, mret
+            instrstr == "00010001100000100010011110101111" or # bad lr.w being garbled at ImperasDV issue #1151
+            instr[1] == '0' and instr[0] == '1' and instr[15] == '1' and instr[14] == '0' and instr[13] == '1' or
+            instr[1] == '1' and instr[0] == '0' and instr[15] == '1' and instr[14] == '0' and instr[13] == '0' and instr[12] == '0'
+            ):
             return # skip sret and mret
         print("     .word 0b"+instrstr)
 
   
 # setup
-seed(0) # make tests reproducible
+seed(1) # make tests reproducible
 WALLY = os.environ.get('WALLY')
 pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
@@ -106,6 +110,6 @@ pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstrCompressed-Tes
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)
-gen("compressed01", "EEEEEEEEEEEEEE01", 16)
+gen("compressed01", "EEEEEEEEEEEEEE01", 16, ["101EEEEEEEEEEE01", "11EEEEEEEEEEEE01"])
 gen("compressed10", "EEEEEEEEEEEEEE10", 16)
 outfile.close

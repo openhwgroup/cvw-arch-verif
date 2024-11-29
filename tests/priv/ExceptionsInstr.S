@@ -28,18 +28,27 @@ main:
     csrs mstatus, t0
 
 /////////////////////////////////
-// Test illegal uncompressed instructions
-/////////////////////////////////
- 
-    #include "ExceptionInstr-Tests.h"
-
-/////////////////////////////////
 // cp_reserved
 /////////////////////////////////
     .word 0b00010000000000000000000000001111 # fence with reserved fm
     .word 0b10000000000000000000000000001111 # fence.tso with reserved ordering
     .word 0b00001111111100001000000000001111 # fence with reserved rs1
     .word 0b00001111111100000000000010001111 # fence with reserved rd
+
+/////////////////////////////////
+// Test illegal uncompressed instructions
+/////////////////////////////////
+ 
+    #include "ExceptionInstr-Tests.h"
+
+/////////////////////////////////
+// Test illegal compressed instructions
+/////////////////////////////////
+
+    la t0, trap_handler_returnplus2
+    csrw mtvec, t0
+
+   // #include "ExceptionInstrCompressed-Tests.h"
 
 // Restore trap handler before returning
 
