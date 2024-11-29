@@ -24,6 +24,11 @@ RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
 UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
+# Add headers for priv tests here. They will all be prepended with PRIVDIR
+# Make sure to add a rule to generate the header file if necessary. 
+# See $(PRIVDIR)/Zicsr-CSR-Tests.h for an example
+PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
+
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
 # Main targets
@@ -45,7 +50,7 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 	bin/csrtests.py
 
-$(PRIVDIR)/ExceptionInstr-Tests.h: bin/illegalinstrtests.py
+$(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
 	bin/illegalinstrtests.py
 
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
@@ -61,7 +66,8 @@ MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
-EXTRADEPS  = $(if $(findstring priv,$*),$(PRIVDIR)/Zicsr-CSR-Tests.h $(PRIVDIR$(BITWIDTH)))
+PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVDIR)/, $(PRIV_HEADERS))
+EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
 .PRECIOUS: %.elf %.elf.objdump %.elf.memfile
