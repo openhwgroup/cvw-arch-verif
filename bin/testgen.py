@@ -299,9 +299,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
   elif (test in ibtype):
-    immsize = xlen
-    if (test == "roriw"):
-      immsize = 32
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
@@ -766,7 +763,6 @@ def make_rs2(test, xlen, rng = range(32)):
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_uimm(test, xlen):
-  if test == "roriw": xlen = 32
   for r in range(xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
     desc = "cp_uimm (Test bit = " + str(r) + ")"
@@ -1223,7 +1219,7 @@ def write_tests(coverpoints, test, xlen):
       make_rs2(test, xlen, range(32))
     elif (coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(1,32))
-    elif (coverpoint == "cp_uimm" or coverpoint == "cp_uimm_roriw" ):
+    elif (coverpoint == "cp_uimm"):
       make_uimm(test, xlen) 
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
