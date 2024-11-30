@@ -302,6 +302,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
   elif (test in ibtype):
+    immsize = xlen
+    if (test == "roriw"):
+      immsize = 32
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
@@ -1471,8 +1474,8 @@ if __name__ == '__main__':
           "rolw", "rorw",
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
-  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8" 
-          , "clzw", "cpopw", "ctzw"]
+  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8",
+          "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
