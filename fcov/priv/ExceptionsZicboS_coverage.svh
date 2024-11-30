@@ -53,7 +53,7 @@ covergroup exceptionsZicboS_cg with function sample(ins_exceptionszicbos_t ins);
     }
     priv_modes: coverpoint ins.current.mode {
         bins U_mode = {2'b00};
-        bins S_mode = {2'b10};
+        bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
 
