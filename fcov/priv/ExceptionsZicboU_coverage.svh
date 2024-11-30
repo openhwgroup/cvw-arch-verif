@@ -44,21 +44,15 @@ covergroup exceptionsZicboU_cg with function sample(ins_exceptionszicbou_t ins);
     }
     menvcfg_cbze: coverpoint ins.current.csr[12'h30A][7] {
     }
-    priv_mode_m: coverpoint ins.current.mode {
+    priv_modes: coverpoint ins.current.mode {
+        bins U_mode = {2'b00};
         bins M_mode = {2'b11};
     }
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
-    }
-
 
     // main coverpoints
-    cp_menvcfg_cbie_u:  cross cbo_inval,      menvcfg_cbie,  priv_mode_u;
-    cp_menvcfg_cbcfe_u: cross cbo_flushclean, menvcfg_cbcfe, priv_mode_u;
-    cp_menvcfg_cbze_u:  cross cbo_zero,       menvcfg_cbze,  priv_mode_u;
-    cp_menvcfg_cbie_m:  cross cbo_inval,      menvcfg_cbie,  priv_mode_m;
-    cp_menvcfg_cbcfe_m: cross cbo_flushclean, menvcfg_cbcfe, priv_mode_m;
-    cp_menvcfg_cbze_m:  cross cbo_zero,       menvcfg_cbze,  priv_mode_m;
+    cp_cbie:  cross cbo_inval,      menvcfg_cbie,  priv_modes;
+    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, priv_modes;
+    cp_cbze:  cross cbo_zero,       menvcfg_cbze,  priv_modes;
 
 endgroup
 
