@@ -20,10 +20,10 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_EXCEPTIONSZICBOU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszicbou_t;
+`define COVER_EXCEPTIONSZICBOS
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszicbos_t;
 
-covergroup exceptionsZicboU_cg with function sample(ins_exceptionszicbou_t ins);
+covergroup exceptionsZicboS_cg with function sample(ins_exceptionszicbos_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -44,20 +44,28 @@ covergroup exceptionsZicboU_cg with function sample(ins_exceptionszicbou_t ins);
     }
     menvcfg_cbze: coverpoint ins.current.csr[12'h30A][7] {
     }
+    senvcfg_cbie: coverpoint ins.current.csr[12'h10A][5:4] {
+        ignore_bins reserved = {2'b10};
+    }
+    senvcfg_cbcfe: coverpoint ins.current.csr[12'h10A][6] {
+    }
+    senvcfg_cbze: coverpoint ins.current.csr[12'h10A][7] {
+    }
     priv_modes: coverpoint ins.current.mode {
         bins U_mode = {2'b00};
+        bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
 
     // main coverpoints
-    cp_cbie:  cross cbo_inval,      menvcfg_cbie,  priv_modes;
-    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, priv_modes;
-    cp_cbze:  cross cbo_zero,       menvcfg_cbze,  priv_modes;
+    cp_cbie:  cross cbo_inval,      menvcfg_cbie,  senvcfg_cbie,  priv_modes;
+    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, menvcfg_cbcfe, priv_modes;
+    cp_cbze:  cross cbo_zero,       menvcfg_cbze,  senvcfg_cbze,  priv_modes;
 
 endgroup
 
-function void exceptionszicbou_sample(int hart, int issue);
-    ins_exceptionszicbou_t ins;
+function void exceptionszicbos_sample(int hart, int issue);
+    ins_exceptionszicbos_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_rd(0);
@@ -66,6 +74,6 @@ function void exceptionszicbou_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsZicboU_cg.sample(ins);
+    exceptionsZicboS_cg.sample(ins);
     
 endfunction
