@@ -27,14 +27,7 @@ main:
     li t0,0x4000
     csrs mstatus, t0
 
-// ImperasDV Mismatches from open issues
-    # .word 0x0053200f      # issue 1145, can't reproduce
-    # .word 0x006a200f     # issue 1145, can't reproduce
-    # .word 0x08f05013      # unzip issue 1146, reproducible
-    #.word 0x08fd9e13    # zip issue 1146, reproducible
-    #.word 0x09394533    # pack issue 1148 reproducible
-    #### *** also look at exclusions in illegalinstrtests.py, remove those possible 
-    #### *** and fix RV32I imperas.ic to flag unimplemented ShangMi crypto
+    #### ***  fix RV32I imperas.ic to flag unimplemented ShangMi crypto
 
 /////////////////////////////////
 // cp_reserved
