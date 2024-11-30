@@ -1,3 +1,0 @@
-    cp_uimm_roriw : coverpoint unsigned'(ins.current.imm[4:0])  iff (ins.trap == 0 )  { 
-        //uimm[4:0] value assignment 
-    }

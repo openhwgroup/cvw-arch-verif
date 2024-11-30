@@ -54,10 +54,7 @@ def unsignedImm5(imm):
 
 def ibtype_unsignedImm(xlen, imm):
   if test == "roriw": xlen = 32
-  if (xlen == 32):
-    imm = imm % pow(2, 5)
-  elif (xlen == 64):
-    imm = imm % pow(2, 6)
+  imm = imm % xlen
   return str(imm)
 
 def SextImm6(imm):
