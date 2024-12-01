@@ -27,14 +27,7 @@ main:
     li t0,0x4000
     csrs mstatus, t0
 
-// ImperasDV Mismatches from open issues
-    # .word 0x0053200f      # issue 1145, can't reproduce
-    # .word 0x006a200f     # issue 1145, can't reproduce
-    # .word 0x08f05013      # unzip issue 1146, reproducible
-    #.word 0x08fd9e13    # zip issue 1146, reproducible
-    #.word 0x09394533    # pack issue 1148 reproducible
-    #### *** also look at exclusions in illegalinstrtests.py, remove those possible 
-    #### *** and fix RV32I imperas.ic to flag unimplemented ShangMi crypto
+    #### ***  fix RV32I imperas.ic to flag unimplemented ShangMi crypto
 
 /////////////////////////////////
 // cp_reserved
@@ -49,6 +42,30 @@ main:
 /////////////////////////////////
  
     #include "ExceptionInstr-Tests.h"
+
+// Test AMO instructions that would be unhappy if accessing random uninitialized memory
+    li x1, 0x80000000 # safe place to access; might need to be parameterized if physical memory begins at a different cp_load_address_misaligned
+
+    // exercise every legal flavor of amo.w/d with rs1 = x1
+
+     .word 0b00000101101100001010101010101111 
+     .word 0b00000011110000001011101010101111 
+     .word 0b00001110011000001010111110101111 
+     .word 0b00001000000100001011001000101111 
+     .word 0b00100010101100001010110110101111 
+     .word 0b00100011111000001011001110101111 
+     .word 0b01000110101000001010100010101111 
+     .word 0b01000110011000001011110010101111 
+     .word 0b01100111111000001010111100101111 
+     .word 0b01100000110100001011001010101111 
+     .word 0b10000100101100001010111010101111 
+     .word 0b10000101000000001011101010101111 
+     .word 0b10100000110100001010100000101111 
+     .word 0b10100111010000001011100000101111 
+     .word 0b11000100110100001010001000101111 
+     .word 0b11000110001000001011010100101111 
+     .word 0b11100110101100001010000010101111 
+     .word 0b11100110011000001011011100101111 
  
 // Restore trap handler before returning
 
