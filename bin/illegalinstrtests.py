@@ -77,9 +77,7 @@ gen("cp_fload",     "RRRRRRRRRRRRRRRRREEERRRRR0000111")
 gen("cp_fence_cbo", "RRRRRRRRRRRRRRRRREEERRRRR0001111")
 gen("cp_cbo_immediate", "EEEEEEEEEEEE00000010000000001111") # tie rs1 = 0 to avoid overwriting program on cbo.zero
 gen("cp_cbo_rd",        "00000000000RRRRRR010EEEEE0001111")
-gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011", 32, 
-                    ["00010000100XXXXXX001XXXXX0010011" ]) # Exclude sm3p0 and sm3p1 until disabled in imperas.ic
-                    
+gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011")        
 gen("cp_IWtype",        "RRRRRRRRRRRRRRRRREEERRRRR0011011")
 gen("cp_IWshift",       "EEEEEEERRRRRRRRRRE01RRRRR0011011")
 gen("cp_store",         "RRRRRRRRRRRR00000EEERRRRR0100011") # use rs1 = 0 for stores to avoid overwriting program
@@ -98,8 +96,7 @@ gen("cp_atomic_funct7", "EEEEERRRRRRR0000001ERRRRR0101111", 32, # use rs1 = 0 fo
                             "11100XXXXXXXXXXXX01XXXXXX0101111"  # exclude amomaxu to avoid stores to radom locations
                         ])
 gen("cp_lrsc",          "00010RREEEEE0000001ERRRRR0101111")
-gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011", 32,
-                        ["XX110X0XXXXXXXXXX000XXXXX0110011"]) # Exclude sm4ks and sm4ed until disabled in imperas.ic
+gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011") 
 gen("cp_rwtype",        "EEEEEEERRRRRRRRRREEERRRRR0111011")
 gen("cp_ftype",         "EEEEERRRRRRRRRRRREEERRRRR1010011")
 gen("cp_fsqrt",         "0101100EEEEERRRRRRRRRRRRR1010011") 
