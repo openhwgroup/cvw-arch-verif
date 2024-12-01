@@ -85,15 +85,15 @@ gen("cp_fstore",        "RRRRRRRRRRRR00000EEERRRRR0100111") # use rs1 = 0 for st
 gen("cp_atomic_funct3", "RRRRRRRRRRRR00000EEERRRRR0101111") # use rs1 = 0 for atomics to avoid overwriting program
 gen("cp_atomic_funct7", "EEEEERRRRRRR0000001ERRRRR0101111", 32, # use rs1 = 0 for atomics to avoid overwriting program
                         [
-                            "00001XXXXXXXXXXXX01XXXXXX0101111", # exclude amoswap to avoid stores to radom locations
-                            "00000XXXXXXXXXXXX01XXXXXX0101111", # exclude amoadd to avoid stores to radom locations
-                            "00100XXXXXXXXXXXX01XXXXXX0101111", # exclude amoxor to avoid stores to radom locations
-                            "01100XXXXXXXXXXXX01XXXXXX0101111", # exclude amoand to avoid stores to radom locations
-                            "01000XXXXXXXXXXXX01XXXXXX0101111", # exclude amoor to avoid stores to radom locations
-                            "10000XXXXXXXXXXXX01XXXXXX0101111", # exclude amomin to avoid stores to radom locations
-                            "10100XXXXXXXXXXXX01XXXXXX0101111", # exclude amomax to avoid stores to radom locations
-                            "11000XXXXXXXXXXXX01XXXXXX0101111", # exclude amominu to avoid stores to radom locations
-                            "11100XXXXXXXXXXXX01XXXXXX0101111"  # exclude amomaxu to avoid stores to radom locations
+                            "00001XXXXXXXXXXXX01XXXXXX0101111", # exclude amoswap to avoid stores to random locations
+                            "00000XXXXXXXXXXXX01XXXXXX0101111", # exclude amoadd to avoid stores to random locations
+                            "00100XXXXXXXXXXXX01XXXXXX0101111", # exclude amoxor to avoid stores to random locations
+                            "01100XXXXXXXXXXXX01XXXXXX0101111", # exclude amoand to avoid stores to random locations
+                            "01000XXXXXXXXXXXX01XXXXXX0101111", # exclude amoor to avoid stores to random locations
+                            "10000XXXXXXXXXXXX01XXXXXX0101111", # exclude amomin to avoid stores to random locations
+                            "10100XXXXXXXXXXXX01XXXXXX0101111", # exclude amomax to avoid stores to random locations
+                            "11000XXXXXXXXXXXX01XXXXXX0101111", # exclude amominu to avoid stores to random locations
+                            "11100XXXXXXXXXXXX01XXXXXX0101111"  # exclude amomaxu to avoid stores to random locations
                         ])
 gen("cp_lrsc",          "00010RREEEEE0000001ERRRRR0101111")
 gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011") 
