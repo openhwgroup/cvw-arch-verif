@@ -1320,6 +1320,8 @@ def write_tests(coverpoints, test, xlen):
       pass
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
+    elif (coverpoint == "cp_imm_sign_clui"):
+      pass
     elif (coverpoint == "cp_imm_ones_zeros_jal"):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
