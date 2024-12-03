@@ -4,7 +4,7 @@ function void rv32zcd_sample(int hart, int issue);
     if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
         $display("Examining compressed instruction rv32zcd_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
         case (traceDataQ[hart][issue][0].inst_name)
-            "c.fld" :     begin
+            "c.fld"     :     begin
                 ins = new(hart, issue, traceDataQ);
                 ins.add_fd(0); 
                 ins.add_imm(1);
@@ -12,7 +12,7 @@ function void rv32zcd_sample(int hart, int issue);
                 ins.add_mem_address(); 
                 c_fld_cg.sample(ins); 
             end
-            "c.fldsp" :     begin 
+            "c.fldsp"     :     begin 
                 ins = new(hart, issue, traceDataQ);
                 ins.add_fd(0);           
                 ins.add_imm(1);          
@@ -20,7 +20,7 @@ function void rv32zcd_sample(int hart, int issue);
                 ins.add_mem_address();   
                 c_fldsp_cg.sample(ins);                
             end
-            "c.fsd" :     begin 
+            "c.fsd"     :     begin 
                 ins = new(hart, issue, traceDataQ);
                 ins.add_fs2(0);
                 ins.add_imm(1); 
@@ -28,7 +28,7 @@ function void rv32zcd_sample(int hart, int issue);
                 ins.add_mem_address();
                 c_fsd_cg.sample(ins); 
             end
-            "c.fsdsp" :     begin 
+            "c.fsdsp"     :     begin 
                 ins = new(hart, issue, traceDataQ);
                 ins.add_fs2(0);
                 ins.add_imm(1); 

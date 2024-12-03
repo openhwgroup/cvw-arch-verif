@@ -63,11 +63,9 @@ def unsignedImm5(imm):
       imm = 8
   return str(imm)
 
-def Zbs_unsignedImm(xlen, imm):
-  if (xlen == 32):
-    imm = imm % pow(2, 5)
-  elif (xlen == 64):
-    imm = imm % pow(2, 6)
+def ibtype_unsignedImm(xlen, imm):
+  if test == "roriw": xlen = 32
+  imm = imm % xlen
   return str(imm)
 
 def SextImm6(imm):
@@ -1385,6 +1383,8 @@ def write_tests(coverpoints, test, xlen):
       pass
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
+    elif (coverpoint == "cp_imm_sign_clui"):
+      pass
     elif (coverpoint == "cp_imm_ones_zeros_jal"):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
