@@ -79,7 +79,6 @@ for config in configs:
             previous_line = None  # To keep track of the previous line
 
             for line in infile:
-
                 if "Metric" in line and metric_start_pos is None:
                     # Find the index of the start of "Metric" in this line
                     metric_match = re.search(r'\bMetric\b', line)

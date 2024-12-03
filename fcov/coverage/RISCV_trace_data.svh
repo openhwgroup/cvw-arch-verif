@@ -102,6 +102,5 @@ class riscvTraceData
         logic [(PPN_BITS-1):0]           PPN_d;
 
         logic [1:0] PageType_i, PageType_d;
-
     endclass
     
