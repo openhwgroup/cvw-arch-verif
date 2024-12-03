@@ -70,7 +70,7 @@ for config in configs:
         os.system(cmd)
         
         # Use grep to get the lines that match the criteria
-        cmd = "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' " +reportdir+ "/report_" + config + ".txt > " + reportdir + "/temp_summary_" + config + ".txt"
+        cmd = "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' " + reportdir + "/report_" + config + ".txt | grep -v 'Covergroup instance' > " + reportdir + "/temp_summary_" + config + ".txt"
         os.system(cmd)
 
         # Process each line and replace the specified path pattern

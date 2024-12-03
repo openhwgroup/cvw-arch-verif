@@ -84,13 +84,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
-    # special cases for fmv instructions being interpreted with depreciated names
-    # we need to look for the old name for asm_count
-    fmv_instr_alias = {"fmv.x.w":"fmv.x.s", "fmv.w.x":"fmv.s.x"}
-    if (name == "cp_asm_count" and instr in fmv_instr_alias):
-            template = template.replace("INSTR", fmv_instr_alias[instr])
-    else:
-        template = template.replace("INSTR", instr)
+    template = template.replace("INSTR", instr)
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
@@ -131,10 +125,10 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     # if name.startswith('sample_') and instr == 'sltiu': 
     #     template += template.replace(instr, 'seqz', 1).replace("add_imm","add_imm_one",1)    
     # instruction fmv.x.w interpreted by imperas as fmv.x.s (deprecaited names)
-    if name.startswith('sample_') and instr == 'fmv.x.w':
-        template += template.replace(instr, 'fmv.x.s',1)
-    if name.startswith('sample_') and instr == 'fmv.w.x':
-        template += template.replace(instr, 'fmv.s.x',1)                
+    # if name.startswith('sample_') and instr == 'fmv.x.w':
+    #     template += template.replace(instr, 'fmv.x.s',1)
+    # if name.startswith('sample_') and instr == 'fmv.w.x':
+    #     template += template.replace(instr, 'fmv.s.x',1)                
     return template
 
      
@@ -183,7 +177,9 @@ def writeCovergroups(testPlans, covergroupTemplates):
     keys = list(testPlans.keys())
     keys.sort()
     #List of priv cover groups
-    priv_defines = ["RV32VM", "RV32VM_PMP", "RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", "ZicsrZicntrM", "ZicsrF", "ZicsrZicntrS", "ZicsrZicntrU"]
+    priv_defines = ["RV32VM", "RV32VM_PMP", "RV64VM", "RV64VM_PMP", "RV64Zicbom", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU", 
+                    "ZicntrM", "ZicsrF", "ZicntrS", "ZicntrU", "EndianU", "EndianS", "EndianM", "ExceptionsM", "ExceptionsS", "ExceptionsU",
+                    "ExceptionsZc", "ExceptionsF", "ExceptionsZalrsc", "ExceptionsZicboU", "ExceptionsZaamo", "ExceptionsZicboS"]
     file = "coverage/RISCV_coverage_base_init.svh"
     with open(os.path.join(covergroupDir,file), "w") as f: 
         for arch in keys:

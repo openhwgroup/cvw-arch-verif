@@ -584,6 +584,14 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
+<<<<<<< HEAD
+=======
+    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
+        bins load_page_fault = {64'd13};
+        bins ins_page_fault  = {64'd12};
+        bins store_amo_page_fault = {64'd15};
+    }
+>>>>>>> b37edba7f625cc3bc2b161d03bc1cd90df0fa2e3
     Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};

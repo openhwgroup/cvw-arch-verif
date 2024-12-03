@@ -47,9 +47,14 @@ def unsignedImm20(imm):
 def unsignedImm5(imm):
   imm = imm % pow(2, 5)
   # zero immediates are prohibited
-  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"]:
+  if test not in ["c.lw","c.sw","c.ld","c.sd","c.lwsp","c.ldsp","c.flw","c.fsw","c.fld","c.fsd"] + csritype:
     if imm == 0:
       imm = 8
+  return str(imm)
+
+def ibtype_unsignedImm(xlen, imm):
+  if test == "roriw": xlen = 32
+  imm = imm % xlen
   return str(imm)
 
 def SextImm6(imm):
@@ -161,6 +166,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n" 
+  elif (test in rbtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"
   elif (test in frtype):
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -184,6 +192,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} f{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr)
+  elif (test in csrtype):
+      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+      lines = lines + f"{test} x{rd}, mscratch, x{rs1} # perform operation\n"
+  elif (test in csritype):
+      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+      lines = lines + f"{test} x{rd}, mscratch, {unsignedImm5(immval)} # perform operation\n"
   elif (test in citype):
     if(test == "c.lui" and rd ==2): # rd ==2 is illegal operand 
       rd = 9 # change to arbitrary other register
@@ -284,6 +298,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in itype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval) + " # perform operation\n"
+  elif (test in ibtype):
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n"
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -417,8 +434,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
     if (test == "c.fswsp" or test == "c.fsdsp"):
+      mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-      lines = lines + "fmv.s.x" + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
       lines = lines + "la sp" + ", scratch" + " # base address \n"
       lines = lines + test + " f" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
     else:
@@ -551,32 +569,130 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
 
-def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None):
+def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1list, rs2list, rs3list, commentlist):
+  
+    #TODO: add input prechecks here later
+  
+  lines = ""
+
+  for index, test in enumerate(testlist):
+    reg0 = regconfiglist[index][0]
+    reg1 = regconfiglist[index][1]
+    reg2 = regconfiglist[index][2]
+    reg3 = regconfiglist[index][3]
+
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + ", " + reg3 + str(rs3list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in rd_rs1_format):
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in flitype):
+      lines = lines + f"{test} f{rdlist[index]}, {flivals[rs1list[index]]} " + " # " + commentlist[index] + "\n"
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format): 
+      lines = lines + test + " " + reg0 + str(rdlist[index]) + ", " + reg1 + str(rs1list[index]) + ", " + reg2 + str(rs2list[index]) + " # " + commentlist[index] + "\n"
+    elif (test in csrtype + csritype):
+      lines = lines + f"{test} x{rdlist[index]}, mscratch, {(rs1list[index] if test in csrtype else 0x1)}"
+    else:
+      print("instruction " + test + "not implemented for writeSingleInstructionSequence")
+  return lines
+
+def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig="xxxx", rs3a=None, rs3b=None, haz_type='waw'):
   # consecutive R-type instructions to trigger hazards                           ^~~~~~~~~ the types of the registers {rd, rs1, rs2, rs3} (x for int, f for float)
+  test2 = test
   reg0 = regconfig[0]
   reg1 = regconfig[1]
   reg2 = regconfig[2]
   reg3 = regconfig[3]
+  reg0_2 = reg0
+  reg1_2 = reg1
+  reg2_2 = reg2
+  reg3_2 = reg3
 
   lines = "\n# Testcase " + str(desc) + "\n"
-  if (test in rd_rs1_rs2_rs3_format): 
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
-  elif (test in rd_rs1_format):
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
-  elif (test in flitype):
-    lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
-    lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
-    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
-  elif (test in rd_rs1_rs2_format):
-    lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
-    lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
-  else:
-    # TODO: need to make new cases for instruction formats not accounted for above
-    print(f"Warning: Hazard tests not yet implemented for {test}")
-    pass
-  f.write(lines)
+
+  match haz_type:
+    case 'nohaz':
+      test2 = test
+      reg0_2 = reg0
+      reg1_2 = reg1
+      reg2_2 = reg2
+      reg3_2 = reg3
+    case 'waw':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'war':
+      if reg0 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else: 
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+    case 'raw':
+      if reg1 == 'f':
+        test2 = 'fmul.s'
+        reg0_2 = 'f'
+        reg1_2 = 'f'
+        reg2_2 = 'f'
+      else:
+        test2 = 'add'
+        reg0_2 = 'x'
+        reg1_2 = 'x'
+        reg2_2 = 'x'
+        
+  if test in floattypes:
+    lines = lines + writeSingleInstructionSequence(desc, [test2, test], [reg0_2+reg1_2+reg2_2+reg3_2, reg0+reg1+reg2+reg3], [rdb, rda], [rs1b, rs1a], [rs2b, rs2a], [rs3b, rs3a], ["perform first operation", "perform second (triggering) operation"])
+    '''
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform second (triggering) operation\n" 
+    elif (test in rd_rs1_format):
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform second (triggering) operation\n"
+    elif (test in flitype):
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + f"{test} f{rda}, {flivals[rs1a]} " + " # perform second (triggering) operation\n" 
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format): 
+      lines = lines + test2 + " " + reg0_2 + str(rdb) + ", " + reg1_2 + str(rs1b) + ", " + reg2_2 + str(rs2b) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform second (triggering) operation\n" 
+    '''
+    if writeSingleInstructionSequence == None:
+      # TODO: need to make new cases for instruction formats not accounted for above
+      print(f"Warning: Hazard tests not yet implemented for {test}")
+      pass
+    f.write(lines)
+    
+  else: 
+    if (test in rd_rs1_rs2_rs3_format): 
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + ", " + reg3 + str(rs3a) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + ", " + reg3 + str(rs3b) + " # perform second operation\n" 
+    elif (test in rd_rs1_format):
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) +  " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) +  " # perform second operation\n"
+    elif (test in flitype):
+      lines = lines + f"{test} f{rda}, {flivals[rs1a]} # perform first operation\n"
+      lines = lines + f"{test} f{rdb}, {flivals[rs1a]} # perform first operation\n"
+      #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    elif (test in rd_rs1_rs2_format):
+      lines = lines + test + " " + reg0 + str(rda) + ", " + reg1 + str(rs1a) + ", " + reg2 + str(rs2a) + " # perform first operation\n" 
+      lines = lines + test + " " + reg0 + str(rdb) + ", " + reg1 + str(rs1b) + ", " + reg2 + str(rs2b) + " # perform second operation\n" 
+    else:
+      # TODO: need to make new cases for instruction formats not accounted for above
+      print(f"Warning: Hazard tests not yet implemented for {test}")
+      pass
+    f.write(lines)
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
     if rs1 is None: 
@@ -645,6 +761,12 @@ def make_rs2(test, xlen, rng = range(32)):
       rs1 = randint(1, 31)
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
+
+def make_uimm(test, xlen):
+  for r in range(xlen):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
+    desc = "cp_uimm (Test bit = " + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
 
 def make_rd_rs1(test, xlen, rng):
   for r in rng:
@@ -778,24 +900,29 @@ def make_rs1_rs2_eqval(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs1val, immval, rdval, test, xlen)
 
 def make_cp_gpr_hazard(test, xlen):
-  for haz in ["raw", "waw", "war"]:
+  for haz in ["nohaz", "raw", "waw", "war"]:
     for src in range(2):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
       # set up hazard
-      if (haz == "raw"):
+      if (haz == "nohaz"):
+        bregs = [rs1b, rs2b, rs3b, rdb]
+        while (rs1a in bregs) or (rs2a in bregs) or (rs3a in bregs) or (rda in bregs):
+          [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(rs3=True)
+          bregs = [rs1b, rs2b, rs3b, rdb]
+      if (haz == "war"):
         if (src):
           rs2b = rda
         else:
           rs1b = rda
       elif (haz == "waw"):  
         rdb = rda
-      elif (haz == "war"):
+      elif (haz == "raw"):
         if (src):
           rdb = rs2a
         else:
           rdb = rs1a
-      desc = "cmp_gpr_hazard " + haz +  " test"
+      desc = "cp_gpr/fpr_hazard " + haz + " test"
       regconfig = 'xxxx' # default to all int registers
       if (test in regconfig_ffff):
         regconfig = 'ffff'
@@ -803,7 +930,7 @@ def make_cp_gpr_hazard(test, xlen):
         regconfig = 'xfff'
       if (test in regconfig_fxxx):
         regconfig = 'fxxx'
-      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b)
+      writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, regconfig=regconfig, rs3a=rs3a, rs3b=rs3b, haz_type=haz)
 
 def make_rs1_sign(test, xlen):
    for v in [1, -1]:
@@ -856,11 +983,6 @@ def make_jalr_imm_ones_zeros(test, xlen):
     imm_value = 2**i # immediate value from 2^0 to 2^11        
     lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
     lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
-    # if (imm_value >= 2047):
-    #   lines = lines + "addi x21, x21, 2047\n"
-    #   new_imm = imm_value - 2047
-    #   lines = lines + "addi x21, x21, " + signedImm12(new_imm, immOffset=True)  + "\n"
-    # else:
     lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
 
     lines = lines + "jalr x20, x21, "+ signedImm12(imm_value, immOffset=True) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
@@ -1013,7 +1135,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
-      desc = f"Impropper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+      desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
+    f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
@@ -1029,6 +1152,12 @@ def make_fs3_corners(test, xlen, fcorners):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
+
+def make_imm5_corners(test, xlen):
+  for v in range(32):
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
@@ -1087,9 +1216,11 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs1_nx0"):
       make_rs1(test, xlen, range(1,32))
     elif (coverpoint == "cp_rs2"):
-      make_rs2(test, xlen, range(32)) 
+      make_rs2(test, xlen, range(32))
     elif (coverpoint == "cp_rs2_nx0"):
       make_rs2(test, xlen, range(1,32))
+    elif (coverpoint == "cp_uimm"):
+      make_uimm(test, xlen) 
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
     elif (coverpoint == "cmp_rd_rs1_c"):
@@ -1140,9 +1271,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_32bit"):
       make_rd_corners(test, xlen, corners_32bits)
     elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bits)            
-    elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen)
+      make_rd_corners_lui(test, xlen, corners_20bits)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):
@@ -1187,8 +1316,12 @@ def write_tests(coverpoints, test, xlen):
       pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_rd_toggle_jal"):
       pass #TODO toggle not needed and seems to be covered by other things
+    elif (coverpoint == "cp_fclass"):
+      pass
     elif (coverpoint == "cp_imm_sign"):
       make_imm_zero(test, xlen)
+    elif (coverpoint == "cp_imm_sign_clui"):
+      pass
     elif (coverpoint == "cp_imm_ones_zeros_jal"):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"): 
@@ -1293,6 +1426,8 @@ def write_tests(coverpoints, test, xlen):
       NaNBox_tests = "S"
       make_fs3_corners(test, xlen, badNB_corners_S_H)
       NaNBox_tests = False
+    elif (coverpoint == "cp_imm5_corners"):
+      make_imm5_corners(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
       
@@ -1334,10 +1469,13 @@ if __name__ == '__main__':
           "rolw", "rorw",
           "clmul", "clmulh", "clmulr",
           "bclr", "binv", "bset", "bext"]
+  rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8",
+          "clzw", "cpopw", "ctzw"]
   loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
   shiftitype = ["slli", "srli", "srai", "slliw", "srliw", "sraiw"]
   shiftiwtype = ["slliw", "srliw", "sraiw"]
   itype = ["addi", "slti", "sltiu", "xori", "ori", "andi", "addiw"]
+  ibtype=["slli.uw","bclri","binvi","bseti","bexti","rori", "roriw"]
   stype = ["sb", "sh", "sw", "sd"]
   btype = ["beq", "bne", "blt", "bge", "bltu", "bgeu"]
   jtype = ["jal"]
@@ -1349,7 +1487,7 @@ if __name__ == '__main__':
   fstype = ["fsw", 
             "fsh",
             "fsd"]
-  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.s", "fcvt.l.s", "fcvt.lu.s", # fmv.x.w aliased to fmv.x.s by imperas 
+  F2Xtype = ["fcvt.w.s", "fcvt.wu.s", "fmv.x.w", "fcvt.l.s", "fcvt.lu.s",
              "fcvt.w.h", "fcvt.wu.h", "fmv.x.h", "fcvt.l.h", "fcvt.lu.h",
              "fcvt.w.d", "fcvt.wu.d", "fmv.x.d", "fcvt.l.d", "fcvt.lu.d", "fmvh.x.d", "fcvtmod.w.d"]
   fr4type = ["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s", 
@@ -1358,16 +1496,16 @@ if __name__ == '__main__':
   frtype = ["fadd.s", "fsub.s", "fmul.s", "fdiv.s", "fsgnj.s", "fsgnjn.s", "fsgnjx.s", "fmax.s", "fmin.s", "fminm.s", "fmaxm.s",
             "fadd.h", "fsub.h", "fmul.h", "fdiv.h", "fsgnj.h", "fsgnjn.h", "fsgnjx.h", "fmax.h", "fmin.h", "fminm.h", "fmaxm.h",
             "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsgnj.d", "fsgnjn.d", "fsgnjx.d", "fmax.d", "fmin.d", "fminm.d", "fmaxm.d",]
-  fitype = ["fsqrt.s", "fround.s", # "froundnx.s",  TODO: Once again restore after Wally bug fix
-            "fsqrt.h", "fround.h", # "froundnx.h",
-            "fsqrt.d", "fround.d", # "froundnx.d",
+  fitype = ["fsqrt.s", "fround.s", "froundnx.s",
+            "fsqrt.h", "fround.h", "froundnx.h",
+            "fsqrt.d", "fround.d", "froundnx.d",
             "fcvt.s.h", "fcvt.h.s",
             "fcvt.s.d", "fcvt.d.s", 
             "fcvt.d.h", "fcvt.h.d"]
   fixtype = ["fclass.s", 
              "fclass.h",
              "fclass.d"]
-  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.s.x", "fcvt.s.l", "fcvt.s.lu", 
+  X2Ftype = ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x", "fcvt.s.l", "fcvt.s.lu", 
              "fcvt.h.w", "fcvt.h.wu", "fmv.h.x", "fcvt.h.l", "fcvt.h.lu",
              "fcvt.d.w", "fcvt.d.wu", "fmv.d.x", "fcvt.d.l", "fcvt.d.lu"]
   PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
@@ -1393,7 +1531,9 @@ if __name__ == '__main__':
   cutype = ["c.not","c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]
   zcftype = ["c.flw", "c.fsw","c.flwsp","c.fswsp"] # Zcf instructions
   zcdtype = ["c.fld", "c.fsd","c.fsdsp","c.fldsp"]
-  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases 
+  flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases
+  csrtype = ["csrrw", "csrrs", "csrrc"]
+  csritype = ["csrrwi", "csrrsi", "csrrci"]
   floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
   # instructions with all float args
   regconfig_ffff = frtype + fr4type + fitype + flitype
@@ -1403,11 +1543,11 @@ if __name__ == '__main__':
   regconfig_fxxx = X2Ftype + PX2Ftype
 
   # for writeHazardVectors
-  rd_rs1_rs2_format = rtype + frtype + fcomptype
+  rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
   rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
   rd_rs1_rs2_rs3_format = fr4type
   rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
-  rd_imm_format = citype + cstype + ciwtype + cbptype 
+  rd_imm_format = citype + cstype + ciwtype + cbptype
 
   # map register encodings to literal values for fli.*
   flivals = { 0: -1.0,
