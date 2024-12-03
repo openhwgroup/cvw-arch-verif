@@ -435,6 +435,8 @@ class RISCV_instruction
         current.PTE_d         = $root.testbench.wallyTracer.PTE_dW;
         current.PPN_i         = $root.testbench.wallyTracer.PPN_iW;
         current.PPN_d         = $root.testbench.wallyTracer.PPN_dW; 
+        current.PageType_i    = $root.testbench.wallyTracer.PageType_iW;
+        current.PageType_d    = $root.testbench.wallyTracer.PageType_dW; 
     endfunction
 
     virtual function void add_mem_offset(int offset);

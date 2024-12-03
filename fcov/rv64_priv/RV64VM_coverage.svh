@@ -122,7 +122,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    Mcause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1) {
+    Mcause: coverpoint ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins illegal_ins = {64'd2};
     }
     ins: coverpoint ins.current.insn {
@@ -137,7 +137,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
     }
 
     mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
-    bins set = {1};
+        bins set = {1};
     }
     mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
         bins U_mode = {2'b00};
@@ -584,14 +584,6 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-<<<<<<< HEAD
-=======
-    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
-        bins load_page_fault = {64'd13};
-        bins ins_page_fault  = {64'd12};
-        bins store_amo_page_fault = {64'd15};
-    }
->>>>>>> b37edba7f625cc3bc2b161d03bc1cd90df0fa2e3
     Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
