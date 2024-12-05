@@ -59,7 +59,7 @@ covergroup exceptionsZicboS_cg with function sample(ins_exceptionszicbos_t ins);
 
     // main coverpoints
     cp_cbie:  cross cbo_inval,      menvcfg_cbie,  senvcfg_cbie,  priv_modes;
-    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, menvcfg_cbcfe, priv_modes;
+    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, senvcfg_cbcfe, priv_modes;
     cp_cbze:  cross cbo_zero,       menvcfg_cbze,  senvcfg_cbze,  priv_modes;
 
 endgroup
