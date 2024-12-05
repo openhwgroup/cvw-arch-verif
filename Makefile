@@ -13,6 +13,7 @@ PRIVDIR32  := $(PRIVDIR)/rv32
 WORK       := work
 SRCEXT     := S
 OBJEXT     := elf
+VM_test    := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -88,11 +89,42 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Run tests while collecting functional coverage
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
+	#wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
 	#wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
 	#wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
+	
+	#VM tests
+	# wsim rv32gc ${VM_test}/mstatus_tvm_test.S/ref/ref.elf --fcov
+	# wsim rv32gc ${VM_test}/pmp_check_on_pa_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/pmp_check_on_pa_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/pmp_check_on_pte_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/pmp_check_on_pte_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/satp_access_tests.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_A_and_D_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_A_and_D_U_mode.S/ref/ref.elf --fcov 
+	wsim rv32gc ${VM_test}/vm_invalid_pte_S_mode.S/ref/ref.elf --fcov
+	wsim rv32gc ${VM_test}/vm_invalid_pte_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_misaligned_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_misaligned_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_mprv_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_mprv_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_mxr_S_mode.S/ref/ref.elf --fcov
+	# wsim rv32gc ${VM_test}/vm_mxr_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_nleaf_pte_level0_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_nleaf_pte_level0_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_pte_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_pte_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_rsw_pte_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_rsw_pte_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_rwx_pte_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_reserved_rwx_pte_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_sum_set_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_sum_unset_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_U_Bit_set_U_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_U_Bit_unset_S_mode.S/ref/ref.elf --fcov 
+	# wsim rv32gc ${VM_test}/vm_U_Bit_unset_U_mode.S/ref/ref.elf --fcov
 	$(MAKE) merge
 
 # Merge coverage files and generate report
