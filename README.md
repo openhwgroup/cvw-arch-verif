@@ -34,7 +34,7 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Zbs | | | B extension: single-bit operations |
 | Zca | | | Compressed instructions |
 | Zcb | | | Additional compressed instructions |
-| Zcf |x | | RV32 compressed single-precision fp |
+| Zcf |only | | RV32 compressed single-precision fp |
 | Zcd | | | Compressed double-precision fp |
 | Zbkb | | | Basic bit manipulation for crypto |
 | Zbkc | | | Carry free multiplication for crypto | 
@@ -62,13 +62,13 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Ss1p12 | | | Implicit in Zicsr |
 | Sstvala | | | stval implicity tested through exceptions |
 | Sscounterenw | | | Writable scounteren tested through Zicntr |
-| Ssu64xl | | | sstatus.UXL tested through Zicsr |
+| Ssu64xl | |only| sstatus.UXL tested through Zicsr |
 | **Untested** |
 | PMA | | | Implementation dependent, not architectural |
 | Ziccif | | | Main memory cachability and coherence part of PMA |
 | Ziccrse | | | RsrvEventual part of PMA |
 | Ziccamoa | | | AMOArithmetic part of PMA |
-| Svbpmt | | x | Uncachable regions not testable architecturally |
+| Svbpmt | | only | Uncachable regions not testable architecturally |
 | Za64rs | | | Reservation set size not tested |
 | Zi64b | | | Cache block size not tested architecturally |
 | Zicbop | | | Cache block prefetch architecturally invisible |
@@ -77,13 +77,12 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Ssccptr | | | Hardware page table reads part of PMA |
 
 Notes:
-As of 12/7/24, atomic, CBO, Zifencei, crypto, Sscofpmf not implemented and privileged tests are in progress
-V, hypervisor (Sha), debug, Zce, Zks are not supported
-A testplan such as ZcbM requires both Zcb and M extensions for c.mul
-Exceptions also tests that illegal instruction behavior matches reference model for
+* As of 12/7/24, atomic, CBO, Zifencei, crypto, Sscofpmf not implemented and privileged tests are in progress
+* V, hypervisor (Sha), debug, Zce, Zks are not supported
+* A testplan such as ZcbM requires both Zcb and M extensions for c.mul
+* Exceptions also tests that illegal instruction behavior matches reference model for
 all categories of illegal instructions.
-
-PMA is implementation-defined and cannot be tested explicitly.  The user must 
+* PMA is implementation-defined and cannot be tested explicitly.  The user must 
 define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
 unless memory is implemented at that address); the Exceptions tests do limited PMA
 testing by ensuring this address thorows an AccessFault.  
