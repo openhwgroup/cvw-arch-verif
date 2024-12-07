@@ -10,6 +10,7 @@
 
 import os
 import re
+import sys
 
 def insertTemplate(out, template):
 	with open(templatedir+"/"+template) as f:
@@ -39,18 +40,13 @@ def combiineDir(testdir):
 				insertTests(out, file)
 		insertTemplate(out, "testgen_footer.S")
 
-WALLY = os.environ.get('WALLY')
-if not WALLY:
-	print("ERROR: WALLY environment variable not set")
-	exit(1)
-testdir = f"{WALLY}/addins/cvw-arch-verif/tests/rv32/I"
-testbasedir = f"{WALLY}/addins/cvw-arch-verif/tests"
+ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
 
-templatedir = 	f"{WALLY}/addins/cvw-arch-verif/templates"
+testbasedir = f"{ARCH_VERIF}/tests"
+templatedir = 	f"{ARCH_VERIF}/templates"
 
 # Find all the configurations in the fcov_ucdb directory
 for arch in ["rv32", "rv64"]:
-	#for testdir in [x[0] for x in os.walk(testbasedir+"/"+arch)]:
 	for ext in next(os.walk(testbasedir+"/"+arch))[1]:
 		testdir = f"{testbasedir}/{arch}/{ext}"
 		combiineDir(testdir)
