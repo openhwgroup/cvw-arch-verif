@@ -11,6 +11,7 @@
 import os
 import csv
 import re
+import sys
 
 ##################################
 # Functions
@@ -205,7 +206,7 @@ def writeCovergroups(testPlans, covergroupTemplates):
 ##################################
 
 if __name__ == '__main__':
-    ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
+    ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
     missingTemplates = list() # keep list of missing templates to only print once
     testPlans = readTestplans()
     covergroupTemplates = readCovergroupTemplates()

@@ -40,7 +40,7 @@ def combiineDir(testdir):
 				insertTests(out, file)
 		insertTemplate(out, "testgen_footer.S")
 
-ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
 testbasedir = f"{ARCH_VERIF}/tests"
 templatedir = 	f"{ARCH_VERIF}/templates"

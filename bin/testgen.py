@@ -17,6 +17,7 @@ from random import seed
 from random import getrandbits
 import os
 import re
+import sys
 
 ##################################
 # functions
@@ -1519,7 +1520,7 @@ def getcovergroups(coverdefdir, coverfiles):
 ##################################
 
 # change these to suite your tests
-ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
         "addw", "subw", "sllw", "srlw", "sraw",
         "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",

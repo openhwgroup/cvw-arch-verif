@@ -10,6 +10,7 @@
 
 import os
 import re
+import sys
 
 def remove_duplicates_after_second_header(file_path):
     unique_lines_before_header = set()  # Set to store unique lines before the second header
@@ -41,7 +42,7 @@ def remove_duplicates_after_second_header(file_path):
                 unique_lines_before_header.add(stripped_line)  # Add line to the set
 
 WALLY = os.environ.get('WALLY')
-ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 if not WALLY:
 	print("ERROR: WALLY environment variable not set")
 	exit(1)

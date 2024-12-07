@@ -78,7 +78,7 @@ mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mco
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
 uregs = ["fflags", "frm", "fcsr"]
 
-ARCH_VERIF = os.path.abspath(os.path.join(sys.argv[0], ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
 pathname = f"{ARCH_VERIF}/tests/priv/Zicsr-CSR-Tests.h"
 csrtests(pathname, False) # make tests for M mode
