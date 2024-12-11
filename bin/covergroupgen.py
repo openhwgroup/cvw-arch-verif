@@ -73,10 +73,11 @@ def readCovergroupTemplates():
 def customizeTemplate(covergroupTemplates, name, arch, instr):
     # Select customized template for RV32/RV64 if necessary, else use the generic one
     #print("Calling customizeTemplate with name = " + name + " arch = " + arch + " instr = " + instr)
-    prefixName = re.search("(RV..)", arch).group(1) + "_" + name
-    if (prefixName in covergroupTemplates):
-        template = covergroupTemplates[prefixName]
-    elif (name in covergroupTemplates):
+    #prefixName = re.search("(RV..)", arch).group(1) + "_" + name
+    #if (prefixName in covergroupTemplates):
+    #    template = covergroupTemplates[prefixName]
+#    elif (name in covergroupTemplates):
+    if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
         if (not (name in missingTemplates)):
@@ -137,9 +138,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
 # all instructions in each testplan
 
 def writeCovergroups(testPlans, covergroupTemplates):
-    covergroupDir = f'{ARCH_VERIF}/fcov'
+    covergroupDir = WALLY+'/addins/cvw-arch-verif/fcov'
     for arch, tp in testPlans.items():
-        subdir = re.search("(RV..)", arch).group(1).lower()
+        #subdir = re.search("(RV..)", arch).group(1).lower()
         #subdir = os.path.join(subdir, "coverage")
         os.system("mkdir -p " + os.path.join(covergroupDir, subdir))
         file = subdir + "/" + arch + "_coverage.svh"
