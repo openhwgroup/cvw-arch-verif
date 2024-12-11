@@ -10,7 +10,7 @@
 ##################################
 
 import random
-from random import randint 
+from random import randint
 from random import seed
 import os, sys
 from os import environ
@@ -36,7 +36,7 @@ def gen(comment, template, len = 32, exclusion = []):
             elif (template[i] == '1'):
                 instr[i] = '1'
         instrstr = "".join(instr)
-        
+
         anymatch = 0
         for exclude in exclusion:
             match = 1
@@ -54,11 +54,11 @@ def gen(comment, template, len = 32, exclusion = []):
             print("     ."+keyword+" 0b"+instrstr)
         else:
             print("#     ."+keyword+" 0b"+instrstr+" // excluded by "+str(exclusion))
-   
+
 # setup
 seed(0) # make tests reproducible
-WALLY = os.environ.get('WALLY')
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstr-Tests.h"
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+pathname = f"{ARCH_VERIF}/tests/priv/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011")
@@ -77,7 +77,7 @@ gen("cp_fload",     "RRRRRRRRRRRRRRRRREEERRRRR0000111")
 gen("cp_fence_cbo", "RRRRRRRRRRRRRRRRREEERRRRR0001111")
 gen("cp_cbo_immediate", "EEEEEEEEEEEE00000010000000001111") # tie rs1 = 0 to avoid overwriting program on cbo.zero
 gen("cp_cbo_rd",        "00000000000RRRRRR010EEEEE0001111")
-gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011")        
+gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011")
 gen("cp_IWtype",        "RRRRRRRRRRRRRRRRREEERRRRR0011011")
 gen("cp_IWshift",       "EEEEEEERRRRRRRRRRE01RRRRR0011011")
 gen("cp_store",         "RRRRRRRRRRRR00000EEERRRRR0100011") # use rs1 = 0 for stores to avoid overwriting program
@@ -96,10 +96,10 @@ gen("cp_atomic_funct7", "EEEEERRRRRRR0000001ERRRRR0101111", 32, # use rs1 = 0 fo
                             "11100XXXXXXXXXXXX01XXXXXX0101111"  # exclude amomaxu to avoid stores to random locations
                         ])
 gen("cp_lrsc",          "00010RREEEEE0000001ERRRRR0101111")
-gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011") 
+gen("cp_rtype",         "EEEEEEERRRRRRRRRREEERRRRR0110011")
 gen("cp_rwtype",        "EEEEEEERRRRRRRRRREEERRRRR0111011")
 gen("cp_ftype",         "EEEEERRRRRRRRRRRREEERRRRR1010011")
-gen("cp_fsqrt",         "0101100EEEEERRRRRRRRRRRRR1010011") 
+gen("cp_fsqrt",         "0101100EEEEERRRRRRRRRRRRR1010011")
 gen("cp_fclass",        "1110000EEEEERRRRR001RRRRR1010011")
 gen("cp_fcvtif",        "1100000EEE00RRRRR000RRRRR1010011")
 gen("cp_fcvtif_fmt",    "11000EE000EERRRRR000RRRRR1010011")
@@ -120,7 +120,7 @@ gen("cp_jalr1",         "RRRRRRRRRRRRRRRRR010RRRRR1100111")
 gen("cp_jalr2",         "RRRRRRRRRRRRRRRRR100RRRRR1100111")
 gen("cp_jalr3",         "RRRRRRRRRRRRRRRRR110RRRRR1100111")
 gen("cp_privileged_f3", "00000000000100000EEE000001110011")
-gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32, 
+gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,
     ["00X10000001000000000000001110011", # exclude mret and sret because there is no trap to return from
      "00010000010100000000000001110011"]) # exclude wfi because it may not wake up
 gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
@@ -128,11 +128,11 @@ gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
 outfile.close
 
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ExceptionInstrCompressed-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)
-gen("compressed01", "EEEEEEEEEEEEEE01", 16, 
+gen("compressed01", "EEEEEEEEEEEEEE01", 16,
     ["101XXXXXXXXXXX01", # skip c.j because it causes the test program to go to a random place
      "11XXXXXXXXXXXX01", # skip c.beqz and c.bnez because they cause program to go to a random place
      "001XXXXXXXXXXX01", # skip c.jr because it causes the test program to go to a random place
