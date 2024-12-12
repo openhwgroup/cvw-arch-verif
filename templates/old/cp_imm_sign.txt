@@ -1,0 +1,5 @@
+    cp_imm_sign : coverpoint int'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Immediate value sign
+        bins neg  = {[$:-1]};
+        bins pos  = {[1:$]};
+    }

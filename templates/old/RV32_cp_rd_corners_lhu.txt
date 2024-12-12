@@ -1,0 +1,16 @@
+cp_rd_corners_lhu : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0)  {
+        //RD Corners
+        wildcard bins zero     = {0};
+        wildcard bins one      = {32'b00000000000000000000000000000001};
+        wildcard bins two      = {32'b00000000000000000000000000000010};
+        wildcard bins min      = {32'b00000000000000001000000000000000};        // Zero Extended min half word
+        wildcard bins minp1    = {32'b00000000000000001000000000000001};        // Zero Extended minp1 half word
+        wildcard bins max      = {32'b00000000000000000111111111111111};        // Zero Extended max half word
+        wildcard bins maxm1    = {32'b00000000000000000111111111111110};        // Zero Extended maxm1 half word
+        wildcard bins ones     = {32'b00000000000000001111111111111111};        // Zero Extended ones half word
+        wildcard bins onesm1   = {32'b00000000000000001111111111111110};        // Zero Extended onesm1 half word
+        wildcard bins walkeodd = {32'b00000000000000000101010101010101};        // Zero Extended walkodd
+        wildcard bins walkeven = {32'b00000000000000001010101010101010};        // Zero Extended walkeven
+        wildcard bins random0  = {32'b00000000000000000101101110111100};        // Zero Extended random1
+        wildcard bins random1  = {32'b00000000000000001101101110111100};        // Zero Extended random1
+     }

@@ -1,0 +1,4 @@
+    cp_mem_hazard : coverpoint check_mem_hazards(ins.hart, ins.issue)  iff (ins.trap == 0 )  {
+        //Memory Hazard
+        bins hazards[]  = {NO_HAZARD, RAW_HAZARD};
+    }

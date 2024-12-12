@@ -1,0 +1,16 @@
+cp_rd_corners_lb : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0)  {
+        //RD Corners
+        wildcard bins zero     = {0};
+        wildcard bins one      = {32'b00000000000000000000000000000001};
+        wildcard bins two      = {32'b00000000000000000000000000000010};
+        wildcard bins min      = {32'b11111111111111111111111110000000};        // Signed Extended min byte
+        wildcard bins minp1    = {32'b11111111111111111111111110000001};        // Signed Extended minp1 byte
+        wildcard bins max      = {32'b00000000000000000000000001111111};
+        wildcard bins maxm1    = {32'b00000000000000000000000001111110};
+        wildcard bins ones     = {32'b11111111111111111111111111111111};  
+        wildcard bins onesm1   = {32'b11111111111111111111111111111110};
+        wildcard bins walkeodd = {32'b00000000000000000000000001010101};
+        wildcard bins walkeven = {32'b11111111111111111111111110101010};        // Signed Extended walkeven
+        wildcard bins random0  = {32'b00000000000000000000000001011011};
+        wildcard bins random1  = {32'b11111111111111111111111111011011};        // Signed Extended random1
+     }

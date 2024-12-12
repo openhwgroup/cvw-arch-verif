@@ -1,0 +1,8 @@
+    cp_rd_corners_srai : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
+        //RD Corners
+        wildcard bins zero  = {0};
+        wildcard bins one  = {32'b00000000000000000000000000000001};
+        wildcard bins two  = {32'b00000000000000000000000000000010};
+        wildcard bins ones  = {32'b11111111111111111111111111111111};
+        wildcard bins random   = {32'b00011011101111001000100001110111};
+     }

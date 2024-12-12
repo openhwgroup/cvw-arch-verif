@@ -1,0 +1,10 @@
+    cp_rd_corners_slli : coverpoint unsigned'(ins.current.rd_val)  iff (ins.trap == 0 )  {
+        //RD Corners
+        wildcard bins zero  = {0};
+        wildcard bins two  = {32'b00000000000000000000000000000010};
+        wildcard bins min  = {32'b10000000000000000000000000000000};
+        wildcard bins maxm1  = {32'b01111111111111111111111111111110};
+        wildcard bins onesm1  = {32'b11111111111111111111111111111110};
+        wildcard bins walkeodd = {32'b10101010101010101010101010101010};
+        wildcard bins random   = {32'b01011011101111001000100001110110};
+     }

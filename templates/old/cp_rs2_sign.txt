@@ -1,0 +1,5 @@
+    cp_rs2_sign : coverpoint int'(ins.current.rs2_val)  iff (ins.trap == 0 )  {
+        //RS2 sign of value
+        bins neg  = {[$:-1]};
+        bins pos  = {[1:$]};
+    }

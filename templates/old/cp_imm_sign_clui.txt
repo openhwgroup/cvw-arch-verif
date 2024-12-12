@@ -1,0 +1,5 @@
+    cp_imm_sign_clui : coverpoint int'(ins.current.imm[19])  iff (ins.trap == 0 )  {
+        //Check immediate value sign using MSB
+        bins neg  = {1};
+        bins pos  = {0};
+    }

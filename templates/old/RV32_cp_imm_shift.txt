@@ -1,0 +1,4 @@
+    cp_imm_shift : coverpoint int'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Immediate Shift
+        bins shift[]  = {[0:31]};
+    }

@@ -1,0 +1,12 @@
+    cp_rnum : coverpoint unsigned'(ins.current.insn[23:20])  iff (ins.trap == 0 )  {
+        bins b_0 = {4'b0000};
+        bins b_1 = {4'b0001};
+        bins b_2 = {4'b0010};
+        bins b_3 = {4'b0011};
+        bins b_4 = {4'b0100};
+        bins b_5 = {4'b0101};
+        bins b_6 = {4'b0110};
+        bins b_7 = {4'b0111};
+        bins b_8 = {4'b1000};
+        bins b_9 = {4'b1001};
+    }

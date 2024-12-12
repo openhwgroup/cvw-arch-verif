@@ -1,0 +1,32 @@
+function void rv32zcbzbb_sample(int hart, int issue);
+    ins_rv32zcbzbb_t ins;
+    if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
+        // $display("Examining compressed instruction rv32zcbzbb_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        case (traceDataQ[hart][issue][0].inst_name)
+            "c.sext.b"     : begin
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 && traceDataQ[hart][issue][0].insn[6:2] == 5'b11001) begin // Specific bits for "c.sext.b"
+                    ins = new(hart, issue, traceDataQ);
+                    ins.add_rd(0);
+                    ins.add_rs1(0);      
+                    c_sext_b_cg.sample(ins); 
+                end
+            end
+            "c.zext.h"     : begin
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 && traceDataQ[hart][issue][0].insn[6:2] == 5'b11010) begin // Specific bits for "c.zext.h"
+                    ins = new(hart, issue, traceDataQ);
+                    ins.add_rd(0); 
+                    ins.add_rs1(0);     
+                    c_zext_h_cg.sample(ins); 
+                end
+            end
+            "c.sext.h"     : begin
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 && traceDataQ[hart][issue][0].insn[6:2] == 5'b11011) begin // Specific bits for "c.sext.h"
+                    ins = new(hart, issue, traceDataQ);
+                    ins.add_rd(0); 
+                    ins.add_rs1(0);     
+                    c_sext_h_cg.sample(ins); 
+                end
+            end
+        endcase
+    end
+endfunction

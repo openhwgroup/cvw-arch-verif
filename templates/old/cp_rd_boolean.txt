@@ -1,0 +1,5 @@
+    cp_rd_boolean : coverpoint longint'(ins.current.rd_val)  iff (ins.trap == 0 )  {
+        //RD Boolean Values
+        bins zero  = {0};
+        bins one  = {1};
+    }

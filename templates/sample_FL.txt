@@ -1,0 +1,9 @@
+        "INSTR"     : begin 
+            ins = new(hart, issue, traceDataQ); 
+            ins.add_fd(0);
+            ins.add_imm(1);
+            ins.add_rs1(2);
+            ins.current.inst_category = INST_CAT_LOAD;
+            ins.add_mem_address();
+            ARCHCASE_INSTRNODOT_cg.sample(ins); 
+        end
