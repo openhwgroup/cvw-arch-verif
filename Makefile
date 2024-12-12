@@ -96,7 +96,8 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D $< > $@
-	extractFunctionRadix.sh $@
+# 	no need for extractFunctionRadix unless doing hard debugging, and it runs slowly
+#	extractFunctionRadix.sh $@
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
