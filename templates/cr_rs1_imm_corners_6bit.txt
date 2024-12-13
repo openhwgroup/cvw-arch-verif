@@ -14,6 +14,6 @@
         bins b_62 = {62};
         bins b_63 = {63};
     }
-    cr_rs1_imm_corners : cross cp_rs1_corners,cp_imm_corners_6bit  iff (ins.trap == 0 )  {
+    cr_rs1_imm_corners_6bit : cross cp_rs1_corners,cp_imm_corners_6bit  iff (ins.trap == 0 )  {
         //Cross coverage of RS1 sign and Imm corners
     }
