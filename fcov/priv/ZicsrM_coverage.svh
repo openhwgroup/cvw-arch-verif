@@ -289,6 +289,7 @@ covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
         bins fence =  {32'h0ff0000f}; // iowr, iowr
         bins fence_rw_rw = {32'h0330000f}; // iowr, iowr
         bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
+        bins pause = {32'h0100000F}; // pause, for Zihintpause
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};

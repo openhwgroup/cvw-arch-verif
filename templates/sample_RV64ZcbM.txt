@@ -1,7 +1,7 @@
 function void rv64zcbm_sample(int hart, int issue);
     ins_rv64zcbm_t ins;
     if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
-        $display("Examining compressed instruction rv64zcbm_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        // $display("Examining compressed instruction rv64zcbm_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
         case (traceDataQ[hart][issue][0].inst_name)
             "c.mul"     : begin
                 if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 && traceDataQ[hart][issue][0].insn[15:10] == 6'b100111) begin // Specific bits for "mul" 

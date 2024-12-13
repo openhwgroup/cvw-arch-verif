@@ -263,6 +263,8 @@ formbits:
     fence
     fence rw, rw
     fence.tso
+    // Zihintpause
+    pause
 
 /////////////////////////////////
 // cp_mret

@@ -54,6 +54,22 @@ $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 $(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
 	bin/illegalinstrtests.py
 
+# This code is added especially for running VM SV32 tests
+# Replace --fcov with --lockstepverbose for debugging
+SV32DIR := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
+SV32OBJ = $(shell find $(SV32DIR)/*/dut -type f -name "*.$(OBJEXT)" | sort)
+# "make get_vm" outputs all the available SV32 tests in cvw-arch-verif/vm_tests.sh and "make vm" runs them
+get_vm:
+	@rm -f vm_tests.sh
+	@for elf in $(SV32OBJ); do \
+		echo "wsim rv32gc $$elf --fcov" >> vm_tests.sh; \
+	done
+vm:
+	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
+	chmod +x vm_tests.sh
+	./vm_tests.sh
+	$(MAKE) merge
+
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
 ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
@@ -75,7 +91,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh -mabi=$(MABI) -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
 	$(MAKE) $@.objdump $@.memfile
 
