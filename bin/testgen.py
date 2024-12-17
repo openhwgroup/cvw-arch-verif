@@ -595,7 +595,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif test in sctype or test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs2) + ") # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n"
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -1885,7 +1885,7 @@ if __name__ == '__main__':
                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
-      corners_imm_12bits = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
+      corners_imm_12bits = [0, 1, 2, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
@@ -1896,7 +1896,7 @@ if __name__ == '__main__':
       corners_6bits = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                         0b101010, 0b010101, 0b010110]
 #      corners_imm_6bits = [0, 1, 2, 31, 30, -32, -31, -2, -1]
-      corners_imm_6bits = [0, 1, 2, 4, 8, 16, 30, 31, 32, 33, 62, 63]
+      corners_imm_6bits = [0, 1, 2, 4, 8, 16, 30, 31, -32, -31, -2, -1]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,

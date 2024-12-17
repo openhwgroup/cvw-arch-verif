@@ -1,22 +1,14 @@
-    cp_imm_corners : coverpoint unsigned'(ins.current.imm)  iff (ins.trap == 0 )  {
-        //Immediate value ones and zeros
-        bins b_0 = {0};
-        bins b_1 = {1};
-        bins b_2 = {2};
-        bins b_3 = {3};
-        bins b_4 = {4};
-        bins b_8 = {8};
-        bins b_16 = {16};
-        bins b_32 = {32};
-        bins b_64 = {64};
-        bins b_128 = {128};
-        bins b_256 = {256};
-        bins b_512 = {512};
-        bins b_1024 = {1024};
-        bins b_2047 = {2047};
-        bins b_2048 = {2048};
-        bins b_2049 = {2049};
-        bins b_4094 = {4094};
-        bins b_4095 = {4095};
-        bins random = {1795};
+    cp_imm_corners : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Imm Corners
+        wildcard bins zero  = {0};
+        wildcard bins one   = {1};
+        wildcard bins two   = {2};
+        wildcard bins hm1   = {1023};
+        wildcard bins h   =   {1024};
+        wildcard bins max   = {2047};
+        wildcard bins min   = {-2048};
+        wildcard bins minp1 = {-2047};
+        wildcard bins onesm1 = {-2};
+        wildcard bins ones  = {-1};
+        wildcard bins randomp = {1795};
     }
