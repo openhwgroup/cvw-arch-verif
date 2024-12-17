@@ -30,8 +30,8 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Zalrsc |x |x | A extension: load reserved/store conditional |
 | Zba |x |x | B extension: address generation |
 | Zbb |x |x | B extension: basic bit manipulation |
-| Zbc |x |x | B extension: carry-free multiplication |
 | Zbs |x |x | B extension: single-bit operations |
+| Zbc |x |x | Carry-free multiplication |
 | Zca |x |x | Compressed instructions |
 | Zcb |x |x | Additional compressed instructions |
 | Zcf |x | | RV32 compressed single-precision fp |
@@ -45,7 +45,7 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Zicond |x |x | Conditional zero |
 | Zicbom |x |x | Cache block management, architecturally invisible |
 | Zicboz |x |x | Cach block zero |
-| Zicsr |x |x | CSR read/write/set/clear |
+| Zicsr |x |x | CSR read/write/set/clear instructions |
 | Zifencei |x |x | Instruction/data synchronization |
 | **Privileged** |
 | Zicsr |x |x | Excercise CSRs in each mode: M, S, U, F |
@@ -59,7 +59,7 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Fences |x |x | Tested in Zicsr |
 | Zihintpause |x |x | Tested in Zicsr |
 | Zicclsm |x |x | Misaligned access support is implicitly tested through accesses |
-| Ss1p12 |x |x | Implicit in Zicsr |
+| S{m/s}1p12 |x |x | Implicit in Zicsr |
 | Sstvala |x |x | stval implicity tested through exceptions |
 | Sscounterenw |x |x | Writable scounteren tested through Zicntr |
 | Ssu64xl | |x| RV64 sstatus.UXL tested through Zicsr |

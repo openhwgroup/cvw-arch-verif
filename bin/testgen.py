@@ -1265,9 +1265,12 @@ def make_rnum(test, xlen):
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
+    # produce a deterministic seed for repeatable random numbers 
+    # distinct for each instruction and coverpoint
+    seed(hash(test + coverpoint)) 
     if (coverpoint == "cp_asm_count"):
-      if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
-        f.write("\n# Testcase cp_asm_count\nc.nop\n")
+      if (test == "c.nop" or test == "fence"):   # Writing cp_asm_count for 'c.nop' only
+        f.write("\n# Testcase cp_asm_count\n"+test+"\n")
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
     elif(coverpoint == "cp_rd_nx0" or coverpoint == "cp_rd_nx2"):
@@ -1882,7 +1885,7 @@ if __name__ == '__main__':
                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
-      corners_imm_12bits = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+      corners_imm_12bits = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
