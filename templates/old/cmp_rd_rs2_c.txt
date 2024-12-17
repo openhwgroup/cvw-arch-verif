@@ -1,0 +1,11 @@
+    cmp_rd_rs2_c : coverpoint ins.current.rd == ins.current.rs2  iff (ins.trap == 0 )  {
+        //RD and RS1 register (assignment) WAR Hazard
+        bins x8  = {1} iff (ins.current.rd == "x8");
+        bins x9  = {1} iff (ins.current.rd == "x9");
+        bins x10  = {1} iff (ins.current.rd == "x10");
+        bins x11  = {1} iff (ins.current.rd == "x11");
+        bins x12  = {1} iff (ins.current.rd == "x12");
+        bins x13  = {1} iff (ins.current.rd == "x13");
+        bins x14  = {1} iff (ins.current.rd == "x14");
+        bins x15  = {1} iff (ins.current.rd == "x15");
+    }

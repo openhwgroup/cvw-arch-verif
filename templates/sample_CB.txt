@@ -1,0 +1,6 @@
+        "INSTR"     : begin 
+            ins = new(hart, issue, traceDataQ); 
+            ins.add_rs1(0); 
+            ins.add_imm_addr(1);
+            ARCHCASE_INSTRNODOT_cg.sample(ins); 
+        end

@@ -1,0 +1,15 @@
+    cp_imm6_corners : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Imm Corners
+        wildcard bins zero  = {0};
+        wildcard bins one   = {1};
+        wildcard bins two   = {2};
+        wildcard bins max   = {31};
+        wildcard bins maxm1 = {30};
+        wildcard bins min   = {-32};
+        wildcard bins minp1 = {-31};
+        wildcard bins onesm1 = {-2};
+        wildcard bins ones  = {-1};
+    }
+    cr_rs1_imm_corners_6bit : cross cp_rs1_corners, cp_imm6_corners  iff (ins.trap == 0 )  {
+        //Cross coverage of RS1 sign and Imm corners
+    }

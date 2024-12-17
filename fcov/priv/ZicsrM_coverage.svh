@@ -36,7 +36,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csr: coverpoint ins.current.insn[31:20]  {
-        // automtically gives all 4096 bins
+       bins all[] = {[0:$]};
     }
     priv_mode_m: coverpoint ins.current.mode {
         bins M_mode = {2'b11};

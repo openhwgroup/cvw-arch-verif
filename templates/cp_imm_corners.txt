@@ -1,0 +1,14 @@
+    cp_imm_corners : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Imm Corners
+        wildcard bins zero  = {0};
+        wildcard bins one   = {1};
+        wildcard bins two   = {2};
+        wildcard bins hm1   = {1023};
+        wildcard bins h   =   {1024};
+        wildcard bins max   = {2047};
+        wildcard bins min   = {-2048};
+        wildcard bins minp1 = {-2047};
+        wildcard bins onesm1 = {-2};
+        wildcard bins ones  = {-1};
+        wildcard bins randomp = {1795};
+    }

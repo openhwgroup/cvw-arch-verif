@@ -96,7 +96,8 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D $< > $@
-	extractFunctionRadix.sh $@
+# 	no need for extractFunctionRadix unless doing hard debugging, and it runs slowly
+#	extractFunctionRadix.sh $@
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
@@ -104,10 +105,10 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Run tests while collecting functional coverage
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
+	#wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
 	#wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
-	#wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
+	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
 	$(MAKE) merge
 
@@ -121,7 +122,6 @@ $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
 	@mkdir -p $@
 
 clean:
-	rm -rf fcov/rv32/*
-	rm -rf fcov/rv64/*
+	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf tests/priv/*.h

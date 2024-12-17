@@ -178,7 +178,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + " # perform operation\n"
-  elif (test in rbtype):
+  elif (test in i1type):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n"
   elif (test in frtype):
@@ -580,6 +580,22 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif test in flitype:
     lines = lines + f"{test} f{rd}, {flivals[rs1]} # perform operation\n"
     #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+  elif test in rbtype:
+    bs = 0 # *** bit select, need to pass it to this function
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(bs) + " # perform operation\n"
+  elif test in irtype:
+    rnum = 0 # *** need to pass it to this function
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(rnum) + " # perform operation\n"
+  elif test in lrtype:
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + test + " x" + str(rd) + ", (x" + str(rs1) + ")  # perform operation\n"
+  elif test in sctype or test in amotype:
+    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n"
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
@@ -594,6 +610,8 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
   lines = ""
 
   for testindex, test in enumerate(testlist):
+    if (test in amotype or test in sctype or test in lrtype or test in rbtype or test in irtype):
+      return ""  # *** AMO, lr/sc not yet supported; Hamza, please add support
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
 
@@ -822,6 +840,14 @@ def make_fs2(test, xlen, rng):
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_fs3(test, xlen, rng):
+  for r in rng:
+    [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
+    while (r == rs1):
+      rs1 = randint(1,31)
+    desc = "cp_fs3 (Test source fs3 = f" + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val)
+
 def make_rs1(test, xlen, rng = range(32), fli=False):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs1=r, allunique=True)
@@ -842,6 +868,12 @@ def make_uimm(test, xlen):
   for r in range(xlen):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
     desc = "cp_uimm (Test bit = " + str(r) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
+
+def make_uimm5(test, xlen):
+  for r in range(32):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
+    desc = "cp_uimm_5 (Test bit = " + str(r) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
 
 def make_rd_rs1(test, xlen, rng):
@@ -1031,7 +1063,7 @@ def make_j_imm_ones_zeros(test, xlen):
     f.write("\n.align 2" + " # Start at an address multiple of 4. Required for covering 2 byte jump.\n")
     rng = range(1,11)
   for align in rng:
-    lines = "\n# Testcase cp_imm_ones_zeros " + str(align) + "\n"
+    lines = "\n# Testcase cp_imm_corners " + str(align) + "\n"
     if (test == "jal"):
       lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
@@ -1041,10 +1073,9 @@ def make_j_imm_ones_zeros(test, xlen):
     f.write(lines)
 
 def make_jalr_imm_ones_zeros(test, xlen):
-
   for i in range(0,12):
     imm_value = 2**i # immediate value from 2^0 to 2^11
-    lines = "\n# Testcase cp_imm_ones_zeros bin " + str(i) + "_1 \n"
+    lines = "\n# Testcase cp_imm_corners bin " + str(i) + "_1 \n"
     lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
     lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
 
@@ -1223,12 +1254,23 @@ def make_imm5_corners(test, xlen):
     desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_bs(test, xlen):
+  # This should iterate over the four values of bs in the aes32 instructions ***
+  pass
+
+def make_rnum(test, xlen):
+  # This should iterate over the 10 values of rnum in the aes64ks1i instructions ***
+  pass
+
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
+    # produce a deterministic seed for repeatable random numbers 
+    # distinct for each instruction and coverpoint
+    seed(hash(test + coverpoint)) 
     if (coverpoint == "cp_asm_count"):
-      if (test == "c.nop"):   # Writing cp_asm_count for 'c.nop' only
-        f.write("\n# Testcase cp_asm_count\nc.nop\n")
+      if (test == "c.nop" or test == "fence"):   # Writing cp_asm_count for 'c.nop' only
+        f.write("\n# Testcase cp_asm_count\n"+test+"\n")
     elif (coverpoint == "cp_rd"):
       make_rd(test, xlen, range(32))
     elif(coverpoint == "cp_rd_nx0" or coverpoint == "cp_rd_nx2"):
@@ -1249,6 +1291,8 @@ def write_tests(coverpoints, test, xlen):
       make_fs1(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs2"):
       make_fs2(test, xlen, range(32))
+    elif (coverpoint == "cp_fs3"):
+      make_fs3(test, xlen, range(32))
     elif (coverpoint == "cp_fs2p"):
       make_fs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1_corners"):
@@ -1285,8 +1329,12 @@ def write_tests(coverpoints, test, xlen):
       make_rs2(test, xlen, range(1,32))
     elif (coverpoint == "cp_uimm"):
       make_uimm(test, xlen)
+    elif (coverpoint == "cp_uimm_5"):
+      make_uimm5(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
       make_rd_rs1(test, xlen, range(32))
+    elif (coverpoint == "cmp_rd_rs1_nx0"):
+      make_rd_rs1(test, xlen, range(1,32))
     elif (coverpoint == "cmp_rd_rs1_c"):
       make_rd_rs1(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs2"):
@@ -1299,6 +1347,8 @@ def write_tests(coverpoints, test, xlen):
       make_rd_rs1_rs2(test, xlen)
     elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen, range(32))
+    elif (coverpoint == "cmp_rs1_rs2_nx0"):
+      make_rs1_rs2(test, xlen, range(1,32))
     elif (coverpoint == "cmp_rs1_rs2_c"):
       make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_corners"):
@@ -1352,7 +1402,7 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_rs2_corners(test, xlen)
     elif (coverpoint == "cp_imm12_corners"):
       make_cp_imm_corners(test, xlen, corners_imm_12bits)
-    elif (coverpoint == "cp_imm6_corners"):
+    elif (coverpoint == "cp_imm_corners_6bit"):
       make_cp_imm_corners(test, xlen, corners_imm_6bits)
     elif (coverpoint == "cr_rs1_imm_corners"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bits)
@@ -1386,17 +1436,17 @@ def write_tests(coverpoints, test, xlen):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
-    elif (coverpoint == "cp_imm_ones_zeros_jal"):
+    elif (coverpoint == "cp_imm_corners_jal"):
       make_j_imm_ones_zeros(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"):
       make_rd_corners(test,xlen,corners_sraiw)
-    elif (coverpoint == "cp_imm_ones_zeros"):
+    elif (coverpoint == "cp_imm_corners"):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"):
         make_jalr_imm_ones_zeros(test, xlen)
-    elif (coverpoint == "cp_imm_ones_zeros_addi4spn"):
+    elif (coverpoint == "cp_imm_corners_addi4spn"):
        pass # not needed and seems to be covered by other things
-    elif (coverpoint == "cp_imm_ones_zeros_c_jal"):
+    elif (coverpoint == "cp_imm_corners_c_jal"):
         make_j_imm_ones_zeros(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
@@ -1414,8 +1464,6 @@ def write_tests(coverpoints, test, xlen):
       make_imm_shift(test, xlen)
     elif coverpoint in ["cp_imm_mul","cp_imm_mul_8","cp_imm_mul_addi4spn","cp_imm_mul_addi16sp","cp_imm_mul_4sp","cp_imm_mul_8sp"]:
       make_imm_mul(test, xlen)
-    elif (coverpoint == "cp_fs3"):
-      make_fs3(test, xlen)
     elif (coverpoint == "cp_rd_boolean"):
       pass # covered by other generators
     elif (coverpoint == "cmp_fd_fs1"):
@@ -1492,28 +1540,56 @@ def write_tests(coverpoints, test, xlen):
       NaNBox_tests = False
     elif (coverpoint == "cp_imm5_corners"):
       make_imm5_corners(test, xlen)
+    elif (coverpoint == "cp_bs"):
+      make_bs(test, xlen)
+    elif (coverpoint == "cp_rnum"):
+      make_rnum(test, xlen)
+    elif (coverpoint == "cp_sc"):
+      pass # *** does this need to be implemented?
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
-def getcovergroups(coverdefdir, coverfiles):
+def getcovergroups(coverdefdir, coverfiles, xlen):
   coverpoints = {}
   curinstr = ""
+  mode = "both"
+  ingroup = False
   for coverfile in coverfiles:
     coverfile = coverdefdir + "/" + coverfile + "_coverage.svh"
     f = open(coverfile, "r")
     for line in f:
-      m = re.search(r'cp_asm_count.*\"(.*)"', line)
-      if (m):
-#        if (curinstr != ""):
-#          print(curinstr + ": " + str(coverpoints[curinstr]))
-        curinstr = m.group(1)
-        coverpoints[curinstr] = []
-      m = re.search("\s*(\S+) :", line)
-      if (m):
-        coverpoints[curinstr].append(m.group(1))
+      if (re.search("covergroup .* with", line)):
+        ingroup = True
+      if (re.search("endgroup", line)):
+        ingroup = False
+      if ((not ingroup) and re.search('`ifdef XLEN32', line)):
+        mode = 32
+      if ((not ingroup) and re.search('`ifdef XLEN64', line)):
+        mode = 64
+
+      # only look for coverpoints if we are of the proper xlen
+      #print("mode: " + str(mode) + " xlen: " + str(xlen) + " " + line)
+      if (mode == "both" or mode == xlen):
+        m = re.search(r'cp_asm_count.*\"(.*)"', line)
+        if (m):
+          curinstr = m.group(1)
+          coverpoints[curinstr] = []
+        m = re.search("\s*(\S+) :", line)
+        if (m):
+          coverpoints[curinstr].append(m.group(1))
     f.close()
-    print(coverpoints)
+    # print(coverpoints)
     return coverpoints
+  
+def getExtensions():
+  extensions = []
+  path = ARCH_VERIF+"/fcov/unpriv"
+  for (dirpath, dirnames, filenames) in os.walk(path):
+    for filename in filenames:
+      m = re.search("(.*)_coverage.svh", filename)
+      if (m != None):
+        extensions.append(m.group(1))
+  return extensions
 
 ##################################
 # main body
@@ -1531,9 +1607,25 @@ rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
         "min", "minu", "max", "maxu", "orn", "andn", "xnor", "rol", "ror",
         "rolw", "rorw",
         "clmul", "clmulh", "clmulr",
-        "bclr", "binv", "bset", "bext"]
-rbtype=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8",
-        "clzw", "cpopw", "ctzw"]
+        "bclr", "binv", "bset", "bext",
+        "pack", "packh", "packw",
+        "xperm4", "xperm8",
+        "aes64es", "aes64esm", "aes64ds", "aes64dsm", "aes64ks2",
+        "sha512sig0h", "sha512sig0l", "sha512sig1h", "sha512sig1l", "sha512sum0r", "sha512sum1r"]
+
+i1type=["orc.b", "zext.h", "clz", "cpop", "ctz", "sext.b", "sext.h", "rev8",
+        "clzw", "cpopw", "ctzw",
+        "brev8", "zip", "unzip",
+        "aes64im",
+        "sha256sig0", "sha256sig1", "sha256sum0", "sha256sum1", 
+        "sha512sig0", "sha512sig1", "sha512sum0", "sha512sum1"]
+rbtype = ["aes32dsi", "aes32dsmi", "aes32esi", "aes32esmi"]
+irtype = ["aes64ks1i"]
+lrtype = ["lr.w", "lr.d"]
+sctype = ["sc.w", "sc.d"]
+amotype = ["amoswap.w", "amoadd.w", "amoand.w", "amoor.w", "amoxor.w", "amomin.w", "amomax.w", "amominu.w", "amomaxu.w",
+           "amoswap.d", "amoadd.d", "amoand.d", "amoor.d", "amoxor.d", "amomin.d", "amomax.d", "amominu.d", "amomaxu.d"]
+
 loaditype = ["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
 shiftitype = ["slli", "srli", "srai"]
 shiftiwtype = ["slliw", "srliw", "sraiw"]
@@ -1617,6 +1709,7 @@ rd_rs1_rs2_rs3_format = fr4type
 rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
 rd_imm_format = citype + cstype + ciwtype + cbptype
 
+
 insMap = {
   # 'loadstore': whether a function is a load or store, leave empty for neither
   # 'compressed': 3 levels, which are 0 for uncompressed (implicit value), 1 for compressed instruction,
@@ -1624,7 +1717,12 @@ insMap = {
   # 'implicitxreg': which reads and writes don't appear in the instruction fields but still occur
   #   once the instruction is expanded
   'rtype' : {'instructions' : rtype, 'regconfig' : 'xxx_'},
-  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xx__'},
+  'i1type' : {'instructions' : i1type, 'regconfig' : 'xx__'},
+  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxx_'},
+  'irtype' : {'instructions' : irtype, 'regconfig' : 'xx__'},
+  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xx__'},
+  'sctype' : {'instructions' : sctype, 'regconfig' : 'xxx_'},
+  'amotype' : {'instructions' : amotype, 'regconfig' : 'xxx_'},
   'loaditype' : {'instructions' : loaditype, 'regconfig' : 'xxi_', 'loadstore' : 'load'},
   'shiftiwtype' : {'instructions' : shiftiwtype, 'regconfig' : 'xxi_'},
   'shiftitype' : {'instructions' : shiftitype, 'regconfig' : 'xxi_'},
@@ -1720,16 +1818,13 @@ if __name__ == '__main__':
 
   # generate files for each test
   for xlen in xlens:
-    extensions = ["I", "M", "F", "Zicond", "Zca", "Zfh", "Zcb", "ZcbM", "ZcbZbb", "D", "ZfhD", "ZfaF", "ZfaD", "ZfaZfh", "Zcd",
-                  "Zba", "Zbb", "Zbc", "Zbs", "Zicsr"]
-    if (xlen == 64):
-      extensions += ["ZcbZba"]   # Add extensions which are specific to RV64
-    if (xlen == 32):
-      extensions += ["Zcf"]   # Add extensions which are specific to RV32
+    extensions = getExtensions() # find all extensions in 
+    #print(extensions)
     for extension in extensions:
-      coverdefdir = f"{ARCH_VERIF}/fcov/rv{xlen}"
-      coverfiles = ["RV"+str(xlen)+extension]
-      coverpoints = getcovergroups(coverdefdir, coverfiles)
+      coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+      coverfiles = [extension]
+      coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
+      #print(extension+": "+str(coverpoints))
       formatstrlen = str(int(xlen/4))
       formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
       formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
@@ -1790,7 +1885,7 @@ if __name__ == '__main__':
                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
-      corners_imm_12bits = [0, 1, 2, 1023, 1024, 2047, -2048, -2047, -2, -1]
+      corners_imm_12bits = [0, 1, 2, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
       corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
@@ -1800,7 +1895,8 @@ if __name__ == '__main__':
                         0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
       corners_6bits = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                         0b101010, 0b010101, 0b010110]
-      corners_imm_6bits = [0, 1, 2, 31, 30, -32, -31, -2, -1]
+#      corners_imm_6bits = [0, 1, 2, 31, 30, -32, -31, -2, -1]
+      corners_imm_6bits = [0, 1, 2, 4, 8, 16, 30, 31, -32, -31, -2, -1]
       corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
@@ -1930,6 +2026,8 @@ if __name__ == '__main__':
       cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
       os.system(cmd)
       for test in coverpoints.keys():
+        #print("Generating test for ", test, " with entries: ", coverpoints[test])
+
         basename = "WALLY-COV-" + test
         fname = pathname + "/" + basename + ".S"
 
@@ -1952,12 +2050,6 @@ if __name__ == '__main__':
           float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
           f.write(float_en)
 
-        # print directed and random test vectors
-        # Coverage for R-type arithmetic instructions
-        #if (test not in rtests):
-        #  exit("Error: %s not implemented yet" % test)
-        #else:
-        #  write_rtype_arith_vectors(test, xlen)
         write_tests(coverpoints[test], test, xlen)
 
         # print footer

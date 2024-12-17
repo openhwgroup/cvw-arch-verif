@@ -1,0 +1,16 @@
+    cp_imm_corners_6bit : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
+        //Immediate value ones and zeros
+        wildcard bins b_0 = {0};
+        wildcard bins b_1 = {1};
+        wildcard bins b_2 = {2};
+        wildcard bins b_3 = {3};
+        wildcard bins b_4 = {4};
+        wildcard bins b_8 = {8};
+        wildcard bins b_16 = {16};
+        wildcard bins b_30 = {30};
+        wildcard bins b_31 = {31};
+        wildcard bins b_32 = {-32};
+        wildcard bins b_33 = {-31};
+        wildcard bins b_62 = {-2};
+        wildcard bins b_63 = {-1};
+    }
