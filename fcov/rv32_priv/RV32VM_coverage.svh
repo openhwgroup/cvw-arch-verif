@@ -282,7 +282,7 @@ covergroup vm_permissions_cg with function sample(ins_rv32vm_t ins);
         bins mega_not_zero = {[1:$]};
     }
 
-    //satp.mode for coverage of both sv39 and sv48
+    //satp.mode for coverage of both sv32
     mode: coverpoint  ins.current.csr[12'h180][31] {
         bins sv32   = {1'b1};
     }
@@ -302,7 +302,7 @@ covergroup vm_permissions_cg with function sample(ins_rv32vm_t ins);
         bins ins_page_fault  = {32'd12};
         bins store_amo_page_fault = {32'd15};
     }
-        Nopagefault: coverpoint  ins.current.csr[12'h143]{
+    Nopagefault: coverpoint  ins.current.csr[12'h143]{
         bins no_fault  = {32'd0};
     }
     priv_mode: coverpoint ins.current.mode{

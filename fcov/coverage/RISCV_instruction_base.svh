@@ -424,10 +424,10 @@ class RISCV_instruction
 
         //For VM Coverage
     virtual function void add_vm_signals(int offset);    
-        current.VAdrI         = $root.testbench.wallyTracer.VAdrIW;
-        current.VAdrD         = $root.testbench.wallyTracer.VAdrDW;
-        current.PAI           = $root.testbench.wallyTracer.PAIW;
-        current.PAD           = $root.testbench.wallyTracer.PADW; 
+        current.VAdrI         = $root.testbench.wallyTracer.VAdr_iW;
+        current.VAdrD         = $root.testbench.wallyTracer.VAdr_dW;
+        current.PAI           = $root.testbench.wallyTracer.PA_iW;
+        current.PAD           = $root.testbench.wallyTracer.PA_dW; 
         current.ReadAccess    = $root.testbench.wallyTracer.ReadAccessW;
         current.WriteAccess   = $root.testbench.wallyTracer.WriteAccessW;
         current.ExecuteAccess = $root.testbench.wallyTracer.ExecuteAccessW;
