@@ -1533,7 +1533,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rnum"):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sc"):
-      pass # *** does this need to be implemented?
+      pass # TODO does this need to be implemented?
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1886,7 +1886,7 @@ if __name__ == '__main__':
       corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                         0b101010, 0b010101, 0b010110]
 #      corners_imm_6bit = [0, 1, 2, 31, 30, -32, -31, -2, -1]
-      corners_imm_6bit = [0, 1, 2, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+      corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
       corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
