@@ -429,9 +429,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rd = legalizecompr(rd)
     rs1 = legalizecompr(rs1)
     if (test == "c.not"):
-      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs2val)  + " # initialize rd to specific value\n"
+      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
       lines = lines + test + " x" + str(rd) + "  # performing not operation on rd and storing it in same register \n"
-      lines = lines + test + " x" + str(rd) + "  # reverting to the prev value, help in covering rd_corners \n"
     elif test in ["c.zext.b","c.zext.h","c.zext.w","c.sext.b","c.sext.h"]:
       lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize leagalized rd to a random value that should get changed\n"
       lines = lines + test + " x" + str(rd) + " # perform operation\n"
