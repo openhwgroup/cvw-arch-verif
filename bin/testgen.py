@@ -173,7 +173,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
     rs2val = rs2val + 2**xlen
-  lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed; helps covering rd_toggle\n"
+  lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed\n"
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
@@ -321,12 +321,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+      if (immval == -2048):
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # add 1 to rs1 to make it 2048\n" # ***
       if (xlen == 32):
         storeop = "sw"
       else:
         storeop = "sd"
-      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval, immOffset=True) +" (x" + str(rs1) + ") # store value to put something in memory\n"
-      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n"
+      lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
+      lines = lines + test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
 #      lines = lines + test + " x" + str(rd) + ", 0(x" + str(rs1) + ") # perform operation\n"
   elif (test in cltype):
     rd = legalizecompr(rd)
@@ -581,12 +583,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + f"{test} f{rd}, {flivals[rs1]} # perform operation\n"
     #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
   elif test in rbtype:
-    bs = 0 # *** bit select, need to pass it to this function
+    bs = 0 # TODO: bit select, need to pass it to this function
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(bs) + " # perform operation\n"
   elif test in irtype:
-    rnum = 0 # *** need to pass it to this function
+    rnum = 0 # TODO: need to pass it to this function
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(rnum) + " # perform operation\n"
   elif test in lrtype:
@@ -611,7 +613,7 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
 
   for testindex, test in enumerate(testlist):
     if (test in amotype or test in sctype or test in lrtype or test in rbtype or test in irtype):
-      return ""  # *** AMO, lr/sc not yet supported; Hamza, please add support
+      return ""  # TODO: AMO, lr/sc not yet supported; Hamza, please add support
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
 
@@ -1255,11 +1257,11 @@ def make_imm5_corners(test, xlen):
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_bs(test, xlen):
-  # This should iterate over the four values of bs in the aes32 instructions ***
+  # TODO: This should iterate over the four values of bs in the aes32 instructions
   pass
 
 def make_rnum(test, xlen):
-  # This should iterate over the 10 values of rnum in the aes64ks1i instructions ***
+  # TODO: This should iterate over the 10 values of rnum in the aes64ks1i instructions
   pass
 
 def write_tests(coverpoints, test, xlen):
@@ -1373,19 +1375,19 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners"):
       make_rd_corners(test, xlen, corners)
     elif (coverpoint == "cp_rd_corners_clui"):
-      make_rd_corners(test, xlen, corners_6bits)
+      make_rd_corners(test, xlen, corners_6bit)
     elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
-      make_rd_corners(test, xlen, corners_32bits)
+      make_rd_corners(test, xlen, corners_32bit)
     elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
-      make_rd_corners(test, xlen, corners_16bits)           # Make rd corners for lh and lhu for both RV32I & RV64I
+      make_rd_corners(test, xlen, corners_16bit)           # Make rd corners for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
       make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_corners_6bit"):
-      make_rd_corners(test, xlen, corners_6bits)
+      make_rd_corners(test, xlen, corners_6bit)
     elif (coverpoint == "cp_rd_corners_32bit"):
-      make_rd_corners(test, xlen, corners_32bits)
+      make_rd_corners(test, xlen, corners_32bit)
     elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bits)
+      make_rd_corners_lui(test, xlen, corners_20bit)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       make_rd_rs1_eqval(test, xlen)
     elif (coverpoint == "cmp_rd_rs2_eqval"):
@@ -1400,36 +1402,22 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by rd_corners
     elif (coverpoint == "cr_rs1_rs2_corners"):
       make_cr_rs1_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_imm12_corners"):
-      make_cp_imm_corners(test, xlen, corners_imm_12bits)
+    elif (coverpoint == "cp_imm_corners"):
+      make_cp_imm_corners(test, xlen, corners_imm_12bit)
+    elif (coverpoint == "cp_imm_corners_20bit"):
+      make_cp_imm_corners(test, xlen, corners_imm_20bit)
     elif (coverpoint == "cp_imm_corners_6bit"):
-      make_cp_imm_corners(test, xlen, corners_imm_6bits)
+      make_cp_imm_corners(test, xlen, corners_imm_6bit)
     elif (coverpoint == "cr_rs1_imm_corners"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_12bits)
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bits)
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint in ["cp_gpr_hazard", "cp_gpr_hazard_r", "cp_gpr_hazard_rw", "cp_gpr_hazard_w"]):
       make_cp_gpr_hazard(test, xlen)
     elif (coverpoint in ["cp_fpr_hazard", "cp_fpr_hazard_r", "cp_fpr_hazard_rw", "cp_fpr_hazard_w"]):
       make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint == "cp_rs1_toggle"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_rs2_toggle"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_rd_toggle"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint[:13] == "cp_rd_toggle_" and coverpoint[13:] in ["clui", "slli", "srli", "auipc", "lwu", "lhu", "lbu"]):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_fd_toggle"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_fs2_toggle"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_fd_toggle_lw"):
-      pass #TODO toggle not needed and seems to be covered by other things
-    elif (coverpoint == "cp_rd_toggle_jal"):
-      pass #TODO toggle not needed and seems to be covered by other things
     elif (coverpoint == "cp_fclass"):
       pass
     elif (coverpoint == "cp_imm_sign"):
@@ -1825,6 +1813,7 @@ if __name__ == '__main__':
       coverfiles = [extension]
       coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
       #print(extension+": "+str(coverpoints))
+      print("Generating tests for " + extension)
       formatstrlen = str(int(xlen/4))
       formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
       formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
@@ -1885,19 +1874,20 @@ if __name__ == '__main__':
                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
-      corners_imm_12bits = [0, 1, 2, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
-      corners_16bits = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
+      corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
+      corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
+      corners_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                     0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
       corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
                         0b01010101, 0b10101010, 0b01011011, 0b11011011]
-      corners_32bits = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
+      corners_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
                         0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
                         0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
-      corners_6bits = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
+      corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                         0b101010, 0b010101, 0b010110]
-#      corners_imm_6bits = [0, 1, 2, 31, 30, -32, -31, -2, -1]
-      corners_imm_6bits = [0, 1, 2, 4, 8, 16, 30, 31, -32, -31, -2, -1]
-      corners_20bits = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
+#      corners_imm_6bit = [0, 1, 2, 31, 30, -32, -31, -2, -1]
+      corners_imm_6bit = [0, 1, 2, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+      corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                         0b00000000000000000001000000000000,0b01001010111000100000000000000000]
       c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                             0b01111111111111111111111111111111,0b01010101010101010101010101010101,
