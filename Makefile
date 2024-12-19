@@ -92,9 +92,8 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
-#	$(MAKE) $@.objdump
+	$(MAKE) $@.objdump
 
-# disable object dump unless needed for debugging
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D $< > $@
 
