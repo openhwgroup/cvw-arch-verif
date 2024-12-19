@@ -92,15 +92,15 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
-	$(MAKE) $@.objdump $@.memfile
+#	$(MAKE) $@.objdump
 
+# disable object dump unless needed for debugging
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D $< > $@
-# 	no need for extractFunctionRadix unless doing hard debugging, and it runs slowly
-#	extractFunctionRadix.sh $@
 
-%.elf.memfile: %.elf
-	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
+#%.elf.memfile: %.elf
+# no need for memfile because Wally testbench creates it automatically
+#	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
 
 # Run tests while collecting functional coverage
 sim:
@@ -109,6 +109,7 @@ sim:
 	#wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
 	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
+	#wsim rv64gc $(TESTDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
 	$(MAKE) merge
 
