@@ -320,9 +320,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       if (immval == -2048):
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # add 1 to rs1 to make it 2048\n" # ***
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n" # ***
+      else:
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       if (xlen == 32):
         storeop = "sw"
       else:
@@ -442,9 +444,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
             rs2 = 1
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
-      if (immval == -2048):
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # add 1 to rs1 to make it 2048\n"
+      if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n" # ***
+      else:
+        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
@@ -519,35 +523,42 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rs1 = randint(1, 31)
     while (rs1 == rs2):
       rs2 = randint(1, 31)
-    tempreg1 = 1
-    tempreg2 = 2
+    tempreg1 = randint(1,31)
+    tempreg2 = randint(1,31)
     while (tempreg1 in [rs1, rs2]):
       tempreg1 = randint(1,31)
     while (tempreg2 in [rs1, rs2, tempreg1]):
       tempreg2 = randint(1,31)
     storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+    if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n" # ***
+    else:
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
     if (flen > xlen): # flen = 64, xlen = 32
       lines = lines + f"li x{tempreg1}, 0x{formatstrFP.format(rs2val)[2:10]} # load x3 with 32 LSBs of {formatstrFP.format(rs2val)}\n"
       lines = lines + f"li x{tempreg2}, 0x{formatstrFP.format(rs2val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(rs2val)}\n"
-      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
       lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
-      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
+      lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
       lines = lines + f"addi x{rs1}, x{rs1}, - 4 # move back to scratch\n"
-      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n"
     else:
       lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
-      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval, immOffset=True)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
-      lines = lines + f"{test} f{rd}, {signedImm12(immval, immOffset=True)}(x{rs1}) # perform operation\n"
+      lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
+    lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
       rs1 = randint(1, 31)
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
-    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval, immOffset=True) + "(x" + str(rs1) + ") # perform operation\n"
+    if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n" # ***
+    else:
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randint(1, 31)
@@ -1265,12 +1276,25 @@ def make_rnum(test, xlen):
   # TODO: This should iterate over the 10 values of rnum in the aes64ks1i instructions
   pass
 
+# Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
+# This function gives a simple hash as a random seed.
+def myhash(s):
+  h = 0
+  for c in s:
+    h = (h * 31 + ord(c)) & 0xFFFFFFFF
+  return h
+
 def write_tests(coverpoints, test, xlen):
   global NaNBox_tests
   for coverpoint in coverpoints:
     # produce a deterministic seed for repeatable random numbers 
     # distinct for each instruction and coverpoint
-    seed(hash(test + coverpoint)) 
+    testname = test + coverpoint
+    hashval = myhash(testname)
+    # hashval = hash(testname) # doesn't work because of Python hash randomization
+    #print(" Seeding " + testname + " with " + str(hashval))
+    seed(hashval)
+    #seed(hash(test + coverpoint)) 
     if (coverpoint == "cp_asm_count"):
       if (test == "c.nop" or test == "fence"):   # Writing cp_asm_count for 'c.nop' only
         f.write("\n# Testcase cp_asm_count\n"+test+"\n")
