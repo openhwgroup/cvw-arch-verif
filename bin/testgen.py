@@ -1070,30 +1070,59 @@ def make_imm_zero(test, xlen):
   desc = "cp_imm_zero"
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
-def make_j_imm_ones_zeros(test, xlen):
+def make_imm_corners_jal(test, xlen):
   if (test == "jal"):
-    rng = range(2,12)
+    minrng = 3
+    maxrng = 13 # testing all 20 bits of immediate is too much code
   elif (test in ["c.jal", "c.j"]):
     f.write("\n.align 2" + " # Start at an address multiple of 4. Required for covering 2 byte jump.\n")
-    rng = range(1,11)
-  for align in rng:
-    lines = "\n# Testcase cp_imm_corners " + str(align) + "\n"
+    minrng = 2
+    maxrng = 11
+  rng = range(minrng,maxrng)
+  # Test smallest offset as special case
+  lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
+  lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one"
+  if (test == "jal"):
+    lines = lines + test + " x1, 1f\n"
+  else:
+    lines = lines + test + " 1f\n"  # c.jal, c.j
+  lines = lines + "1:\n"
+  if (test == "jal"):
+    lines = lines + test + " x1, f"+str(minrng)+"_"+test+"\n"
+  else:
+    lines = lines + test + " f"+str(minrng)+"_"+test+"\n"  # c.jal, c.j
+  f.write(lines)
+  for r in rng:
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
+    lines = lines + ".align " + str(r-1) + "\n"
+    lines = lines + "b"+ str(r-1)+"_"+test+":\n"
     if (test == "jal"):
-      lines = lines + "jal x20, 1f # jump to aligned address to stress immediate\n"
+      lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
-      lines = lines + test + " 1f # jump to aligned address to stress immediate\n"
-    lines = lines + ".align " + str(align) + "\n"
-    lines = lines + "1:\n"
+      lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+    lines = lines + ".align " + str(r-1) + "\n"
+    lines = lines + "f" +str(r)+"_"+test+":\n"
+    if (test == "jal"):
+      lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+    elif (test in ["c.jal", "c.j"]):
+      lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
     f.write(lines)
+  lines = ".align " + str(maxrng-1) + "\n"
+  lines = "f"+str(maxrng)+"_"+test+":\n"
+  f.write(lines)
 
-def make_jalr_imm_ones_zeros(test, xlen):
-  for i in range(0,12):
-    imm_value = 2**i # immediate value from 2^0 to 2^11
+def make_imm_corners_jalr(test, xlen):
+  for immval in corners_imm_12bit:
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     lines = "\n# Testcase cp_imm_corners bin " + str(i) + "_1 \n"
-    lines = lines + "la x21, 1f\n" #load the address of the label '1' into x21
-    lines = lines + "addi x21, x21, " + signedImm12(-imm_value, immOffset=True)  + "\n"
-
-    lines = lines + "jalr x20, x21, "+ signedImm12(imm_value, immOffset=True) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "la x"+str(rs1)+", 1f\n" #load the address of the label '1' into x21
+    if (immval == -2048):
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
+    else:
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + "jalr x20, x21, "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
     lines = lines + "1:\n"
     f.write(lines)
 
@@ -1457,17 +1486,17 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
     elif (coverpoint == "cp_imm_corners_jal"):
-      make_j_imm_ones_zeros(test, xlen)
+      make_imm_corners_jal(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"):
       make_rd_corners(test,xlen,corners_sraiw)
     elif (coverpoint == "cp_imm_corners"):
       #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
       if (test == "jalr"):
-        make_jalr_imm_ones_zeros(test, xlen)
+        make_imm_corners_jalr(test, xlen)
     elif (coverpoint == "cp_imm_corners_addi4spn"):
        pass # not needed and seems to be covered by other things
     elif (coverpoint == "cp_imm_corners_c_jal"):
-        make_j_imm_ones_zeros(test,xlen)
+        make_imm_corners_jal(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
