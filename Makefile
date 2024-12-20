@@ -13,7 +13,6 @@ PRIVDIR32  := $(PRIVDIR)/rv32
 WORK       := work
 SRCEXT     := S
 OBJEXT     := elf
-VM_test    := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -110,8 +109,6 @@ sim:
 	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
 	#wsim rv64gc $(TESTDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
-
-
 	$(MAKE) merge
 
 # Merge coverage files and generate report
