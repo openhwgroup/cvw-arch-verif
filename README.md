@@ -19,50 +19,50 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Extension | RV32 | RV64 | Notes |
 | --- | --- | --- | --- |
 | **Unprivileged** |
-| I | | | Integer base | 
-| M | | | Mul/div |
-| F | | | Floating-point |
-| D | | | Double-precision floating-point |
-| Zfh |  | | Half-precision floating-point |
-| Zfhmin |  | | Half-precision transfers/converts |
-| Zfa | | | Additonal floating-point: F, D, Zfh |
-| Zaamo | | | A extension: atomic memory operations |
-| Zalrsc | | | A extension: load reserved/store conditional |
-| Zba | | | B extension: address generation |
-| Zbb | | | B extension: basic bit manipulation |
-| Zbc | | | B extension: carry-free multiplication |
-| Zbs | | | B extension: single-bit operations |
-| Zca | | | Compressed instructions |
-| Zcb | | | Additional compressed instructions |
-| Zcf |only | | RV32 compressed single-precision fp |
-| Zcd | | | Compressed double-precision fp |
-| Zbkb | | | Basic bit manipulation for crypto |
-| Zbkc | | | Carry free multiplication for crypto | 
-| Zbkx |  | | Crossbar permutations for crypto |
-| Zknd | | | AES decryption |
-| Zkne | | | AES encryption |
-| Zknh | | | SHA2 hash |
-| Zicond | | | Conditional zero |
-| Zicbom | | | Cache block management, architecturally invisible |
-| Zicboz | | | Cach block zero |
-| Zicsr | | | CSR read/write/set/clear |
-| Zifencei | | | Instruction/data synchronization |
+| I | x|x | Integer base | 
+| M | x|x | Mul/div |
+| F |x |x | Floating-point |
+| D |x |x | Double-precision floating-point |
+| Zfh |x |x | Half-precision floating-point |
+| Zfhmin |x |x | Half-precision transfers/converts |
+| Zfa |x |x | Additonal floating-point: F, D, Zfh |
+| Zaamo |x |x | A extension: atomic memory operations |
+| Zalrsc |x |x | A extension: load reserved/store conditional |
+| Zba |x |x | B extension: address generation |
+| Zbb |x |x | B extension: basic bit manipulation |
+| Zbs |x |x | B extension: single-bit operations |
+| Zbc |x |x | Carry-free multiplication |
+| Zca |x |x | Compressed instructions |
+| Zcb |x |x | Additional compressed instructions |
+| Zcf |x | | RV32 compressed single-precision fp |
+| Zcd |x |x | Compressed double-precision fp |
+| Zbkb |x |x | Basic bit manipulation for crypto |
+| Zbkc |x |x | Carry free multiplication for crypto | 
+| Zbkx |x |x | Crossbar permutations for crypto |
+| Zknd |x |x | AES decryption |
+| Zkne |x |x | AES encryption |
+| Zknh |x |x | SHA2 hash |
+| Zicond |x |x | Conditional zero |
+| Zicbom |x |x | Cache block management, architecturally invisible |
+| Zicboz |x |x | Cach block zero |
+| Zicsr |x |x | CSR read/write/set/clear instructions |
+| Zifencei |x |x | Instruction/data synchronization |
 | **Privileged** |
-| Zicsr | | | Excercise CSRs in each mode: M, S, U, F |
-| Exceptions | | | Exceptions: M, S, U, F, Zc, ZicboU, ZicboS, Zalrsc, Zaamo |
-| Interrupts | | | Interrupts: M, S, U, Sstc |
+| Zicsr |x |x | Excercise CSRs in each mode: M, S, U, F |
+| Exceptions |x |x | Exceptions: M, S, U, F, Zc, ZicboU, ZicboS, Zalrsc, Zaamo |
+| Interrupts |x |x | Interrupts: M, S, U, Sstc |
 | VM | SV32 | SV39/48 | Virtual Memory: Svbare, Sv32/39/48, Svade, Svadu, Sstvecd, Svinval, Svnapot |
-| PMP | | | Physical memory protection
-| Endian | | | Big vs. little endian: M, S, U |
-| Zicntr| | | Counters and performance monitors |
+| PMP |x |x | Physical memory protection
+| Endian |x |x | Big vs. little endian: M, S, U |
+| Zicntr|x |x | Counters and performance monitors |
 | **Miscellaneous** |
-| Fences | | | Tested in Zicsr |
-| Zihintpause | | | Tested in Zicsr |
-| Zicclsm | | | Misaligned access support is implicitly tested through accesses |
-| Ss1p12 | | | Implicit in Zicsr |
-| Sstvala | | | stval implicity tested through exceptions |
-| Sscounterenw | | | Writable scounteren tested through Zicntr |
-| Ssu64xl | |only| sstatus.UXL tested through Zicsr |
+| Fences |x |x | Tested in Zicsr |
+| Zihintpause |x |x | Tested in Zicsr |
+| Zicclsm |x |x | Misaligned access support is implicitly tested through accesses |
+| S{m/s}1p12 |x |x | Implicit in Zicsr |
+| Sstvala |x |x | stval implicity tested through exceptions |
+| Sscounterenw |x |x | Writable scounteren tested through Zicntr |
+| Ssu64xl | |x| RV64 sstatus.UXL tested through Zicsr |
 | **Untested** |
 | PMA | | | Implementation dependent, not architectural |
 | Ziccif | | | Main memory cachability and coherence part of PMA |

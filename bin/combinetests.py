@@ -30,7 +30,7 @@ def insertTests(out, file):
 			elif body == 1:
 				out.write(line)
 
-def combiineDir(testdir):
+def combineDir(testdir):
 	print("Combining "+testdir)
 	files = os.listdir(testdir)
 	with open(testdir+"/WALLY-COV-ALL.S", "w") as out:
@@ -49,5 +49,7 @@ templatedir = 	f"{ARCH_VERIF}/templates"
 for arch in ["rv32", "rv64"]:
 	for ext in next(os.walk(testbasedir+"/"+arch))[1]:
 		testdir = f"{testbasedir}/{arch}/{ext}"
-		combiineDir(testdir)
+		# Only combine tests if the directory exists and has tests
+		if (len(os.listdir(testdir)) > 0):
+			combineDir(testdir)
 

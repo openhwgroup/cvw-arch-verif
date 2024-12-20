@@ -1,0 +1,37 @@
+    cmp_rs1_rs2 : coverpoint ins.current.rs1 == ins.current.rs2  iff (ins.trap == 0 )  {
+        //Compare RS1 and RS2 register assignment
+        bins x0  = {1} iff (ins.current.rs1 == "x0");
+        bins x1  = {1} iff (ins.current.rs1 == "x1");
+        bins x2  = {1} iff (ins.current.rs1 == "x2");
+        bins x3  = {1} iff (ins.current.rs1 == "x3");
+        bins x4  = {1} iff (ins.current.rs1 == "x4");
+        bins x5  = {1} iff (ins.current.rs1 == "x5");
+        bins x6  = {1} iff (ins.current.rs1 == "x6");
+        bins x7  = {1} iff (ins.current.rs1 == "x7");
+        bins x8  = {1} iff (ins.current.rs1 == "x8");
+        bins x9  = {1} iff (ins.current.rs1 == "x9");
+        bins x10  = {1} iff (ins.current.rs1 == "x10");
+        bins x11  = {1} iff (ins.current.rs1 == "x11");
+        bins x12  = {1} iff (ins.current.rs1 == "x12");
+        bins x13  = {1} iff (ins.current.rs1 == "x13");
+        bins x14  = {1} iff (ins.current.rs1 == "x14");
+        bins x15  = {1} iff (ins.current.rs1 == "x15");
+`ifndef COVER_BASE_E
+        bins x16  = {1} iff (ins.current.rs1 == "x16");
+        bins x17  = {1} iff (ins.current.rs1 == "x17");
+        bins x18  = {1} iff (ins.current.rs1 == "x18");
+        bins x19  = {1} iff (ins.current.rs1 == "x19");
+        bins x20  = {1} iff (ins.current.rs1 == "x20");
+        bins x21  = {1} iff (ins.current.rs1 == "x21");
+        bins x22  = {1} iff (ins.current.rs1 == "x22");
+        bins x23  = {1} iff (ins.current.rs1 == "x23");
+        bins x24  = {1} iff (ins.current.rs1 == "x24");
+        bins x25  = {1} iff (ins.current.rs1 == "x25");
+        bins x26  = {1} iff (ins.current.rs1 == "x26");
+        bins x27  = {1} iff (ins.current.rs1 == "x27");
+        bins x28  = {1} iff (ins.current.rs1 == "x28");
+        bins x29  = {1} iff (ins.current.rs1 == "x29");
+        bins x30  = {1} iff (ins.current.rs1 == "x30");
+        bins x31  = {1} iff (ins.current.rs1 == "x31");
+`endif
+    }
