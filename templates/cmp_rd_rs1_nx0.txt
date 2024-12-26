@@ -2,4 +2,3 @@
         //Compare assignments of all 31 registers excluding x0
         ignore_bins x0 = {5'b00000};
     }
-    

@@ -1,5 +1,6 @@
     cp_imm_corners_c_jal : coverpoint signed'(ins.current.imm-ins.current.pc_rdata)  iff (ins.trap == 0 )  {
         // imm hold destination and pc_rdata holds current pc, so imm-pc_rdata is the jump offset
+        bins b_2     = {2};
         bins b_4     = {4};
         bins b_8     = {8};
         bins b_16    = {16};
@@ -9,8 +10,7 @@
         bins b_256   = {256};
         bins b_512   = {512};
         bins b_1024  = {1024};
-        bins b_2048  = {2048};
-        bins b_4096  = {4096};
+        bins b_m2    = {-2};
         bins b_m4    = {-4};
         bins b_m8    = {-8};
         bins b_m16   = {-16};
