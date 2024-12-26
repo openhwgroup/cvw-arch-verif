@@ -1073,20 +1073,20 @@ def make_imm_zero(test, xlen):
 def make_imm_corners_jal(test, xlen):
   if (test == "jal"):
     minrng = 3
-    maxrng = 13 # testing all 20 bits of immediate is too much code
+    maxrng = 14 # testing all 20 bits of immediate is too much code
   elif (test in ["c.jal", "c.j"]):
     f.write("\n.align 2" + " # Start at an address multiple of 4. Required for covering 2 byte jump.\n")
     minrng = 2
-    maxrng = 11
+    maxrng = 13
   rng = range(minrng,maxrng)
   # Test smallest offset as special case
   lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
-  lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one"
+  lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one\n"
   if (test == "jal"):
     lines = lines + test + " x1, 1f\n"
   else:
     lines = lines + test + " 1f\n"  # c.jal, c.j
-  lines = lines + "1:\n"
+  lines = lines + "1: \n"
   if (test == "jal"):
     lines = lines + test + " x1, f"+str(minrng)+"_"+test+"\n"
   else:
@@ -1106,7 +1106,14 @@ def make_imm_corners_jal(test, xlen):
     if (test == "jal"):
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
-      lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      if (r == 12): # temporary fix for bug in compressed branches
+        if (test == "c.j"):
+          lines = lines + ".half 0xB001 # backward j by -2048 to b12; GCC is not generating this compressed branch properly per https://github.com/riscv-collab/riscv-gnu-toolchain/issues/1647\n"
+        else:
+          lines = lines + ".half 0x3001 # backward jal by -2048 to b12; GCC is not generating this compressed branch properly per https://github.com/riscv-collab/riscv-gnu-toolchain/issues/1647\n"
+          #lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      else:
+        lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
@@ -1114,15 +1121,17 @@ def make_imm_corners_jal(test, xlen):
 
 def make_imm_corners_jalr(test, xlen):
   for immval in corners_imm_12bit:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-    lines = "\n# Testcase cp_imm_corners bin " + str(i) + "_1 \n"
+    if (immval == 0):
+      continue
+    [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize()
+    lines = "\n# Testcase cp_imm_corners jalr " + str(immval) + " bin\n"
     lines = lines + "la x"+str(rs1)+", 1f\n" #load the address of the label '1' into x21
     if (immval == -2048):
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + "jalr x20, x21, "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
     lines = lines + "1:\n"
     f.write(lines)
 
@@ -1464,11 +1473,18 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cr_rs1_rs2_corners"):
       make_cr_rs1_rs2_corners(test, xlen)
     elif (coverpoint == "cp_imm_corners"):
-      make_cp_imm_corners(test, xlen, corners_imm_12bit)
+      if (test == "jalr"):
+          make_imm_corners_jalr(test, xlen)
+      else:
+        make_cp_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cp_imm_corners_20bit"):
       make_cp_imm_corners(test, xlen, corners_imm_20bit)
     elif (coverpoint == "cp_imm_corners_6bit"):
       make_cp_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cp_imm_corners_jal"):
+      make_imm_corners_jal(test, xlen)
+    elif (coverpoint == "cp_imm_corners_c_jal"):
+        make_imm_corners_jal(test,xlen)
     elif (coverpoint == "cr_rs1_imm_corners"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
@@ -1485,18 +1501,8 @@ def write_tests(coverpoints, test, xlen):
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
-    elif (coverpoint == "cp_imm_corners_jal"):
-      make_imm_corners_jal(test, xlen)
     elif (coverpoint == "cp_rd_corners_sraiw"):
       make_rd_corners(test,xlen,corners_sraiw)
-    elif (coverpoint == "cp_imm_corners"):
-      #cover point for jalr would still pass since it is getting covered by other instructions. But still testing it for satisfaction.
-      if (test == "jalr"):
-        make_imm_corners_jalr(test, xlen)
-    elif (coverpoint == "cp_imm_corners_addi4spn"):
-       pass # not needed and seems to be covered by other things
-    elif (coverpoint == "cp_imm_corners_c_jal"):
-        make_imm_corners_jal(test,xlen)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
@@ -1893,32 +1899,6 @@ if __name__ == '__main__':
       corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
       if (xlen == 32):
         corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        fcorners = fcorners + [0x00000000,
-                               0x80000000,
-                               0x3f800000,
-                               0xbf800000,
-                               0x3fc00000,
-                               0xbfc00000,
-                               0x40000000,
-                               0xc0000000,
-                               0x00800000,
-                               0x80800000,
-                               0x7f7fffff,
-                               0xff7fffff,
-                               0x007fffff,
-                               0x807fffff,
-                               0x00400000,
-                               0x80400000,
-                               0x00000001,
-                               0x80000001,
-                               0x7f800000,
-                               0xff800000,
-                               0x7fc00000,
-                               0x7fffffff,
-                               0x7f800001,
-                               0x7fbfffff,
-                               0x7ef8654f,
-                               0x813d9ab0]
       else:
         corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
@@ -1965,63 +1945,92 @@ if __name__ == '__main__':
                             0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
 
 
-      fcorners = [0x00000000, 0x80000000, 0x3f800000, 0xbf800000, 0x3fc00000, 0xbfc00000, 0x40000000, 0xc0000000, 0x00800000,
-                  0x80800000, 0x7f7fffff, 0xff7fffff, 0x007fffff, 0x807fffff, 0x00400000, 0x80400000, 0x00000001, 0x80000001,
-                  0x7f800000, 0xff800000, 0x7fc00000, 0x7fffffff, 0x7f800001, 0x7fbfffff, 0x7ef8654f, 0x813d9ab0]
+      fcorners =            [0x00000000, # 0
+                               0x80000000, # -0
+                               0x3f800000, # 1.0
+                               0xbf800000, # -1.0
+                               0x3fc00000, # 1.5
+                               0xbfc00000, # -1.5
+                               0x40000000,  # 2.0
+                               0xc0000000,  # -2.0 
+                               0x00800000,  # smallest positive normalized
+                               0x80800000,  # smallest negative normalized
+                               0x7f7fffff,  # most positive
+                               0xff7fffff,  # most negative
+                               0x007fffff,  # largest positive subnorm
+                               0x807fffff,  # largest negative subnorm
+                               0x00400000,  # positive subnorm with leading 1
+                               0x80400000,  # negative subnorm with leading 1
+                               0x00000001,  # smallest positive subnorm
+                               0x80000001,  # smallest negative subnorm
+                               0x7f800000,  # positive infinity
+                               0xff800000,  # negative infinity
+                               0x7fc00000,  # canonical quiet NaN
+                               0x7fffffff,  # noncanonical quiet NaN
+                               0xffffffff,  # noncanonical quiet NaN with sign bit set
+                               0x7f800001,  # signaling NaN with lsb set
+                               0x7fbfffff,  # signaling NaN with all mantissa bits set
+                               0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
+                               0x7ef8654f,  # random positive 1.65087e+38
+                               0x813d9ab0]  # random negative -3.48248e-38
 
-      fcornersD = [0x0000000000000000,
-                  0x8000000000000000,
-                  0x3FF0000000000000,
-                  0xBFF0000000000000,
-                  0x3FF8000000000000,
-                  0xBFF8000000000000,
-                  0x4000000000000000,
-                  0xc000000000000000,
-                  0x0010000000000000,
-                  0x8010000000000000,
-                  0x7FEFFFFFFFFFFFFF,
-                  0xFFEFFFFFFFFFFFFF,
-                  0x000FFFFFFFFFFFFF,
-                  0x800FFFFFFFFFFFFF,
-                  0x0008000000000000,
-                  0x8008000000000000,
-                  0x0000000000000001,
-                  0x8000000000000001,
-                  0x7FF0000000000000,
-                  0xFFF0000000000000,
-                  0x7FF8000000000000,
-                  0x7FFFFFFFFFFFFFFF,
-                  0x7FF0000000000001,
-                  0x7FF7FFFFFFFFFFFF,
-                  0x5A392534A57711AD,
-                  0xA6E895993737426C]
+      fcornersD = [0x0000000000000000, # 0.0
+                  0x8000000000000000,  # -0.0
+                  0x3FF0000000000000,  # 1.0
+                  0xBFF0000000000000,  # -1.0
+                  0x3FF8000000000000,  # 1.5
+                  0xBFF8000000000000,  #-1.5
+                  0x4000000000000000,  # 2.0
+                  0xc000000000000000,  # -2.0
+                  0x0010000000000000,  # smallest positive normalized
+                  0x8010000000000000,  # smallest negative normalized
+                  0x7FEFFFFFFFFFFFFF,  # most positive normalized
+                  0xFFEFFFFFFFFFFFFF,  # most negative normalized
+                  0x000FFFFFFFFFFFFF,  # largest positive subnorm
+                  0x800FFFFFFFFFFFFF,  # largest negative subnorm
+                  0x0008000000000000,  # mid positive subnorm
+                  0x8008000000000000,  # mid negative subnorm
+                  0x0000000000000001,  # smallest positive subnorm
+                  0x8000000000000001,  # smallest negative subnorm
+                  0x7FF0000000000000,  # positive infinity
+                  0xFFF0000000000000,  # negative infinity
+                  0x7FF8000000000000,  # canonical quiet NaN
+                  0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
+                  0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
+                  0x7FF0000000000001,  # signaling NaN with lsb set
+                  0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
+                  0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
+                 0x5A392534A57711AD, # 4.25535e126 random positive
+                  0xA6E895993737426C] # -2.97516e-121 random negative
 
-      fcornersH = [0x0000,
-                   0x8000,
-                   0x3C00,
-                   0xBC00,
-                   0x3E00,
-                   0xBE00,
-                   0x4000,
-                   0xC000,
-                   0x0400,
-                   0x8400,
-                   0x7BFF,
-                   0xFBFF,
-                   0x03FF,
-                   0x83FF,
-                   0x0200,
-                   0x8200,
-                   0x0001,
-                   0x8001,
-                   0x7C00,
-                   0xFC00,
-                   0x7E00,
-                   0x7FFF,
-                   0x7C01,
-                   0x7DFF,
-                   0x58B4,
-                   0xC93A]
+      fcornersH = [0x0000, # 0.0
+                   0x8000, # -0.0
+                   0x3C00, # 1.0
+                   0xBC00, # -1.0
+                   0x3E00, # 1.5
+                   0xBE00, # -1.5
+                   0x4000, # 2.0
+                   0xC000, # -2.0
+                   0x0400, # smallest normalized
+                   0x8400, # smallest negative normalized
+                   0x7BFF, # most positive normalized
+                   0xFBFF, #  most negative normalized
+                   0x03FF, # largest positive subnorm
+                   0x83FF,  # largest negative subnorm
+                   0x0200,  # positive subnorm with leading 1
+                   0x8200,  # negative subnorm with leading 1
+                   0x0001, # smallest positive subnorm
+                   0x8001,  # smallest negative subnorm
+                   0x7C00,  # positive infinity
+                   0xFC00,  # negative infinity
+                   0x7E00,  # canonical quiet NaN
+                   0x7FFF,  # noncanonical quiet NaN
+                   0xFE00,  # noncanonical quiet NaN with sign bit set
+                   0x7C01, # signaling NaN with lsb set
+                   0x7DFF,  # signaling NaN with all mantissa bits set
+                   0xFC01,  # signaling NaN with lsb and sign bits set
+                   0x58B4,  # 150.5 random positive
+                   0xC93A]  # -10.4531 random negative
 
       # fcornersQ = [] # TODO: Fill out quad precision F corners
 

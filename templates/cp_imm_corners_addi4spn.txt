@@ -1,4 +1,0 @@
-    cp_imm_corners_addi4spn : coverpoint unsigned'(ins.current.imm)  iff (ins.trap == 0 )  {
-        // Imme
-        bins ones = {4, 8, 12, 16, 32, 64, 128, 256, 508, 512, 1020};
-    }
