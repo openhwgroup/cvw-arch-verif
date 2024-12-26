@@ -188,6 +188,10 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
         // Exhaustive test of 2 * 2^12 complicated bins for I-type instructions with op = 00100011 and funct3 = 1 or 5, and any imm_11:0
         // includes integer shifts, Zbb, Zbs, Zbkb, Zknd, Zkne, Zknh
     }
+    cp_aes64ks1i : coverpoint ins.current.insn[24:20] iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[14:12] == 3'b001 & ins.current.insn[31:25] == 7'b0011000) {
+        // Exhaustively cover all rs2 fields of aes64ks1i to exercise illegal bit 4 or rnum
+    }
+
     // RV64IW instruction space: op = 0011011
     cp_IWtype : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0011011) { 
         // exercise all 8 bins.  All are illegal in rv32
