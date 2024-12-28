@@ -1161,6 +1161,44 @@ def make_offset(test, xlen):
   lines = lines + "3: nop # done with sequence\n"
   f.write(lines)
 
+def make_offset_lsbs(test, xlen):
+  lines = "\n# Testcase cp_offset_lsbs\n"
+  if (test in jalrtype):
+    lines = lines + "la x3, jalrlsb1 # load address of label\n"
+    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
+    lines = lines + "nop # something to skip over\n"
+    lines = lines + "jalrlsb1: \n"
+    lines = lines + "la x3, jalrlsb2 # load address of label\n"
+    lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + "jalr x1, x3, -2 # jump to label + 1, extra plus 1 should be discarded\n"
+    lines = lines + "nop # something to skip over\n"
+    lines = lines + "jalrlsb2: \n"
+  else: # c.jalr / c.jr
+    lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
+    lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
+    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + ".align 2\n"
+    lines = lines + test+"lsb00: nop\n"
+    lines = lines + "la x3, "+test+"lsb01 # load address of label\n"
+    lines = lines + "addi x3, x3, 1 # add 1 to address\n"
+    lines = lines + test + " x3 # jump to address with bottom two lsbs = 01\n"
+    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + ".align 2\n"
+    lines = lines + test+"lsb01: nop\n"
+    lines = lines + "la x3, "+test+"lsb10 # load address of label\n"
+    lines = lines + "addi x3, x3, 2 # add 2 to address\n"
+    lines = lines + test + " x3 # jump to address with bottom two lsbs = 10\n"
+    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + ".align 2\n"
+    lines = lines + test+"lsb10: nop\n"
+    lines = lines + "la x3, "+test+"lsb11 # load address of label\n"
+    lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + test + " x3 # jump to address with bottom two lsbs = 11\n"
+    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + ".align 2\n"
+    lines = lines + test+"lsb11: nop\n"
+  f.write(lines)
+
 def make_mem_hazard(test, xlen):
   lines = "\n# Testcase mem_hazard (no dependency)\n"
   lines = lines + "la x1, scratch\n"
@@ -1513,6 +1551,8 @@ def write_tests(coverpoints, test, xlen):
       pass # seems this should be part of privileged tests
     elif (coverpoint == "cp_offset"):
       make_offset(test, xlen)
+    elif (coverpoint == "cp_offset_lsbs"):
+      make_offset_lsbs(test, xlen)
     elif (coverpoint == "cr_nord_rs1_rs2"):
       pass #TODO (not if crosses are not needed)
     elif (coverpoint == "cp_imm_shift" or coverpoint == "cp_imm_shift_c" or coverpoint == "cp_imm_shift_w"):
