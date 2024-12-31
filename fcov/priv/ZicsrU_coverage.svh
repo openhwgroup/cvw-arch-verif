@@ -23,7 +23,7 @@
 `define COVER_ZICSRU
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsru_t;
 
-covergroup ucsr_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
     option.per_instance = 0; 
     // "ZicsrU ucsr"
 
@@ -63,7 +63,7 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
     cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
 endgroup
 
-covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
     option.per_instance = 0; 
     // "ZicsrU uprivinst"
 
@@ -103,7 +103,7 @@ function void zicsru_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    ucsr_cg.sample(ins);
-    uprivinst_cg.sample(ins);
+    ZicsrU_ucsr_cg.sample(ins);
+    ZicsrU_uprivinst_cg.sample(ins);
     
 endfunction

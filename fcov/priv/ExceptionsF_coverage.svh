@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSF
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsf_t;
 
-covergroup exceptionsF_cg with function sample(ins_exceptionsf_t ins);
+covergroup ExceptionsF_exceptions_cg with function sample(ins_exceptionsf_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -106,6 +106,6 @@ function void exceptionsf_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    exceptionsF_cg.sample(ins);
+    ExceptionsF_exceptions_cg.sample(ins);
     
 endfunction

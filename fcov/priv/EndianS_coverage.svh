@@ -23,7 +23,7 @@
 `define COVER_ENDIANS
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endians_t;
 
-covergroup endians_cg with function sample(ins_endians_t ins);
+covergroup EndianS_endian_cg with function sample(ins_endians_t ins);
     option.per_instance = 0; 
     // "Endianness tests in machine mode"
 
@@ -152,6 +152,6 @@ function void endians_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    endians_cg.sample(ins);
+    EndianS_endian_cg.sample(ins);
     
 endfunction

@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSZALRSC
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszalrsc_t;
 
-covergroup exceptionslrsc_cg with function sample(ins_exceptionszalrsc_t ins);
+covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_exceptionszalrsc_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -65,6 +65,6 @@ function void exceptionszalrsc_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    exceptionslrsc_cg.sample(ins);
+    ExceptionsZalrsc_exceptions_cg.sample(ins);
     
 endfunction

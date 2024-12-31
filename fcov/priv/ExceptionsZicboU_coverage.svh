@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSZICBOU
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszicbou_t;
 
-covergroup exceptionsZicboU_cg with function sample(ins_exceptionszicbou_t ins);
+covergroup ExceptionsZicboU_exceptions_cg with function sample(ins_exceptionszicbou_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -66,6 +66,6 @@ function void exceptionszicbou_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsZicboU_cg.sample(ins);
+    ExceptionsZicboU_exceptions_cg.sample(ins);
     
 endfunction

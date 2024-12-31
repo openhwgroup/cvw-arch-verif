@@ -23,7 +23,7 @@
 `define COVER_ENDIANU
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endianu_t;
 
-covergroup endianu_cg with function sample(ins_endianu_t ins);
+covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
     option.per_instance = 0; 
     // "Endianness tests in user mode"
 
@@ -128,6 +128,6 @@ function void endianu_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    endianu_cg.sample(ins);
+    EndianU_endian_cg.sample(ins);
     
 endfunction

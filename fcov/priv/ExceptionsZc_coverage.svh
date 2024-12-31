@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSZC
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszc_t;
 
-covergroup exceptionsZc_cg with function sample(ins_exceptionszc_t ins);
+covergroup ExceptionsZc_exceptions_cg with function sample(ins_exceptionszc_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -76,7 +76,7 @@ covergroup exceptionsZc_cg with function sample(ins_exceptionszc_t ins);
 endgroup
 
 // more detailed illegal instruction testing
-covergroup exceptionsInstrC_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsZc_instr_cg with function sample(ins_exceptionsm_t ins);
     option.per_instance = 0; 
 
     cp_compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {
@@ -110,7 +110,7 @@ function void exceptionszc_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsZc_cg.sample(ins);
-    exceptionsInstrC_cg.sample(ins);
+    ExceptionsZc_exceptions_cg.sample(ins);
+    ExceptionsZc_instr_cg.sample(ins);
 
 endfunction

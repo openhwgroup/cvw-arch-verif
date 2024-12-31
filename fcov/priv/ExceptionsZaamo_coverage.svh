@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSZAAMO
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszaamo_t;
 
-covergroup exceptionsamo_cg with function sample(ins_exceptionszaamo_t ins);
+covergroup ExceptionsZaamo_exceptions_cg with function sample(ins_exceptionszaamo_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -69,6 +69,6 @@ function void exceptionszaamo_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    exceptionsamo_cg.sample(ins);
+    ExceptionsZaamo_exceptions_cg.sample(ins);
     
 endfunction
