@@ -57,7 +57,7 @@ def csrtests(pathname, US):
         ih = hex(i)
         print("\n// Testing CSR "+ih)
         print("\tcsrr x"+str(reg1)+", "+ ih + "\t// Read CSR")
-        if (i < 0x3A0 or i > 0x3EF or US): # skip writing PMP registers, which are touchy and tested separately
+        if (i < 0x3A0 or i > 0x3A0 or US): # skip writing PMP registers, which are touchy and tested separately
             print("\tli x"+reg2+", -1")
             print("\tcsrrw x"+reg3+", "+ih+", x"+reg2+"\t// Write all 1s to CSR")
             print("\tcsrrw x"+reg3+", "+ih+", x0\t// Write all 0s to CSR")
