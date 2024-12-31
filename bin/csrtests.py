@@ -72,7 +72,7 @@ uregs = ["fflags", "frm", "fcsr"]
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
 pathname = f"{ARCH_VERIF}/tests/priv/Zicsr-CSR-Tests.h"
-csrtests(pathname) # make tests for M mode
+csrtests(pathname)
 
 pathname = f"{ARCH_VERIF}/tests/priv/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs);
