@@ -22,6 +22,11 @@ main:
     la t0, trap_handler_fastuncompressedillegalinstr
     csrw mtvec, t0
 
+    # For M-mode (ZicsrM) only, lock PMP region 0 so that all the PMP CSRs can be accessed without corrupting region 0
+    li t0, 0x8F 
+    csrw pmpcfg0, t0   # configure PMP0 to TOR RWX locked
+
+
 /////////////////////////////////
 // cp_mcause_write
 /////////////////////////////////
@@ -456,8 +461,6 @@ postsrettest:
 /////////////////////////////////
 
 #include "Zicsr-CSR-Tests.h"
-// for M mode, skips writing PMP CSRs that would hang the DUT when messed with like this
-// *** for ZicsrU/ZicsrS tests, also include Zicsr-CSR-USPMPWrite-Tests.h here to (unsuccessfully) try writing the PMP CSRs
 
 finished:
     j done
