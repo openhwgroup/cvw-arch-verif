@@ -20,7 +20,7 @@
 `define COVER_RV64ZICBOM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64zicbom_t;
 
-covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
+covergroup RV64VMZicbom_cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
     option.per_instance = 0; 
     priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
@@ -74,7 +74,7 @@ covergroup cbo_inval_cg with function sample(ins_rv64zicbom_t ins);
     }
 endgroup
 
-covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
+covergroup RV64VMZicbom_cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
     option.per_instance = 0; 
     priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
@@ -112,7 +112,7 @@ covergroup cbo_clean_cg with function sample(ins_rv64zicbom_t ins);
     }
 endgroup
 
-covergroup cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
+covergroup RV64VMZicbom_cbo_flush_cg with function sample(ins_rv64zicbom_t ins);
     option.per_instance = 0; 
     priv_mode: coverpoint ins.current.mode{
         bins not_M_mode = {!2'b11};
@@ -156,7 +156,7 @@ function void rv64zicbom_sample(int hart, int issue);
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
     
-    cbo_inval_cg.sample(ins);
-    cbo_clean_cg.sample(ins);
-    cbo_flush_cg.sample(ins);
+    RV64VMZicbom_cbo_inval_cg.sample(ins);
+    RV64VMZicbom_cbo_clean_cg.sample(ins);
+    RV64VMZicbom_cbo_flush_cg.sample(ins);
 endfunction

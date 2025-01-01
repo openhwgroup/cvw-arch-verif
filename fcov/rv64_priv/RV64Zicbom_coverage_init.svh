@@ -8,6 +8,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    cbo_inval_cg = new(); cbo_inval_cg.set_inst_name("obj_cbo_inval");
-    cbo_clean_cg = new(); cbo_clean_cg.set_inst_name("obj_cbo_clean");
-    cbo_flush_cg = new(); cbo_flush_cg.set_inst_name("obj_cbo_flush");
+    RV64VMZicbom_cbo_inval_cg = new(); RV64VMZicbom_cbo_inval_cg.set_inst_name("obj_RV64VMZicbom_cbo_inval");
+    RV64VMZicbom_cbo_clean_cg = new(); RV64VMZicbom_cbo_clean_cg.set_inst_name("obj_RV64VMZicbom_cbo_clean");
+    RV64VMZicbom_cbo_flush_cg = new(); RV64VMZicbom_cbo_flush_cg.set_inst_name("obj_RV64VMZicbom_cbo_flush");
