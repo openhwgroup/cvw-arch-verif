@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-exceptions_pmp_cg = new(); exceptions_pmp_cg.set_inst_name("obj_exceptions_vm");
+RV64CBO_PMP_exceptions_cg = new(); RV64CBO_PMP_exceptions_cg.set_inst_name("obj_RV64CBO_PMP_exceptions");

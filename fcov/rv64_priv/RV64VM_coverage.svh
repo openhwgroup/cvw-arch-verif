@@ -21,7 +21,7 @@
 `define COVER_RV64VM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_t;
 
-covergroup satp_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_satp_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
 
     mode_supported: coverpoint ins.current.csr[12'h180][63:60] { //sat.2
@@ -122,7 +122,7 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
     }
 endgroup
 
-covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
+covergroup RV64VM_PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
     option.per_instance = 0; 
     VA_i: coverpoint ins.current.VAdrI { 
         bins all_zeros = {64'd0};
@@ -155,14 +155,14 @@ covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all 
 
 endgroup
 
-covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
+covergroup RV64VM_sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
     option.per_instance = 0; 
     ins: coverpoint ins.current.insn { 
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
 
-covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
@@ -318,7 +318,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         
 endgroup
 
-covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.PTE_i[7:0] { //pte.2
@@ -990,7 +990,7 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     }
 endgroup
 
-covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins); 
+covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins); 
     option.per_instance = 0; 
     //pte.1
     RSW: coverpoint ins.current.PTE_i[9:8] {
@@ -1062,7 +1062,7 @@ covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins);
     }
 endgroup
 
-covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_add_feature_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     PTE_i: coverpoint ins.current.PTE_i[63:54] {
         bins all_zeros = {10'd0};
@@ -1171,13 +1171,13 @@ function void rv64vm_sample(int hart, int issue);
         ins.add_csr(0);
         ins.add_vm_signals(1);
         
-        PA_VA_cg.sample(ins);
-        satp_cg.sample(ins);
-        sfence_cg.sample(ins);
-        mstatus_mprv_cg.sample(ins);
-        vm_permissions_cg.sample(ins);
-        res_global_pte_cg.sample(ins);
-        add_feature_cg.sample(ins);
+        RV64VM_PA_VA_cg.sample(ins);
+        RV64VM_satp_cg.sample(ins);
+        RV64VM_sfence_cg.sample(ins);
+        RV64VM_mstatus_mprv_cg.sample(ins);
+        RV64VM_vm_permissions_cg.sample(ins);
+        RV64VM_res_global_pte_cg.sample(ins);
+        RV64VM_add_feature_cg.sample(ins);
 endfunction
 
    
