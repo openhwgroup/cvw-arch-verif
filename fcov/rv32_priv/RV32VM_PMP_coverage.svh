@@ -21,7 +21,7 @@
 `define COVER_RV32VM_PMP
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32vm_pmp_t;
 
-covergroup PMP_cg with function sample(ins_rv32vm_pmp_t ins);
+covergroup RV32VM_PMP_cg with function sample(ins_rv32vm_pmp_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i: coverpoint ins.current.PTE_i[7:0] {
@@ -161,6 +161,6 @@ function void rv32vm_pmp_sample(int hart, int issue);
     ins.add_csr(0);
     ins.add_vm_signals(1);
     
-    PMP_cg.sample(ins);
+    RV32VM_PMP_cg.sample(ins);
 endfunction
 
