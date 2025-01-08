@@ -18,6 +18,7 @@ from random import getrandbits
 import os
 import re
 import sys
+import filecmp
 
 ##################################
 # functions
@@ -1920,7 +1921,7 @@ if __name__ == '__main__':
       coverfiles = [extension]
       coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
       #print(extension+": "+str(coverpoints))
-      print("Generating tests for " + extension)
+      print("Generating tests for rv" + str(xlen) + "/" + extension)
       formatstrlen = str(int(xlen/4))
       formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
       formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
@@ -2122,23 +2123,26 @@ if __name__ == '__main__':
       # global NaNBox_tests
       NaNBox_tests = False
 
-      pathname = f"{ARCH_VERIF}/tests/rv{xlen}/{extension}/"
-      cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+      pathname = f"{ARCH_VERIF}/tests/rv{xlen}/{extension}"
+      # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+      cmd = "mkdir -p " + pathname # make directory
       os.system(cmd)
       for test in coverpoints.keys():
-        #print("Generating test for ", test, " with entries: ", coverpoints[test])
+        # print("Generating test for ", test, " with entries: ", coverpoints[test])
 
         basename = "WALLY-COV-" + test
         fname = pathname + "/" + basename + ".S"
+        tempfname = pathname + "/" + basename + "_temp.S"
 
         # print custom header part
-        f = open(fname, "w")
+        f = open(tempfname, "w")
         line = "///////////////////////////////////////////\n"
         f.write(line)
         line="// "+fname+ "\n// " + author + "\n"
         f.write(line)
-        line ="// Created " + str(datetime.now()) + "\n"
-        f.write(line)
+        # Don't print creation date because this forces rebuild of files that are otherwise identical
+        #line ="// Created " + str(datetime.now()) + "\n"
+        #f.write(line)
 
         # insert generic header
         h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
@@ -2159,5 +2163,16 @@ if __name__ == '__main__':
         for line in h:
           f.write(line)
 
-      # Finish
-      f.close()
+        # Finish
+        f.close()
+
+        # if new file is different from old file, replace old file with new file
+        if os.path.exists(fname):
+          if filecmp.cmp(fname, tempfname): # files are the same
+            os.system(f"rm {tempfname}") # remove temp file
+          else:
+            os.system(f"mv {tempfname} {fname}")
+            print("Updated " + fname)
+        else:
+          os.system(f"mv {tempfname} {fname}")
+

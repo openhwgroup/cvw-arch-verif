@@ -11,6 +11,7 @@
 import os
 import re
 import sys
+import filecmp
 
 def insertTemplate(out, template):
 	with open(templatedir+"/"+template) as f:
@@ -31,14 +32,24 @@ def insertTests(out, file):
 				out.write(line)
 
 def combineDir(testdir):
-	print("Combining "+testdir)
 	files = os.listdir(testdir)
-	with open(testdir+"/WALLY-COV-ALL.S", "w") as out:
+	fname = testdir+"/WALLY-COV-ALL.S"
+	tempfname = testdir+"/WALLY-COV-ALL_temp.S"
+	with open(tempfname, "w") as out:
 		insertTemplate(out, "testgen_header.S")
 		for file in files:
-			if (file.endswith(".S") and file != "WALLY-COV-ALL.S"):
+			if (file.endswith(".S") and file != "WALLY-COV-ALL.S" and file != "WALLY-COV-ALL_temp.S"):
 				insertTests(out, file)
 		insertTemplate(out, "testgen_footer.S")
+	# if new file is different from old file, replace old file with new file
+	if os.path.exists(fname):
+		if filecmp.cmp(fname, tempfname): # files are the same
+			os.system(f"rm {tempfname}") # remove temp file
+		else:
+			os.system(f"mv {tempfname} {fname}")
+			print("Combining "+fname)
+	else:
+		os.system(f"mv {tempfname} {fname}")
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
