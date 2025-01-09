@@ -2073,113 +2073,118 @@ if __name__ == '__main__':
                         0xa1b27C01,
                         0x4fd77DFF]
 
-  # generate files for each test
-  for xlen in xlens:
-    for E_ext in [False, True]:
-      if (E_ext):
-        extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]  
-        E_suffix = "e"
-        maxreg = 15 # E uses registers x0-x15
-      else:
-        extensions = getExtensions() # find all extensions in 
-        E_suffix = ""
-        maxreg = 31 # I uses registers x0-x31
-      #print(extensions)
-      for extension in extensions:
-        coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
-        coverfiles = [extension]
-        coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
-        pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
-        #print(extension+": "+str(coverpoints))
-        print("Generating tests for " + pathname)
-        formatstrlen = str(int(xlen/4))
-        formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-        formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-        if (xlen == 32):
-          storecmd = "sw"
-          wordsize = 4
+  # generate files for each test\
+  for lockstep in [False, True]:
+    if (lockstep):
+      subdir = "lockstep"
+    else:
+      subdir = "signature"
+    for xlen in xlens:
+      for E_ext in [False, True]:
+        if (E_ext):
+          extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]  
+          E_suffix = "e"
+          maxreg = 15 # E uses registers x0-x15
         else:
-          storecmd = "sd"
-          wordsize = 8
-        if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
-          flen = 64
-        else:
-          flen = 32
-        formatstrlenFP = str(int(flen/4))
-        formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        if (xlen == 32):
-          corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        else:
-          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
-                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+          extensions = getExtensions() # find all extensions in 
+          E_suffix = ""
+          maxreg = 31 # I uses registers x0-x31
+        #print(extensions)
+        for extension in extensions:
+          coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+          coverfiles = [extension]
+          coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
+          pathname = f"{ARCH_VERIF}/tests/{subdir}/rv{xlen}{E_suffix}/{extension}"
+          #print(extension+": "+str(coverpoints))
+          print("Generating tests for " + pathname)
+          formatstrlen = str(int(xlen/4))
+          formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+          formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+          if (xlen == 32):
+            storecmd = "sw"
+            wordsize = 4
+          else:
+            storecmd = "sd"
+            wordsize = 8
+          if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+            flen = 64
+          else:
+            flen = 32
+          formatstrlenFP = str(int(flen/4))
+          formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
+          corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+          if (xlen == 32):
+            corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+          else:
+            corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
+                                0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
+                                0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
+                                0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
+                                0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
+                                0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
+                                0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                          0b0000000000000000000000000000000000000000000000000000000000000001,
-                          0b1111111111111111111111111111111111111111111111111111111111111111,
-                          0b0000000000000000000000000000000001111111111111111111111111111111,
-                          0b1111111111111111111111111111111110000000000000000000000000000000]
+            corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                            0b0000000000000000000000000000000000000000000000000000000000000001,
+                            0b1111111111111111111111111111111111111111111111111111111111111111,
+                            0b0000000000000000000000000000000001111111111111111111111111111111,
+                            0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
 
 
-        # global NaNBox_tests
-        NaNBox_tests = False
+          # global NaNBox_tests
+          NaNBox_tests = False
 
-        # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-        cmd = "mkdir -p " + pathname # make directory
-        os.system(cmd)
-        for test in coverpoints.keys():
-          # print("Generating test for ", test, " with entries: ", coverpoints[test])
+          # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+          cmd = "mkdir -p " + pathname # make directory
+          os.system(cmd)
+          for test in coverpoints.keys():
+            # print("Generating test for ", test, " with entries: ", coverpoints[test])
 
-          basename = "WALLY-COV-" + test
-          fname = pathname + "/" + basename + ".S"
-          tempfname = pathname + "/" + basename + "_temp.S"
+            basename = "WALLY-COV-" + test
+            fname = pathname + "/" + basename + ".S"
+            tempfname = pathname + "/" + basename + "_temp.S"
 
-          # print custom header part
-          f = open(tempfname, "w")
-          line = "///////////////////////////////////////////\n"
-          f.write(line)
-          line="// "+fname+ "\n// " + author + "\n"
-          f.write(line)
-          # Don't print creation date because this forces rebuild of files that are otherwise identical
-          #line ="// Created " + str(datetime.now()) + "\n"
-          #f.write(line)
-
-          # insert generic header
-          h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
-          for line in h:
+            # print custom header part
+            f = open(tempfname, "w")
+            line = "///////////////////////////////////////////\n"
             f.write(line)
-
-          # add assembly lines to enable fp where needed
-          if test in floattypes:
-            float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
-            f.write(float_en)
-
-          write_tests(coverpoints[test], test, xlen)
-
-          # print footer
-          line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
-          f.write(line)
-          h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
-          for line in h:
+            line="// "+fname+ "\n// " + author + "\n"
             f.write(line)
+            # Don't print creation date because this forces rebuild of files that are otherwise identical
+            #line ="// Created " + str(datetime.now()) + "\n"
+            #f.write(line)
 
-          # Finish
-          f.close()
+            # insert generic header
+            h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
+            for line in h:
+              f.write(line)
 
-          # if new file is different from old file, replace old file with new file
-          if os.path.exists(fname):
-            if filecmp.cmp(fname, tempfname): # files are the same
-              os.system(f"rm {tempfname}") # remove temp file
+            # add assembly lines to enable fp where needed
+            if test in floattypes:
+              float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+              f.write(float_en)
+
+            write_tests(coverpoints[test], test, xlen)
+
+            # print footer
+            line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
+            f.write(line)
+            h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
+            for line in h:
+              f.write(line)
+
+            # Finish
+            f.close()
+
+            # if new file is different from old file, replace old file with new file
+            if os.path.exists(fname):
+              if filecmp.cmp(fname, tempfname): # files are the same
+                os.system(f"rm {tempfname}") # remove temp file
+              else:
+                os.system(f"mv {tempfname} {fname}")
+                print("Updated " + fname)
             else:
               os.system(f"mv {tempfname} {fname}")
-              print("Updated " + fname)
-          else:
-            os.system(f"mv {tempfname} {fname}")
 

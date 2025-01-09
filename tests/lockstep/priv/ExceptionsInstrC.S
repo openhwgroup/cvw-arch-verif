@@ -10,7 +10,7 @@
 ///////////////////////////////////////////
 
 
-#include "WALLY-init-lib.h"
+#include "../WALLY-init-lib.h"
 
 main:
 

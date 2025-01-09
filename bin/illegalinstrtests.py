@@ -58,7 +58,7 @@ def gen(comment, template, len = 32, exclusion = []):
 # setup
 seed(0) # make tests reproducible
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-pathname = f"{ARCH_VERIF}/tests/priv/ExceptionInstr-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011")
@@ -129,7 +129,7 @@ gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
 outfile.close
 
-pathname = f"{ARCH_VERIF}/tests/priv/ExceptionInstrCompressed-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)

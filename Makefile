@@ -4,7 +4,7 @@
 MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
-TESTDIR		 := tests
+TESTDIR		 := tests/lockstep
 SRCDIR64   := $(TESTDIR)/rv64
 SRCDIR32   := $(TESTDIR)/rv32
 PRIVDIR    := $(TESTDIR)/priv
@@ -45,6 +45,9 @@ covergroupgen: bin/covergroupgen.py
 
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
+	rm -rf ${TESTDIR}/rv32/E # E tests are not used in the regular (I) suite
+	rm -rf ${TESTDIR}/rv64/E
+	# *** will need to do this as well in the signature directory
 	bin/combinetests.py
 
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
@@ -91,7 +94,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
+    -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/../link.ld $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -123,4 +126,4 @@ $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
 clean:
 	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
-	rm -rf tests/priv/*.h
+	rm -rf ${PRIVDIR}/*.h

@@ -53,7 +53,7 @@ def combineDir(testdir):
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-testbasedir = f"{ARCH_VERIF}/tests"
+testbasedir = f"{ARCH_VERIF}/tests/lockstep"
 templatedir = 	f"{ARCH_VERIF}/templates"
 
 # Find all the configurations in the fcov_ucdb directory
