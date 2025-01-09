@@ -2077,7 +2077,7 @@ if __name__ == '__main__':
   for xlen in xlens:
     for E_ext in [False, True]:
       if (E_ext):
-        extensions = ["I", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbc"]  
+        extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]  
         E_suffix = "e"
         maxreg = 15 # E uses registers x0-x15
       else:
