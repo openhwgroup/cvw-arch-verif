@@ -34,6 +34,8 @@ vcs.cmd
 fcov/unpriv
 tests/rv32
 tests/rv64
+tests/rv32e
+tests/rv64e
 fcov/coverage/RISCV_coverage_base_init.svh
 fcov/coverage/RISCV_coverage_base_sample.svh
 tests/priv/*.h 

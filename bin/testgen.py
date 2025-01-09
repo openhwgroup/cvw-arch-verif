@@ -238,9 +238,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         storeop = "c.sdsp"
         mul = 8
       while (rd == 0 and (test not in ["c.flwsp","c.fldsp"])):
-        rd = randint(1,31)
+        rd = randint(1,maxreg)
       while (rs2 == 2):
-        rs2 = randint(1,31)
+        rs2 = randint(1,maxreg)
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
@@ -273,7 +273,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n"
     elif test in ["c.jalr", "c.jr"]:
       if (rs1 == 0):
-        rs1 = randint(1, 31)
+        rs1 = randint(1, maxreg)
       if (test == "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize legalized rd (x1) to a random value that should get changed\n"
       lines = lines + "la x" + str(rs1) + ", 1f\n"
@@ -440,7 +440,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
-          rs2 = (rs1 + 1) % 32
+          rs2 = (rs1 + 1) % (maxreg+1)
           if (rs2 == 0):
             rs2 = 1
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -521,15 +521,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr)
   elif (test in fltype):#["flw", "flh"]
     while (rs1 == 0):
-      rs1 = randint(1, 31)
+      rs1 = randint(1, maxreg)
     while (rs1 == rs2):
-      rs2 = randint(1, 31)
-    tempreg1 = randint(1,31)
-    tempreg2 = randint(1,31)
+      rs2 = randint(1, maxreg)
+    tempreg1 = randint(1,maxreg)
+    tempreg2 = randint(1,maxreg)
     while (tempreg1 in [rs1, rs2]):
-      tempreg1 = randint(1,31)
+      tempreg1 = randint(1,maxreg)
     while (tempreg2 in [rs1, rs2, tempreg1]):
-      tempreg2 = randint(1,31)
+      tempreg2 = randint(1,maxreg)
     storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
@@ -550,7 +550,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
-      rs1 = randint(1, 31)
+      rs1 = randint(1, maxreg)
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
@@ -562,7 +562,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
-      rs2 = randint(1, 31)
+      rs2 = randint(1, maxreg)
     lines = lines + "la x2, scratch" + " # base address \n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
@@ -596,14 +596,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + f"{test} f{rd}, {flivals[rs1]} # perform operation\n"
     #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
   elif test in rbtype:
-    bs = 0 # TODO: bit select, need to pass it to this function
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(bs) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(immval%4) + " # perform operation\n"
   elif test in irtype:
-    rnum = 0 # TODO: need to pass it to this function
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(rnum) + " # perform operation\n"
+    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n"
   elif test in lrtype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + test + " x" + str(rd) + ", (x" + str(rs1) + ")  # perform operation\n"
@@ -805,21 +803,21 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
 
 def randomize(rs1=None, rs2=None, rs3=None, allunique=True):
     if rs1 is None:
-      rs1 = randint(1, 31)
+      rs1 = randint(1, maxreg)
     if rs2 is None:
-      rs2 = randint(1, 31)
+      rs2 = randint(1, maxreg)
     if (rs3 is not None):
-      rs3 = randint(1, 31)
+      rs3 = randint(1, maxreg)
       rs3val = randint(0, 2**xlen-1)
     # all three source registers must be different for corners to work
     while (rs1 == rs2 and allunique):
-      rs2 = randint(1,31)
+      rs2 = randint(1,maxreg)
     while ((rs3 is not None) and ((rs3 == rs1) or (rs3 == rs2)) and allunique):
-      rs3 = randint(1,31)
+      rs3 = randint(1,maxreg)
     # choose rd that is different than rs1 and rs2 and rs3
     rd = rs1
     while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
-      rd = randint(1, 31)
+      rd = randint(1, maxreg)
     rs1val = randint(0, 2**xlen-1)
     rs2val = randint(0, 2**xlen-1)
     immval = randint(0, 2**xlen-1)
@@ -843,7 +841,7 @@ def make_fs1(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs2):
-      rs2 = randint(1,31)
+      rs2 = randint(1,maxreg)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -851,7 +849,7 @@ def make_fs2(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs1):
-      rs1 = randint(1,31)
+      rs1 = randint(1,maxreg)
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -859,11 +857,11 @@ def make_fs3(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while (r == rs1):
-      rs1 = randint(1,31)
+      rs1 = randint(1,maxreg)
     desc = "cp_fs3 (Test source fs3 = f" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val)
 
-def make_rs1(test, xlen, rng = range(32), fli=False):
+def make_rs1(test, xlen, rng, fli=False):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs1=r, allunique=True)
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
@@ -871,11 +869,11 @@ def make_rs1(test, xlen, rng = range(32), fli=False):
       desc = f"cp_rs1_fli (Immediate = {flivals[r]} with rs1 encoding 5'b{format(r, f'05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs2(test, xlen, rng = range(32)):
+def make_rs2(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(rs2=r, allunique=True)
     while(r == rs1):
-      rs1 = randint(1, 31)
+      rs1 = randint(1, maxreg)
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
@@ -886,7 +884,7 @@ def make_uimm(test, xlen):
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
 
 def make_uimm5(test, xlen):
-  for r in range(32):
+  for r in range(maxreg+1):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(allunique=True)
     desc = "cp_uimm_5 (Test bit = " + str(r) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, r, rdval, test, xlen)
@@ -904,7 +902,7 @@ def make_rd_rs2(test, xlen, rng):
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rd_rs1_rs2(test, xlen):
-  for r in range(32):
+  for r in range(maxreg+1):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
@@ -929,7 +927,7 @@ def make_rs2_corners(test, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       if test in ["c.swsp", "c.sdsp"]:
         while (rs2 == 2):
-          rs2 = randint(0,31)
+          rs2 = randint(0,maxreg)
       desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
@@ -945,7 +943,7 @@ def make_rd_corners(test, xlen, corners):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       while (legalizecompr(rd) == legalizecompr(rs2)):
-        rs2 = randint(0,31)
+        rs2 = randint(0,maxreg)
       if test in ["c.or","c.addw","c.xor"]:
         rd_temp = 0
         rs2_temp = v
@@ -1130,7 +1128,7 @@ def make_offset(test, xlen):
   elif (test in crtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    rs1 = randint(1, 31)
+    rs1 = randint(1, maxreg)
     lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
     lines = lines + test + " x" + str(rs1) + " # backward branch\n"
   elif (test in cjtype):
@@ -1218,7 +1216,7 @@ def make_cr_rs1_imm_corners(test, xlen, corners_imm):
 def make_imm_shift(test, xlen):
   desc = "cp_imm_shift"
   if test in shiftwtype:
-    rng = range(1, 32)
+    rng = range(1, maxreg+1)
   elif test in c_shiftitype:
     rng = range(1, xlen)
   else:
@@ -1239,31 +1237,31 @@ def make_imm_mul(test, xlen):
     else:
       rng = range(-32,32)
   else:
-    rng = range(32)
+    rng = range(maxreg+1)
   for imm in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, imm, rdval, test, xlen)
 
 def make_fd_fs1(test, xlen, frm=False):
-  for r in range(32):
+  for r in range(maxreg+1):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     if (test.startswith("fsgnj")): # fsgnj with fs1 = fs2 is fmv, so don't pick this
       while (rs2 == r):
-        rs2 = randint(1, 31)
+        rs2 = randint(1, maxreg)
     desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_fd_fs2(test, xlen):
-  for r in range(32):
+  for r in range(maxreg+1):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     if (test.startswith("fsgnj")): # fsgnj with fs1 = fs2 is fmv, so don't pick this
       while (rs1 == r):
-        rs1 = randint(1, 31)
+        rs1 = randint(1, maxreg)
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fd_fs3(test, xlen, frm=False):
-  for r in range(32):
+  for r in range(maxreg+1):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cmp_fd_fs3 (Test fd = fs3 = f" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val, frm=frm)
@@ -1308,7 +1306,7 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while rs2 == rs1:
-      rs2 = randint(1, 31)
+      rs2 = randint(1, maxreg)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
@@ -1321,7 +1319,7 @@ def make_fs2_corners(test, xlen, fcorners):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     while rs2 == rs1:
-      rs2 = randint(1, 31)
+      rs2 = randint(1, maxreg)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -1332,18 +1330,33 @@ def make_fs3_corners(test, xlen, fcorners):
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
 def make_imm5_corners(test, xlen):
-  for v in range(32):
+  for v in range(maxreg+1):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(rs3=True)
     desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_bs(test, xlen):
-  # TODO: This should iterate over the four values of bs in the aes32 instructions
-  pass
+  for bs in range(4):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = f"cp_bs = {bs}"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, bs, rdval, test, xlen)
 
 def make_rnum(test, xlen):
-  # TODO: This should iterate over the 10 values of rnum in the aes64ks1i instructions
-  pass
+  for rnum in range(11):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = f"cp_rnum = {rnum}"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, rnum, rdval, test, xlen)
+
+def make_sbox(test, xlen):
+  for sbox in range(256):
+    # repeat sbox value in each byte
+    if (xlen == 32):
+      s = sbox | sbox << 8 | sbox << 16 | sbox << 24;
+    elif (xlen == 64):
+      s = sbox | sbox << 8 | sbox << 16 | sbox << 24 | sbox << 32 | sbox << 40 | sbox << 48 | sbox << 56;
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
+    desc = f"cp_sbox = {sbox}"
+    writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
@@ -1368,9 +1381,9 @@ def write_tests(coverpoints, test, xlen):
       if (test == "c.nop" or test == "fence"):   # Writing cp_asm_count for 'c.nop' only
         f.write("\n# Testcase cp_asm_count\n"+test+"\n")
     elif (coverpoint == "cp_rd"):
-      make_rd(test, xlen, range(32))
+      make_rd(test, xlen, range(maxreg+1))
     elif(coverpoint == "cp_rd_nx0" or coverpoint == "cp_rd_nx2"):
-      make_rd(test, xlen, range(1,32))
+      make_rd(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cp_rdp"):
       make_rd(test, xlen, range(8, 16))
     elif (coverpoint == "cp_rs1p"):
@@ -1378,17 +1391,17 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rs2p"):
       make_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fd"):
-      make_fd(test, xlen, range(32))
+      make_fd(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_fdp"):
       make_fd(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1"):
-      make_fs1(test, xlen, range(32))
+      make_fs1(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_fs1p"):
       make_fs1(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs2"):
-      make_fs2(test, xlen, range(32))
+      make_fs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_fs3"):
-      make_fs3(test, xlen, range(32))
+      make_fs3(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_fs2p"):
       make_fs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1_corners"):
@@ -1416,35 +1429,35 @@ def write_tests(coverpoints, test, xlen):
     # elif (coverpoint == "cp_fs3_corners_Q"):
     #   make_fs3_corners(test, xlen, fcornersQ)
     elif (coverpoint == "cp_rs1"):
-      make_rs1(test, xlen, range(32))
+      make_rs1(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_rs1_nx0"):
-      make_rs1(test, xlen, range(1,32))
+      make_rs1(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cp_rs2"):
-      make_rs2(test, xlen, range(32))
+      make_rs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_rs2_nx0"):
-      make_rs2(test, xlen, range(1,32))
+      make_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cp_uimm"):
       make_uimm(test, xlen)
     elif (coverpoint == "cp_uimm_5"):
       make_uimm5(test, xlen)
     elif (coverpoint == "cmp_rd_rs1"):
-      make_rd_rs1(test, xlen, range(32))
+      make_rd_rs1(test, xlen, range(maxreg+1))
     elif (coverpoint == "cmp_rd_rs1_nx0"):
-      make_rd_rs1(test, xlen, range(1,32))
+      make_rd_rs1(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rd_rs1_c"):
       make_rd_rs1(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs2"):
-      make_rd_rs2(test, xlen, range(32))
+      make_rd_rs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cmp_rd_rs2_nx0"):
-      make_rd_rs2(test, xlen, range(1,32))
+      make_rd_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
       make_rd_rs1_rs2(test, xlen)
     elif (coverpoint == "cmp_rs1_rs2"):
-      make_rs1_rs2(test, xlen, range(32))
+      make_rs1_rs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2_nx0"):
-      make_rs1_rs2(test, xlen, range(1,32))
+      make_rs1_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2_c"):
       make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_corners"):
@@ -1580,7 +1593,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint.startswith("cp_NaNBox")):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_rs1_fli"):
-      make_rs1(test, xlen, range(32), fli=True)
+      make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
       NaNBox_tests = "D"
       make_fs1_corners(test, xlen, badNB_corners_D_S)
@@ -1623,6 +1636,8 @@ def write_tests(coverpoints, test, xlen):
       make_bs(test, xlen)
     elif (coverpoint == "cp_rnum"):
       make_rnum(test, xlen)
+    elif (coverpoint == "cp_sbox"):
+      make_sbox(test, xlen)
     elif (coverpoint == "cp_sc"):
       pass # TODO does this need to be implemented?
     else:
@@ -1895,267 +1910,276 @@ if __name__ == '__main__':
   # setup
   seed(0) # make tests reproducible
 
+  corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
+  corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
+  corners_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
+                0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
+  corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
+                    0b01010101, 0b10101010, 0b01011011, 0b11011011]
+  corners_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
+                    0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
+                    0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
+  corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
+                    0b101010, 0b010101, 0b010110]
+  corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+  corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
+                    0b00000000000000000001000000000000,0b01001010111000100000000000000000]
+  c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
+                        0b01111111111111111111111111111111,0b01010101010101010101010101010101,
+                        0b00101101110111100100010000111011]
+  c_slli_64_corners  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
+                        0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B]
+  c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
+                        0b10101010101010101010101010101010,0b10110111011110010001000011101110]
+  c_srli_64_corners =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                        0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
+                        0xb77910eec75d0dee]
+  c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]
+  c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+                        0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
+
+
+  fcorners =            [0x00000000, # 0
+                            0x80000000, # -0
+                            0x3f800000, # 1.0
+                            0xbf800000, # -1.0
+                            0x3fc00000, # 1.5
+                            0xbfc00000, # -1.5
+                            0x40000000,  # 2.0
+                            0xc0000000,  # -2.0 
+                            0x00800000,  # smallest positive normalized
+                            0x80800000,  # smallest negative normalized
+                            0x7f7fffff,  # most positive
+                            0xff7fffff,  # most negative
+                            0x007fffff,  # largest positive subnorm
+                            0x807fffff,  # largest negative subnorm
+                            0x00400000,  # positive subnorm with leading 1
+                            0x80400000,  # negative subnorm with leading 1
+                            0x00000001,  # smallest positive subnorm
+                            0x80000001,  # smallest negative subnorm
+                            0x7f800000,  # positive infinity
+                            0xff800000,  # negative infinity
+                            0x7fc00000,  # canonical quiet NaN
+                            0x7fffffff,  # noncanonical quiet NaN
+                            0xffffffff,  # noncanonical quiet NaN with sign bit set
+                            0x7f800001,  # signaling NaN with lsb set
+                            0x7fbfffff,  # signaling NaN with all mantissa bits set
+                            0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
+                            0x7ef8654f,  # random positive 1.65087e+38
+                            0x813d9ab0]  # random negative -3.48248e-38
+
+  fcornersD = [0x0000000000000000, # 0.0
+              0x8000000000000000,  # -0.0
+              0x3FF0000000000000,  # 1.0
+              0xBFF0000000000000,  # -1.0
+              0x3FF8000000000000,  # 1.5
+              0xBFF8000000000000,  #-1.5
+              0x4000000000000000,  # 2.0
+              0xc000000000000000,  # -2.0
+              0x0010000000000000,  # smallest positive normalized
+              0x8010000000000000,  # smallest negative normalized
+              0x7FEFFFFFFFFFFFFF,  # most positive normalized
+              0xFFEFFFFFFFFFFFFF,  # most negative normalized
+              0x000FFFFFFFFFFFFF,  # largest positive subnorm
+              0x800FFFFFFFFFFFFF,  # largest negative subnorm
+              0x0008000000000000,  # mid positive subnorm
+              0x8008000000000000,  # mid negative subnorm
+              0x0000000000000001,  # smallest positive subnorm
+              0x8000000000000001,  # smallest negative subnorm
+              0x7FF0000000000000,  # positive infinity
+              0xFFF0000000000000,  # negative infinity
+              0x7FF8000000000000,  # canonical quiet NaN
+              0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
+              0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
+              0x7FF0000000000001,  # signaling NaN with lsb set
+              0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
+              0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
+              0x5A392534A57711AD, # 4.25535e126 random positive
+              0xA6E895993737426C] # -2.97516e-121 random negative
+
+  fcornersH = [0x0000, # 0.0
+                0x8000, # -0.0
+                0x3C00, # 1.0
+                0xBC00, # -1.0
+                0x3E00, # 1.5
+                0xBE00, # -1.5
+                0x4000, # 2.0
+                0xC000, # -2.0
+                0x0400, # smallest normalized
+                0x8400, # smallest negative normalized
+                0x7BFF, # most positive normalized
+                0xFBFF, #  most negative normalized
+                0x03FF, # largest positive subnorm
+                0x83FF,  # largest negative subnorm
+                0x0200,  # positive subnorm with leading 1
+                0x8200,  # negative subnorm with leading 1
+                0x0001, # smallest positive subnorm
+                0x8001,  # smallest negative subnorm
+                0x7C00,  # positive infinity
+                0xFC00,  # negative infinity
+                0x7E00,  # canonical quiet NaN
+                0x7FFF,  # noncanonical quiet NaN
+                0xFE00,  # noncanonical quiet NaN with sign bit set
+                0x7C01, # signaling NaN with lsb set
+                0x7DFF,  # signaling NaN with all mantissa bits set
+                0xFC01,  # signaling NaN with lsb and sign bits set
+                0x58B4,  # 150.5 random positive
+                0xC93A]  # -10.4531 random negative
+
+  # fcornersQ = [] # TODO: Fill out quad precision F corners
+
+  badNB_corners_D_S =  [0xffffefff00000000,
+                        0xaaaaaaaa80000000,
+                        0x000000003f800000,
+                        0xdeadbeefbf800000,
+                        0xa1b2c3d400800000,
+                        0xffffffef80800000,
+                        0xfeffffef7f7fffff,
+                        0x7e7e7e7eff7fffff,
+                        0x7fffffff7f800000,
+                        0xfffffffeff800000,
+                        0xfeedbee57fc00000,
+                        0xffc0deff7fffffff,
+                        0xfeffffff7f800001,
+                        0xfffffeff7fbfffff]
+
+  badNB_corners_D_H =  [0xffffffff00000000,
+                        0xfffffffffffe8000,
+                        0x7fffffffffff3C00,
+                        0xfeedbee5beefBC00,
+                        0xffffffefffff0400,
+                        0x00000000ffff8400,
+                        0xefffffffffff7BFF,
+                        0xc0dec0dec0deFBFF,
+                        0xa83ef1cc4f1a7C00,
+                        0xffffffff0fffFC00,
+                        0xfffeffffffff7E00,
+                        0xffffffefffff7FFF,
+                        0xa1b2c3d4e5f67C01,
+                        0xfffffffcffff7DFF]
+
+  badNB_corners_S_H =  [0x00000000,
+                        0xfffe8000,
+                        0x7fff3C00,
+                        0xbeefBC00,
+                        0xfeff0400,
+                        0x0fff8400,
+                        0xefff7BFF,
+                        0xc0deFBFF,
+                        0x4f1a7C00,
+                        0x0fffFC00,
+                        0xffef7E00,
+                        0xfeef7FFF,
+                        0xa1b27C01,
+                        0x4fd77DFF]
+
   # generate files for each test
   for xlen in xlens:
-    extensions = getExtensions() # find all extensions in 
-    #print(extensions)
-    for extension in extensions:
-      coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
-      coverfiles = [extension]
-      coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
-      #print(extension+": "+str(coverpoints))
-      print("Generating tests for rv" + str(xlen) + "/" + extension)
-      formatstrlen = str(int(xlen/4))
-      formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-      formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-      if (xlen == 32):
-        storecmd = "sw"
-        wordsize = 4
+    for E_ext in [False, True]:
+      if (E_ext):
+        extensions = ["I", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbc"]  
+        E_suffix = "e"
+        maxreg = 15 # E uses registers x0-x15
       else:
-        storecmd = "sd"
-        wordsize = 8
-      if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
-        flen = 64
-      else:
-        flen = 32
-      formatstrlenFP = str(int(flen/4))
-      formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-      corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-      if (xlen == 32):
-        corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-      else:
-        corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
-                             0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                             0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                             0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                             0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                             0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                             0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+        extensions = getExtensions() # find all extensions in 
+        E_suffix = ""
+        maxreg = 31 # I uses registers x0-x31
+      #print(extensions)
+      for extension in extensions:
+        coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+        coverfiles = [extension]
+        coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
+        pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
+        #print(extension+": "+str(coverpoints))
+        print("Generating tests for " + pathname)
+        formatstrlen = str(int(xlen/4))
+        formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+        formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+        if (xlen == 32):
+          storecmd = "sw"
+          wordsize = 4
+        else:
+          storecmd = "sd"
+          wordsize = 8
+        if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+          flen = 64
+        else:
+          flen = 32
+        formatstrlenFP = str(int(flen/4))
+        formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
+        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+        if (xlen == 32):
+          corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+        else:
+          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
+                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
+                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
+                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
+                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
+                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
+                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-        corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                         0b0000000000000000000000000000000000000000000000000000000000000001,
-                         0b1111111111111111111111111111111111111111111111111111111111111111,
-                         0b0000000000000000000000000000000001111111111111111111111111111111,
-                         0b1111111111111111111111111111111110000000000000000000000000000000]
-
-
-      corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
-      corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
-      corners_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
-                    0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
-      corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
-                        0b01010101, 0b10101010, 0b01011011, 0b11011011]
-      corners_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
-                        0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
-                        0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
-      corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
-                        0b101010, 0b010101, 0b010110]
-#      corners_imm_6bit = [0, 1, 2, 31, 30, -32, -31, -2, -1]
-      corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
-      corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
-                        0b00000000000000000001000000000000,0b01001010111000100000000000000000]
-      c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
-                            0b01111111111111111111111111111111,0b01010101010101010101010101010101,
-                            0b00101101110111100100010000111011]
-      c_slli_64_corners  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
-                            0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B]
-      c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
-                            0b10101010101010101010101010101010,0b10110111011110010001000011101110]
-      c_srli_64_corners =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
-                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
-                            0xb77910eec75d0dee]
-      c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]
-      c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
-                            0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
+          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                          0b0000000000000000000000000000000000000000000000000000000000000001,
+                          0b1111111111111111111111111111111111111111111111111111111111111111,
+                          0b0000000000000000000000000000000001111111111111111111111111111111,
+                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
-      fcorners =            [0x00000000, # 0
-                               0x80000000, # -0
-                               0x3f800000, # 1.0
-                               0xbf800000, # -1.0
-                               0x3fc00000, # 1.5
-                               0xbfc00000, # -1.5
-                               0x40000000,  # 2.0
-                               0xc0000000,  # -2.0 
-                               0x00800000,  # smallest positive normalized
-                               0x80800000,  # smallest negative normalized
-                               0x7f7fffff,  # most positive
-                               0xff7fffff,  # most negative
-                               0x007fffff,  # largest positive subnorm
-                               0x807fffff,  # largest negative subnorm
-                               0x00400000,  # positive subnorm with leading 1
-                               0x80400000,  # negative subnorm with leading 1
-                               0x00000001,  # smallest positive subnorm
-                               0x80000001,  # smallest negative subnorm
-                               0x7f800000,  # positive infinity
-                               0xff800000,  # negative infinity
-                               0x7fc00000,  # canonical quiet NaN
-                               0x7fffffff,  # noncanonical quiet NaN
-                               0xffffffff,  # noncanonical quiet NaN with sign bit set
-                               0x7f800001,  # signaling NaN with lsb set
-                               0x7fbfffff,  # signaling NaN with all mantissa bits set
-                               0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
-                               0x7ef8654f,  # random positive 1.65087e+38
-                               0x813d9ab0]  # random negative -3.48248e-38
 
-      fcornersD = [0x0000000000000000, # 0.0
-                  0x8000000000000000,  # -0.0
-                  0x3FF0000000000000,  # 1.0
-                  0xBFF0000000000000,  # -1.0
-                  0x3FF8000000000000,  # 1.5
-                  0xBFF8000000000000,  #-1.5
-                  0x4000000000000000,  # 2.0
-                  0xc000000000000000,  # -2.0
-                  0x0010000000000000,  # smallest positive normalized
-                  0x8010000000000000,  # smallest negative normalized
-                  0x7FEFFFFFFFFFFFFF,  # most positive normalized
-                  0xFFEFFFFFFFFFFFFF,  # most negative normalized
-                  0x000FFFFFFFFFFFFF,  # largest positive subnorm
-                  0x800FFFFFFFFFFFFF,  # largest negative subnorm
-                  0x0008000000000000,  # mid positive subnorm
-                  0x8008000000000000,  # mid negative subnorm
-                  0x0000000000000001,  # smallest positive subnorm
-                  0x8000000000000001,  # smallest negative subnorm
-                  0x7FF0000000000000,  # positive infinity
-                  0xFFF0000000000000,  # negative infinity
-                  0x7FF8000000000000,  # canonical quiet NaN
-                  0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
-                  0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
-                  0x7FF0000000000001,  # signaling NaN with lsb set
-                  0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
-                  0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
-                 0x5A392534A57711AD, # 4.25535e126 random positive
-                  0xA6E895993737426C] # -2.97516e-121 random negative
 
-      fcornersH = [0x0000, # 0.0
-                   0x8000, # -0.0
-                   0x3C00, # 1.0
-                   0xBC00, # -1.0
-                   0x3E00, # 1.5
-                   0xBE00, # -1.5
-                   0x4000, # 2.0
-                   0xC000, # -2.0
-                   0x0400, # smallest normalized
-                   0x8400, # smallest negative normalized
-                   0x7BFF, # most positive normalized
-                   0xFBFF, #  most negative normalized
-                   0x03FF, # largest positive subnorm
-                   0x83FF,  # largest negative subnorm
-                   0x0200,  # positive subnorm with leading 1
-                   0x8200,  # negative subnorm with leading 1
-                   0x0001, # smallest positive subnorm
-                   0x8001,  # smallest negative subnorm
-                   0x7C00,  # positive infinity
-                   0xFC00,  # negative infinity
-                   0x7E00,  # canonical quiet NaN
-                   0x7FFF,  # noncanonical quiet NaN
-                   0xFE00,  # noncanonical quiet NaN with sign bit set
-                   0x7C01, # signaling NaN with lsb set
-                   0x7DFF,  # signaling NaN with all mantissa bits set
-                   0xFC01,  # signaling NaN with lsb and sign bits set
-                   0x58B4,  # 150.5 random positive
-                   0xC93A]  # -10.4531 random negative
+        # global NaNBox_tests
+        NaNBox_tests = False
 
-      # fcornersQ = [] # TODO: Fill out quad precision F corners
+        # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+        cmd = "mkdir -p " + pathname # make directory
+        os.system(cmd)
+        for test in coverpoints.keys():
+          # print("Generating test for ", test, " with entries: ", coverpoints[test])
 
-      badNB_corners_D_S =  [0xffffefff00000000,
-                            0xaaaaaaaa80000000,
-                            0x000000003f800000,
-                            0xdeadbeefbf800000,
-                            0xa1b2c3d400800000,
-                            0xffffffef80800000,
-                            0xfeffffef7f7fffff,
-                            0x7e7e7e7eff7fffff,
-                            0x7fffffff7f800000,
-                            0xfffffffeff800000,
-                            0xfeedbee57fc00000,
-                            0xffc0deff7fffffff,
-                            0xfeffffff7f800001,
-                            0xfffffeff7fbfffff]
+          basename = "WALLY-COV-" + test
+          fname = pathname + "/" + basename + ".S"
+          tempfname = pathname + "/" + basename + "_temp.S"
 
-      badNB_corners_D_H =  [0xffffffff00000000,
-                            0xfffffffffffe8000,
-                            0x7fffffffffff3C00,
-                            0xfeedbee5beefBC00,
-                            0xffffffefffff0400,
-                            0x00000000ffff8400,
-                            0xefffffffffff7BFF,
-                            0xc0dec0dec0deFBFF,
-                            0xa83ef1cc4f1a7C00,
-                            0xffffffff0fffFC00,
-                            0xfffeffffffff7E00,
-                            0xffffffefffff7FFF,
-                            0xa1b2c3d4e5f67C01,
-                            0xfffffffcffff7DFF]
-
-      badNB_corners_S_H =  [0x00000000,
-                            0xfffe8000,
-                            0x7fff3C00,
-                            0xbeefBC00,
-                            0xfeff0400,
-                            0x0fff8400,
-                            0xefff7BFF,
-                            0xc0deFBFF,
-                            0x4f1a7C00,
-                            0x0fffFC00,
-                            0xffef7E00,
-                            0xfeef7FFF,
-                            0xa1b27C01,
-                            0x4fd77DFF]
-
-      # global NaNBox_tests
-      NaNBox_tests = False
-
-      pathname = f"{ARCH_VERIF}/tests/rv{xlen}/{extension}"
-      # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-      cmd = "mkdir -p " + pathname # make directory
-      os.system(cmd)
-      for test in coverpoints.keys():
-        # print("Generating test for ", test, " with entries: ", coverpoints[test])
-
-        basename = "WALLY-COV-" + test
-        fname = pathname + "/" + basename + ".S"
-        tempfname = pathname + "/" + basename + "_temp.S"
-
-        # print custom header part
-        f = open(tempfname, "w")
-        line = "///////////////////////////////////////////\n"
-        f.write(line)
-        line="// "+fname+ "\n// " + author + "\n"
-        f.write(line)
-        # Don't print creation date because this forces rebuild of files that are otherwise identical
-        #line ="// Created " + str(datetime.now()) + "\n"
-        #f.write(line)
-
-        # insert generic header
-        h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
-        for line in h:
+          # print custom header part
+          f = open(tempfname, "w")
+          line = "///////////////////////////////////////////\n"
           f.write(line)
-
-        # add assembly lines to enable fp where needed
-        if test in floattypes:
-          float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
-          f.write(float_en)
-
-        write_tests(coverpoints[test], test, xlen)
-
-        # print footer
-        line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
-        f.write(line)
-        h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
-        for line in h:
+          line="// "+fname+ "\n// " + author + "\n"
           f.write(line)
+          # Don't print creation date because this forces rebuild of files that are otherwise identical
+          #line ="// Created " + str(datetime.now()) + "\n"
+          #f.write(line)
 
-        # Finish
-        f.close()
+          # insert generic header
+          h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
+          for line in h:
+            f.write(line)
 
-        # if new file is different from old file, replace old file with new file
-        if os.path.exists(fname):
-          if filecmp.cmp(fname, tempfname): # files are the same
-            os.system(f"rm {tempfname}") # remove temp file
+          # add assembly lines to enable fp where needed
+          if test in floattypes:
+            float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+            f.write(float_en)
+
+          write_tests(coverpoints[test], test, xlen)
+
+          # print footer
+          line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
+          f.write(line)
+          h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
+          for line in h:
+            f.write(line)
+
+          # Finish
+          f.close()
+
+          # if new file is different from old file, replace old file with new file
+          if os.path.exists(fname):
+            if filecmp.cmp(fname, tempfname): # files are the same
+              os.system(f"rm {tempfname}") # remove temp file
+            else:
+              os.system(f"mv {tempfname} {fname}")
+              print("Updated " + fname)
           else:
             os.system(f"mv {tempfname} {fname}")
-            print("Updated " + fname)
-        else:
-          os.system(f"mv {tempfname} {fname}")
 

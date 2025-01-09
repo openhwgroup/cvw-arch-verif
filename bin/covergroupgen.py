@@ -52,6 +52,8 @@ def readTestplans():
                                 cps.append(key)
                     tp[instr] = cps
             testplans[arch] = tp
+            if (arch =="I"): # duplicate I testplan for E
+                testplans["E"] = tp
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
