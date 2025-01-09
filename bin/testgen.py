@@ -1009,7 +1009,7 @@ def make_rd_corners_lui(test, xlen, corners):
 
 def make_rd_rs1_eqval(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  desc = "cmp_rdm_rs1_eqval (Test rs1 = rd = " + hex(rs1val) + ")"
+  desc = "cmp_rd_rs1_eqval (Test rs1 = rd = " + hex(rs1val) + ")"
   writeCovVector(desc, rs1, 0, rd, rdval, rs2val, immval, rdval, test, xlen)
 
 def make_rd_rs2_eqval(test, xlen):
