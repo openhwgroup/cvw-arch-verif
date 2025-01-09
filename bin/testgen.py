@@ -1007,21 +1007,6 @@ def make_rd_corners_lui(test, xlen, corners):
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
 
-def make_rd_rs1_eqval(test, xlen):
-  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  desc = "cmp_rd_rs1_eqval (Test rs1 = rd = " + hex(rs1val) + ")"
-  writeCovVector(desc, rs1, 0, rd, rdval, rs2val, immval, rdval, test, xlen)
-
-def make_rd_rs2_eqval(test, xlen):
-  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  desc = "cmp_rd_rs2_eqval (Test rs2 = rd = " + hex(rdval) + ")"
-  writeCovVector(desc, 0, rs2, rd, rdval, rdval, immval, rdval, test, xlen)
-
-def make_rs1_rs2_eqval(test, xlen):
-  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize()
-  desc = "cmp_rs1_rs2_eqval (Test rs1 = rs2 = " + hex(rs1val) + ")"
-  writeCovVector(desc, rs1, rs2, rd, rs1val, rs1val, immval, rdval, test, xlen)
-
 def make_cp_gpr_hazard(test, xlen):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
@@ -1498,11 +1483,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_rd_corners_lui"):
       make_rd_corners_lui(test, xlen, corners_20bit)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
-      make_rd_rs1_eqval(test, xlen)
+      pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cmp_rd_rs2_eqval"):
-      make_rd_rs2_eqval(test, xlen)
-    elif (coverpoint == "cmp_rs1_rs2_eqval"):
-      make_rs1_rs2_eqval(test, xlen)
+      pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cp_rs1_sign"):
       make_rs1_sign(test, xlen)
     elif (coverpoint == "cp_rs2_sign"):
