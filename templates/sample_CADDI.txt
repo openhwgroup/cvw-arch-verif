@@ -5,7 +5,7 @@
                 ARCHCASE_c_nop_cg.sample(ins); 
             end else begin      // c.addi
                 ins.add_rd(0);
-                ins.add_rs1(0); // *** is this necessary?
+                ins.add_rs1(0); 
                 ins.add_imm(1);
                 ARCHCASE_INSTRNODOT_cg.sample(ins); 
             end
