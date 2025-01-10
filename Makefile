@@ -98,7 +98,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
-	riscv64-unknown-elf-objdump -S -D $< > $@
+	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases $< > $@
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
