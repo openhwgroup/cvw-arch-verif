@@ -24,13 +24,6 @@ import filecmp
 # functions
 ##################################
 
-def legalizecompr(r):
-  # bring into range 8-15 for compressed instructions with limited
-  if hasattr(r, '__getitem__'):
-    return [rval % 8 + 8 for rval in r]
-  else:
-    return r % 8 + 8
-
 def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
@@ -348,9 +341,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         storeop = "c.sdsp"
         mul = 8
       while (rd == 0 and (test not in ["c.flwsp","c.fldsp"])):
-        rd = randint(1,maxreg)
+        rd = rs1
       while (test == "c.lui" and rd == 2):
-        rd = randint(1,maxreg)
+        rd = rs1
       #lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
@@ -387,7 +380,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + " # perform operation\n")
     elif test in ["c.jalr", "c.jr"]:
       if (rs1 == 0):
-        rs1 = randint(1, maxreg)
+        rs1 = 1
       if (test == "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = writeJRTest(lines, test, rd, rs1, xlen)
@@ -438,7 +431,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n")
   elif (test in cltype):
     while (rs1 == rs2):
-      rs2 = randint(8,15)
+      rs2 = randomNonconflictingReg(test)
     if test in ["c.lw","c.ld"]:
       if (test == "c.lw"):
           storeop = "c.sw"
@@ -466,9 +459,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         temp1 = 8
         temp2 = 9
         while (temp1 in [rs1, rs2]):
-          temp1 = randint(8,15)
+          temp1 = randomNonconflictingReg(test)
         while (temp2 in [rs1, rs2, temp1]):
-          temp2 = randint(8,15)
+          temp2 = randomNonconflictingReg(test)
         lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " +  str(int(unsignedImm5(immval))*mul) + "\n"
         if (flen > xlen): # flen = 6
           rs2val = (rs2val << 32) | (rs1val)
@@ -485,7 +478,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
 
   elif (test in clhtype or test in clbtype):
     while (rs1 == rs2):
-      rs2 = randint(8,15)
+      rs2 = randomNonconflictingReg(test)
     if (test in clhtype):
       storeop = "c.sh"
       mul = 2
@@ -498,10 +491,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm1(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + str(int(unsignedImm1(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n")
   elif (test in cstype):
-    rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
-      rs1 = randint(8,15)
+      rs1 = randomNonconflictingReg(test)
     mul = 4 if (test in ["c.sw", "c.fsw"]) else 8
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2 with random value\n"
@@ -509,7 +500,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if ((test == "c.fsd") and (flen > xlen)):
         temp = 8
         while (temp in [rs1, rs2]):
-          temp = randint(8,15)
+          temp = randomNonconflictingReg(test)
         lines = lines + "li x" + str(temp) +", " + formatstr.format(rs1val) + " # initialize x" + str(temp) + " with random value{formatstr.format(rs1val)}\n"
         lines = lines + "sw x" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # store " + hex(rs2val) + " in memory\n"
         lines = lines + "sw x" + str(temp) + ", 4(x" + str(rs1) + ")" + " # store " + hex(rs1val) + " in memory\n"
@@ -558,19 +549,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "la sp" + ", scratch" + " # base address \n"
       lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
   elif (test in csbtype):
-    rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
-      rs2 = randint(8,15)
+      rs2 = randomNonconflictingReg(test)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm2(immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + test + " x" + str(rs2) + ", " + unsignedImm2(immval) + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in cshtype):
-    rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
-      rs2 = randint(8,15)
+      rs2 = randomNonconflictingReg(test)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm1(immval))*2) + " # sub immediate from rs1 to counter offset\n"
@@ -612,15 +599,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in fltype):#["flw", "flh"]
     while (rs1 == 0):
-      rs1 = randint(1, maxreg)
+      rs1 = randomNonconflictingReg(test)
     while (rs1 == rs2):
-      rs2 = randint(1, maxreg)
-    tempreg1 = randint(1,maxreg)
-    tempreg2 = randint(1,maxreg)
+      rs2 = randomNonconflictingReg(test)
+    tempreg1 = randomNonconflictingReg(test)
+    tempreg2 = randomNonconflictingReg(test)
     while (tempreg1 in [rs1, rs2]):
-      tempreg1 = randint(1,maxreg)
+      tempreg1 = randomNonconflictingReg(test)
     while (tempreg2 in [rs1, rs2, tempreg1]):
-      tempreg2 = randint(1,maxreg)
+      tempreg2 = randomNonconflictingReg(test)
     storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
@@ -641,7 +628,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
-      rs1 = randint(1, maxreg)
+      rs1 = randomNonconflictingReg(test)
     lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
@@ -653,7 +640,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
-      rs2 = randint(1, maxreg)
+      rs2 = randomNonconflictingReg(test)
     lines = lines + "la x2, scratch" + " # base address \n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
@@ -930,24 +917,24 @@ def make_fd(test, xlen, rng):
 def make_fs1(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    while (r == rs2):
-      rs2 = randint(1,maxreg)
+    while (r == rs2 or r == rs3):
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cp_fs1 (Test source fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs2(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    while (r == rs1):
-      rs1 = randint(1,maxreg)
+    while (r == rs1 or r == rs3):
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cp_fs2 (Test source fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_fs3(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    while (r == rs1):
-      rs1 = randint(1,maxreg)
+    while (r == rs1 or r == rs2):
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cp_fs3 (Test source fs3 = f" + str(r) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=r, rs3val=rs3val)
 
@@ -961,9 +948,9 @@ def make_rs1(test, xlen, rng, fli=False):
 
 def make_rs2(test, xlen, rng):
   for r in rng:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test, rs2=r, allunique=True)
-    while(r == rs1):
-      rs1 = randint(1, maxreg)
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test, rs2=r)
+    while (r == rs1):
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test, rs2=r)
     desc = "cp_rs2 (Test source rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
@@ -1017,7 +1004,7 @@ def make_rs2_corners(test, xlen):
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       if test in ["c.swsp", "c.sdsp"]:
         while (rs2 == 2):
-          rs2 = randint(0,maxreg)
+          [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
@@ -1224,7 +1211,7 @@ def make_offset(test, xlen):
   elif (test in crtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    rs1 = randint(1, maxreg)
+    rs1 = randomNonconflictingReg(test)
     lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
     lines = lines + test + " x" + str(rs1) + " # backward branch\n"
   elif (test in cjtype):
@@ -1343,7 +1330,7 @@ def make_fd_fs1(test, xlen, frm=False):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     if (test.startswith("fsgnj")): # fsgnj with fs1 = fs2 is fmv, so don't pick this
       while (rs2 == r):
-        rs2 = randint(1, maxreg)
+        [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cmp_fd_fs1 (Test fd = fs1 = f" + str(r) + ")"
     writeCovVector(desc, r, rs2, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
@@ -1352,7 +1339,7 @@ def make_fd_fs2(test, xlen):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     if (test.startswith("fsgnj")): # fsgnj with fs1 = fs2 is fmv, so don't pick this
       while (rs1 == r):
-        rs1 = randint(1, maxreg)
+        [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cmp_fd_fs2 (Test fd = fs2 = f" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
@@ -1402,7 +1389,7 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     while rs2 == rs1:
-      rs2 = randint(1, maxreg)
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
     if frm:
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
@@ -1415,7 +1402,7 @@ def make_fs2_corners(test, xlen, fcorners):
   for v in fcorners:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     while rs2 == rs1:
-      rs2 = randint(1, maxreg)
+      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
