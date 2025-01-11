@@ -853,32 +853,22 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
   regsB = [rdb, rs1b, rs2b, rs3b]
   compression = insMap[findInstype('instructions', test, insMap)].get('compressed', 0)
 
-  if compression == 2:
-    regsA = legalizecompr(regsA)
-    regsB = legalizecompr(regsB)
-
   match haz_type:
     case "nohaz":
       while (set(regsA) & set(regsB)):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
-        if compression == 2:
-          regsB = legalizecompr(regsB)
 
     case "waw":
       while (set(regsA[1:]) & set(regsB[1:])):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
-        if compression == 2:
-          regsB = legalizecompr(regsB)
       regsB[0] = regsA[0]
 
     case "war":
       while (set(regsA) & set(regsB)):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
-        if compression == 2:
-          regsB = legalizecompr(regsB)
       regsB[0] = regsA[regchoice]
 
 
@@ -886,8 +876,6 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
       while (regsB[0] not in regsA):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
-        if compression == 2:
-          regsB = legalizecompr(regsB)
         regsB[regchoice] = regsA[0]
 
   return regsA, regsB
@@ -1044,8 +1032,6 @@ def make_rd_corners(test, xlen, corners):
     for v in corners:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      while (legalizecompr(rd) == legalizecompr(rs2)):
-        rs2 = randint(0,maxreg)
       if test in ["c.or","c.addw","c.xor"]:
         rd_temp = 0
         rs2_temp = v
