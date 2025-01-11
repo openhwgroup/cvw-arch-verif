@@ -367,8 +367,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       else:
         lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + ZextImm6(immval) + " # perform operation\n")
   elif (test in c_shiftitype):
-    if (test == "c.srli" or test == "c.srai"):
-        rd = legalizecompr(rd)
     if shiftImm(int(ZextImm6(immval)),xlen) == "0":    # imm = 0 isn't allowed
       imm = "1"
     else:
@@ -394,23 +392,18 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = writeJRTest(lines, test, rd, rs1, xlen)
   elif (test in catype):
-    rd = legalizecompr(rd)
-    rs2 = legalizecompr(rs2)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) +", x" + str(rs2) + " # perform operation\n")
   elif (test in cbptype):
-    rd = legalizecompr(rd)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+" # initialize rd'\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n")
     if (test == "c.srai"):
       print("{test}: rd = {rd} = {rdval}, rs1 = {rs1} = {rs1val}, rs2 = {rs2} = {rs2val}, imm = {immval}")
   elif (test in cbtype):
-    rs1 = legalizecompr(rs1)
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeCBTest(lines, test, rs1, xlen)
   elif (test in ciwtype): # addi4spn
-    rd = legalizecompr(rd)
     lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n")
   elif (test in shiftitype):
@@ -444,9 +437,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + storeop + " x" + str(rs2) + ", " + signedImm12(immval) +" (x" + str(rs1) + ") # store value to put something in memory\n"
       lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n")
   elif (test in cltype):
-    rd = legalizecompr(rd)
-    rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
       rs2 = randint(8,15)
     if test in ["c.lw","c.ld"]:
@@ -494,9 +484,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # perform operation\n")
 
   elif (test in clhtype or test in clbtype):
-    rd = legalizecompr(rd)
-    rs1 = legalizecompr(rs1)
-    rs2 = legalizecompr(rs2)
     while (rs1 == rs2):
       rs2 = randint(8,15)
     if (test in clhtype):
@@ -538,7 +525,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in cutype):
-    rd = legalizecompr(rd)
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + " # perform operation\n")
   elif (test in stype):#["sb", "sh", "sw", "sd"]
