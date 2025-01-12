@@ -207,20 +207,20 @@ def writeTest(lines, rd, xlen, floatdest, testline):
     l = l + incrementSigOffset(offsetInc)
   return l
 
-def writeJRTest(lines, test, rd, rs1, xlen):
-  l = lines + f"la x{rs1}, 1f\n"
-  l = l + f"{test} x{rs1} # perform operation\n"
+def writeJumpTest(lines, test, rd, rs1, xlen, jumpline):
+  l = lines + jumpline
   if (lockstep):
     l = l + "nop\nnop\n"
     l = l + "1:\n"
   else:
     [storeinstr, offsetInc] = getSigInfo(False)
     l = l + f"auipc x{rs1}, 0 # should be skipped\n"
-    l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
+    l = l + f"{storeinstr} x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
     l = l + "1:\n"
+    l = l + f"{storeinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n"
     l = l + f"auipc x{rs1}, 0 # should be taken\n"
-    l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n" 
-    l = l + incrementSigOffset(2*offsetInc)
+    l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc*2}(x{sigReg}) # should be taken\n" 
+    l = l + incrementSigOffset(offsetInc*3)
   return l 
 
 def writeBranchTest(lines, test, rs1, xlen, branchline):
@@ -243,14 +243,14 @@ def writeStoreTest(lines, test, rs2, xlen, storeline):
     writeTest = test # use same instruction for writing, but in non-compressed form if necessary
     if (writeTest.startswith("c.")):
       writeTest = test[2:] # remove the c. prefix
-      floatdest = test in ["c.fsw","c.fsd"]
-      [storeinstr, offsetInc] = getSigInfo(floatdest)
-      rdPrefix = "f" if floatdest else "x"
-      l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + ") # store result into signature memory\n"
-      l = l + "nop # space1 to replace with signature checking in self-checking version\n"
-      l = l + "nop # space2 to replace with signature checking in self-checking version\n"
-      l = l + "nop # space3 to replace with signature checking in self-checking version\n"
-      l = l + incrementSigOffset(offsetInc*2)
+    floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
+    [storeinstr, offsetInc] = getSigInfo(floatdest)
+    rdPrefix = "f" if floatdest else "x"
+    l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + ") # store result into signature memory\n"
+    l = l + "nop # space1 to replace with signature checking in self-checking version\n"
+    l = l + "nop # space2 to replace with signature checking in self-checking version\n"
+    l = l + "nop # space3 to replace with signature checking in self-checking version\n"
+    l = l + incrementSigOffset(offsetInc*2)
   return l
 
 def genFrmTests(testInstr, rd, floatdest):
@@ -259,11 +259,9 @@ def genFrmTests(testInstr, rd, floatdest):
   csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
   for roundingMode in frm:
     lines = writeTest(lines, rd, xlen, True, f"{testInstr}, {roundingMode} # perform operation\n")
-    #lines = lines + f"{testInstr}, {roundingMode} # perform operation\n"
   for csrMode in csrFrm:
     lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
     lines = lines + f"fsrmi {csrMode}\n"
-    #lines = lines + f"{testInstr} # perform operation\n"
     lines = writeTest(lines, rd, xlen, floatdest, f"{testInstr} # perform operation\n")
   lines = lines + "\n"
   return lines
@@ -288,7 +286,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     if not frm:
-#      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
       lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
     else:
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
@@ -343,7 +340,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         rd = rs1
       while (test == "c.lui" and rd == 2):
         rd = rs1
-      #lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + storeop + " x" + str(rs2) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ")   # store value to put something in memory\n"
@@ -382,7 +378,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         rs1 = 1
       if (test == "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
-      lines = writeJRTest(lines, test, rd, rs1, xlen)
+      lines = lines + f"la x{rs1}, 1f\n"
+      jumpline = f"{test} x{rs1} # perform operation\n"
+      lines = writeJumpTest(lines, test, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
   elif (test in catype):
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
@@ -567,24 +565,22 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       branchline = f"{test} x{rs1}, x{rs2}, 1f # perform operation\n"
       lines = writeBranchTest(lines, test, rs1, xlen, branchline)
   elif (test in jtype):#["jal"]
-    lines = lines + "jal x" + str(rd) + ", 1f # perform operation\n"
-    lines = lines + "nop\n"
-    lines = lines + "1:\n"
+    jumpline = f"{test} x{rd}, 1f # perform operation\n"
+    lines = writeJumpTest(lines, test, rd, rs1, xlen, jumpline)
   elif (test in jalrtype):#["jalr"]
-    lines = lines + "la x" + str(rs1) + ", 1f\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval, immOffset=True) + " # add immediate to lower part of rs1\n"
-    lines = lines + "jalr x" + str(rd) + ", x" + str(rs1) + ", " + signedImm12(immval, immOffset=True) + " # perform operation\n"
-    lines = lines + "nop\n"
-    lines = lines + "1:\n"
+    lines = lines + f"la x{rs1}, 1f # jump destination address\n"
+    lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # add immediate to lower part of rs1\n"
+    jumpline = f"{test} x{rd}, x{rs1}, {signedImm12(immval, immOffset=True)} # perform operation\n"
+    lines = writeJumpTest(lines, test, rd, rs1, xlen, jumpline)
   elif (test in utype):#["lui", "auipc"]
-    lines = lines + test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n")
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + loadFloatReg(rs3, rs3val, xlen, flen)
     if not frm:
-      lines = lines + test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n"
+      lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + ", f" + str(rs3) + " # perform operation\n")
     else:
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}, f{rs3}"
       lines = lines + genFrmTests(testInstr, rd, True)
@@ -616,7 +612,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
       lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
-    lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
+    #lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
+    lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n")
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
@@ -628,7 +625,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
+    storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
+    lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
@@ -636,7 +634,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
       rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
-      lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n"
+      lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n")
+      #lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n"
     else: #                                                       ^~~~~~~~~ adds nothing if test != fcvtmod
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, False)
@@ -644,13 +643,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform fcomp-type op\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
+    #lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
     lines = lines + "fsflagsi 0b00000\n # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
     if not frm:
-      lines = lines + testInstr
+      #lines = lines + testInstr
+      lines = writeTest(lines, rd, xlen, True, testInstr + " # perform operation\n")
     else:
       lines = lines + genFrmTests(testInstr, rd, True)
   elif test in PX2Ftype: # ["fmvp.d.x"]
@@ -1122,7 +1123,7 @@ def make_imm_zero(test, xlen):
   desc = "cp_imm_zero"
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
-def make_imm_corners_jal(test, xlen):
+def make_imm_corners_jal(test, xlen): # update these test
   if (test == "jal"):
     minrng = 3
     maxrng = 14 # testing all 20 bits of immediate is too much code
@@ -1183,12 +1184,12 @@ def make_imm_corners_jalr(test, xlen):
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr
+    lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     lines = lines + "1:\n"
     f.write(lines)
 
-def make_offset(test, xlen):
-  # *** all of these will need signature / self-checking
+def make_offset(test, xlen): 
+  # *** all of these test will need signature / self-checking
   lines = "\n# Testcase cp_offset negative bin\n"
   if (test in btype):
     lines = lines + "j 2f # jump past backward branch target\n"
