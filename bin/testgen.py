@@ -108,7 +108,7 @@ def unsignedImm1(imm):
   imm = imm % pow(2, 1)
   return str(imm)
 
-def loadFloatReg(reg, val, xlen, flen):
+def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
   if test[-1] == "d" or NaNBox_tests == "D":
@@ -134,15 +134,14 @@ def loadFloatReg(reg, val, xlen, flen):
   #   loadop = "flw"
   storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
   # loadop  = "flw" if             (flen == 32) else "fld"
+  lines = lines + "la x2, scratch\n" 
   if (precision > xlen): # precision = 64, xlen = 32
-  # lines = lines + "la x2, scratch # base address \n"
     lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
     lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[10:18]}) in memory\n"
     lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x2 with 32 LSBs of {formatstrFP.format(val)}\n"
     lines = lines + f"{storeop} x3, 4(x2) # store x4 (0x{formatstrFP.format(val)[2:10]}) in memory 4 bytes after x3\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   else:
-  # lines = lines + "la x2, scratch # base address \n"
     lines = lines + f"li x3, {formatstrFP.format(val)} # load x3 with value {formatstrFP.format(val)}\n"
     lines = lines + f"{storeop} x3, 0(x2) # store {formatstrFP.format(val)} in memory\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
@@ -288,7 +287,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n")
   elif (test in frtype):
-    lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     if not frm:
@@ -297,17 +295,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in fixtype):
-    lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
   elif (test in fitype):
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
-    lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     # Do operation twice to make sure flags set the first time and remain set the second time
-    lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
+    #lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation first time to set flags\n")
     if not frm:
-      lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
+      lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation second time to make sure flags don't change\n")
     else:
       testInstr = f"{test} f{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, True)
@@ -582,7 +578,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in utype):#["lui", "auipc"]
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n")
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
-    lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + loadFloatReg(rs3, rs3val, xlen, flen)
@@ -623,7 +618,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
-    lines = lines + f"la x2, scratch # base address\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
@@ -636,7 +630,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
-    lines = lines + "la x2, scratch" + " # base address \n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
       rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
@@ -645,12 +638,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, False)
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
-    lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
-    lines = lines + "fsflagsi 0b00000\n # clear all fflags\n"
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
     if not frm:
@@ -1084,8 +1076,6 @@ def make_cp_gpr_hazard(test, xlen):
       [rdb, rs1b, rs2b, rs3b] = regsB
       desc = "cp_gpr/fpr_hazard " + haz + " test"
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, src, rs3a=rs3a, rs3b=rs3b, haz_type=haz, xlen=xlen)
-      if (test in "add"):
-        print("wrote hazard vector for " + test + " " + haz + " test")
 
 def make_cr_rs1_rs2_corners(test, xlen):
   for v1 in corners:
@@ -1342,7 +1332,8 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
-      f.write("fsflagsi 0b00000 # clear all fflags\n")
+      desc = desc + "\nfsflagsi 0b00000 # clear all fflags"
+      #f.write("fsflagsi 0b00000 # clear all fflags\n")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_cr_fs1_fs3_corners(test, xlen, frm = False):
@@ -1368,7 +1359,8 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
       desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
-    f.write("fsflagsi 0b00000 # clear all fflags\n")
+    desc = desc + "\nfsflagsi 0b00000 # clear all fflags"
+    #f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
 def make_fs2_corners(test, xlen, fcorners):
@@ -2230,7 +2222,7 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
             # print footer
-            line = "\n.EQU NUMTESTS," + str(1) + "\n\n"
+            line = "\n.EQU SIGSIZE," + str(sigOffset) + "\n\n"
             f.write(line)
             h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
             for line in h:

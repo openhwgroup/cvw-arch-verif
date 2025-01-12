@@ -1,4 +1,11 @@
 
+
+write_tohost:
+    la t1, tohost
+    li t0, 1
+    sw t0, 0(t1)
+    sw zero, 4(t1)
+
 self_loop:
     j self_loop
 
@@ -10,8 +17,14 @@ scratch:
 
 .data 
 
+.section .tohost 
+tohost: # write to HTIF
+    .dword 0
+
 .align 4
-signature:
-    // ***dh it would be nice to write the proper number of words here based on the size of the signature, but use 8 for starter
-    .fill 8*(__riscv_xlen/32),4,0xdeadbeef
+begin_signature:
+    .fill SIGSIZE*8/__riscv_xlen,__riscv_xlen/8,0xdeadbeef
+    #.fill 64, __riscv_xlen/8, 0xdeadbeef
+end_signature:
+
 .end

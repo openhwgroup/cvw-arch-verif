@@ -26,10 +26,14 @@ def insertTests(out, file):
 		for line in f:
 			if re.search(r'rvtest_entry_point:', line):
 				body = 1
-			elif re.search(r'self_loop:', line):
+			elif re.search(r'.EQU SIGSIZE,(.*)', line):
+				m = re.search(r'.EQU SIGSIZE,(.*)', line)
+				sigsize = m.group(1)
+				out.write(f"#{line}")
 				body = 0
 			elif body == 1:
 				out.write(line)
+	return int(sigsize)
 
 def combineDir(testdir):
 	files = os.listdir(testdir)
@@ -37,9 +41,12 @@ def combineDir(testdir):
 	tempfname = testdir+"/WALLY-COV-ALL_temp.S"
 	with open(tempfname, "w") as out:
 		insertTemplate(out, "testgen_header.S")
+		sigsize = 0
 		for file in files:
 			if (file.endswith(".S") and file != "WALLY-COV-ALL.S" and file != "WALLY-COV-ALL_temp.S"):
-				insertTests(out, file)
+				sigsize = sigsize + insertTests(out, file)
+		# Write the signature size as the sum of the sizes from each file
+		out.write(f".EQU SIGSIZE,{sigsize} #combined\n")
 		insertTemplate(out, "testgen_footer.S")
 	# if new file is different from old file, replace old file with new file
 	if os.path.exists(fname):
