@@ -612,7 +612,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
       lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
-    #lines = lines + f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n"
     lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {signedImm12(immval)}(x{rs1}) # perform operation\n")
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
@@ -627,7 +626,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
-  elif (test in F2Xtype):#["fcvt.w.s", "fcvt.wu.s", "fmv.x.w"]
+  elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
     lines = lines + "la x2, scratch" + " # base address \n"
@@ -635,8 +634,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if not frm:
       rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
       lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n")
-      #lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n"
-    else: #                                                       ^~~~~~~~~ adds nothing if test != fcvtmod
+    else: 
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, False)
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
@@ -644,41 +642,34 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
-    #lines = lines + test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n"
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
     lines = lines + "fsflagsi 0b00000\n # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
     if not frm:
-      #lines = lines + testInstr
       lines = writeTest(lines, rd, xlen, True, testInstr + " # perform operation\n")
     else:
       lines = lines + genFrmTests(testInstr, rd, True)
   elif test in PX2Ftype: # ["fmvp.d.x"]
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load immediate value into integer register\n"
-    testInstr = f"{test} f{rd}, x{rs1}, x{rs2}"
-    if not frm:
-      lines = lines + testInstr
-    else:
-      lines = lines + genFrmTests(testInstr, rd, False)
+    lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, x{rs1}, x{rs2} # perform operation\n")
   elif test in flitype:
-    lines = lines + f"{test} f{rd}, {flivals[rs1]} # perform operation\n"
-    #                                      ^~~~~~~~~~~~~~~~~~~~~~~ translate register encoding to C-style literal to make the assembler happy
+    lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {flivals[rs1]} # perform operation\n")
   elif test in rbtype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(immval%4) + " # perform operation\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", x" + str(rs2) + ", " + str(immval%4) + " # perform operation\n")
   elif test in irtype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = lines + test + " x" + str(rd) + ", (x" + str(rs1) + ")  # perform operation\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in sctype or test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
   else:
     print("Error: %s type not implemented yet" % test)
   f.write(lines)
