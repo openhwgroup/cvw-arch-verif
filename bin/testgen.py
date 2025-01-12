@@ -186,7 +186,7 @@ def getSigInfo(floatdest):
 def incrementSigOffset(amount):
   global sigOffset  # necessary to declare global so we can modify it
   sigOffset = sigOffset + amount
-  maxOffset = 1800
+  maxOffset = 1800 # could go to 2048, but give room for several consecutive instructions
   if (sigOffset >= maxOffset):
     l = f"addi x{sigReg}, x{sigReg}, {sigOffset} # increment signature pointer and reset offset\n"
     sigOffset = 0
@@ -223,15 +223,14 @@ def writeJRTest(lines, test, rd, rs1, xlen):
     l = l + incrementSigOffset(2*offsetInc)
   return l 
 
-def writeCBTest(lines, test, rs1, xlen):
-  l = lines + f"{test} x{rs1}, 1f # perform operation\n"
+def writeBranchTest(lines, test, rs1, xlen, branchline):
+  l = lines + branchline
   if (lockstep):
     l = l + "nop\nnop\n"
     l = l + "1:\n"
   else:
     [storeinstr, offsetInc] = getSigInfo(False)
-    l = l + f"auipc x{rs1}, 0 # should be skipped\n"
-    l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
+    l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # write garbage; should be skipped\n"
     l = l + "1:\n"
     l = l + f"auipc x{rs1}, 0 # should be taken\n"
     l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n" 
@@ -395,7 +394,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       print("{test}: rd = {rd} = {rdval}, rs1 = {rs1} = {rs1val}, rs2 = {rs2} = {rs2val}, imm = {immval}")
   elif (test in cbtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-    lines = writeCBTest(lines, test, rs1, xlen)
+    branchline = f"{test} x{rs1}, 1f # perform operation\n"
+    lines = writeBranchTest(lines, test, rs1, xlen, branchline)
   elif (test in ciwtype): # addi4spn
     lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n")
@@ -475,7 +475,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
           lines = lines + f"li x{temp1}, {formatstrFP.format(rs2val)} # load x{temp1} with value {formatstrFP.format(rs2val)}\n"
           lines = lines + f"{storeop} x{temp1}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
         lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # perform operation\n")
-
   elif (test in clhtype or test in clbtype):
     while (rs1 == rs2):
       rs2 = randomNonconflictingReg(test)
@@ -538,43 +537,35 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
+    type = "f" if (test in ["c.fswsp", "c.fsdsp"]) else "x"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     if (test == "c.fswsp" or test == "c.fsdsp"):
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
-      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " #put a randomm value into fs2\n"
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + test + " f" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
+    offset = int(ZextImm6(immval))*mul
+    lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n";
+    storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
+    lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+  elif (test in csbtype + cshtype):
+    if (test in csbtype):
+      offset = unsignedImm2(immval)
     else:
-      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + test + " x" + str(rs2) +", " + str(int(ZextImm6(immval))*mul) + "(sp)" + "# perform operation\n"
-  elif (test in csbtype):
+      offset = str(int(unsignedImm1(immval))*2)
     while (rs1 == rs2):
       rs2 = randomNonconflictingReg(test)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + unsignedImm2(immval) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + unsignedImm2(immval) + "(x" + str(rs1) + ") # perform operation \n"
-  elif (test in cshtype):
-    while (rs1 == rs2):
-      rs2 = randomNonconflictingReg(test)
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm1(immval))*2) + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + str(int(unsignedImm1(immval))*2) + "(x" + str(rs1) + ") # perform operation \n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + offset + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
   elif (test in btype):#["beq", "bne", "blt", "bge", "bltu", "bgeu"]
-    for same in range(2):
+    for same in [False, True]:
       if (same):
         rs1val = rs2val
         lines = lines + "# same values in both registers\n"
-      lines = lines + "nop\n"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-      lines = lines + test + " x" + str(rs1) + ", x" + str(rs2) + ", some_label_for_btype_" + str(immval) + str(same) + " # perform operation \n"
-      lines = lines + "addi x0, x1, 1\n"
-      lines = lines + "some_label_for_btype_" + str(immval)+ str(same) + ":\n"
-      lines = lines + "addi x0, x2, 2\n"
-      lines = lines + "nop\nnop\nnop\nnop\nnop\n"
+      branchline = f"{test} x{rs1}, x{rs2}, 1f # perform operation\n"
+      lines = writeBranchTest(lines, test, rs1, xlen, branchline)
   elif (test in jtype):#["jal"]
     lines = lines + "jal x" + str(rd) + ", 1f # perform operation\n"
     lines = lines + "nop\n"
