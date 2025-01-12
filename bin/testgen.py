@@ -201,13 +201,19 @@ def writeTest(lines, rd, xlen, floatdest, testline):
   if (not lockstep):
     [storeinstr, offsetInc] = getSigInfo(floatdest)
     rdPrefix = "f" if floatdest else "x"
-    l = l + storeinstr + " " + rdPrefix + str(rd) + ", " + str(sigOffset) + "(x" + str(sigReg) + ") # store result into signature memory\n"
+    l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}) # store result into signature memory\n"
+    if (floatdest):
+      [intstoreinstr, dummy] = getSigInfo(False)
+      l = l + f"csrr x{rd}, fflags # read fflags\n"
+      l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # store fflags into signature memory\n"
+      l = l + "nop # space3 to replace with signature checking in self-checking version\n"
+      l = l + "nop # space4 to replace with signature checking in self-checking version\n"
     l = l + "nop # space1 to replace with signature checking in self-checking version\n"
     l = l + "nop # space2 to replace with signature checking in self-checking version\n"
-    l = l + incrementSigOffset(offsetInc)
+    l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
   return l
 
-def writeJumpTest(lines, test, rd, rs1, xlen, jumpline):
+def writeJumpTest(lines, rd, rs1, xlen, jumpline):
   l = lines + jumpline
   if (lockstep):
     l = l + "nop\nnop\n"
@@ -223,7 +229,7 @@ def writeJumpTest(lines, test, rd, rs1, xlen, jumpline):
     l = l + incrementSigOffset(offsetInc*3)
   return l 
 
-def writeBranchTest(lines, test, rs1, xlen, branchline):
+def writeBranchTest(lines, rs1, xlen, branchline):
   l = lines + branchline
   if (lockstep):
     l = l + "nop\nnop\n"
@@ -298,6 +304,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + "la x2, scratch\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
+    # Do operation twice to make sure flags set the first time and remain set the second time
     lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
     if not frm:
       lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
@@ -380,7 +387,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = lines + f"la x{rs1}, 1f\n"
       jumpline = f"{test} x{rs1} # perform operation\n"
-      lines = writeJumpTest(lines, test, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
+      lines = writeJumpTest(lines, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
   elif (test in catype):
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
@@ -388,12 +395,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cbptype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+" # initialize rd'\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n")
-    if (test == "c.srai"):
-      print("{test}: rd = {rd} = {rdval}, rs1 = {rs1} = {rs1val}, rs2 = {rs2} = {rs2val}, imm = {immval}")
   elif (test in cbtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     branchline = f"{test} x{rs1}, 1f # perform operation\n"
-    lines = writeBranchTest(lines, test, rs1, xlen, branchline)
+    lines = writeBranchTest(lines, rs1, xlen, branchline)
   elif (test in ciwtype): # addi4spn
     lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n")
@@ -554,7 +559,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + offset + " # sub immediate from rs1 to counter offset\n"
-    lines = lines + test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
+    #lines = lines + test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
+    storeline = test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
+    lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in btype):#["beq", "bne", "blt", "bge", "bltu", "bgeu"]
     for same in [False, True]:
       if (same):
@@ -563,15 +570,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       branchline = f"{test} x{rs1}, x{rs2}, 1f # perform operation\n"
-      lines = writeBranchTest(lines, test, rs1, xlen, branchline)
+      lines = writeBranchTest(lines, rs1, xlen, branchline)
   elif (test in jtype):#["jal"]
     jumpline = f"{test} x{rd}, 1f # perform operation\n"
-    lines = writeJumpTest(lines, test, rd, rs1, xlen, jumpline)
+    lines = writeJumpTest(lines, rd, rs1, xlen, jumpline)
   elif (test in jalrtype):#["jalr"]
     lines = lines + f"la x{rs1}, 1f # jump destination address\n"
     lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # add immediate to lower part of rs1\n"
     jumpline = f"{test} x{rd}, x{rs1}, {signedImm12(immval, immOffset=True)} # perform operation\n"
-    lines = writeJumpTest(lines, test, rd, rs1, xlen, jumpline)
+    lines = writeJumpTest(lines, rd, rs1, xlen, jumpline)
   elif (test in utype):#["lui", "auipc"]
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + unsignedImm20(immval) + " # perform operation\n")
   elif (test in fr4type): #["fmadd.s", "fmsub.s", "fnmadd.s", "fnmsub.s"]
@@ -666,7 +673,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif test in lrtype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
-  elif test in sctype or test in amotype:
+  elif test in sctype + amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
@@ -1082,20 +1089,6 @@ def make_cp_gpr_hazard(test, xlen):
       desc = "cp_gpr/fpr_hazard " + haz + " test"
 
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, src, rs3a=rs3a, rs3b=rs3b, haz_type=haz, xlen=xlen)
-
-def make_rs1_sign(test, xlen):
-   for v in [1, -1]:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    rs1val = abs(rs1val % 2**(xlen-1)) * v;
-    desc = "cp_rs1_sign (Test source rs1 value = " + hex(rs1val) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
-
-def make_rs2_sign(test, xlen):
-  for v in [1, -1]:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    rs2val = abs(rs2val % 2**(xlen-1)) * v;
-    desc = "cp_rs2_sign (Test source rs2 value = " + hex(rs2val) + ")"
-    writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_cr_rs1_rs2_corners(test, xlen):
   for v1 in corners:
@@ -1565,10 +1558,6 @@ def write_tests(coverpoints, test, xlen):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cmp_rd_rs2_eqval"):
       pass # already covered by cr_rs1_rs2_corners
-    elif (coverpoint == "cp_rs1_sign"):
-      make_rs1_sign(test, xlen)
-    elif (coverpoint == "cp_rs2_sign"):
-      make_rs2_sign(test, xlen)
     elif (coverpoint == "cp_rd_sign"):
       pass # already covered by rd_corners
     elif (coverpoint == "cr_rs1_rs2_corners"):
