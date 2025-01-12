@@ -1036,14 +1036,11 @@ def make_rd_corners(test, xlen, corners):
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
-
   elif (test == "divw" or test == "divuw" or test=="mulw"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
-
-
   elif (test == "c.lui"):
     for v in corners:
       desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
@@ -1085,10 +1082,10 @@ def make_cp_gpr_hazard(test, xlen):
       regsA, regsB = make_unique_hazard(test, regsA=[rda, rs1a, rs2a, rs3a], haz_type=haz, regchoice=src)
       [rda, rs1a, rs2a, rs3a] = regsA
       [rdb, rs1b, rs2b, rs3b] = regsB
-
       desc = "cp_gpr/fpr_hazard " + haz + " test"
-
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, src, rs3a=rs3a, rs3b=rs3b, haz_type=haz, xlen=xlen)
+      if (test in "add"):
+        print("wrote hazard vector for " + test + " " + haz + " test")
 
 def make_cr_rs1_rs2_corners(test, xlen):
   for v1 in corners:
