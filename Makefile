@@ -5,24 +5,32 @@ MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
 TESTDIR		 := tests/lockstep
+SELFCHECKDIR := tests/selfchecking
+SIGDIR       := tests/signature
 SRCDIR64   := $(TESTDIR)/rv64
 SRCDIR32   := $(TESTDIR)/rv32
+SRCSELFCHECKDIR64   := $(SELFCHECKDIR)/rv64
+SRCSELFCHECKDIR32   := $(SELFCHECKDIR)/rv32
 PRIVDIR    := $(TESTDIR)/priv
 PRIVDIR64  := $(PRIVDIR)/rv64
 PRIVDIR32  := $(PRIVDIR)/rv32
 WORK       := work
 SRCEXT     := S
 OBJEXT     := elf
+SIGEXT     := elf.signature
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
+UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 PRIVSOURCES     = $(shell find $(PRIVDIR) -type f -regex ".**\.$(SRCEXT)" | sort)
 RV32PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR32)/%)
 RV32PRIVOBJECTS = $(RV32PRIV:.$(SRCEXT)=.$(OBJEXT))
 RV64PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR64)/%)
 RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
-UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
+#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
+UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT))
+UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
 # Add headers for priv tests here. They will all be prepended with PRIVDIR
 # Make sure to add a rule to generate the header file if necessary. 
@@ -35,7 +43,13 @@ PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompresse
 all: unpriv priv
 
 unpriv: testgen
-	$(MAKE) $(UNPRIVOBJECTS)
+	$(MAKE) $(UNPRIVOBJECTS)	
+
+selfcheck: selfchecking
+	$(MAKE) $(UNPRIVSELFCHECKOBJECTS)
+
+selfcheck2: $(UNPRIVSELFCHECK_SOURCES)
+	$(MAKE) $(UNPRIVSELFCHECKOBJECTS)
 
 priv: $(PRIVOBJECTS)
 
@@ -45,10 +59,12 @@ covergroupgen: bin/covergroupgen.py
 
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
-	rm -rf ${TESTDIR}/rv32/E # E tests are not used in the regular (I) suite
-	rm -rf ${TESTDIR}/rv64/E
-	# *** will need to do this as well in the signature directory
+	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
+	rm -rf ${TESTDIR}/*/Zaamo ${TESTDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
 	bin/combinetests.py
+
+selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
+	bin/makeselfchecking.py
 
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 	bin/csrtests.py
@@ -82,6 +98,7 @@ CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
 MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
+SAIL = $(if $(findstring 64, $*),riscv_sim_RV64,riscv_sim_RV32)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
@@ -89,7 +106,7 @@ PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVDIR)/, $(PRIV_HEADERS))
 EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
-.PRECIOUS: %.elf %.elf.objdump %.elf.memfile
+.PRECIOUS: %.elf %.elf.objdump %.elf.memfile %.elf.signature
 
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
@@ -102,6 +119,10 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
+
+%.elf.signature: %.elf
+	#echo $< $@
+	$(SAIL) $< --enable-zcb -T $@ > $@.log
 
 # Run tests while collecting functional coverage
 sim:
@@ -127,3 +148,6 @@ clean:
 	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf ${PRIVDIR}/*.h
+	rm -rf $(SELFCHECKDIR)/*
+	rm -rf $(SIGDIR)/*
+

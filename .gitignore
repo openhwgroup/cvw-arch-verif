@@ -42,3 +42,4 @@ tests/priv/*.h
 tests/lockstep/priv/rv32
 tests/lockstep/priv/rv64
 tests/signature
+tests/selfchecking

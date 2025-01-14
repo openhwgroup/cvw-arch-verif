@@ -20,11 +20,12 @@ scratch:
 .section .tohost 
 tohost: # write to HTIF
     .dword 0
+fromhost:
+    .dword 0
 
 .align 4
 begin_signature:
     .fill SIGSIZE*8/__riscv_xlen,__riscv_xlen/8,0xdeadbeef
-    #.fill 64, __riscv_xlen/8, 0xdeadbeef
 end_signature:
 
 .end

@@ -123,17 +123,7 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
   else:
     precision = 32
     loadop = "flw"
-  # if test[-1] == "h":
-  #   precision = 16
-  #   loadop = "flh"
-  # elif test[-1] == "d":
-  #   precision = 64
-  #   loadop = "fld"
-  # else:
-  #   precision = 32
-  #   loadop = "flw"
   storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
-  # loadop  = "flw" if             (flen == 32) else "fld"
   lines = lines + "la x2, scratch\n" 
   if (precision > xlen): # precision = 64, xlen = 32
     lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
@@ -184,7 +174,9 @@ def getSigInfo(floatdest):
 
 def incrementSigOffset(amount):
   global sigOffset  # necessary to declare global so we can modify it
+  global sigTotal
   sigOffset = sigOffset + amount
+  sigTotal = sigTotal + amount
   maxOffset = 1800 # could go to 2048, but give room for several consecutive instructions
   if (sigOffset >= maxOffset):
     l = f"addi x{sigReg}, x{sigReg}, {sigOffset} # increment signature pointer and reset offset\n"
@@ -198,17 +190,17 @@ def incrementSigOffset(amount):
 def writeTest(lines, rd, xlen, floatdest, testline):
   l = lines + testline
   if (not lockstep):
+    if (floatdest):
+      comment = "# FLOAT SIGNATURE\n"
+    else:
+      comment = "# INT SIGNATURE\n"
     [storeinstr, offsetInc] = getSigInfo(floatdest)
     rdPrefix = "f" if floatdest else "x"
-    l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}) # store result into signature memory\n"
+    l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}); nop; nop {comment}\n"
     if (floatdest):
       [intstoreinstr, dummy] = getSigInfo(False)
       l = l + f"csrr x{rd}, fflags # read fflags\n"
-      l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # store fflags into signature memory\n"
-      l = l + "nop # space3 to replace with signature checking in self-checking version\n"
-      l = l + "nop # space4 to replace with signature checking in self-checking version\n"
-    l = l + "nop # space1 to replace with signature checking in self-checking version\n"
-    l = l + "nop # space2 to replace with signature checking in self-checking version\n"
+      l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}); nop; nop # FFLAGS SIGNATURE\n"
     l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
   return l
 
@@ -222,6 +214,7 @@ def writeJumpTest(lines, rd, rs1, xlen, jumpline):
     l = l + f"auipc x{rs1}, 0 # should be skipped\n"
     l = l + f"{storeinstr} x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
     l = l + "1:\n"
+    l = l + "# JUMP SIGNATURE\n"
     l = l + f"{storeinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n"
     l = l + f"auipc x{rs1}, 0 # should be taken\n"
     l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc*2}(x{sigReg}) # should be taken\n" 
@@ -234,6 +227,7 @@ def writeBranchTest(lines, rs1, xlen, branchline):
     l = l + "nop\nnop\n"
     l = l + "1:\n"
   else:
+    l = l + "# BRANCH SIGNATURE\n"
     [storeinstr, offsetInc] = getSigInfo(False)
     l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # write garbage; should be skipped\n"
     l = l + "1:\n"
@@ -245,16 +239,14 @@ def writeBranchTest(lines, rs1, xlen, branchline):
 def writeStoreTest(lines, test, rs2, xlen, storeline):
   l = lines + storeline
   if (not lockstep):
+    l = l + "# STORE SIGNATURE\n"
     writeTest = test # use same instruction for writing, but in non-compressed form if necessary
     if (writeTest.startswith("c.")):
       writeTest = test[2:] # remove the c. prefix
     floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
     [storeinstr, offsetInc] = getSigInfo(floatdest)
     rdPrefix = "f" if floatdest else "x"
-    l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + ") # store result into signature memory\n"
-    l = l + "nop # space1 to replace with signature checking in self-checking version\n"
-    l = l + "nop # space2 to replace with signature checking in self-checking version\n"
-    l = l + "nop # space3 to replace with signature checking in self-checking version\n"
+    l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
     l = l + incrementSigOffset(offsetInc*2)
   return l
 
@@ -2211,7 +2203,8 @@ if __name__ == '__main__':
             for line in h:
               f.write(line)
 
-            sigOffset = 0
+            sigOffset = 0 # offset of signature from signature pointer
+            sigTotal = 0 # total number of bytes in signature
             sigReg = 4 # start with x4 for signatures
 
             # add assembly lines to enable fp where needed
@@ -2222,7 +2215,7 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
             # print footer
-            line = "\n.EQU SIGSIZE," + str(sigOffset) + "\n\n"
+            line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
             f.write(line)
             h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
             for line in h:
