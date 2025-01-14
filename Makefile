@@ -21,7 +21,6 @@ SIGEXT     := elf.signature
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
-UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 PRIVSOURCES     = $(shell find $(PRIVDIR) -type f -regex ".**\.$(SRCEXT)" | sort)
 RV32PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR32)/%)
 RV32PRIVOBJECTS = $(RV32PRIV:.$(SRCEXT)=.$(OBJEXT))
@@ -45,10 +44,8 @@ all: unpriv priv
 unpriv: testgen
 	$(MAKE) $(UNPRIVOBJECTS)	
 
-selfcheck: selfchecking
-	$(MAKE) $(UNPRIVSELFCHECKOBJECTS)
-
-selfcheck2: $(UNPRIVSELFCHECK_SOURCES)
+selfcheck: UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
+selfcheck: selfchecking $(UNPRIVSELFCHECK_SOURCES)
 	$(MAKE) $(UNPRIVSELFCHECKOBJECTS)
 
 priv: $(PRIVOBJECTS)
@@ -65,6 +62,7 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
+	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
 $(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
 	bin/csrtests.py
