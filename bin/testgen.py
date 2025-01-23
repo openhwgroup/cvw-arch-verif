@@ -707,9 +707,13 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
               immval = shiftImm(immvalslist[testindex], xlen)
             elif instype == 'flitype':
               immval = flivals[immvalslist[testindex] % 32]
+            elif instype in ['csrtype', 'csritype']:
+              immval = unsignedImm5(immvalslist[testindex])
             else:
-              immval = signedImm12(immvalslist[testindex])
+              immval = signedImm12(immvalslist[testindex], xlen)
             lines += ","*(lines[-1*len(test):] != test) + " " + str(immval)
+          case 'c':
+            lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
           case 'l':
             lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\nnop\n"
             lines += "arbitraryLabel" + str(hazardLabel) + ":\nnop\n"
@@ -1055,9 +1059,11 @@ def make_cp_gpr_hazard(test, xlen):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
     return
+    '''
   if findInstype('instructions', test, insMap) == 'csrtype' or findInstype('instructions', test, insMap) == 'csritype':
     print("Zicsr hazards not yet implemented")
     return
+    '''
   for haz in ["nohaz", "raw", "waw", "war"]:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(test, rs3=True)
@@ -1896,8 +1902,8 @@ insMap = {
   'zcftype' : {'instructions' : zcftype, 'regconfig' : 'uuuu'},
   'zcdtype' : {'instructions' : zcdtype, 'regconfig' : 'uuuu'},
   'flitype' : {'instructions' : flitype, 'regconfig' : 'fi__'},
-  'csrtype' : {'instructions' : csrtype, 'regconfig' : 'xx__'},
-  'csritype' : {'instructions' : csritype, 'regconfig' : 'xi__'}
+  'csrtype' : {'instructions' : csrtype, 'regconfig' : 'xcx_'},
+  'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'}
 }
 
 if __name__ == '__main__':
