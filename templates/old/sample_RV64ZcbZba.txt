@@ -1,0 +1,14 @@
+function void rv64zcbzba_sample(int hart, int issue);
+    ins_rv64zcbzba_t ins;
+    if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
+        // $display("Examining compressed instruction rv64zcbzba_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        case (traceDataQ[hart][issue][0].inst_name)
+            "c.zext.w"     : begin
+                ins = new(hart, issue, traceDataQ);
+                ins.add_rd(0);       
+                ins.add_rs1(0);     
+                c_zext_w_cg.sample(ins); 
+            end
+        endcase
+    end
+endfunction

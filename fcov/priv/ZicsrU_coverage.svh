@@ -23,7 +23,7 @@
 `define COVER_ZICSRU
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsru_t;
 
-covergroup ucsr_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
     option.per_instance = 0; 
     // "ZicsrU ucsr"
 
@@ -40,7 +40,7 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csr: coverpoint ins.current.insn[31:20]  {
-    // automtically gives all 4096 bins
+        bins all[] = {[0:$]};
     }
     priv_mode_u: coverpoint ins.current.mode {
         bins U_mode = {2'b00};
@@ -63,7 +63,7 @@ covergroup ucsr_cg with function sample(ins_zicsru_t ins);
     cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
 endgroup
 
-covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
     option.per_instance = 0; 
     // "ZicsrU uprivinst"
 
@@ -75,6 +75,7 @@ covergroup uprivinst_cg with function sample(ins_zicsru_t ins);
         bins fence =  {32'h0ff0000f}; // fence iorw, iorw
         bins fence_rw_rw = {32'h0330000f}; // fence rw, rw
         bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
+        bins pause = {32'h0100000F}; // pause, for Zihintpause
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -102,7 +103,7 @@ function void zicsru_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    ucsr_cg.sample(ins);
-    uprivinst_cg.sample(ins);
+    ZicsrU_ucsr_cg.sample(ins);
+    ZicsrU_uprivinst_cg.sample(ins);
     
 endfunction

@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsm_t;
 
-covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -148,7 +148,7 @@ covergroup exceptionsM_cg with function sample(ins_exceptionsm_t ins);
 endgroup
 
 // more detailed illegal instruction testing
-covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
     option.per_instance = 0; 
     
     cp_illegal : coverpoint ins.current.insn { // illegal in RVA22S64; will trap if not in an implemented extension
@@ -188,6 +188,10 @@ covergroup exceptionsInstr_cg with function sample(ins_exceptionsm_t ins);
         // Exhaustive test of 2 * 2^12 complicated bins for I-type instructions with op = 00100011 and funct3 = 1 or 5, and any imm_11:0
         // includes integer shifts, Zbb, Zbs, Zbkb, Zknd, Zkne, Zknh
     }
+    cp_aes64ks1i : coverpoint ins.current.insn[24:20] iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[14:12] == 3'b001 & ins.current.insn[31:25] == 7'b0011000) {
+        // Exhaustively cover all rs2 fields of aes64ks1i to exercise illegal bit 4 or rnum
+    }
+
     // RV64IW instruction space: op = 0011011
     cp_IWtype : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0011011) { 
         // exercise all 8 bins.  All are illegal in rv32
@@ -324,7 +328,7 @@ function void exceptionsm_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsM_cg.sample(ins);
-    exceptionsInstr_cg.sample(ins);
+    ExceptionsM_exceptions_cg.sample(ins);
+    ExceptionsM_instr_cg.sample(ins);
     
 endfunction

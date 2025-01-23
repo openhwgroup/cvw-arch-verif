@@ -23,7 +23,7 @@
 `define COVER_EXCEPTIONSZICBOS
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszicbos_t;
 
-covergroup exceptionsZicboS_cg with function sample(ins_exceptionszicbos_t ins);
+covergroup ExceptionsZicboS_exceptions_cg with function sample(ins_exceptionszicbos_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -59,7 +59,7 @@ covergroup exceptionsZicboS_cg with function sample(ins_exceptionszicbos_t ins);
 
     // main coverpoints
     cp_cbie:  cross cbo_inval,      menvcfg_cbie,  senvcfg_cbie,  priv_modes;
-    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, menvcfg_cbcfe, priv_modes;
+    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, senvcfg_cbcfe, priv_modes;
     cp_cbze:  cross cbo_zero,       menvcfg_cbze,  senvcfg_cbze,  priv_modes;
 
 endgroup
@@ -74,6 +74,6 @@ function void exceptionszicbos_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsZicboS_cg.sample(ins);
+    ExceptionsZicboS_exceptions_cg.sample(ins);
     
 endfunction

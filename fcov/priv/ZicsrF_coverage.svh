@@ -21,7 +21,7 @@
 `define COVER_ZICSRF
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrf_t;
 
-covergroup fcsr_cg with function sample(ins_zicsrf_t ins);
+covergroup ZicsrF_fcsr_cg with function sample(ins_zicsrf_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -264,6 +264,6 @@ function void zicsrf_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    fcsr_cg.sample(ins);
+    ZicsrF_fcsr_cg.sample(ins);
     
 endfunction

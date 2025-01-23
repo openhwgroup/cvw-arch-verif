@@ -1,0 +1,4 @@
+    cmp_rs1_rs2_nx0 : coverpoint ins.current.insn[19:15]  iff (ins.current.rs1 == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all 31 registers excluding x0
+        ignore_bins x0 = {5'b00000};
+    }
