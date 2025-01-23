@@ -167,11 +167,11 @@ covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
         bins mip      = {12'h344};
         bins menvcfg  = {12'h30A};
         bins mseccfg  = {12'h747};
-        `ifdef RV32
+        `ifdef XLEN32
             bins mstatush = {12'h310};
             bins medelegh = {12'h312};
             bins menvcfgh = {12'h31A};
-            bins mseccfgh = {12'h357};
+            bins mseccfgh = {12'h757};
         `endif
     }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
