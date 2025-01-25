@@ -9,7 +9,7 @@
 ##################################
 
 import random
-from random import randint 
+from random import randint
 from random import seed
 import os, sys
 from os import environ
@@ -34,16 +34,10 @@ def csrwalk(pathname, regs):
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
     outfile.close
 
-def csrtests(pathname, US):
+def csrtests(pathname):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
-    if (US): # User/Super mode
-        rng = range(0x3A0, 0x3F0)
-        print("// Additional tests to (unsuccessfully) write PMP from S and U mode; running these in M mode mucks up the PMP and hangs the DUT")
-    else:
-        rng = range(4096)
-        #rng = range(512) # reduced range for testing
-    for i in rng:
+    for i in range(4096):
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
         reg3 = randint(1, 31)
@@ -56,16 +50,13 @@ def csrtests(pathname, US):
         reg3 = str(reg3)
         ih = hex(i)
         print("\n// Testing CSR "+ih)
-        print("\tcsrr x"+str(reg1)+", "+ ih + "\t// Read CSR")   
-        if (i < 0x3A0 or i > 0x3EF or US): # skip writing PMP registers, which are touchy and tested separately
-            print("\tli x"+reg2+", -1")
-            print("\tcsrrw x"+reg3+", "+ih+", x"+reg2+"\t// Write all 1s to CSR") 
-            print("\tcsrrw x"+reg3+", "+ih+", x0\t// Write all 0s to CSR")
-            print("\tcsrrs x"+reg3+", "+ih+", x"+reg2+"\t// Set all CSR bits")
-            print("\tcsrrc x"+reg3+", "+ih+", x"+reg2+"\t// Clear all CSR bits")
-            print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")   
-        else:
-            print("\t// Don't try reading or writing PMP in machine mode because the weird patterns hang the DUT")
+        print("\tcsrr x"+str(reg1)+", "+ ih + "\t// Read CSR")
+        print("\tli x"+reg2+", -1")
+        print("\tcsrrw x"+reg3+", "+ih+", x"+reg2+"\t// Write all 1s to CSR")
+        print("\tcsrrw x"+reg3+", "+ih+", x0\t// Write all 0s to CSR")
+        print("\tcsrrs x"+reg3+", "+ih+", x"+reg2+"\t// Set all CSR bits")
+        print("\tcsrrc x"+reg3+", "+ih+", x"+reg2+"\t// Clear all CSR bits")
+        print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")
     outfile.close
 
 # setup
@@ -74,24 +65,21 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth", "mseccfg", "mseccfgh"] 
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mcycle", "mcountinhibit", "mstatush", "mcycleh", "minstreth", "mseccfg", "mseccfgh"]
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
 uregs = ["fflags", "frm", "fcsr"]
 
-WALLY = os.environ.get('WALLY')
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/Zicsr-CSR-Tests.h"
-csrtests(pathname, False) # make tests for M mode
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/Zicsr-CSR-Tests.h"
+csrtests(pathname)
 
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/Zicsr-CSR-USPMPWrite-Tests.h"
-csrtests(pathname, True) # additional tests to read/write PMP registers in U/S mode
-
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ZicsrM-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs);
 
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ZicsrS-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrS-Walk.h"
 csrwalk(pathname, sregs + uregs);
 
-pathname = WALLY+"/addins/cvw-arch-verif/tests/priv/ZicsrU-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrU-Walk.h"
 csrwalk(pathname, uregs);
 

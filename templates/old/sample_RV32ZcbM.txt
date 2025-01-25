@@ -1,0 +1,16 @@
+function void rv32zcbm_sample(int hart, int issue);
+    ins_rv32zcbm_t ins;
+    if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
+        // $display("Examining compressed instruction rv32zcbm_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        case (traceDataQ[hart][issue][0].inst_name)
+            "c.mul"     : begin
+                if (traceDataQ[hart][issue][0].insn[1:0] == 2'b01 && traceDataQ[hart][issue][0].insn[15:10] == 6'b100111) begin // Specific bits for "mul" 
+                    ins = new(hart, issue, traceDataQ); 
+                    ins.add_rd(0);                 
+                    ins.add_rs2(1);                
+                    c_mul_cg.sample(ins);       
+                end
+            end
+        endcase
+    end
+endfunction

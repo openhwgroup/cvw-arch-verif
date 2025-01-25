@@ -21,7 +21,7 @@
 `define COVER_RV64VM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_t;
 
-covergroup satp_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_satp_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
 
     mode_supported: coverpoint ins.current.csr[12'h180][63:60] { //sat.2
@@ -30,12 +30,61 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
         bins bare   = {4'b0000}; //bare.1
     }
 
-    satp_asid_PPN: coverpoint ins.current.csr[12'h180][59:0] {
-        bins all_zero = {60'd0};
-        bins not_zero = {!60'd0};
+    satp_PPN: coverpoint ins.current.csr[12'h180][44:0] { //sat.4
+        bins all_zero = {44'd0};
+        bins walking_0  = {44'b00000000000000000000000000000000000000000001};
+        bins walking_1  = {44'b00000000000000000000000000000000000000000010};
+        bins walking_2  = {44'b00000000000000000000000000000000000000000100};
+        bins walking_3  = {44'b00000000000000000000000000000000000000001000};
+        bins walking_4  = {44'b00000000000000000000000000000000000000010000};
+        bins walking_5  = {44'b00000000000000000000000000000000000000100000};
+        bins walking_6  = {44'b00000000000000000000000000000000000001000000};
+        bins walking_7  = {44'b00000000000000000000000000000000000010000000};
+        bins walking_8  = {44'b00000000000000000000000000000000000100000000};
+        bins walking_9  = {44'b00000000000000000000000000000000001000000000};
+        bins walking_10 = {44'b00000000000000000000000000000000010000000000};
+        bins walking_11 = {44'b00000000000000000000000000000000100000000000};
+        bins walking_12 = {44'b00000000000000000000000000000001000000000000};
+        bins walking_13 = {44'b00000000000000000000000000000010000000000000};
+        bins walking_14 = {44'b00000000000000000000000000000100000000000000};
+        bins walking_15 = {44'b00000000000000000000000000001000000000000000};
+        bins walking_16 = {44'b00000000000000000000000000010000000000000000};
+        bins walking_17 = {44'b00000000000000000000000000100000000000000000};
+        bins walking_18 = {44'b00000000000000000000000001000000000000000000};
+        bins walking_19 = {44'b00000000000000000000000010000000000000000000};
+        bins walking_20 = {44'b00000000000000000000000100000000000000000000};
+        bins walking_21 = {44'b00000000000000000000001000000000000000000000};
+        bins walking_22 = {44'b00000000000000000000010000000000000000000000};
+        bins walking_23 = {44'b00000000000000000000100000000000000000000000};
+        bins walking_24 = {44'b00000000000000000001000000000000000000000000};
+        bins walking_25 = {44'b00000000000000000010000000000000000000000000};
+        bins walking_26 = {44'b00000000000000000100000000000000000000000000};
+        bins walking_27 = {44'b00000000000000001000000000000000000000000000};
+        bins walking_28 = {44'b00000000000000010000000000000000000000000000};
+        bins walking_29 = {44'b00000000000000100000000000000000000000000000};
+        bins walking_30 = {44'b00000000000001000000000000000000000000000000};
+        bins walking_31 = {44'b00000000000010000000000000000000000000000000};
+        bins walking_32 = {44'b00000000000100000000000000000000000000000000};
+        bins walking_33 = {44'b00000000001000000000000000000000000000000000};
+        bins walking_34 = {44'b00000000010000000000000000000000000000000000};
+        bins walking_35 = {44'b00000000100000000000000000000000000000000000};
+        bins walking_36 = {44'b00000001000000000000000000000000000000000000};
+        bins walking_37 = {44'b00000010000000000000000000000000000000000000};
+        bins walking_38 = {44'b00000100000000000000000000000000000000000000};
+        bins walking_39 = {44'b00001000000000000000000000000000000000000000};
+        bins walking_40 = {44'b00010000000000000000000000000000000000000000};
+        bins walking_41 = {44'b00100000000000000000000000000000000000000000};
+        bins walking_42 = {44'b01000000000000000000000000000000000000000000};
+        bins walking_43 = {44'b10000000000000000000000000000000000000000000};
+        bins all_ones = {44'hFFF_FFFFFFFF};
     }
 
-    asid_Length: coverpoint ins.current.csr[12'h180][59:44] { //sat.4
+    satp_asid_PPN: coverpoint ins.current.csr[12'h180][59:0] {
+        bins all_zero = {60'd0};
+        bins not_zero = {[1:$]};
+    }
+
+    asid_Length: coverpoint ins.current.csr[12'h180][59:44] { //sat.5
         bins values = {16'h0001, 16'h0002, 16'h0004, 16'h0008, 16'h0010, 16'h0020, 16'h0040, 16'h0080, 16'h0100, 16'h0200, 16'h0400, 16'h0800, 16'h1000, 16'h2000, 16'h0400, 16'h8000};
     }
 
@@ -62,18 +111,18 @@ covergroup satp_cg with function sample(ins_rv64vm_t ins);
         wildcard bins csrrc = {32'b000110000000_?????_011_?????_1110011};
     }
 
-    access_u: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 1) { //sat.1
+    access_u: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
         ignore_bins ig1 = binsof(priv_mode.S_mode);
         ignore_bins ig2 = binsof(priv_mode.M_mode);
         ignore_bins ig3 = binsof(Mcause.no_exception);
     }
-    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus iff (ins.trap == 0) { //sat.1
+    access_m_s: cross priv_mode, ins, Mcause, tvm_mstatus { //sat.1
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(Mcause.illegal_ins);
     }
 endgroup
 
-covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
+covergroup RV64VM_PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
     option.per_instance = 0; 
     VA_i: coverpoint ins.current.VAdrI { 
         bins all_zeros = {64'd0};
@@ -92,16 +141,28 @@ covergroup PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all 
         bins all_zeros = {56'd0};
         bins all_ones  = {56'hFFFFFF_FFFFFFFF};
     }
+
+    mode_supported: coverpoint ins.current.csr[12'h180][63:60] {
+        bins sv39   = {4'b1000};
+        bins sv48   = {4'b1001};
+        bins bare   = {4'b0000};
+    }
+
+    VA_i_sv39_sv48: cross mode_supported, VA_i;
+    VA_d_sv39_sv48: cross mode_supported, VA_d;
+    PA_i_sv39_sv48: cross mode_supported, PA_i;
+    PA_d_sv39_sv48: cross mode_supported, PA_d;
+
 endgroup
 
-covergroup sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
+covergroup RV64VM_sfence_cg with function sample(ins_rv64vm_t ins); //sf.1
     option.per_instance = 0; 
     ins: coverpoint ins.current.insn { 
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
 
-covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
@@ -110,7 +171,7 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
     }
-    Scause: coverpoint ins.current.csr[12'h142] iff (ins.trap == 1) {
+    Mcause: coverpoint ins.current.csr[12'h342] {
         bins illegal_ins = {64'd2};
     }
     ins: coverpoint ins.current.insn {
@@ -120,12 +181,12 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 
-    tvm_exception_s: cross tvm_mstatus, priv_mode, Scause, ins { //ms.1
+    tvm_exception_s: cross tvm_mstatus, priv_mode, Mcause, ins { //ms.1
         ignore_bins ig1 = binsof(priv_mode.M_mode);
     }
 
     mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
-    bins set = {1};
+        bins set = {1};
     }
     mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
         bins U_mode = {2'b00};
@@ -155,29 +216,133 @@ covergroup mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
     mprv_ins: cross mprv_mstatus, mpp_mstatus, exec_acc , priv_mode, satp_mode { //ms.2
         ignore_bins ig1 = binsof(priv_mode.S_mode);
     }
+
+    PTE_upage_i: coverpoint ins.current.PTE_i[7:0] { //ms.3 & 4
+        wildcard bins leaflvl_u = {8'b???11111};
+    }
+    PTE_upage_d: coverpoint ins.current.PTE_d[7:0] { //ms.3 & 4
+        wildcard bins leaflvl_u = {8'b???11111};
+    }
+    PageType_i: coverpoint ins.current.PageType_i {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'd0};
+    }
+    PageType_d: coverpoint ins.current.PageType_d {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'd0};
+    }
+    Mcause_sum: coverpoint  ins.current.csr[12'h342] {
+        bins load_page_fault = {64'd13};
+        bins ins_page_fault  = {64'd12};
+        bins store_amo_page_fault = {64'd15};
+    }
+    Nopagefault: coverpoint  ins.current.csr[12'h143]{
+        bins no_fault  = {64'd0};
+    }
+    sum_sstatus: coverpoint ins.current.csr[12'h100][18]{
+        bins notset = {0};
+        bins set = {1};
+    }
+
+    mprv_upage_smode_sumunset_noread: cross mprv_mstatus, mpp_mstatus, read_acc, priv_mode, satp_mode, PTE_upage_d, PageType_d, Mcause_sum, sum_sstatus { //ms.3
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(Mcause_sum.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause_sum.store_amo_page_fault);
+        ignore_bins ig6 = binsof(sum_sstatus.set);
+        ignore_bins ig7 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+    mprv_upage_smode_sumunset_nowrite: cross mprv_mstatus, mpp_mstatus, write_acc, priv_mode, satp_mode, PTE_upage_d, PageType_d, Mcause_sum, sum_sstatus { //ms.3
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(Mcause_sum.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause_sum.load_page_fault);
+        ignore_bins ig6 = binsof(sum_sstatus.set);
+        ignore_bins ig7 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+    mprv_upage_smode_sumunset_noexec: cross mprv_mstatus, mpp_mstatus, exec_acc , priv_mode, satp_mode, PTE_upage_i, PageType_i, Mcause_sum, sum_sstatus { //ms.3
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(Mcause_sum.store_amo_page_fault);
+        ignore_bins ig5 = binsof(Mcause_sum.load_page_fault);
+        ignore_bins ig6 = binsof(sum_sstatus.set);
+        ignore_bins ig7 = binsof(satp_mode.sv39) && binsof(PageType_i.tera);
+    }
+
+    mprv_upage_smode_sumset_exec: cross mprv_mstatus, mpp_mstatus, exec_acc , priv_mode, satp_mode, PTE_upage_i, PageType_i, sum_sstatus  { //ms.4
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(sum_sstatus.notset);
+        ignore_bins ig5 = binsof(satp_mode.sv39) && binsof(PageType_i.tera);      
+    }
+    mprv_upage_smode_sumset_read: cross mprv_mstatus, mpp_mstatus, read_acc , priv_mode, satp_mode, PTE_upage_d, PageType_d, sum_sstatus, Nopagefault  { //ms.4
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(sum_sstatus.notset);
+        ignore_bins ig5 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+    mprv_upage_smode_sumset_write: cross mprv_mstatus, mpp_mstatus, write_acc , priv_mode, satp_mode, PTE_upage_d, PageType_d, sum_sstatus, Nopagefault  { //ms.4
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(mpp_mstatus.U_mode);
+        ignore_bins ig3 = binsof(satp_mode.bare);
+        ignore_bins ig4 = binsof(sum_sstatus.notset);
+        ignore_bins ig5 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+
+    PTE_sbe_d: coverpoint ins.current.PTE_d[7:0] { //ms.5
+        wildcard bins leaflvl_u = {8'b???11111};
+        wildcard bins leaflvl_s = {8'b???01111};
+    }
+    sbe_mstatus: coverpoint ins.current.csr[12'h300][36] { //ms.5
+        bins set = {1};
+        bins not_set = {0};
+    }
+
+    mstatus_sbe_read: cross read_acc, satp_mode, PTE_sbe_d, PageType_d, Nopagefault, sbe_mstatus  { //ms.5
+        ignore_bins ig1 = binsof(satp_mode.bare);
+        ignore_bins ig2 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+    mstatus_sbe_write: cross write_acc, satp_mode, PTE_sbe_d, PageType_d, Nopagefault, sbe_mstatus  { //ms.5
+        ignore_bins ig1 = binsof(satp_mode.bare);
+        ignore_bins ig2 = binsof(satp_mode.sv39) && binsof(PageType_d.tera);
+    }
+        
 endgroup
 
-covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.PTE_i[7:0] { //pte.2
-        wildcard bins leaflvl_u = {8'b???11000};
-        wildcard bins leaflvl_s = {8'b???01000};
+        wildcard bins leaflvl_u = {8'b???11??0};
+        wildcard bins leaflvl_s = {8'b???01??0};
     }
     PTE_d_inv: coverpoint ins.current.PTE_d[7:0] { //pte.2
-        wildcard bins leaflvl_u_r = {8'b???10010};
-        wildcard bins leaflvl_u_w = {8'b???10110};
-        wildcard bins leaflvl_s_r = {8'b???00010};
-        wildcard bins leaflvl_s_w = {8'b???00110};
+        wildcard bins leaflvl_u_r = {8'b???1??10};
+        wildcard bins leaflvl_u_w = {8'b???1?110};
+        wildcard bins leaflvl_s_r = {8'b???0??10};
+        wildcard bins leaflvl_s_w = {8'b???0?110};
     }
 
     PTE_i_res_rwx: coverpoint ins.current.PTE_i[7:0] { //pte.3
-        wildcard bins leaflvl_u = {8'b???1?101};
-        wildcard bins leaflvl_s = {8'b???0?101};
+        wildcard bins leaflvl_exec_u = {8'b???11101};
+        wildcard bins leaflvl_noexec_u = {8'b???10101};
+        wildcard bins leaflvl_exec_s = {8'b???01101};
+        wildcard bins leaflvl_noexec_s = {8'b???00101};
     }
     PTE_d_res_rwx: coverpoint ins.current.PTE_d[7:0] { //pte.3
-        wildcard bins leaflvl_u = {8'b???1?101};
-        wildcard bins leaflvl_s = {8'b???0?101};
+        wildcard bins leaflvl_exec_u = {8'b???11101};
+        wildcard bins leaflvl_noexec_u = {8'b???10101};
+        wildcard bins leaflvl_exec_s = {8'b???01101};
+        wildcard bins leaflvl_noexec_s = {8'b???00101};
     }
 
     PTE_nonleaf_lvl0_i: coverpoint ins.current.PTE_i[7:0] { //pte.4
@@ -244,13 +409,13 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
         wildcard bins leaflvl_s = {8'b01?0?111};
     }
 
-    PTE_RorX_i: coverpoint ins.current.PTE_i[7:0] { //pte.16
-        wildcard bins leaflvl_u = {8'b???10011, 8'b???11001, 8'b???11011};
-        wildcard bins leaflvl_s = {8'b???00011, 8'b???01001, 8'b???01011};
+    PTE_RWX_i: coverpoint ins.current.PTE_i[7:0] { //pte.16
+        wildcard bins leaflvl_u = {8'b???11111};
+        wildcard bins leaflvl_s = {8'b???01111};
     }
-    PTE_RorX_d: coverpoint ins.current.PTE_d[7:0] { //pte.16
-        wildcard bins leaflvl_u = {8'b???10011, 8'b???11001, 8'b???11011};
-        wildcard bins leaflvl_s = {8'b???00011, 8'b???01001, 8'b???01011};
+    PTE_RWX_d: coverpoint ins.current.PTE_d[7:0] { //pte.16
+        wildcard bins leaflvl_u = {8'b???11111};
+        wildcard bins leaflvl_s = {8'b???01111};
     }
 
     PTE_canonical_i: coverpoint ins.current.PTE_i[7:0] { //va.1
@@ -262,19 +427,20 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
-    //aligned and misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
+    //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
 
-    PPN_i: coverpoint ins.current.PPN_i[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
+    PageType_i: coverpoint ins.current.PageType_i {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'd0};
     }
-    PPN_d: coverpoint ins.current.PPN_d[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
+
+    PageType_d: coverpoint ins.current.PageType_d {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'd0};
     }
 
     misaligned_PPN_i: coverpoint ins.current.PPN_i[26:0] {
@@ -294,261 +460,6 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
         bins sv39   = {4'b1000};
     }
 
-    PTE_inv_exec_s_i: cross PTE_i_inv, PPN_i, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    PTE_inv_exec_u_i: cross PTE_i_inv, PPN_i, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    PTE_inv_read_s_d: cross PTE_d_inv, PPN_d, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
-        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
-        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_w);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    PTE_inv_read_u_d: cross PTE_d_inv, PPN_d, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
-        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
-        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_w);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    PTE_inv_write_s_d: cross PTE_d_inv, PPN_d, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
-        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
-        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_r);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    PTE_inv_write_u_d: cross PTE_d_inv, PPN_d, mode  { //pte.2
-        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
-        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
-        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_r);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    PTE_res_rwx_s_i: cross PTE_i_res_rwx, PPN_i, mode  { //pte.3
-        ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    PTE_res_rwx_u_i: cross PTE_i_res_rwx, PPN_i, mode  { //pte.3
-        ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    PTE_res_rwx_s_d: cross PTE_d_res_rwx, PPN_d, mode  { //pte.3
-        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    PTE_res_rwx_u_d: cross PTE_d_res_rwx, PPN_d, mode  { //pte.3
-        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    PTE_nonleaf_lvl0_s_i: cross PTE_nonleaf_lvl0_i, PPN_i, mode  { //pte.4
-        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_u);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_s) && (binsof(PPN_i.tera_zero) || binsof(PPN_i.giga_zero) || binsof(PPN_i.mega_zero)) ;        
-    }
-
-    PTE_nonleaf_lvl0_u_i: cross PTE_nonleaf_lvl0_i, PPN_i, mode  { //pte.4
-        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_s);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_u) && (binsof(PPN_i.tera_zero) || binsof(PPN_i.giga_zero) || binsof(PPN_i.mega_zero)) ;        
-    }
-
-    PTE_nonleaf_lvl0_s_d: cross PTE_nonleaf_lvl0_d, PPN_d, mode  { //pte.4
-        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && (binsof(PPN_d.tera_zero) || binsof(PPN_d.giga_zero) || binsof(PPN_d.mega_zero)) ;        
-    }
-
-    PTE_nonleaf_lvl0_u_d: cross PTE_nonleaf_lvl0_d, PPN_d, mode  { //pte.4
-        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && (binsof(PPN_d.tera_zero) || binsof(PPN_d.giga_zero) || binsof(PPN_d.mega_zero)) ;        
-    }
-
-    spage_exec_s_i: cross PTE_x_spage_i, PPN_i, mode  { //pte.5 & 6 
-        ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_0);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    spage_noexec_s_i: cross PTE_x_spage_i, PPN_i, mode  { //pte.5 & 6
-        ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_1);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    spage_read_s_d: cross PTE_rw_spage_d, PPN_d, mode  { //pte.5 & 6
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
-        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
-        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
-    }
-    spage_noread_s_d: cross PTE_rw_spage_d, PPN_d, mode  { //pte.5 & 6
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_1);
-        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
-        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
-    }
-
-    spage_write_s_d: cross PTE_rw_spage_d, PPN_d, mode  { //pte.5 & 6
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
-        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
-        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_r_1);
-    }
-    spage_nowrite_s_d: cross PTE_rw_spage_d, PPN_d, mode  { //pte.5 & 6
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
-        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_r_1);
-        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
-    }
-
-    spage_rwx_s_i: cross PTE_spage_i, PPN_i, mode { //pte.7
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    spage_rwx_s_d: cross PTE_spage_d, PPN_d, mode { //pte.7
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    upage_rwx_u_i: cross PTE_upage_i, PPN_i, mode { //pte.8 & 9
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    upage_rwx_u_d: cross PTE_upage_d, PPN_d, mode { //pte.8 & 9
-        ignore_bins ig1 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    upage_exec_u_i: cross PTE_x_upage_i, PPN_i, mode  { //pte.10 
-        ignore_bins ig1 = binsof(PTE_x_upage_i.leaflvl_x_0);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    upage_noexec_u_i: cross PTE_x_upage_i, PPN_i, mode  { //pte.10
-        ignore_bins ig1 = binsof(PTE_x_upage_i.leaflvl_x_1);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    upage_read_u_d: cross PTE_rw_upage_d, PPN_d, mode  { //pte.10
-        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_0);
-        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_w_0);
-        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_w_1);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    upage_noread_u_d: cross PTE_rw_upage_d, PPN_d, mode  { //pte.10
-        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_1);
-        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_w_0);
-        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_w_1);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    upage_write_u_d: cross PTE_rw_upage_d, PPN_d, mode  { //pte.10
-        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_0);
-        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_w_0);
-        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_r_1);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    upage_nowrite_u_d: cross PTE_rw_upage_d, PPN_d, mode  { //pte.10
-        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_0);
-        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_r_1);
-        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_w_1);
-        ignore_bins ig4 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    xpage_s_d: cross PTE_XnoRW_d, PPN_d, mode  { //pte.11 & 12
-        ignore_bins ig1 = binsof(PTE_XnoRW_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    xpage_u_d: cross PTE_XnoRW_d, PPN_d, mode  { //pte.11 & 12
-        ignore_bins ig1 = binsof(PTE_XnoRW_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    Abit_unset_s_i: cross PTE_Abit_unset_i, PPN_i, mode  { //pte.14
-        ignore_bins ig1 = binsof(PTE_Abit_unset_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-    Abit_unset_u_i: cross PTE_Abit_unset_i, PPN_i, mode  { //pte.14
-        ignore_bins ig1 = binsof(PTE_Abit_unset_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    Abit_unset_s_d: cross PTE_Abit_unset_d, PPN_d, mode  { //pte.14
-        ignore_bins ig1 = binsof(PTE_Abit_unset_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    Abit_unset_u_d: cross PTE_Abit_unset_d, PPN_d, mode  { //pte.14
-        ignore_bins ig1 = binsof(PTE_Abit_unset_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    Dbit_set_w_s_d: cross PTE_Dbit_set_W_d, PPN_d, mode  { //pte.15
-        ignore_bins ig1 = binsof(PTE_Dbit_set_W_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-    Dbit_set_w_u_d: cross PTE_Dbit_set_W_d, PPN_d, mode  { //pte.15
-        ignore_bins ig1 = binsof(PTE_Dbit_set_W_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    misaligned_RorX_s_i: cross PTE_RorX_i, misaligned_PPN_i, mode { //pte.16
-        ignore_bins ig1 = binsof(PTE_RorX_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(misaligned_PPN_i.tera_not_zero);
-    }
-    misaligned_RorX_u_i: cross PTE_RorX_i, misaligned_PPN_i, mode { //pte.16
-        ignore_bins ig1 = binsof(PTE_RorX_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(misaligned_PPN_i.tera_not_zero);
-    }
-
-    misaligned_RorX_s_d: cross PTE_RorX_d, misaligned_PPN_d, mode { //pte.16
-        ignore_bins ig1 = binsof(PTE_RorX_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
-    }
-    misaligned_RorX_u_d: cross PTE_RorX_d, misaligned_PPN_d, mode { //pte.16
-        ignore_bins ig1 = binsof(PTE_RorX_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
-    }
-
-    VA_sv48: coverpoint ins.current.VAdrI[63:48] { //va.1
-        bins not_zero_and_not_all_ones = {[16'b1:16'b1111_1111_1111_1110]};
-    }
-
-    VA_sv39: coverpoint ins.current.VAdrI[63:39] { //va.1
-        bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
-    }
-
-    sv48_canonical_s_i: cross PTE_canonical_i, PPN_i, VA_sv48, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39);
-    }
-    sv48_canonical_u_i: cross PTE_canonical_i, PPN_i, VA_sv48, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39);
-    }
-
-    sv48_canonical_s_d: cross PTE_canonical_d, PPN_d, VA_sv48, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39);
-    }
-    sv48_canonical_u_d: cross PTE_canonical_d, PPN_d, VA_sv48, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39);
-    }
-
-    sv39_canonical_s_i: cross PTE_canonical_i, PPN_i, VA_sv39, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv48);
-    }
-    sv39_canonical_u_i: cross PTE_canonical_i, PPN_i, VA_sv39, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv48);
-    }
-
-    sv39_canonical_s_d: cross PTE_canonical_d, PPN_d, VA_sv39, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv48);
-    }
-    sv39_canonical_u_d: cross PTE_canonical_d, PPN_d, VA_sv39, mode { //va.1
-        ignore_bins ig1 = binsof(PTE_canonical_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv48);
-    }
-
     //For crosses with Read, write and execute accesses and their corresponding faults
     exec_acc: coverpoint ins.current.ExecuteAccess {
         bins set = {1};
@@ -559,12 +470,7 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess{
         bins set = {1};
     }
-    Scause: coverpoint  ins.current.csr[12'h142] iff (ins.trap == 1) {
-        bins load_page_fault = {64'd13};
-        bins ins_page_fault  = {64'd12};
-        bins store_amo_page_fault = {64'd15};
-    }
-    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
+    Mcause: coverpoint  ins.current.csr[12'h342] {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
         bins store_amo_page_fault = {64'd15};
@@ -585,326 +491,506 @@ covergroup vm_permissions_cg with function sample(ins_rv64vm_t ins);
         bins set = {1};
     }
 
-    invread_s: cross PTE_inv_read_s_d, Scause, read_acc { //pte.2
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
+    PTE_inv_exec_s_i: cross PTE_i_inv, PageType_i, mode, Mcause, exec_acc  { //pte.2
+        ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_u);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
     }
-    invread_u: cross PTE_inv_read_u_d, Mcause, read_acc { //pte.2
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+    PTE_inv_exec_u_i: cross PTE_i_inv, PageType_i, mode, Mcause, exec_acc  { //pte.2
+        ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_s);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
     }
 
-    invwrite_s: cross PTE_inv_write_s_d, Scause, write_acc { //pte.2
-        ignore_bins ig1 = binsof(Scause.load_page_fault);
-        ignore_bins ig2 = binsof(Scause.ins_page_fault);
+    PTE_inv_read_s_d: cross PTE_d_inv, PageType_d, mode,Mcause, read_acc  { //pte.2
+        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
+        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
+        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_w);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig6 = binsof(Mcause.store_amo_page_fault);
     }
-    invwrite_u: cross PTE_inv_write_u_d, Mcause, write_acc { //pte.2
-        ignore_bins ig1 = binsof(Mcause.load_page_fault);
+    PTE_inv_read_u_d: cross PTE_d_inv, PageType_d, mode, Mcause, read_acc  { //pte.2
+        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
+        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
+        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_w);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig6 = binsof(Mcause.store_amo_page_fault);
+    }
+
+    PTE_inv_write_s_d: cross PTE_d_inv, PageType_d, mode, Mcause, write_acc  { //pte.2
+        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
+        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
+        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_r);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+        ignore_bins ig6 = binsof(Mcause.ins_page_fault);
+    }
+    PTE_inv_write_u_d: cross PTE_d_inv, PageType_d, mode, Mcause, write_acc { //pte.2
+        ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
+        ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
+        ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_r);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+        ignore_bins ig6 = binsof(Mcause.ins_page_fault);
+    }
+
+    PTE_res_rwx_s_i_exec: cross PTE_i_res_rwx, PageType_i, mode, Mcause, exec_acc  { //pte.3
+        ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_exec_u);
+        ignore_bins ig2 = binsof(PTE_i_res_rwx.leaflvl_noexec_u);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+    PTE_res_rwx_u_i_exec: cross PTE_i_res_rwx, PageType_i, mode, Mcause, exec_acc { //pte.3
+        ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_exec_s);
+        ignore_bins ig2 = binsof(PTE_i_res_rwx.leaflvl_noexec_s);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+
+    PTE_res_rwx_s_d_read: cross PTE_d_res_rwx, PageType_d, mode, Mcause, read_acc  { //pte.3
+        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_u);
+        ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_u);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig4 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause.store_amo_page_fault);
+    }
+    PTE_res_rwx_u_d_read: cross PTE_d_res_rwx, PageType_d, mode, Mcause, read_acc { //pte.3
+        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_s);
+        ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_s);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig4 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause.store_amo_page_fault);
+    }
+
+    PTE_res_rwx_s_d_write: cross PTE_d_res_rwx, PageType_d, mode, Mcause, write_acc { //pte.3
+        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_u);
+        ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_u);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig4 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+    PTE_res_rwx_u_d_write: cross PTE_d_res_rwx, PageType_d, mode, Mcause, write_acc  { //pte.3
+        ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_s);
+        ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_s);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig4 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_s_i_exec: cross PTE_nonleaf_lvl0_i, PageType_i, mode, Mcause, exec_acc  { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_u);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_s) && (binsof(PageType_i.tera) || binsof(PageType_i.giga) || binsof(PageType_i.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_u_i_exec: cross PTE_nonleaf_lvl0_i, PageType_i, mode, Mcause, exec_acc  { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_s);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_u) && (binsof(PageType_i.tera) || binsof(PageType_i.giga) || binsof(PageType_i.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_s_d_read: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, read_acc { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && (binsof(PageType_d.tera) || binsof(PageType_d.giga) || binsof(PageType_d.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_u_d_read: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, read_acc { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && (binsof(PageType_d.tera) || binsof(PageType_d.giga) || binsof(PageType_d.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_s_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && (binsof(PageType_d.tera) || binsof(PageType_d.giga) || binsof(PageType_d.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+    }
+
+    PTE_nonleaf_lvl0_u_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc { //pte.4
+        ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && (binsof(PageType_d.tera) || binsof(PageType_d.giga) || binsof(PageType_d.mega)) ;        
+        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+    }
+
+    spage_exec_s_i: cross PTE_x_spage_i, PageType_i, mode, Nopagefault, exec_acc, priv_mode, sum_sstatus { //pte.5 & 6 
+        ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_0);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig3 =  binsof(priv_mode.U_mode);
+    }
+    spage_noexec_s_i: cross PTE_x_spage_i, PageType_i, mode,Mcause, exec_acc, priv_mode, sum_sstatus { //pte.5 & 6
+        ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_1);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig3 =  binsof(Mcause.load_page_fault);
+        ignore_bins ig4 =  binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig5 =  binsof(priv_mode.U_mode);
+    }
+
+    spage_read_s_d: cross PTE_rw_spage_d, PageType_d, mode, Nopagefault, read_acc, priv_mode, sum_sstatus { //pte.5 & 6
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
+        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
+        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
+        ignore_bins ig5 =  binsof(priv_mode.U_mode);
+    }
+    spage_noread_s_d: cross PTE_rw_spage_d, PageType_d, mode, Mcause, read_acc, priv_mode, sum_sstatus { //pte.5 & 6
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_1);
+        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
+        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
+        ignore_bins ig5 =  binsof(Mcause.ins_page_fault);
+        ignore_bins ig6 =  binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig7 =  binsof(priv_mode.U_mode);
+    }
+
+    spage_write_s_d: cross PTE_rw_spage_d, PageType_d, mode, Nopagefault, write_acc, priv_mode, sum_sstatus { //pte.5 & 6
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
+        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_w_0);
+        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_r_1);
+        ignore_bins ig5 = binsof(priv_mode.U_mode);
+    }
+    spage_nowrite_s_d: cross PTE_rw_spage_d, PageType_d, mode, Mcause, write_acc, priv_mode, sum_sstatus { //pte.5 & 6
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig2 = binsof(PTE_rw_spage_d.leaflvl_r_0);
+        ignore_bins ig3 = binsof(PTE_rw_spage_d.leaflvl_r_1);
+        ignore_bins ig4 = binsof(PTE_rw_spage_d.leaflvl_w_1);
+        ignore_bins ig5 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig6 = binsof(Mcause.load_page_fault);
+        ignore_bins ig7 = binsof(priv_mode.U_mode);
+    }
+
+    spage_rwx_s_i_noexec: cross PTE_spage_i, PageType_i, mode, Mcause, exec_acc, priv_mode { //pte.7
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_i.tera);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+        ignore_bins ig4 = binsof(priv_mode.S_mode);
+    }
+    spage_rwx_s_d_noread: cross PTE_spage_d, PageType_d, mode, Mcause, read_acc, priv_mode { //pte.7
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(priv_mode.S_mode);
+    }
+    spage_rwx_s_d_nowrite: cross PTE_spage_d, PageType_d, mode, Mcause, write_acc, priv_mode { //pte.7
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+        ignore_bins ig4 = binsof(priv_mode.S_mode);
     }
 
-    invexec_s: cross PTE_inv_exec_s_i, Scause, exec_acc { //pte.2
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    invexec_u: cross PTE_inv_exec_u_i, Mcause, exec_acc { //pte.2
+    upage_smode_sumunset_noexec_s: cross PTE_upage_i, PageType_i, mode,  Mcause, exec_acc, priv_mode , sum_sstatus { //pte.8
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    read_res_rwx_s: cross PTE_res_rwx_s_d, Scause, read_acc { //pte.3
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    read_res_rwx_u: cross PTE_res_rwx_u_d, Mcause, read_acc { //pte.3
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-    }
-
-    write_res_rwx_s: cross PTE_res_rwx_s_d, Scause, write_acc { //pte.3
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    write_res_rwx_u: cross PTE_res_rwx_u_d, Mcause, write_acc { //pte.3
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    exec_res_rwx_s: cross PTE_res_rwx_s_i, Scause, exec_acc { //pte.3
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    exec_res_rwx_u: cross PTE_res_rwx_u_i, Mcause, exec_acc { //pte.3
-        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    nonleaf_lvl0_read_s: cross PTE_nonleaf_lvl0_s_d, Scause, read_acc { //pte.4
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    nonleaf_lvl0_read_u: cross PTE_nonleaf_lvl0_u_d, Mcause, read_acc { //pte.4
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-    }
-
-    nonleaf_lvl0_write_s: cross PTE_nonleaf_lvl0_s_d, Scause, write_acc { //pte.4
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    nonleaf_lvl0_write_u: cross PTE_nonleaf_lvl0_u_d, Mcause, write_acc { //pte.4
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    nonleaf_lvl0_exec_s: cross PTE_nonleaf_lvl0_s_i, Scause, exec_acc { //pte.4
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    nonleaf_lvl0_exec_u: cross PTE_nonleaf_lvl0_u_i, Mcause, exec_acc { //pte.4
-        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    spage_smode_read_s: cross spage_read_s_d,  Nopagefault, read_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(priv_mode.U_mode);
-    }
-    spage_smode_noread_s: cross spage_noread_s_d,  Scause, read_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(Scause.ins_page_fault);
-        ignore_bins ig2 =  binsof(Scause.store_amo_page_fault);
-        ignore_bins ig3 =  binsof(priv_mode.U_mode);
-    }
-
-    spage_smode_write_s: cross spage_write_s_d,  Nopagefault, write_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(priv_mode.U_mode);
-    }
-    spage_smode_nowrite_s: cross spage_nowrite_s_d,  Scause, write_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(Scause.ins_page_fault);
-        ignore_bins ig2 =  binsof(Scause.load_page_fault);
-        ignore_bins ig3 =  binsof(priv_mode.U_mode);
-    }
-
-    spage_smode_exec_s: cross spage_exec_s_i,  Nopagefault, exec_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(priv_mode.U_mode);
-    }
-    spage_smode_noexec_s: cross spage_noexec_s_i,  Scause, exec_acc, priv_mode, sum_sstatus { //pte.5 & 6
-        ignore_bins ig1 =  binsof(Scause.load_page_fault);
-        ignore_bins ig2 =  binsof(Scause.store_amo_page_fault);
-        ignore_bins ig3 =  binsof(priv_mode.U_mode);
-    }
-
-    spage_umode_noread_s: cross spage_rwx_s_d,  Mcause, read_acc, priv_mode { //pte.7
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig3 = binsof(priv_mode.S_mode);
-    }
-    spage_umode_nowrite_s: cross spage_rwx_s_d,  Mcause, write_acc, priv_mode { //pte.7
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(priv_mode.S_mode);
-    }
-    spage_umode_noexec_s: cross spage_rwx_s_i,  Mcause, exec_acc, priv_mode { //pte.7
-        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-        ignore_bins ig3 = binsof(priv_mode.S_mode);
-    }
-
-    upage_smode_sumunset_noread_s: cross upage_rwx_u_d,  Scause, read_acc, priv_mode , sum_sstatus { //pte.8
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
         ignore_bins ig3 = binsof(priv_mode.U_mode);
         ignore_bins ig4 = binsof(sum_sstatus.set);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_i.tera);
     }
-    upage_smode_sumunset_nowrite_s: cross upage_rwx_u_d,  Scause, write_acc, priv_mode, sum_sstatus { //pte.8
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
+    upage_smode_sumunset_noread_s: cross PTE_upage_d, PageType_d, mode, Mcause, read_acc, priv_mode , sum_sstatus { //pte.8
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(priv_mode.U_mode);
         ignore_bins ig4 = binsof(sum_sstatus.set);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
-    upage_smode_sumunset_noexec_s: cross upage_rwx_u_i,  Scause, exec_acc, priv_mode , sum_sstatus { //pte.8
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
+    upage_smode_sumunset_nowrite_s: cross PTE_upage_d, PageType_d, mode, Mcause, write_acc, priv_mode, sum_sstatus { //pte.8
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(priv_mode.U_mode);
         ignore_bins ig4 = binsof(sum_sstatus.set);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    upage_smode_sumset_noread_s: cross upage_rwx_u_d,  Nopagefault, read_acc, priv_mode , sum_sstatus  { //pte.9
+    upage_smode_sumset_noexec_s: cross PTE_upage_i, PageType_i, mode, Mcause, exec_acc, priv_mode , sum_sstatus  { //pte.9
+        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault); 
+        ignore_bins ig3 = binsof(priv_mode.U_mode);
+        ignore_bins ig4 = binsof(sum_sstatus.notset);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_i.tera);      
+    }
+    upage_smode_sumset_read_s: cross PTE_upage_d, PageType_d, mode, Nopagefault, read_acc, priv_mode , sum_sstatus  { //pte.9
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(sum_sstatus.notset);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
-    upage_smode_sumset_write_s: cross upage_rwx_u_d,  Nopagefault, write_acc, priv_mode, sum_sstatus  { //pte.9
+    upage_smode_sumset_write_s: cross PTE_upage_d, PageType_d, mode, Nopagefault, write_acc, priv_mode, sum_sstatus  { //pte.9
         ignore_bins ig1 = binsof(priv_mode.U_mode);
         ignore_bins ig2 = binsof(sum_sstatus.notset);
-    }
-    upage_smode_sumset_noexec_s: cross upage_rwx_u_i,  Scause, exec_acc, priv_mode , sum_sstatus  { //pte.9
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);       
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    upage_umode_read_u: cross upage_read_u_d,  Nopagefault, read_acc, priv_mode { //pte.10
+    upage_umode_exec_u: cross PTE_x_upage_i, PageType_i, mode, Nopagefault, exec_acc, priv_mode { //pte.10
         ignore_bins ig1 = binsof(priv_mode.S_mode);
+        ignore_bins ig2 = binsof(PTE_x_upage_i.leaflvl_x_0);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_i.tera);
     }
-    upage_umode_noread_u: cross upage_noread_u_d,  Mcause, read_acc, priv_mode { //pte.10
+    upage_umode_noexec_u: cross PTE_x_upage_i, PageType_i, mode, Mcause, exec_acc, priv_mode { //pte.10
+        ignore_bins ig1 = binsof(Mcause.load_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(priv_mode.S_mode);
+        ignore_bins ig4 = binsof(PTE_x_upage_i.leaflvl_x_1);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_i.tera);
+    }
+
+    upage_umode_read_u: cross PTE_rw_upage_d, PageType_d, mode, Nopagefault, read_acc, priv_mode { //pte.10
+        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_0);
+        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_w_0);
+        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_w_1);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(priv_mode.S_mode);
+    }
+    upage_umode_noread_u: cross PTE_rw_upage_d, PageType_d, mode, Mcause, read_acc, priv_mode { //pte.10
         ignore_bins ig1 =  binsof(Mcause.ins_page_fault);
         ignore_bins ig2 =  binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(priv_mode.S_mode);
+        ignore_bins ig4 = binsof(PTE_rw_upage_d.leaflvl_r_1);
+        ignore_bins ig5 = binsof(PTE_rw_upage_d.leaflvl_w_0);
+        ignore_bins ig6 = binsof(PTE_rw_upage_d.leaflvl_w_1);
+        ignore_bins ig7 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    upage_umode_write_u: cross upage_write_u_d,  Nopagefault, write_acc, priv_mode { //pte.10
-        ignore_bins ig1 = binsof(priv_mode.S_mode);
+    upage_umode_write_u: cross PTE_rw_upage_d, PageType_d, mode, Nopagefault, write_acc, priv_mode { //pte.10
+        ignore_bins ig1 = binsof(PTE_rw_upage_d.leaflvl_r_0);
+        ignore_bins ig2 = binsof(PTE_rw_upage_d.leaflvl_w_0);
+        ignore_bins ig3 = binsof(PTE_rw_upage_d.leaflvl_r_1);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        ignore_bins ig5 = binsof(priv_mode.S_mode);
     }
-    upage_umode_nowrite_u: cross upage_nowrite_u_d,  Mcause, write_acc, priv_mode { //pte.10
+    upage_umode_nowrite_u: cross PTE_rw_upage_d, PageType_d, mode, Mcause, write_acc, priv_mode { //pte.10
         ignore_bins ig1 =  binsof(Mcause.ins_page_fault);
         ignore_bins ig2 =  binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(priv_mode.S_mode);
+        ignore_bins ig4 = binsof(PTE_rw_upage_d.leaflvl_r_0);
+        ignore_bins ig5 = binsof(PTE_rw_upage_d.leaflvl_r_1);
+        ignore_bins ig6 = binsof(PTE_rw_upage_d.leaflvl_w_1);
+        ignore_bins ig7 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    upage_umode_exec_u: cross upage_exec_u_i,  Nopagefault, exec_acc, priv_mode { //pte.10
-        ignore_bins ig1 = binsof(priv_mode.S_mode);
-    }
-    upage_umode_noexec_u: cross upage_noexec_u_i,  Mcause, exec_acc, priv_mode { //pte.10
-        ignore_bins ig1 =  binsof(Mcause.load_page_fault);
-        ignore_bins ig2 =  binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig3 = binsof(priv_mode.S_mode);
-    }
-
-    xpage_mxrunset_read_s: cross xpage_s_d, Scause, read_acc, mxr_sstatus { //pte.11
-        ignore_bins ig1 = binsof(mxr_sstatus.set);
-        ignore_bins ig2 = binsof(Scause.ins_page_fault);
-        ignore_bins ig3 = binsof(Scause.store_amo_page_fault);
-    }
-    xpage_mxrunset_read_u: cross xpage_u_d, Mcause, read_acc, mxr_sstatus { //pte.11
+    xpage_mxrunset_read_s: cross PTE_XnoRW_d, PageType_d, mode, Mcause, read_acc, mxr_sstatus { //pte.11
         ignore_bins ig1 = binsof(mxr_sstatus.set);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
         ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(PTE_XnoRW_d.leaflvl_u);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+    xpage_mxrunset_read_u: cross PTE_XnoRW_d, PageType_d, mode, Mcause, read_acc, mxr_sstatus { //pte.11
+        ignore_bins ig1 = binsof(mxr_sstatus.set);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig4 = binsof(PTE_XnoRW_d.leaflvl_s);
+        ignore_bins ig5 = binsof(mode.sv39) && binsof(PageType_d.tera);
+        
     }
 
-    xpage_mxrset_read_s: cross xpage_s_d,  Nopagefault, mxr_sstatus, read_acc { //pte.12
+    xpage_mxrset_read_s: cross PTE_XnoRW_d, PageType_d, mode,  Nopagefault, mxr_sstatus, read_acc { //pte.12
         ignore_bins ig1 = binsof(mxr_sstatus.notset);
+        ignore_bins ig2 = binsof(PTE_XnoRW_d.leaflvl_u);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
-    xpage_mxrset_read_u: cross xpage_u_d,  Nopagefault, mxr_sstatus, read_acc { //pte.12
+    xpage_mxrset_read_u: cross PTE_XnoRW_d, PageType_d, mode, Nopagefault, mxr_sstatus, read_acc { //pte.12
         ignore_bins ig1 = binsof(mxr_sstatus.notset);
+        ignore_bins ig2 = binsof(PTE_XnoRW_d.leaflvl_s);
+        ignore_bins ig3 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    Abit_unset_read_s: cross Abit_unset_s_d, Scause, read_acc { //pte.14
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    Abit_unset_read_u: cross Abit_unset_u_d, Mcause, read_acc { //pte.14
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-    }
-
-    Abit_unset_write_s: cross Abit_unset_s_d, Scause, write_acc { //pte.14
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    Abit_unset_write_u: cross Abit_unset_u_d, Mcause, write_acc { //pte.14
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    Abit_unset_exec_s: cross Abit_unset_s_i, Scause, exec_acc { //pte.14
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    Abit_unset_exec_u: cross Abit_unset_u_i, Mcause, exec_acc { //pte.14
+    Abit_unset_exec_s: cross PTE_Abit_unset_i, PageType_i, mode, Mcause, exec_acc { //pte.14
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_i.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_i.tera);
     }
-
-    Dbit_set_w_write_s: cross Dbit_set_w_s_d,  Scause, write_acc { //pte.15
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    Dbit_set_w_write_u: cross Dbit_set_w_u_d,  Mcause, write_acc { //pte.15
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    misaligned_read_s: cross misaligned_RorX_s_d,  Scause, read_acc { //pte.16
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    misaligned_read_u: cross misaligned_RorX_u_d,  Mcause, read_acc  { //pte.16
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
-    }
-
-    misaligned_write_s: cross misaligned_RorX_s_d,  Scause, write_acc  { //pte.16
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    misaligned_write_u: cross misaligned_RorX_u_d,  Mcause, write_acc  { //pte.16
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    misaligned_exec_s: cross misaligned_RorX_s_i,  Scause, exec_acc  { //pte.16
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    misaligned_exec_u: cross misaligned_RorX_u_i,  Mcause, exec_acc  { //pte.16
+    Abit_unset_exec_u: cross PTE_Abit_unset_i, PageType_i, mode, Mcause, exec_acc { //pte.14
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_i.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_i.tera);
     }
 
-    sv39_canonical_read_s: cross sv39_canonical_s_d, Scause, read_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    sv39_canonical_read_u: cross sv39_canonical_u_d, Mcause, read_acc { //va.1
+    Abit_unset_read_s: cross PTE_Abit_unset_d, PageType_d, mode, Mcause, read_acc { //pte.14
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
-
-    sv39_canonical_write_s: cross sv39_canonical_s_d, Scause, write_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    sv39_canonical_write_u: cross sv39_canonical_u_d, Mcause, write_acc { //va.1
-        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    sv39_canonical_exec_s: cross sv39_canonical_s_i, Scause, exec_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    sv39_canonical_exec_u: cross sv39_canonical_u_i, Mcause, exec_acc { //va.1
-        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    }
-
-    sv48_canonical_read_s: cross sv48_canonical_s_d, Scause, read_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.store_amo_page_fault);
-    }
-    sv48_canonical_read_u: cross sv48_canonical_u_d, Mcause, read_acc { //va.1
+    Abit_unset_read_u: cross PTE_Abit_unset_d, PageType_d, mode, Mcause, read_acc { //pte.14
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    sv48_canonical_write_s: cross sv48_canonical_s_d, Scause, write_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.ins_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
-    }
-    sv48_canonical_write_u: cross sv48_canonical_u_d, Mcause, write_acc { //va.1
+    Abit_unset_write_s: cross PTE_Abit_unset_d, PageType_d, mode, Mcause, write_acc { //pte.14
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+    Abit_unset_write_u: cross PTE_Abit_unset_d, PageType_d, mode, Mcause, write_acc { //pte.14
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Abit_unset_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    sv48_canonical_exec_s: cross sv48_canonical_s_i, Scause, exec_acc { //va.1
-        ignore_bins ig1 = binsof(Scause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Scause.load_page_fault);
+    Dbit_set_w_write_s: cross PTE_Dbit_set_W_d, PageType_d, mode, Mcause, write_acc { //pte.15
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Dbit_set_W_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
-    sv48_canonical_exec_u: cross sv48_canonical_u_i, Mcause, exec_acc { //va.1
+    Dbit_set_w_write_u: cross PTE_Dbit_set_W_d, PageType_d, mode, Mcause, write_acc { //pte.15
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_Dbit_set_W_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+
+    misaligned_exec_s: cross PTE_RWX_i, misaligned_PPN_i, mode, Mcause, exec_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_i.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_i.tera_not_zero);
+    }
+    misaligned_exec_u: cross PTE_RWX_i, misaligned_PPN_i, mode, Mcause, exec_acc  { //pte.16
+        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_i.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_i.tera_not_zero);
+    }
+
+    misaligned_read_s: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, read_acc { //pte.16
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
+    }
+    misaligned_read_u: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, read_acc  { //pte.16
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
+    }
+
+    misaligned_write_s: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, write_acc  { //pte.16
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
+    }
+    misaligned_write_u: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, write_acc  { //pte.16
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
+    }
+
+    VA_sv48: coverpoint ins.current.VAdrI[63:48] { //va.1
+        bins not_zero_and_not_all_ones = {[16'b1:16'b1111_1111_1111_1110]};
+    }
+
+    VA_sv39: coverpoint ins.current.VAdrI[63:39] { //va.1
+        bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
+    }
+
+    sv39_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, read_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv48);
+        ignore_bins ig5 = binsof(PageType_d.tera);
+    }
+    sv39_canonical_read_u: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, read_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv48);
+        ignore_bins ig5 = binsof(PageType_d.tera);
+    }
+
+    sv39_canonical_write_s: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, write_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv48);
+        ignore_bins ig5 = binsof(PageType_d.tera);
+    }
+    sv39_canonical_write_u: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, write_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv48);
+        ignore_bins ig5 = binsof(PageType_d.tera);
+    }
+
+    sv39_canonical_exec_s: cross PTE_canonical_i, PageType_i, VA_sv39, mode, Mcause, exec_acc { //va.1
+        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_u);
+        ignore_bins ig2 = binsof(mode.sv48);
+        ignore_bins ig3 = binsof(PageType_i.tera);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+
+    sv39_canonical_exec_u: cross PTE_canonical_i, PageType_i, VA_sv39, mode, Mcause, exec_acc { //va.1
+        ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_s);
+        ignore_bins ig2 = binsof(mode.sv48);
+        ignore_bins ig3 = binsof(PageType_i.tera);
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig5 = binsof(Mcause.load_page_fault);
+    }
+
+    sv48_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv48, mode, Mcause, read_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39);
+    }
+    sv48_canonical_read_u: cross PTE_canonical_d, PageType_d, VA_sv48, mode, Mcause, read_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39);
+    }
+
+    sv48_canonical_write_s: cross PTE_canonical_d, PageType_d, VA_sv48, mode, Mcause, write_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39);
+    }
+    sv48_canonical_write_u: cross PTE_canonical_d, PageType_d, VA_sv48, mode, Mcause, write_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39);
+    }
+
+    sv48_canonical_exec_s: cross PTE_canonical_i, PageType_i, VA_sv48, mode, Mcause, exec_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_i.leaflvl_u);
+        ignore_bins ig4 = binsof(mode.sv39);
+    }
+    sv48_canonical_exec_u: cross PTE_canonical_i, PageType_i, VA_sv48, mode, Mcause, exec_acc { //va.1
+        ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
+        ignore_bins ig3 = binsof(PTE_canonical_i.leaflvl_s);
+        ignore_bins ig4 = binsof(mode.sv39);
     }
 endgroup
 
-covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins); 
+covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins); 
     option.per_instance = 0; 
     //pte.1
     RSW: coverpoint ins.current.PTE_i[9:8] {
@@ -926,37 +1012,18 @@ covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins);
         wildcard bins leaflvl_s = {8'b??101111};
     }
 
-    PPN_i: coverpoint ins.current.PPN_i[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
-    }
-    PPN_d: coverpoint ins.current.PPN_d[26:0] {
-        bins tera_zero = {27'd0};
-        wildcard bins giga_zero = {27'b???_??????00_00000000_00000000};
-        wildcard bins mega_zero = {27'b???_????????_???????0_00000000};
-        wildcard bins not_zero = {!27'd0 && !27'b???_??????00_00000000_00000000 && !27'b???_????????_???????0_00000000}; 
+    PageType_i: coverpoint ins.current.PageType_i {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'b00};
     }
 
-    global_PTE_perm_s_i: cross global_PTE_i, PPN_i, mode {
-        ignore_bins ig1 = binsof(global_PTE_i.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    global_PTE_perm_u_i: cross global_PTE_i, PPN_i, mode {
-        ignore_bins ig1 = binsof(global_PTE_i.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_i.tera_zero);
-    }
-
-    global_PTE_perm_s_d: cross global_PTE_d, PPN_d, mode {
-        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_u);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
-    }
-
-    global_PTE_perm_u_d: cross global_PTE_d, PPN_d, mode {
-        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_s);
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PPN_d.tera_zero);
+    PageType_d: coverpoint ins.current.PageType_d {
+        bins tera = {2'b11};
+        bins giga = {2'b10};
+        bins mega = {2'b01};
+        bins kilo = {2'b00};
     }
 
     exec_acc: coverpoint ins.current.ExecuteAccess {
@@ -969,17 +1036,33 @@ covergroup res_global_pte_cg with function sample(ins_rv64vm_t ins);
         bins set = {1};
     }
 
-    global_read_s: cross global_PTE_perm_s_d, read_acc;
-    global_read_u: cross global_PTE_perm_u_d, read_acc;
-
-    global_write_s: cross global_PTE_perm_s_d, write_acc;
-    global_write_u: cross global_PTE_perm_u_d, write_acc;
-
-    global_exec_s: cross global_PTE_perm_s_i, exec_acc;
-    global_exec_u: cross global_PTE_perm_u_i, exec_acc;
+    global_read_s: cross global_PTE_d, PageType_d, mode, read_acc {
+        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_u);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+    global_read_u: cross global_PTE_d, PageType_d, mode, read_acc {
+        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_s);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+    global_write_s: cross global_PTE_d, PageType_d, mode, write_acc {
+        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_u);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+    global_write_u: cross global_PTE_d, PageType_d, mode, write_acc {
+        ignore_bins ig1 = binsof(global_PTE_d.leaflvl_s);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    } 
+    global_exec_s: cross global_PTE_i, PageType_i, mode, exec_acc {
+        ignore_bins ig1 = binsof(global_PTE_i.leaflvl_u);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+    }
+    global_exec_u: cross global_PTE_i, PageType_i, mode, exec_acc {
+        ignore_bins ig1 = binsof(global_PTE_i.leaflvl_s);
+        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_i.tera);
+    }
 endgroup
 
-covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
+covergroup RV64VM_add_feature_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     PTE_i: coverpoint ins.current.PTE_i[63:54] {
         bins all_zeros = {10'd0};
@@ -1009,7 +1092,7 @@ covergroup add_feature_cg with function sample(ins_rv64vm_t ins);
     write_acc: coverpoint ins.current.WriteAccess {
         bins set = {1};
     }
-    Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
+    Mcause: coverpoint  ins.current.csr[12'h342] {
         bins load_page_fault = {64'd13};
         bins ins_page_fault  = {64'd12};
         bins store_amo_page_fault = {64'd15};
@@ -1088,13 +1171,13 @@ function void rv64vm_sample(int hart, int issue);
         ins.add_csr(0);
         ins.add_vm_signals(1);
         
-        PA_VA_cg.sample(ins);
-        satp_cg.sample(ins);
-        sfence_cg.sample(ins);
-        mstatus_mprv_cg.sample(ins);
-        vm_permissions_cg.sample(ins);
-        res_global_pte_cg.sample(ins);
-        add_feature_cg.sample(ins);
+        RV64VM_PA_VA_cg.sample(ins);
+        RV64VM_satp_cg.sample(ins);
+        RV64VM_sfence_cg.sample(ins);
+        RV64VM_mstatus_mprv_cg.sample(ins);
+        RV64VM_vm_permissions_cg.sample(ins);
+        RV64VM_res_global_pte_cg.sample(ins);
+        RV64VM_add_feature_cg.sample(ins);
 endfunction
 
    

@@ -10,6 +10,8 @@
 
 import os
 import re
+import sys
+import filecmp
 
 def insertTemplate(out, template):
 	with open(templatedir+"/"+template) as f:
@@ -24,34 +26,48 @@ def insertTests(out, file):
 		for line in f:
 			if re.search(r'rvtest_entry_point:', line):
 				body = 1
-			elif re.search(r'self_loop:', line):
+			elif re.search(r'.EQU SIGSIZE,(.*)', line):
+				m = re.search(r'.EQU SIGSIZE,(.*)', line)
+				sigsize = m.group(1)
+				out.write(f"#{line}")
 				body = 0
 			elif body == 1:
 				out.write(line)
+	return int(sigsize)
 
-def combiineDir(testdir):
-	print("Combining "+testdir)
+def combineDir(testdir):
 	files = os.listdir(testdir)
-	with open(testdir+"/WALLY-COV-ALL.S", "w") as out:
+	fname = testdir+"/WALLY-COV-ALL.S"
+	tempfname = testdir+"/WALLY-COV-ALL_temp.S"
+	with open(tempfname, "w") as out:
 		insertTemplate(out, "testgen_header.S")
+		sigsize = 0
 		for file in files:
-			if (file.endswith(".S") and file != "WALLY-COV-ALL.S"):
-				insertTests(out, file)
+			if (file.endswith(".S") and file != "WALLY-COV-ALL.S" and file != "WALLY-COV-ALL_temp.S"):
+				sigsize = sigsize + insertTests(out, file)
+		# Write the signature size as the sum of the sizes from each file
+		out.write(f".EQU SIGSIZE,{sigsize} #combined\n")
 		insertTemplate(out, "testgen_footer.S")
+	# if new file is different from old file, replace old file with new file
+	if os.path.exists(fname):
+		if filecmp.cmp(fname, tempfname): # files are the same
+			os.system(f"rm {tempfname}") # remove temp file
+		else:
+			os.system(f"mv {tempfname} {fname}")
+			print("Combining "+fname)
+	else:
+		os.system(f"mv {tempfname} {fname}")
 
-WALLY = os.environ.get('WALLY')
-if not WALLY:
-	print("ERROR: WALLY environment variable not set")
-	exit(1)
-testdir = f"{WALLY}/addins/cvw-arch-verif/tests/rv32/I"
-testbasedir = f"{WALLY}/addins/cvw-arch-verif/tests"
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-templatedir = 	f"{WALLY}/addins/cvw-arch-verif/templates"
+testbasedir = f"{ARCH_VERIF}/tests/lockstep"
+templatedir = 	f"{ARCH_VERIF}/templates"
 
 # Find all the configurations in the fcov_ucdb directory
 for arch in ["rv32", "rv64"]:
-	#for testdir in [x[0] for x in os.walk(testbasedir+"/"+arch)]:
 	for ext in next(os.walk(testbasedir+"/"+arch))[1]:
 		testdir = f"{testbasedir}/{arch}/{ext}"
-		combiineDir(testdir)
+		# Only combine tests if the directory exists and has tests
+		if (len(os.listdir(testdir)) > 0):
+			combineDir(testdir)
 

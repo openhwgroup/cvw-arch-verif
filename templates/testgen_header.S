@@ -9,4 +9,7 @@
 
 rvtest_entry_point:
 
+# initialize signature pointer
+la x4, begin_signature
+
     
