@@ -21,7 +21,7 @@
 `define COVER_ZICSRM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrm_t;
 
-covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -36,7 +36,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csr: coverpoint ins.current.insn[31:20]  {
-        // automtically gives all 4096 bins
+       bins all[] = {[0:$]};
     }
     priv_mode_m: coverpoint ins.current.mode {
         bins M_mode = {2'b11};
@@ -167,11 +167,11 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
         bins mip      = {12'h344};
         bins menvcfg  = {12'h30A};
         bins mseccfg  = {12'h747};
-        `ifdef RV32
+        `ifdef XLEN32
             bins mstatush = {12'h310};
             bins medelegh = {12'h312};
             bins menvcfgh = {12'h31A};
-            bins mseccfgh = {12'h357};
+            bins mseccfgh = {12'h757};
         `endif
     }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
@@ -187,7 +187,7 @@ covergroup mcsr_cg with function sample(ins_zicsrm_t ins);
     cp_mcsrwalk : cross csrname, csrop, priv_mode_m, walking_ones;
 endgroup
 
-covergroup mcause_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcause_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 0; 
  
     csrrw_mcause: coverpoint ins.current.insn {
@@ -253,7 +253,7 @@ covergroup mcause_cg with function sample(ins_zicsrm_t ins);
 endgroup
 
 
-covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mstatus_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 0; 
 
     // SD COVERPOINTS
@@ -279,12 +279,17 @@ covergroup mstatus_cg with function sample(ins_zicsrm_t ins);
 
  endgroup
 
-covergroup mprivinst_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mprivinst_cg with function sample(ins_zicsrm_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
+        // fences are not really privileged instructions, but are tested here for lack of a more convenient place
+        bins fence =  {32'h0ff0000f}; // iowr, iowr
+        bins fence_rw_rw = {32'h0330000f}; // iowr, iowr
+        bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
+        bins pause = {32'h0100000F}; // pause, for Zihintpause
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -332,8 +337,8 @@ function void zicsrm_sample(int hart, int issue);
     ins.add_csr(1);
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
 
-    mcsr_cg.sample(ins);
-    mcause_cg.sample(ins);
-    mstatus_cg.sample(ins);
-    mprivinst_cg.sample(ins);
+    ZicsrM_mcsr_cg.sample(ins);
+    ZicsrM_mcause_cg.sample(ins);
+    ZicsrM_mstatus_cg.sample(ins);
+    ZicsrM_mprivinst_cg.sample(ins);
 endfunction

@@ -1,0 +1,41 @@
+function void rv64zcd_sample(int hart, int issue);
+    ins_rv64zcd_t ins;
+    
+    if (traceDataQ[hart][issue][0].insn[1:0] != 2'b11) begin // compressed instruction
+        // $display("Examining compressed instruction rv64zcd_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        case (traceDataQ[hart][issue][0].inst_name)
+            "c.fld"     :     begin
+                ins = new(hart, issue, traceDataQ);
+                ins.add_fd(0); 
+                ins.add_imm(1);
+                ins.add_rs1(2); 
+                ins.add_mem_address(); 
+                c_fld_cg.sample(ins); 
+            end
+            "c.fldsp"     :     begin 
+                ins = new(hart, issue, traceDataQ);
+                ins.add_fd(0);           
+                ins.add_imm(1);          
+                ins.add_rs1_2();          
+                ins.add_mem_address();   
+                c_fldsp_cg.sample(ins);                
+            end
+            "c.fsd"     :     begin 
+                ins = new(hart, issue, traceDataQ);
+                ins.add_fs2(0);
+                ins.add_imm(1); 
+                ins.add_rs1(2); 
+                ins.add_mem_address();
+                c_fsd_cg.sample(ins); 
+            end
+            "c.fsdsp"     :     begin 
+                ins = new(hart, issue, traceDataQ);
+                ins.add_fs2(0);
+                ins.add_imm(1); 
+                ins.add_rs1_2(); 
+                ins.add_mem_address();
+                c_fsdsp_cg.sample(ins);  
+            end
+        endcase 
+    end
+endfunction

@@ -20,7 +20,7 @@
 `define COVER_RV64CBO_PMP
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_pmp_t;
 
-covergroup exceptions_pmp_cg with function sample(ins_rv64cbo_pmp_t ins);
+covergroup RV64CBO_PMP_exceptions_cg with function sample(ins_rv64cbo_pmp_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d: coverpoint ins.current.PTE_d[7:0] {
@@ -89,5 +89,5 @@ function void rv64cbo_pmp_sample(int hart, int issue);
     ins.add_csr(0);
     ins.add_vm_signals(1);
     
-    exceptions_pmp_cg.sample(ins);
+    RV64CBO_PMP_exceptions_cg.sample(ins);
 endfunction

@@ -1,0 +1,66 @@
+function void rv32zcb_sample(int hart, int issue);
+    ins_rv32zcb_t ins;
+
+    if (traceDataQ[hart][issue][0].insn[1:0] != 3) begin // compressed instruction
+        // $display("Examining compressed instruction rv32zcb_sample with inst_name = %s disass = %s", traceDataQ[hart][issue][0].inst_name, traceDataQ[hart][issue][0].disass);
+        case (traceDataQ[hart][issue][0].inst_name)
+            "c.lbu"    : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);                 
+                ins.add_imm(1);                
+                ins.add_rs1(2);                
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();         
+                c_lbu_cg.sample(ins); 
+            end
+            "c.lh"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);                 
+                ins.add_imm(1);                
+                ins.add_rs1(2);                
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();         
+                c_lh_cg.sample(ins); 
+            end
+            "c.lhu"    : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);                 
+                ins.add_imm(1);                
+                ins.add_rs1(2);                
+                ins.current.inst_category = INST_CAT_LOAD;
+                ins.add_mem_address();         
+                c_lhu_cg.sample(ins); 
+            end
+            "c.sb"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);                
+                ins.add_imm(1);                
+                ins.add_rs1(2);                
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();         
+                c_sb_cg.sample(ins); 
+            end
+            "c.sh"     : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rs2(0);                
+                ins.add_imm(1);                
+                ins.add_rs1(2);                
+                ins.current.inst_category = INST_CAT_STORE;
+                ins.add_mem_address();         
+                c_sh_cg.sample(ins); 
+            end
+            "c.not"    : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0); 
+                ins.add_rs1(0);                                
+                c_not_cg.sample(ins); 
+            end
+            "c.zext.b"    : begin 
+                ins = new(hart, issue, traceDataQ); 
+                ins.add_rd(0);  
+                ins.add_rs1(0);                               
+                c_zext_b_cg.sample(ins); 
+            end
+        endcase
+    end
+endfunction
