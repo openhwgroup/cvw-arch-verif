@@ -1,0 +1,8 @@
+Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rs2,cp_rd,cp_rs1_corners,cp_rs2_corners,cr_rs1_imm_corners,cr_rs1_rs2_corners,cmp_rd_rs1_eqval,cmp_rd_rs2_eqval,cmp_rs1_rs2,cmp_rd_rs1,cmp_rd_rs2,cmp_rd_rs1_rs2,cp_offset,cp_uimm,cp_imm_corners,cp_rs1p,cp_rs2p,cp_rdp,cp_fdp,cp_fs2p,cp_imm_mul,cp_bs,cp_rnum,cp_sc,cbo***,cp_fpr_hazard,cp_gpr_hazard,cp_fs1,cp_fs2,cp_fs3,cp_fd,cp_fs1_corners,cp_fs2_corners,cp_fs3_corners,cmp_fd_fs1,cmp_fd_fs2,cmp_fd_fs3,cp_frm,cp_csr_fflags,cp_csr_frm,cr_fs1_fs2_corners,cr_fs1_fs3_corners,cr_fs1_fs2_corners,cr_fs1_fs3_corners,cp_fclass,cp_NaNBox,cp_fs1_badNB,cp_fs2_badNB,cp_fs3_badNB
+fleq.s,FC,x,x,x,,,x,,,,,,,,,,,,,,,,,,,,,,,,r,w,x,x,,,x,x,,,,,,v,,x,,x,,,,,,
+fli.s,FLI,x,x,x,fli,,,,,,,,,,,,,,,,,,,,,,,,,,w,,,,,x,,,,,,,,,,,,,,,,,,
+fltq.s,FC,x,x,x,,,x,,,,,,,,,,,,,,,,,,,,,,,,r,w,x,x,,,x,x,,,,,,v,,x,,x,,,,,,
+fmaxm.s,FR,x,x,x,,,,,,,,,,,,,,,,,,,,,,,,,,,rw,,x,x,,x,x,x,,x,x,,,v,,x,,x,,,,,,
+fminm.s,FR,x,x,x,,,,,,,,,,,,,,,,,,,,,,,,,,,rw,,x,x,,x,x,x,,x,x,,,v,,x,,x,,,,,,
+fround.s,FI,x,x,x,,,,,,,,,,,,,,,,,,,,,,,,,,,rw,,x,,,x,x,,,x,,,2,v,x,,,,,,,,,
+froundnx.s,FI,x,x,x,,,,,,,,,,,,,,,,,,,,,,,,,,,rw,,x,,,x,x,,,x,,,2,vn,x,,,,,,,,,

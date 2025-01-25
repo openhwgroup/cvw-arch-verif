@@ -3,6 +3,7 @@ The purpose of the repo is to support CORE-V Wally architectural verification.
 
 This document contains guidelines for setup and running of RISC-V Architecture Functional Verification project. It contains commands and formats needed to generate and execute tests, write test plans and collect and analyze coverage. The following sections have been covered:
 
+* Summary of coverage
 * Git overview
 * Server guide and Tool access
 * Writing Test plan
@@ -10,6 +11,87 @@ This document contains guidelines for setup and running of RISC-V Architecture F
 * Running Tests on CVW Core
 * Creating RVVI Functional Coverage files
 * Teams
+
+# Summary of coverage
+
+This repo contains testplans, covergroups, and directed tests for the RVA22S64 profile, and corresponding RV32 extensions. These include
+
+| Extension | RV32 | RV64 | Notes |
+| --- | --- | --- | --- |
+| **Unprivileged** |
+| I | x|x | Integer base | 
+| M | x|x | Mul/div |
+| F |x |x | Floating-point |
+| D |x |x | Double-precision floating-point |
+| Zfh |x |x | Half-precision floating-point |
+| Zfhmin |x |x | Half-precision transfers/converts |
+| Zfa |x |x | Additonal floating-point: F, D, Zfh |
+| Zaamo |x |x | A extension: atomic memory operations |
+| Zalrsc |x |x | A extension: load reserved/store conditional |
+| Zba |x |x | B extension: address generation |
+| Zbb |x |x | B extension: basic bit manipulation |
+| Zbs |x |x | B extension: single-bit operations |
+| Zbc |x |x | Carry-free multiplication |
+| Zca |x |x | Compressed instructions |
+| Zcb |x |x | Additional compressed instructions |
+| Zcf |x | | RV32 compressed single-precision fp |
+| Zcd |x |x | Compressed double-precision fp |
+| Zbkb |x |x | Basic bit manipulation for crypto |
+| Zbkc |x |x | Carry free multiplication for crypto | 
+| Zbkx |x |x | Crossbar permutations for crypto |
+| Zknd |x |x | AES decryption |
+| Zkne |x |x | AES encryption |
+| Zknh |x |x | SHA2 hash |
+| Zicond |x |x | Conditional zero |
+| Zicbom |x |x | Cache block management, architecturally invisible |
+| Zicboz |x |x | Cach block zero |
+| Zicsr |x |x | CSR read/write/set/clear instructions |
+| Zifencei |x |x | Instruction/data synchronization |
+| **Privileged** |
+| Zicsr |x |x | Excercise CSRs in each mode: M, S, U, F |
+| Exceptions |x |x | Exceptions: M, S, U, F, Zc, ZicboU, ZicboS, Zalrsc, Zaamo |
+| Interrupts |x |x | Interrupts: M, S, U, Sstc |
+| VM | SV32 | SV39/48 | Virtual Memory: Svbare, Sv32/39/48, Svade, Svadu, Sstvecd, Svinval, Svnapot |
+| PMP |x |x | Physical memory protection
+| Endian |x |x | Big vs. little endian: M, S, U |
+| Zicntr|x |x | Counters and performance monitors |
+| **Miscellaneous** |
+| Fences |x |x | Tested in Zicsr |
+| Zihintpause |x |x | Tested in Zicsr |
+| Zicclsm |x |x | Misaligned access support is implicitly tested through accesses |
+| S{m/s}1p12 |x |x | Implicit in Zicsr |
+| Sstvala |x |x | stval implicity tested through exceptions |
+| Sscounterenw |x |x | Writable scounteren tested through Zicntr |
+| Ssu64xl | |x| RV64 sstatus.UXL tested through Zicsr |
+| **Untested** |
+| PMA | | | Implementation dependent, not architectural |
+| Ziccif | | | Main memory cachability and coherence part of PMA |
+| Ziccrse | | | RsrvEventual part of PMA |
+| Ziccamoa | | | AMOArithmetic part of PMA |
+| Svbpmt | | only | Uncachable regions not testable architecturally |
+| Za64rs | | | Reservation set size not tested |
+| Zi64b | | | Cache block size not tested architecturally |
+| Zicbop | | | Cache block prefetch architecturally invisible |
+| Zkt | | | Data-independent execution time architecturally invisible |
+| Zkr | | | Entropy source hard to test architecturally |
+| Ssccptr | | | Hardware page table reads part of PMA |
+
+Notes:
+* As of 12/7/24, atomic, CBO, Zifencei, crypto, Sscofpmf not implemented and privileged tests are in progress
+* V, hypervisor (Sha), debug, Zce, Zks are not supported
+* A testplan such as ZcbM requires both Zcb and M extensions for c.mul
+* Exceptions also tests that illegal instruction behavior matches reference model for
+all categories of illegal instructions.
+* PMA is implementation-defined and cannot be tested explicitly.  The user must 
+define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
+unless memory is implemented at that address); the Exceptions tests do limited PMA
+testing by ensuring this address thorows an AccessFault.  
+
+
+Notes:
+Unprivileged extensions are being refactored to share code
+
+Use make --jobs to create the SystemVerilog covergroups and assembly language tests.  
 
 # **Git overview**
 
@@ -119,7 +201,7 @@ wsim rv64gc \<test\_suite\> \--fcov
 
 * To run functional coverage in regression
 
-Regression-wally \--fcov
+regression-wally \--fcov
 
 * To merge all fcov files and create a merge html report, in the fcov folder run:
 

@@ -1,0 +1,3 @@
+    cp_bs : coverpoint ins.current.bs  iff (ins.trap == 0 )  {
+        //BS field *** need to add ins.current.bs to the RISCV_instruction class
+    }

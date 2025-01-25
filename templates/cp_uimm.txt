@@ -1,0 +1,7 @@
+    cp_uimm : coverpoint unsigned'(ins.current.imm)  iff (ins.trap == 0 )  { 
+        `ifdef XLEN32
+            bins uimm = {[0:31]}; // 5 bit immediates
+        `else
+            bins uimm = {[0:63]}; // 6 bit immediates
+        `endif
+    }

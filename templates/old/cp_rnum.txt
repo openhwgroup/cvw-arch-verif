@@ -1,0 +1,3 @@
+    cp_rnum : coverpoint ins.current.rnum  iff (ins.trap == 0 )  {
+        //rnum field *** need to add ins.current.rnum to the RISCV_instruction class
+    }
