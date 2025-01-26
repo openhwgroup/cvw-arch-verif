@@ -135,19 +135,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
-    // TODO: this has some complicated bit swizzling, aught to be human tested to ensure it accurately reflects test plan
-    illegal_address_priority: coverpoint {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000} {
-        bins illegal =  {`ACCESS_FAULT_ADDRESS}; //                                  ^~~~~~~~~~~~~~~~~~ ignore 3 LSBs so a cross product with all 3 
-        bins legal   = !{`ACCESS_FAULT_ADDRESS}; // for cross product                                   LSB posibilities doesnt have impossible bins
-    }
-    page_fault_address: coverpoint ins.current.imm + ins.current.rs1_val {
-        bins illegal = {`PAGE_FAULT_ADDRESS};
-    }
-    // TODO: this has some complicated bit swizzling, aught to be human tested to ensure it accurately reflects test plan
-    page_fault_addr_priority: coverpoint {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000} {
-        bins illegal =  {`PAGE_FAULT_ADDRESS}; //                                  ^~~~~~~~~~~~~~~~~~ ignore 3 LSBs so a cross product with all 3 
-        bins legal   = !{`PAGE_FAULT_ADDRESS}; // for cross product                                   LSB posibilities doesnt have impossible bins
-    }
     medeleg_instrmisaligned_enabled: coverpoint ins.current.csr[12'h302][0] {
         bins enabled = {1};
     }
@@ -181,15 +168,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     medeleg_ecallm_enabled: coverpoint ins.current.csr[12'h302][11] {
         bins enabled = {1};
     }
-    medeleg_instrpagefault_enabled: coverpoint ins.current.csr[12'h302][12] {
-        bins enabled = {1};
-    }
-    medeleg_loadpagefault_enabled: coverpoint ins.current.csr[12'h302][13] {
-        bins enabled = {1};
-    }
-    medeleg_storepagefault_enabled: coverpoint ins.current.csr[12'h302][15] {
-        bins enabled = {1};
-    }
     mtval_stval_ne: coverpoint {ins.current.csr[12'h343] != ins.current.csr[12'h143]} {
         bins notequal = {1};
     }
@@ -209,11 +187,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_s;
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_s;
     cp_ecall_s:                              cross ecall, priv_mode_s;
-    cp_instruction_page_fault:               cross jalr,     page_fault_address, priv_mode_s; // TODO: DEFINE PAGE FAULT ADDRESS
-    cp_load_page_fault:                      cross loadops,  page_fault_address, priv_mode_s;
-    cp_store_page_fault:                     cross storeops, page_fault_address, priv_mode_s; 
-    cp_misaligned_priority_load:             cross loadops,  adr_LSBs, illegal_address_priority, page_fault_addr_priority, priv_mode_s; // TODO: DEFINE PAGE FAULT ADDRESS (ignoring 3 LSBs)
-    cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, page_fault_addr_priority, priv_mode_s;
     cp_medeleg_su_instrmisaligned:           cross jalr,     rs1_1_0, imm_bit_1, priv_mode_su, medeleg_instrmisaligned_enabled;
     cp_medeleg_su_loadmisaligned:            cross loadops,    adr_LSBs,         priv_mode_su, medeleg_loadmisaligned_enabled;
     cp_medeleg_su_storemisaligned:           cross storeops,   adr_LSBs,         priv_mode_su, medeleg_storemisaligned_enabled;
@@ -224,9 +197,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     cp_medeleg_s_ecall:                      cross ecall,                        priv_mode_s,  medeleg_ecalls_enabled;
     cp_medeleg_u_ecall:                      cross ecall,                        priv_mode_u,  medeleg_ecallu_enabled;
     cp_medeleg_su_ebreak:                    cross ebreak,                       priv_mode_su, medeleg_breakpoint_enabled;
-    cp_medeleg_su_instrpagefault:            cross jalr,     page_fault_address, priv_mode_su, medeleg_instrpagefault_enabled;
-    cp_medeleg_su_loadpagefault:             cross loadops,  page_fault_address, priv_mode_su, medeleg_loadpagefault_enabled;
-    cp_medeleg_su_storepagefault:            cross storeops, page_fault_address, priv_mode_su, medeleg_storepagefault_enabled;
     cp_medeleg_m_instrmisaligned:            cross jalr,     rs1_1_0, imm_bit_1, priv_mode_m,  medeleg_instrmisaligned_enabled;
     cp_medeleg_m_loadmisaligned:             cross loadops,    adr_LSBs,         priv_mode_m,  medeleg_loadmisaligned_enabled;
     cp_medeleg_m_storemisaligned:            cross storeops,   adr_LSBs,         priv_mode_m,  medeleg_storemisaligned_enabled;
@@ -236,9 +206,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     cp_medeleg_m_illegalinstruction:         cross illegalops,                   priv_mode_m,  medeleg_illegalinstr_enabled;
     cp_medeleg_m_ecall:                      cross ecall,                        priv_mode_m,  medeleg_ecallm_enabled; // NOTE: unsure if there will be problems delegating ecallm to s mode 
     cp_medeleg_m_ebreak:                     cross ebreak,                       priv_mode_m,  medeleg_breakpoint_enabled;
-    cp_medeleg_m_instrpagefault:             cross jalr,     page_fault_address, priv_mode_m,  medeleg_instrpagefault_enabled;
-    cp_medeleg_m_loadpagefault:              cross loadops,  page_fault_address, priv_mode_m,  medeleg_loadpagefault_enabled;
-    cp_medeleg_m_storepagefault:             cross storeops, page_fault_address, priv_mode_m,  medeleg_storepagefault_enabled;
     cp_stvec:                                cross jalr, illegal_address, priv_mode_su, medeleg_instraccessfault_enabled, mtval_stval_ne; // Testplan was not specific, I chose instr access fault for the delegated exception
     cp_sstatus_ie:                           cross ecall, priv_mode_s, mstatus_MIE, sstatus_SIE;
 
@@ -254,6 +221,6 @@ function void exceptionss_sample(int hart, int issue);
 
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
     
-    exceptionsS_cg.sample(ins);
+    ExceptionsS_exceptions_cg.sample(ins);
     
 endfunction
