@@ -1404,6 +1404,11 @@ def make_sbox(test, xlen):
     desc = f"cp_sbox = {sbox}"
     writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
 
+def make_nanbox(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+  desc = "Random test for cp_NaNBox "
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1633,7 +1638,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
     elif (coverpoint.startswith("cp_NaNBox")):
-      pass # doesn't require designated tests
+      make_nanbox(test, xlen)
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
