@@ -270,7 +270,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
     rs2val = rs2val + 2**xlen
-  lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed\n" # doesn't seem necessary
+  # lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed\n" # doesn't seem necessary
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
@@ -378,7 +378,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = writeJumpTest(lines, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
   elif (test in catype):
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
+    # lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) +", x" + str(rs2) + " # perform operation\n")
   elif (test in cbptype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+" # initialize rd'\n"
@@ -405,7 +405,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in ibwtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n")
-  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"] *** update to use constant memory
+  elif (test in amotype): 
+    storeop = "sw" if (xlen == 32) else "sd"
+    lines = lines + f"li x{rs2}, {formatstr.format(rs1val)} # load random value\n"
+    lines = lines + f"la x{rs1}, scratch # base address\n"
+    lines = lines + f"{storeop} x{rs2}, 0(x{rs1}) # store in memory\n"
+    if (rs2 != rs1):
+      lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load another value into integer register\n"
+    lines = lines + f"{test} x{rd}, x{rs2}, (x{rs1}) # perform operation\n"
+  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]  # *** update to use constant memory
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
@@ -953,11 +961,11 @@ def make_rd_rs1(test, xlen, rng):
 def make_rd_rs2(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cmp_rd_rs2 (Test rd = rs1 = x" + str(r) + ")"
+    desc = "cmp_rd_rs2 (Test rd = rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rd_rs1_rs2(test, xlen):
-  for r in range(maxreg+1):
+def make_rd_rs1_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
@@ -1499,7 +1507,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
-      make_rd_rs1_rs2(test, xlen)
+      make_rd_rs1_rs2(test, xlen, range(maxreg+1))
+    elif (coverpoint == "cmp_rd_rs1_rs2_nx0"):
+      make_rd_rs1_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2_nx0"):
