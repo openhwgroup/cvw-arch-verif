@@ -34,6 +34,9 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
+    csrr: coverpoint ins.current.insn {
+        wildcard bins csrrw = {32'b????????????_?????_010_?????_1110011}; 
+    }
     storeop: coverpoint ins.current.insn {
         `ifdef XLEN64
             wildcard bins sd = {32'b???????_?????_?????_011_?????_0100011};
@@ -382,11 +385,20 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
         bins b_1_1 = {3'b101};
         bins b_1_2 = {3'b011};
     }
+    counters_inhibited: coverpoint {ins.current.insn[31:20], ins.current.csr[12'h320][2:0]} {
+        bins cycle_inhibited   = {12'hC00, 3'b001};
+        bins time_inhibited    = {12'hC01, 3'b010};
+        bins instret_inhibited = {12'hC02, 3'b100};
+        bins cycle_enabled     = {12'hC00, 3'b110};
+        bins time_enabled      = {12'hC01, 3'b101};
+        bins instret_enabled   = {12'hC02, 3'b011};
+    } 
 
     // main coverpoints
-    cp_cntr_write:  cross csrrw,   walking_ones_zeros, counters;
-    cp_mtime_write: cross storeop, walking_ones_zeros, clint_mtime;
-    cp_inhibited:   cross csrrw,   walking_ones_zeros_2_0, mcountinhibit;
+    cp_cntr_write:      cross csrrw,   walking_ones_zeros, counters;
+    cp_mtime_write:     cross storeop, walking_ones_zeros, clint_mtime;
+    cp_inhibited_write: cross csrrw,   walking_ones_zeros_2_0, mcountinhibit;
+    cp_inhibited_read:  cross csrr,    counters_inhibited;
     `ifdef XLEN32
         cp_cntrh_write: cross csrrw, walking_ones_zeros, countersh;
     `endif
