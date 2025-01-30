@@ -683,7 +683,7 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
   lines = ""
 
   for testindex, test in enumerate(testlist):
-    if (test in amotype or test in sctype or test in lrtype or test in rbtype or test in irtype):
+    if (test in rbtype or test in irtype):
       return ""  # TODO: AMO, lr/sc not yet supported; Hamza, please add support
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
@@ -702,8 +702,10 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       lines += test
       for regindex, reg in enumerate(regconfiglist[testindex]):
         match reg:
+          case 'a':
+              lines += ","*(lines[-1*len(test):] != test) + " (" + 'x' + str(registerArray[regindex][testindex]) + ")"
           case 'x' | 'f':
-            lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
+              lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
           case 'i':
             if insMap[instype].get('compressed', 0) != 0:
               immval = signedImm6(immvalslist[testindex])
@@ -763,7 +765,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
   ins2type = findInstype('instructions', testa, insMap)
   regconfig2 = insMap[ins2type].get('regconfig','xxx_')
 
-  if test in jalrtype:
+  if testb in jalrtype:
     if haz_type != "raw":
       lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
       immvalb = 0
@@ -791,10 +793,25 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
   else:
 
-    if test in fstype + fltype + stype + loaditype:
+    if insMap[instype].get('loadstore', 0) != 0:
       lines += "la " + regconfig[1] + str(rs1b) + ", scratch\n"
       lines += "addi " + 2*(regconfig[1] + str(rs1b) + ", ") + str(signedImm12(-immvalb)) + "\n"
       if haz_type != "war":
+        rs1a = rda
+        rs2a = 0
+
+    if 'a' in regconfig:
+      rsblist = [rdb, rs1b, rs2b, rs3b]
+      
+      lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
+      '''
+      match xlen:
+        case 32:
+          lines += "sw x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
+        case 64:
+          lines += "sd x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
+      '''
+      if haz_type == "raw":
         rs1a = rda
         rs2a = 0
 
@@ -833,7 +850,7 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
         regsB = [rdb, rs1b, rs2b, rs3b]
 
     case "waw":
-      while (set(regsA[1:]) & set(regsB[1:])):
+      while (set(regsA) & set(regsB)):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
       regsB[0] = regsA[0]
@@ -1837,24 +1854,10 @@ flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "
 csrtype = ["csrrw", "csrrs", "csrrc"]
 csritype = ["csrrwi", "csrrsi", "csrrci"]
 
-floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
-# instructions with all float args
-regconfig_ffff = frtype + fr4type + fitype + flitype
-# instructions with int first arg and the rest float args
-regconfig_xfff = F2Xtype + fcomptype + fixtype
-# instructions with fp first arg and the rest int args
-regconfig_fxxx = X2Ftype + PX2Ftype
+floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
 global hazardLabel
 hazardLabel = 1
-
-# for writeHazardVectors
-rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
-rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
-rd_rs1_rs2_rs3_format = fr4type
-rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
-rd_imm_format = citype + cstype + ciwtype + cbptype
-
 
 insMap = {
   # 'loadstore': whether a function is a load or store, leave empty for neither
@@ -1913,7 +1916,10 @@ insMap = {
   'zcdtype' : {'instructions' : zcdtype, 'regconfig' : 'uuuu'},
   'flitype' : {'instructions' : flitype, 'regconfig' : 'fi__'},
   'csrtype' : {'instructions' : csrtype, 'regconfig' : 'xcx_'},
-  'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'}
+  'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'},
+  'amotype' : {'instructions' : amotype, 'regconfig' : 'xxa_'},
+  'sctype' : {'instructions' : sctype, 'regconfig' : 'xxa_'},
+  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'}
 }
 
 if __name__ == '__main__':
