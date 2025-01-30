@@ -27,8 +27,8 @@ RV32PRIVOBJECTS = $(RV32PRIV:.$(SRCEXT)=.$(OBJEXT))
 RV64PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR64)/%)
 RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
-#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
-UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT))
+UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
+#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT)) # temporarily disable until we need signatures for signature/self-checking
 UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
 # Add headers for priv tests here. They will all be prepended with PRIVDIR
@@ -57,7 +57,8 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
-	rm -rf ${TESTDIR}/*/Zaamo ${TESTDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
+#	rm -rf ${TESTDIR}/*/Zaamo ${TESTDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
+	rm -rf ${TESTDIR}/*/Zalrsc # *** these hang Sail because they load from x0; temporarily remove until fixed
 	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
