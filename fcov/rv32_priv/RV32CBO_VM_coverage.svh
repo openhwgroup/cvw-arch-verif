@@ -17,10 +17,10 @@
 // either express or implied. See the License for the specific language governing permissions 
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
-`define COVER_RV64CBO_VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_vm_t;
+`define COVER_RV32CBO_VM
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32cbo_vm_t;
 
-covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
+covergroup RV32CBO_VM_exceptions_cg with function sample(ins_rv32cbo_vm_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.PTE_d[7:0] { //exp.1
@@ -74,30 +74,17 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     //PageType && misaligned PPN for DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
 
     PageType_d: coverpoint ins.current.PageType_d {
-        `ifdef sv48
-            bins tera = {2'b11};
-        `endif
-        bins giga = {2'b10};
         bins mega = {2'b01};
         bins kilo = {2'd0};
     }
 
-    misaligned_PPN_d: coverpoint ins.current.PPN_d[26:0] {
-        `ifdef sv48
-            bins tera_not_zero = {[27'd1:27'd134217727]};
-        `endif
-        bins giga_not_zero = {[18'd1:18'd262143]};
-        bins mega_not_zero = {[9'd1:9'd511]};
+    misaligned_PPN_d: coverpoint ins.current.PPN_d[9:0] {
+        bins mega_not_zero = {[1:$]};
     }
 
-    //satp.mode for coverage of both sv39 and sv48
-    mode: coverpoint  ins.current.csr[12'h180][63:60] {
-        `ifdef sv48
-            bins sv48   = {4'b1001};
-        `endif
-        `ifdef sv39
-            bins sv39   = {4'b1000};
-        `endif
+     //satp.mode for coverage of both sv32
+    mode: coverpoint  ins.current.csr[12'h180][31] {
+        bins sv32   = {1'b1};
     }
 
     //For crosses with write accesses and its corresponding faults
@@ -138,20 +125,10 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
 
     PTE_nonleaf_lvl0_s_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc, cbo_ins { //exp.3
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
-        ignore_bins ig2 = binsof(PageType_d.giga);
-        ignore_bins ig3 = binsof(PageType_d.mega);
-        `ifdef sv48
-            ignore_bins ig4 = binsof(PageType_d.tera);
-        `endif    
     }
 
     PTE_nonleaf_lvl0_u_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc, cbo_ins { //exp.3
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
-        ignore_bins ig2 = binsof(PageType_d.giga);
-        ignore_bins ig3 = binsof(PageType_d.mega);
-        `ifdef sv48
-            ignore_bins ig4 = binsof(PageType_d.tera);
-        `endif 
     }
 
     spage_nowrite_s_d: cross PTE_rw_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode, sum_sstatus { //exp.4 & 5
@@ -159,7 +136,7 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     }
 
     spage_rwx_s_d_nowrite: cross PTE_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode { //exp.6
-        ignore_bins ig1= binsof(priv_mode.S_mode);
+        ignore_bins ig1 = binsof(priv_mode.S_mode);
     }
 
     upage_smode_sumunset_nowrite_s: cross PTE_upage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode, sum_sstatus { //exp.7
@@ -193,12 +170,12 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     }
 endgroup
 
-function void rv64cbo_vm_sample(int hart, int issue);
-    ins_rv64cbo_vm_t ins;
+function void rv32cbo_vm_sample(int hart, int issue);
+    ins_rv32cbo_vm_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
     ins.add_vm_signals(1);
     
-    RV64CBO_VM_exceptions_cg.sample(ins);
+    RV32CBO_VM_exceptions_cg.sample(ins);
 endfunction
