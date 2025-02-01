@@ -38,7 +38,7 @@ tests/lockstep/rv32e
 tests/lockstep/rv64e
 fcov/coverage/RISCV_coverage_base_init.svh
 fcov/coverage/RISCV_coverage_base_sample.svh
-tests/priv/*.h 
+tests/lockstep/priv/headers
 tests/lockstep/priv/rv32
 tests/lockstep/priv/rv64
 tests/signature
