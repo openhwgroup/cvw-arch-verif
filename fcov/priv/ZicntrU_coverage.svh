@@ -105,10 +105,6 @@ covergroup ucounters_cg with function sample(ins_zicntru_t ins);
         bins U_Mode = {2'b00};
     }
 
-    scounteren_ones: coverpoint ins.current.csr[12'h106] {
-        bins scounteren_ones = {'1};
-    }
-
     priv_mode_m: coverpoint ins.current.mode{
         bins M_Mode = {2'b11};
     }
@@ -189,6 +185,9 @@ covergroup ucounters_cg with function sample(ins_zicntru_t ins);
         bins hpmcounter31_disabled  = {12'hC1F, 32'b01111111111111111111111111111111};
 
         `ifdef XLEN32
+                bins cycleh_enabled        = {12'hC80, 32'b00000000000000000000000000000001};
+                bins timeh_enabled         = {12'hC81, 32'b00000000000000000000000000000010};
+                bins instreth_enabled      = {12'hC82, 32'b00000000000000000000000000000100};
                 bins hpmcounter3h_enabled   = {12'hC83, 32'b00000000000000000000000000001000};
                 bins hpmcounter4h_enabled   = {12'hC84, 32'b00000000000000000000000000010000};
                 bins hpmcounter5h_enabled   = {12'hC85, 32'b00000000000000000000000000100000};
@@ -255,8 +254,8 @@ covergroup ucounters_cg with function sample(ins_zicntru_t ins);
     }
 
     // main coverpoints
-    cp_mcounteren_write:    cross csrrw, walking_ones_zeros, mcounteren;
-    cp_mcounteren_access_u: cross csrr, counters_mcounteren, scounteren_ones, priv_mode_u;
+    cp_mcounteren_write:    cross csrrw, walking_ones_zeros, mcounteren, priv_mode_m;
+    cp_mcounteren_access_u: cross csrr, counters_mcounteren, priv_mode_u;
     cp_mcounteren_access_m: cross csrr, counters_mcounteren, priv_mode_m; 
 
 endgroup
