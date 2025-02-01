@@ -185,9 +185,9 @@ covergroup ucounters_cg with function sample(ins_zicntru_t ins);
         bins hpmcounter31_disabled  = {12'hC1F, 32'b01111111111111111111111111111111};
 
         `ifdef XLEN32
-                bins cycleh_enabled        = {12'hC80, 32'b00000000000000000000000000000001};
-                bins timeh_enabled         = {12'hC81, 32'b00000000000000000000000000000010};
-                bins instreth_enabled      = {12'hC82, 32'b00000000000000000000000000000100};
+                bins cycleh_enabled         = {12'hC80, 32'b00000000000000000000000000000001};
+                bins timeh_enabled          = {12'hC81, 32'b00000000000000000000000000000010};
+                bins instreth_enabled       = {12'hC82, 32'b00000000000000000000000000000100};
                 bins hpmcounter3h_enabled   = {12'hC83, 32'b00000000000000000000000000001000};
                 bins hpmcounter4h_enabled   = {12'hC84, 32'b00000000000000000000000000010000};
                 bins hpmcounter5h_enabled   = {12'hC85, 32'b00000000000000000000000000100000};
