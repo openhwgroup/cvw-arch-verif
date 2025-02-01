@@ -11,7 +11,7 @@
 // General notes:
 // Use csrrw/csrrs/csrrc t6, csr, rs1    when modifying a CSR to also check the old value.
 
-#include "../WALLY-init-lib.h"
+#include "../../WALLY-init-lib.h" // This path needs to be updated if this file is relocated
 
 main:
 
