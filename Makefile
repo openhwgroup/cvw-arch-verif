@@ -99,7 +99,7 @@ CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
 MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
-SAIL = $(if $(findstring 64, $*),riscv_sim_RV64,riscv_sim_RV32)
+SAIL = riscv_sim_rv$(BITWIDTH)d
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
