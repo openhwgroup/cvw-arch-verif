@@ -10,7 +10,7 @@
 ///////////////////////////////////////////
 
 
-#include "../../WALLY-init-lib.h" // This path needs to be updated if this file is relocated
+#include "WALLY-init-lib.h"
 
 main:
 
