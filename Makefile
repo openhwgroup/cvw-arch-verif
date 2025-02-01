@@ -12,13 +12,14 @@ SRCDIR64     := $(LOCKSTEPDIR)/rv64
 SRCDIR32     := $(LOCKSTEPDIR)/rv32
 SRCSELFCHECKDIR64   := $(SELFCHECKDIR)/rv64
 SRCSELFCHECKDIR32   := $(SELFCHECKDIR)/rv32
-PRIVDIR    := $(LOCKSTEPDIR)/priv
-PRIVDIR64  := $(PRIVDIR)/rv64
-PRIVDIR32  := $(PRIVDIR)/rv32
-WORK       := work
-SRCEXT     := S
-OBJEXT     := elf
-SIGEXT     := elf.signature
+PRIVDIR        := $(LOCKSTEPDIR)/priv
+PRIVHEADERSDIR := $(PRIVDIR)/headers
+PRIVDIR64      := $(PRIVDIR)/rv64
+PRIVDIR32      := $(PRIVDIR)/rv32
+WORK           := work
+SRCEXT         := S
+OBJEXT         := elf
+SIGEXT         := elf.signature
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -32,9 +33,9 @@ UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 #UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT)) # temporarily disable until we need signatures for signature/self-checking
 UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
-# Add headers for priv tests here. They will all be prepended with PRIVDIR
+# Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
-# See $(PRIVDIR)/Zicsr-CSR-Tests.h for an example
+# See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
 PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
@@ -66,10 +67,10 @@ selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
 	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
-$(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
+$(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 
-$(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
+$(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/illegalinstrtests.py
 
 # This code is added especially for running VM SV32 tests
@@ -102,7 +103,7 @@ SAIL = $(if $(findstring 64, $*),riscv_sim_RV64,riscv_sim_RV32)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
-PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVDIR)/, $(PRIV_HEADERS))
+PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVHEADERSDIR)/, $(PRIV_HEADERS))
 EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
@@ -111,7 +112,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/link.ld $<
+    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -141,13 +142,12 @@ merge: $(WORK)
 	bin/coverreport.py
 
 # Create directories
-$(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
+$(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
 	@mkdir -p $@
 
 clean:
 	rm -rf fcov/unpriv/*
-	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
-	rm -rf ${PRIVDIR}/*.h
+	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf $(SELFCHECKDIR)/*
 	rm -rf $(SIGDIR)/*
 
