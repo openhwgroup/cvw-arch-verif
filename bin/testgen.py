@@ -1738,12 +1738,14 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
       # only look for coverpoints if we are of the proper xlen
       #print("mode: " + str(mode) + " xlen: " + str(xlen) + " " + line)
       if (mode == "both" or mode == xlen):
-        m = re.search(r'cp_asm_count.*\"(.*)"', line)
+        m = re.search(r'covergroup.*?_(.*?)_cg', line)
         if (m):
-          curinstr = m.group(1)
+          curinstr = m.group(1).replace("_", ".")
+          # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
         m = re.search("\s*(\S+) :", line)
         if (m):
+          # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
     # print(coverpoints)
