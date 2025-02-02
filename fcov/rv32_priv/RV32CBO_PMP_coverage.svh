@@ -17,10 +17,10 @@
 // either express or implied. See the License for the specific language governing permissions 
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
-`define COVER_RV64CBO_PMP
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_pmp_t;
+`define COVER_RV32CBO_PMP
+typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32cbo_pmp_t;
 
-covergroup RV64CBO_PMP_exceptions_cg with function sample(ins_rv64cbo_pmp_t ins);
+covergroup RV32CBO_PMP_exceptions_cg with function sample(ins_rv32cbo_pmp_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d: coverpoint ins.current.PTE_d[7:0] {
@@ -29,22 +29,12 @@ covergroup RV64CBO_PMP_exceptions_cg with function sample(ins_rv64cbo_pmp_t ins)
     }
     //PageType for DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
     PageType_d: coverpoint ins.current.PageType_d {
-        `ifdef sv48
-            bins tera = {2'b11};
-        `endif
-        bins giga = {2'b10};
         bins mega = {2'b01};
         bins kilo = {2'd0};
     }
-
-    //satp.mode for coverage of both sv39 and sv48
-    mode: coverpoint ins.current.csr[12'h180][63:60] {
-        `ifdef sv48
-            bins sv48   = {4'b1001};
-        `endif
-        `ifdef sv39
-            bins sv39   = {4'b1000};
-        `endif
+    //satp.mode for coverage of sv32
+    mode: coverpoint  ins.current.csr[12'h180][31] {
+        bins sv32   = {1'b1};
     }
 
     //For crosses with write accesses and its corresponding faults
@@ -83,12 +73,12 @@ covergroup RV64CBO_PMP_exceptions_cg with function sample(ins_rv64cbo_pmp_t ins)
     }
 endgroup
 
-function void rv64cbo_pmp_sample(int hart, int issue);
-    ins_rv64cbo_pmp_t ins;
+function void rv32cbo_pmp_sample(int hart, int issue);
+    ins_rv32cbo_pmp_t ins;
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
     ins.add_vm_signals(1);
     
-    RV64CBO_PMP_exceptions_cg.sample(ins);
+    RV32CBO_PMP_exceptions_cg.sample(ins);
 endfunction
