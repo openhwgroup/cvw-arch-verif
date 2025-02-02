@@ -2175,7 +2175,7 @@ if __name__ == '__main__':
           else:
             storecmd = "sd"
             wordsize = 8
-          if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+          if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
             flen = 64
           elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
             flen = 128
