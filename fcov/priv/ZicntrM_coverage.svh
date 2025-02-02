@@ -35,7 +35,7 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csrr: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_010_?????_1110011}; 
+        wildcard bins csrrw = {32'b????????????_00000_010_?????_1110011}; 
     }
     storeop: coverpoint ins.current.insn {
         `ifdef XLEN64
@@ -52,7 +52,6 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
     }
     counters: coverpoint ins.current.insn[31:20] {
         bins mcycle        = {12'hB00};
-        bins mtime         = {12'hC01};
         bins minstret      = {12'hB02};
         bins mhpmcounter3  = {12'hB03};
         bins mhpmcounter4  = {12'hB04};
@@ -112,6 +111,7 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
         bins mhpmevent29   = {12'h33D};
         bins mhpmevent30   = {12'h33E};
         bins mhpmevent31   = {12'h33F};
+        bins mcountinhibit = {12'h302};
     }
     `ifdef XLEN32 
         countersh: coverpoint ins.current.insn[31:20] {
@@ -395,12 +395,10 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
     } 
 
     // main coverpoints
-    cp_cntr_write:      cross csrrw,   walking_ones_zeros, counters;
-    cp_mtime_write:     cross storeop, walking_ones_zeros, clint_mtime;
-    cp_inhibited_write: cross csrrw,   walking_ones_zeros_2_0, mcountinhibit;
-    cp_inhibited_read:  cross csrr,    counters_inhibited;
+    cp_cntr_write:      cross csrrw,   walking_ones_zeros, counters,    priv_mode_m;
+    cp_mtime_write:     cross storeop, walking_ones_zeros, clint_mtime, priv_mode_m;
     `ifdef XLEN32
-        cp_cntrh_write: cross csrrw, walking_ones_zeros, countersh;
+        cp_cntrh_write: cross csrrw,   walking_ones_zeros, countersh,   priv_mode_m;
     `endif
 
 endgroup
