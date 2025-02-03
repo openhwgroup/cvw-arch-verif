@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 ##################################
-# zicntr.py
+# zicntrtests.py
 # asantillana@hmc.edu 2/2/25
 # Zicntr functional coverage tests
 ##################################
@@ -15,8 +15,8 @@ def cntrwalk(pathname, regs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
     for reg in regs:
-        print("\n// Testing walking zeros and ones for CNTR "+reg)
-        print("\tcsrr s0, "+reg+"\t# save CNTR")
+        print("\n// Testing walking zeros and ones for csr "+reg)
+        print("\tcsrr s0, "+reg+"\t# save csr")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
         print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
@@ -28,7 +28,7 @@ def cntrwalk(pathname, regs):
         print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print("\tcsrrw t6, "+reg+", s0    # restore CNTR")
+        print("\tcsrrw t6, "+reg+", s0    # restore csr")
     outfile.close
 
 # setup
@@ -43,9 +43,9 @@ for i in range(3,32):
 mhpmevents = []
 for i in range(3,32):
     mhpmevents.append("mhpmevent"+ str(i))
-mregs = ["mcycle", "minstret", "mcountinhibit"] + mhpmcounters + mhpmevents
-sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
-uregs = ["fflags", "frm", "fcsr"]
+mregs = ["mcycle", "minstret", "mcountinhibit", "mtime", "mcounteren"] + mhpmcounters + mhpmevents
+sregs = ["scounteren"] 
+uregs = ["time"]
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
@@ -53,8 +53,8 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 cntrwalk(pathname, mregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrS-Walk.h"
-cntrwalk(pathname, sregs + uregs);
+cntrwalk(pathname, sregs + uregs+ mregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrU-Walk.h"
-cntrwalk(pathname, uregs);
+cntrwalk(pathname, uregs + sregs);
 
