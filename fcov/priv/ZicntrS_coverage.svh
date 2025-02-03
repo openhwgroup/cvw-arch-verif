@@ -390,9 +390,7 @@ covergroup scounters_cg with function sample(ins_zicntrs_t ins);
     }
 
     // main coverpoints
-    cp_mcounteren_write: cross csrrw, walking_ones_zeros;
-    cp_scounteren_write: cross csrrw, walking_ones_zeros;
-
+    cp_scounteren_write:    cross csrrw, walking_ones_zeros, scounteren, priv_mode_s;
     cp_mcounteren_access_s: cross csrr, counters_mcounteren, priv_mode_s;
     cp_scounteren_access_s: cross csrr, counters_scounteren, mcounteren_ones, priv_mode_s;
     cp_scounteren_access_m: cross csrr, counters_scounteren, mcounteren_ones, priv_mode_m;
