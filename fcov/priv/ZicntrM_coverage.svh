@@ -44,9 +44,6 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
             wildcard bins sw = {32'b???????_?????_?????_010_?????_0100011};
         `endif
     }
-    mcountinhibit: coverpoint ins.current.insn[31:20] {
-        bins mcountinhibit = {12'h320};
-    }
     clint_mtime: coverpoint {ins.current.imm + ins.current.rs1_val} {
         bins mtime = {`CLINT_BASE + 16'hBFF8};
     }
@@ -377,22 +374,6 @@ covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
             bins b_0_31 = {32'b01111111111111111111111111111111};
         }
     `endif
-    walking_ones_zeros_2_0: coverpoint ins.current.rs1_val[2:0] {
-        bins b_0_0 = {3'b001};
-        bins b_0_1 = {3'b010};
-        bins b_0_2 = {3'b100};
-        bins b_1_0 = {3'b110};
-        bins b_1_1 = {3'b101};
-        bins b_1_2 = {3'b011};
-    }
-    counters_inhibited: coverpoint {ins.current.insn[31:20], ins.current.csr[12'h320][2:0]} {
-        bins cycle_inhibited   = {12'hC00, 3'b001};
-        bins time_inhibited    = {12'hC01, 3'b010};
-        bins instret_inhibited = {12'hC02, 3'b100};
-        bins cycle_enabled     = {12'hC00, 3'b110};
-        bins time_enabled      = {12'hC01, 3'b101};
-        bins instret_enabled   = {12'hC02, 3'b011};
-    } 
 
     // main coverpoints
     cp_cntr_write:      cross csrrw,   walking_ones_zeros, counters,    priv_mode_m;
