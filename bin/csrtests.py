@@ -71,15 +71,15 @@ uregs = ["fflags", "frm", "fcsr"]
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/Zicsr-CSR-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicsr-CSR-Tests.h"
 csrtests(pathname)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrM-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs);
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrS-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
 csrwalk(pathname, sregs + uregs);
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ZicsrU-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-Walk.h"
 csrwalk(pathname, uregs);
 
