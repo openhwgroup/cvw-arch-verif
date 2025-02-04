@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import filecmp
+import math
 
 ##################################
 # functions
@@ -106,6 +107,13 @@ def unsignedImm2(imm):
 
 def unsignedImm1(imm):
   imm = imm % pow(2, 1)
+  return str(imm)
+
+def makeImm(imm, immlen, signed):
+  imm = imm % pow(2,immlen)
+  if signed:
+    if imm & pow(2, immlen-1):
+      imm = imm - pow(2, immlen)
   return str(imm)
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -683,10 +691,10 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
   lines = ""
 
   for testindex, test in enumerate(testlist):
-    if (test in rbtype or test in irtype):
-      return ""  # TODO: AMO, lr/sc not yet supported; Hamza, please add support
+
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
+    immlen = insMap[instype].get('immlen', 12)
 
     if insMap[instype].get('loadstore') == 'load':
       lines += ( test + " " + regconfig[0] + str(registerArray[0][testindex]) +
@@ -703,24 +711,29 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       for regindex, reg in enumerate(regconfiglist[testindex]):
         match reg:
           case 'a':
-              lines += ","*(lines[-1*len(test):] != test) + " (" + 'x' + str(registerArray[regindex][testindex]) + ")"
+              reg = 'x'
+              lines += ","*(lines[-1*len(test):] != test) + " (" + reg + str(registerArray[regindex][testindex]) + ")"
           case 'x' | 'f':
               lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
           case 'i':
             if insMap[instype].get('compressed', 0) != 0:
-              immval = signedImm6(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 6, True)
             elif test == "lui" or test == "auipc":
-              immval = unsignedImm20(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 20, False)
             elif instype in ['shiftiwtype', 'ibwtype']:
-              immval = shiftImm(immvalslist[testindex], 32)
+              immval = makeImm(immvalslist[testindex], 5, False)
             elif instype in ['shiftitype', 'ibtype']:
-              immval = shiftImm(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], int(math.log(xlen,2)), False)
             elif instype == 'flitype':
               immval = flivals[immvalslist[testindex] % 32]
             elif instype in ['csrtype', 'csritype']:
-              immval = unsignedImm5(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 5, False)
+            elif instype in ['rbtype']:
+              immval = makeImm(immvalslist[testindex], immlen, False)
+            elif instype in ['irtype']:
+              immval = str(immvalslist[testindex] % 0xB) # rnum values above 0xA are reserved
             else:
-              immval = signedImm12(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], 12, True)
             lines += ","*(lines[-1*len(test):] != test) + " " + str(immval)
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
@@ -804,13 +817,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       rsblist = [rdb, rs1b, rs2b, rs3b]
       
       lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
-      '''
-      match xlen:
-        case 32:
-          lines += "sw x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
-        case 64:
-          lines += "sd x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
-      '''
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
@@ -1919,7 +1925,9 @@ insMap = {
   'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'},
   'amotype' : {'instructions' : amotype, 'regconfig' : 'xxa_'},
   'sctype' : {'instructions' : sctype, 'regconfig' : 'xxa_'},
-  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'}
+  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'},
+  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxxi', 'immlen' : 2, 'signed' : False},
+  'irtype' : {'instructions' : irtype, 'regconfig' : 'xxi_', 'immlen' : 4, 'signed' : False}
 }
 
 if __name__ == '__main__':
