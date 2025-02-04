@@ -1435,6 +1435,11 @@ def make_sbox(test, xlen):
     desc = f"cp_sbox = {sbox}"
     writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
 
+def make_nanbox(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+  desc = "Random test for cp_NaNBox "
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1666,7 +1671,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
     elif (coverpoint.startswith("cp_NaNBox")):
-      pass # doesn't require designated tests
+      make_nanbox(test, xlen)
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
@@ -1739,12 +1744,14 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
       # only look for coverpoints if we are of the proper xlen
       #print("mode: " + str(mode) + " xlen: " + str(xlen) + " " + line)
       if (mode == "both" or mode == xlen):
-        m = re.search(r'cp_asm_count.*\"(.*)"', line)
+        m = re.search(r'covergroup.*?_(.*?)_cg', line)
         if (m):
-          curinstr = m.group(1)
+          curinstr = m.group(1).replace("_", ".")
+          # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
         m = re.search("\s*(\S+) :", line)
         if (m):
+          # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
     # print(coverpoints)
@@ -2176,7 +2183,7 @@ if __name__ == '__main__':
           else:
             storecmd = "sd"
             wordsize = 8
-          if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+          if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
             flen = 64
           elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
             flen = 128
