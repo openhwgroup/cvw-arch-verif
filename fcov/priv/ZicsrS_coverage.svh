@@ -157,7 +157,7 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
             bins b_28 = {64'b0000000000000000000000000000000000010000000000000000000000000000};
             bins b_29 = {64'b0000000000000000000000000000000000100000000000000000000000000000};
             bins b_30 = {64'b0000000000000000000000000000000001000000000000000000000000000000};
-            // no mode bit (31)
+            bins b_31 = {64'b0000000000000000000000000000000010000000000000000000000000000000};
             bins b_32 = {64'b0000000000000000000000000000000100000000000000000000000000000000};
             bins b_33 = {64'b0000000000000000000000000000001000000000000000000000000000000000};
             bins b_34 = {64'b0000000000000000000000000000010000000000000000000000000000000000};
@@ -186,10 +186,7 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
             bins b_57 = {64'b0000001000000000000000000000000000000000000000000000000000000000};
             bins b_58 = {64'b0000010000000000000000000000000000000000000000000000000000000000};
             bins b_59 = {64'b0000100000000000000000000000000000000000000000000000000000000000};
-            bins b_60 = {64'b0001000000000000000000000000000000000000000000000000000000000000};
-            bins b_61 = {64'b0010000000000000000000000000000000000000000000000000000000000000};
-            bins b_62 = {64'b0100000000000000000000000000000000000000000000000000000000000000};
-            bins b_63 = {64'b1000000000000000000000000000000000000000000000000000000000000000};
+            // No mode bits (63:60)
         }
     `else
         walking_ones : coverpoint ins.current.rs1_val {
@@ -273,7 +270,6 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
         bins sip           = {12'h144};
         bins senvcfg       = {12'h10A};
         bins scounteren    = {12'h106};
-        bins scountinhibit = {12'h120};
     }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
         bins csrrs = {3'b010};
@@ -380,7 +376,7 @@ covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
     cp_sstatus_xs: coverpoint ins.current.rs1_val[16:15] {
     }
     csrrw_sstatus: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b000100000000_?????_001_?????_1110011};  // csrrw to mstatus
+        wildcard bins csrrw = {32'b000100000000_?????_001_?????_1110011};  // csrrw to sstatus
     }
     priv_mode_s: coverpoint ins.current.mode {
        bins S_mode = {2'b01};
@@ -400,6 +396,7 @@ covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
         bins fence =  {32'h0ff0000f}; // iowr, iowr
         bins fence_rw_rw = {32'h0330000f}; // iowr, iowr
         bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
+        bins pause = {32'h0100000f};
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -425,7 +422,7 @@ covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
     old_sstatus_sie: coverpoint ins.prev.csr[12'h100][1] {
     }
     // main coverpoints
-    cp_mprivinst: cross privinstrs, priv_mode_s;
+    cp_mprivinst: cross privinstrs, old_priv_mode_s;
     cp_mret:      cross mret,       old_priv_mode_s;
     cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_mprv, old_mstatus_tsr;
 endgroup
