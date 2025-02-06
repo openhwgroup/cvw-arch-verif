@@ -44,12 +44,11 @@ main:
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     jal cause_timer_interrupt_now
-    jal reset_timer_compare
+    jal reset_timer_compare # reset mtimecmp to avoid premature interrupt in next test
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    jal cause_timer_interrupt_now
-    jal reset_timer_compare
+    jal cause_timer_interrupt_now # expecting timer interrupt, so interrupt handler will reset mtimecmp
 
 /////////////////////////////////
 // cp_trigger_msi
@@ -61,12 +60,11 @@ main:
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     jal set_msip
-    jal reset_msip
+    jal reset_msip          # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    jal set_msip
-    jal reset_msip
+    jal set_msip            # set mip.MSIP, expect interrupt
 
 /////////////////////////////////
 // cp_trigger_mei
@@ -77,11 +75,11 @@ main:
 
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
-    jal cause_external_interrupt_now
+    jal cause_external_interrupt
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    jal cause_external_interrupt_now
+    jal cause_external_interrupt
 
 /////////////////////////////////
 // cp_trigger_sti
@@ -94,12 +92,11 @@ main:
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     li t0, 32               # 1 in bit 5
     csrrs t6, mip, t0
-    csrrc t6, mip, t0       # set and reset mip.STIP
+    csrrc t6, mip, t0       # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    csrrs t6, mip, t0
-    csrrc t6, mip, t0       # set and reset mip.STIP
+    csrrs t6, mip, t0       # set mip.STIP, expect interrupt
 
 /////////////////////////////////
 // cp_trigger_ssi
@@ -112,12 +109,11 @@ main:
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     li t0, 32               # 1 in bit 5
     csrrsi t6, mip, 2
-    csrrci t6, mip, 2       # set and reset mip.SSIP
+    csrrci t6, mip, 2       # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    csrrsi t6, mip, 2
-    csrrci t6, mip, 2       # set and reset mip.SSIP
+    csrrsi t6, mip, 2       # set mip.SEIP, expect interrupt
 
 /////////////////////////////////
 // cp_trigger_sei
@@ -129,76 +125,32 @@ main:
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     li t0, 512              # 1 in bit 9
-    csrrs t6, mip, t0
-    csrrc t6, mip, t0       # set and reset mip.SEIP
+    csrrs t6, mip, t0       # set mip.SEIP
+    csrrc t6, mip, t0       # reset mip.SEIP since the trap handler will not reset it if no interrupt occurs
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    csrrs t6, mip, t0
-    csrrc t6, mip, t0       # set and reset mip.SEIP
+    csrrs t6, mip, t0       # set mip.SEIP, expect interrupt
 
-    j finished
-
-// set mtimecmp to all 1s so it doestn't throw an interrupt prematurely
-reset_timer_compare:
-    li t0, -1               # all 1s
-    la t1, MTIMECMP
-    sw t0, 0(t1)         
-    
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            la t1, MTIMECMPH
-            sw t0, 0(t1)         # ignore if it doesn't exist
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-
-    ret
+    j done
 
 set_msip:
     la t0, MSIP
-
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t1, 0(t0)
-            ori t1, t1, 1 # set lowest bit for hart 0
-            sd t1, 0(t0)
-        #elif __riscv_xlen == 32
-            lw t1, 0(t0) 
-            lw t2, 0x4(t0)
-            ori t1, t1, 1 # set lowest bit for hart 0
-            sw t1, 0(t0)
-            sw t2, 0x4(t0)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    lw t1, 0(t0) 
+    ori t1, t1, 1 # set lowest bit for hart 0
+    sw t1, 0(t0)
 
     ret
 
 reset_msip:
     la t0, MSIP
-    
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t1, 0(t0)
-            andi t1, t1, -2 # clear lowest bit for hart 0
-            sd t1, 0(t0)
-        #elif __riscv_xlen == 32
-            lw t1, 0(t0) 
-            lw t2, 0x4(t0)
-            andi t1, t1, -2 # clear lowest bit for hart 0
-            sw t1, 0(t0)
-            sw t2, 0x4(t0)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    lw t1, 0(t0) 
+    andi t1, t1, -2 # set lowest bit for hart 0
+    sw t1, 0(t0)
 
     ret
 
-cause_external_interrupt_now:
+cause_external_interrupt:
     # set M-mode interrupt threshold to 0
     la t0, THRESHOLD_0
     sw zero, 0(t0)
@@ -233,6 +185,22 @@ cause_external_interrupt_now:
 
     ret
 
+reset_timer_compare:
+    li t0, -1               # all 1s
+    la t1, MTIMECMP
+    sw t0, 0(t1)         
+
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            la t1, MTIMECMPH
+            sw t0, 0(t1)         # ignore if it doesn't exist
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
+
 cause_timer_interrupt_now:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
@@ -253,8 +221,3 @@ cause_timer_interrupt_now:
         ERROR: __riscv_xlen not defined
     #endif
     ret
-
-cause_timer_interrupt_soon:
-
-finished:
-    j done
