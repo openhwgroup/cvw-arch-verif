@@ -20,6 +20,8 @@
 
 #define MTIME           (CLINT_BASE_ADDR + 0xBFF8)
 #define MSIP            (CLINT_BASE_ADDR)
+#define MTIMECMP        (CLINT_BASE_ADDR + 0x4000)
+#define MTIMECMPH       (CLINT_BASE_ADDR + 0x4004)
 
 #define THRESHOLD_0     (PLIC_BASE_ADDR + 0x002000)
 #define THRESHOLD_1     (PLIC_BASE_ADDR + 0x201000)
@@ -30,7 +32,7 @@
 #define GPIO_OUTPUT_VAL (GPIO_BASE_ADDR + 0x0C)
 
 main:
-    jalr reset_timer_compare
+    jal reset_timer_compare
 
 /////////////////////////////////
 // cp_trigger_mti
@@ -81,14 +83,72 @@ main:
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     jal cause_external_interrupt_now
 
+/////////////////////////////////
+// cp_trigger_sti
+/////////////////////////////////
+
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
+    # mstatus.MIE = 0 should not take interrupt
+    csrrci t6, mstatus, 8   # mstatus.MIE = 0
+    li t0, 32               # 1 in bit 5
+    csrrs t6, mip, t0
+    csrrc t6, mip, t0       # set and reset mip.STIP
+
+    # mstatus.MIE = 1 should take interrupt
+    csrrsi t6, mstatus, 8   # mstatus.MIE = 1
+    csrrs t6, mip, t0
+    csrrc t6, mip, t0       # set and reset mip.STIP
+
+/////////////////////////////////
+// cp_trigger_ssi
+/////////////////////////////////
+
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
+    # mstatus.MIE = 0 should not take interrupt
+    csrrci t6, mstatus, 8   # mstatus.MIE = 0
+    li t0, 32               # 1 in bit 5
+    csrrsi t6, mip, 2
+    csrrci t6, mip, 2       # set and reset mip.SSIP
+
+    # mstatus.MIE = 1 should take interrupt
+    csrrsi t6, mstatus, 8   # mstatus.MIE = 1
+    csrrsi t6, mip, 2
+    csrrci t6, mip, 2       # set and reset mip.SSIP
+
+/////////////////////////////////
+// cp_trigger_sei
+/////////////////////////////////
+
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
+    # mstatus.MIE = 0 should not take interrupt
+    csrrci t6, mstatus, 8   # mstatus.MIE = 0
+    li t0, 512              # 1 in bit 9
+    csrrs t6, mip, t0
+    csrrc t6, mip, t0       # set and reset mip.SEIP
+
+    # mstatus.MIE = 1 should take interrupt
+    csrrsi t6, mstatus, 8   # mstatus.MIE = 1
+    csrrs t6, mip, t0
+    csrrc t6, mip, t0       # set and reset mip.SEIP
+
+    j finished
+
 // set mtimecmp to all 1s so it doestn't throw an interrupt prematurely
 reset_timer_compare:
     li t0, -1               # all 1s
-    csrrw t6, MTIMECMP, t0         
+    la t1, MTIMECMP
+    sw t0, 0(t1)         
     
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
-            csrrw t6, MTIMECMPH, t0         # ignore if it doesn't exist
+            la t1, MTIMECMPH
+            sw t0, 0(t1)         # ignore if it doesn't exist
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -97,39 +157,69 @@ reset_timer_compare:
     ret
 
 set_msip:
-    li t0, MSIP
-    ld t1, 0(t0) # read current MSIP values for all harts
-    ori t1, t1, 1 # set lowest bit for hart 0
-    sw t1, 0(t0) # write back to MSIP
+    la t0, MSIP
+
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            ld t1, 0(t0)
+            ori t1, t1, 1 # set lowest bit for hart 0
+            sd t1, 0(t0)
+        #elif __riscv_xlen == 32
+            lw t1, 0(t0) 
+            lw t2, 0x4(t0)
+            ori t1, t1, 1 # set lowest bit for hart 0
+            sw t1, 0(t0)
+            sw t2, 0x4(t0)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
 
 reset_msip:
-    li t0, MSIP
-    ld t1, 0(t0) # read current MSIP values for all harts
-    andi t1, t1, 0 # clear lowest bit for hart 0
-    sw t1, 0(t0) # write back to MSIP
+    la t0, MSIP
+    
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            ld t1, 0(t0)
+            andi t1, t1, -2 # clear lowest bit for hart 0
+            sd t1, 0(t0)
+        #elif __riscv_xlen == 32
+            lw t1, 0(t0) 
+            lw t2, 0x4(t0)
+            andi t1, t1, -2 # clear lowest bit for hart 0
+            sw t1, 0(t0)
+            sw t2, 0x4(t0)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
 
 cause_external_interrupt_now:
     # set M-mode interrupt threshold to 0
-    li t0, THRESHOLD_0
+    la t0, THRESHOLD_0
     sw zero, 0(t0)
     
     # set S-mode interrupt threshold to 7
-    li t0, THRESHOLD_1
+    la t0, THRESHOLD_1
     li t1, 7
     sw t1, 0(t0)    
 
     # give GPIO sufficient priority to trigger interrupt
-    li t0, INT_PRIORITY_3
+    la t0, INT_PRIORITY_3
     li t1, 1
     sw t1, 0(t0)
 
     # enable interrupts from source 3 (GPIO) in M-mode
-    li t0, INT_EN_00
+    la t0, INT_EN_00
     li t1, 8
     sw t1, 0(t0)
 
     # clear all interrupt enables to make sure interrupt doesn't go off prematurely
-    li t0, GPIO_BASE_ADDR
+    la t0, GPIO_BASE_ADDR
     sw zero, 0x18(t0) # clear rise
     sw zero, 0x20(t0) # clear fall
     sw zero, 0x28(t0) # clear high
@@ -146,15 +236,18 @@ cause_external_interrupt_now:
 cause_timer_interrupt_now:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-                li t0, MTIME
+                la t0, MTIME
                 ld t0, 0(t0)                    # read MTIME
-                csrrw t6, MTIMECMP, t0  # set MTIMECMP = MTIME to cause timer interrupt
+                la t1, MTIMECMP
+                sw t0, 0(t1)  # set MTIMECMP = MTIME to cause timer interrupt
         #elif __riscv_xlen == 32
-                li t0, MTIME
+                la t0, MTIME
                 lw t1, 0(t0)                    # low word of MTIME
                 lw t2, 4(t0)                    # high word of MTIME
-                csrrw t6, MTIMECMP, t1          # MTIMECMP low word = MTIME low word
-                csrrw t6, MTIMECMPH, t2         # MTIMECMP high word = MTIME high word
+                la t3, MTIMECMP
+                la t4, MTIMECMPH
+                sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
+                sw t2, 0(t4)         # MTIMECMP high word = MTIME high word
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -163,3 +256,5 @@ cause_timer_interrupt_now:
 
 cause_timer_interrupt_soon:
 
+finished:
+    j done
