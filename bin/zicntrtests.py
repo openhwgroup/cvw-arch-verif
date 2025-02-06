@@ -69,7 +69,14 @@ for i in range(3,32):
 mhpmevents = []
 for i in range(3,32):
     mhpmevents.append("mhpmevent"+ str(i))
-mregs = ["mcycle", "minstret", "mcountinhibit", "mtime", "mcounteren"] + mhpmcounters + mhpmevents
+mhpmcountersh = []
+for i in range(3,32):
+    mhpmcountersh.append("mhpmcounterh"+ str(i))
+mhpmeventsh = []
+for i in range(3,32):
+    mhpmeventsh.append("mhpmeventh"+ str(i))
+
+mregs = ["mcycle", "minstret", "mcountinhibit", "mtime", "mcounteren", "mcycleh", "minstreth"] + mhpmcounters + mhpmevents + mhpmcountersh + mhpmeventsh
 sregs = ["scounteren"] 
 uregs = ["time"]
 
