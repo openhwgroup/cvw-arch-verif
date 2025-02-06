@@ -8,7 +8,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 
-#include "../WALLY-init-lib.h"
+#include "WALLY-init-lib.h"
 
 main:
 
@@ -134,7 +134,7 @@ setendianness:
 1:  
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            csrrc t6, mstatus, s2   # for RV64, clear mstatus.MBE
+            csrrc t6, mstatus, s1   # for RV64, clear mstatus.MBE   
         #elif __riscv_xlen == 32
             csrrc t6, mstatush, s1  # for RV32, clear mstatush.MBE.
         #endif
