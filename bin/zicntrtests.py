@@ -30,6 +30,32 @@ def cntrwalk(pathname, regs):
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tcsrrw t6, "+reg+", s0    # restore csr")
     outfile.close
+def clinttimewalk(pathname):
+    outfile = open(pathname, 'w')
+    sys.stdout = outfile
+    print("#ifdef __riscv_xlen")
+    print("\t #if __riscv_xlen == 64")
+    print("\t\t// Writing walking zeros and ones to CLINT.MTIME address")
+    print("\t\t li t0, 0x02000000\t # load CLINT base address into t0")
+    print("\t\t li t1, 1\t # 1 into lsb")
+    print("\t\t li t2, -1\t # keep 1 register with all 1s")
+    print("\t\t 1: sd t1, 0xBFF8(t0)\t # store value into CLINT.MTIME address")
+    print("\t\t xor t3, t2, t1\t # create the walked 0 at same position as 1")
+    print("\t\t sd t3, 0xBFF8(t0)\t # store walking 0 into CLINT.MTIME")
+    print("\t\t slli t1, t1, 1\t # walk the 1")
+    print("\t\t bnez t1, 1b\t # repeat until all bits are walked")
+    print("\t #elifif __riscv_xlen == 32")
+    print("\t\t// Writing walking zeros and ones to CLINT.MTIME address")
+    print("\t\t li t0, 0x02000000\t # load CLINT base address into t0")
+    print("\t\t li t1, 1\t # 1 into lsb")
+    print("\t\t li t2, -1\t # keep 1 register with all 1s")
+    print("\t\t sw t3, 0xBFF8(t0)\t # store walking 0 into CLINT.MTIME")
+    print("\t\t sw t3, 0xBFF8(t0)\t # store walking 0 into CLINT.MTIME")
+    print("\t\t slli t1, t1, 1\t # walk the 1")
+    print("\t\t bnez t1, 1b\t # repeat until all bits are walked")
+    print("\t#endif")
+    print("#endif")
+    outfile.close
 
 # setup
 seed(0) # make tests reproducible
@@ -51,6 +77,9 @@ ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 cntrwalk(pathname, mregs);
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-CLINTTIME.h"
+clinttimewalk(pathname);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrS-Walk.h"
 cntrwalk(pathname, sregs + uregs+ mregs);
