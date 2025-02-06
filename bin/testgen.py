@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import filecmp
+import math
 
 ##################################
 # functions
@@ -106,6 +107,13 @@ def unsignedImm2(imm):
 
 def unsignedImm1(imm):
   imm = imm % pow(2, 1)
+  return str(imm)
+
+def makeImm(imm, immlen, signed):
+  imm = imm % pow(2,immlen)
+  if signed:
+    if imm & pow(2, immlen-1):
+      imm = imm - pow(2, immlen)
   return str(imm)
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -683,10 +691,10 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
   lines = ""
 
   for testindex, test in enumerate(testlist):
-    if (test in rbtype or test in irtype):
-      return ""  # TODO: AMO, lr/sc not yet supported; Hamza, please add support
+
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
+    immlen = insMap[instype].get('immlen', 12)
 
     if insMap[instype].get('loadstore') == 'load':
       lines += ( test + " " + regconfig[0] + str(registerArray[0][testindex]) +
@@ -703,24 +711,29 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       for regindex, reg in enumerate(regconfiglist[testindex]):
         match reg:
           case 'a':
-              lines += ","*(lines[-1*len(test):] != test) + " (" + 'x' + str(registerArray[regindex][testindex]) + ")"
+              reg = 'x'
+              lines += ","*(lines[-1*len(test):] != test) + " (" + reg + str(registerArray[regindex][testindex]) + ")"
           case 'x' | 'f':
               lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
           case 'i':
             if insMap[instype].get('compressed', 0) != 0:
-              immval = signedImm6(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 6, True)
             elif test == "lui" or test == "auipc":
-              immval = unsignedImm20(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 20, False)
             elif instype in ['shiftiwtype', 'ibwtype']:
-              immval = shiftImm(immvalslist[testindex], 32)
+              immval = makeImm(immvalslist[testindex], 5, False)
             elif instype in ['shiftitype', 'ibtype']:
-              immval = shiftImm(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], int(math.log(xlen,2)), False)
             elif instype == 'flitype':
               immval = flivals[immvalslist[testindex] % 32]
             elif instype in ['csrtype', 'csritype']:
-              immval = unsignedImm5(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 5, False)
+            elif instype in ['rbtype']:
+              immval = makeImm(immvalslist[testindex], immlen, False)
+            elif instype in ['irtype']:
+              immval = str(immvalslist[testindex] % 0xB) # rnum values above 0xA are reserved
             else:
-              immval = signedImm12(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], 12, True)
             lines += ","*(lines[-1*len(test):] != test) + " " + str(immval)
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
@@ -804,13 +817,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       rsblist = [rdb, rs1b, rs2b, rs3b]
       
       lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
-      '''
-      match xlen:
-        case 32:
-          lines += "sw x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
-        case 64:
-          lines += "sd x" + str(rs2b) + ", 0(x" + str(rs2b) + ")\n"
-      '''
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
@@ -1429,6 +1435,11 @@ def make_sbox(test, xlen):
     desc = f"cp_sbox = {sbox}"
     writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
 
+def make_nanbox(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+  desc = "Random test for cp_NaNBox "
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1660,7 +1671,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
     elif (coverpoint.startswith("cp_NaNBox")):
-      pass # doesn't require designated tests
+      make_nanbox(test, xlen)
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
@@ -1733,12 +1744,14 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
       # only look for coverpoints if we are of the proper xlen
       #print("mode: " + str(mode) + " xlen: " + str(xlen) + " " + line)
       if (mode == "both" or mode == xlen):
-        m = re.search(r'cp_asm_count.*\"(.*)"', line)
+        m = re.search(r'covergroup.*?_(.*?)_cg', line)
         if (m):
-          curinstr = m.group(1)
+          curinstr = m.group(1).replace("_", ".")
+          # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
         m = re.search("\s*(\S+) :", line)
         if (m):
+          # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
     # print(coverpoints)
@@ -1919,7 +1932,9 @@ insMap = {
   'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'},
   'amotype' : {'instructions' : amotype, 'regconfig' : 'xxa_'},
   'sctype' : {'instructions' : sctype, 'regconfig' : 'xxa_'},
-  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'}
+  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'},
+  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxxi', 'immlen' : 2, 'signed' : False},
+  'irtype' : {'instructions' : irtype, 'regconfig' : 'xxi_', 'immlen' : 4, 'signed' : False}
 }
 
 if __name__ == '__main__':
@@ -2168,7 +2183,7 @@ if __name__ == '__main__':
           else:
             storecmd = "sd"
             wordsize = 8
-          if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+          if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
             flen = 64
           elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
             flen = 128
