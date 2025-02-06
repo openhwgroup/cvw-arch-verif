@@ -1086,16 +1086,17 @@ def make_rd_corners_lui(test, xlen, corners):
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
 
-def make_cp_gpr_hazard(test, xlen):
+def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
     return
-    '''
-  if findInstype('instructions', test, insMap) == 'csrtype' or findInstype('instructions', test, insMap) == 'csritype':
-    print("Zicsr hazards not yet implemented")
-    return
-    '''
-  for haz in ["nohaz", "raw", "waw", "war"]:
+
+  match haz_class:
+    case 'r': haztypes = ["nohaz", "raw"]
+    case 'w': haztypes = ["nohaz", "waw", "war"]
+    case _: haztypes = ["nohaz", "raw", "waw", "war"]
+
+  for haz in haztypes:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(test, rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
@@ -1606,10 +1607,11 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
-    elif (coverpoint in ["cp_gpr_hazard", "cp_gpr_hazard_r", "cp_gpr_hazard_rw", "cp_gpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint in ["cp_fpr_hazard", "cp_fpr_hazard_r", "cp_fpr_hazard_rw", "cp_fpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
+      haz_class = coverpoint.split('_')[-1] # get the suffix if there is one
+      if haz_class == "hazard": # will only happen if there was no suffix, meaning do both reads and writes
+        haz_class = 'rw'
+      make_cp_gpr_hazard(test, xlen, haz_class)
     elif (coverpoint == "cp_fclass"):
       pass
     elif (coverpoint == "cp_imm_sign"):
