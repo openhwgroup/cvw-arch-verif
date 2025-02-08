@@ -12,10 +12,9 @@
 
 main:
 
-///////////////////////////////// CHANGE CODE LATER !!!!
+///////////////////////////////// 
 // Endianness testing
-// cp_mstatush_mbe_endianness  -> WHERE DOES THIS COME FROM??
-// cp_mstatus_mbe_endianness
+// cp_mstatus_sbe_endianness_*
 //
 // Goal is to store a pattern to a scratch location in memory
 // using each endianness, and stores of every size.  Then
@@ -36,22 +35,22 @@ main:
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
 /////////////////////////////////
-  #1ST COVERPOINT:  Cp_sstatus_sbe_endianness_* !!!
-    # save sstatus
+  #1ST COVERPOINT:  cp_mstatus_sbe_endianness_* !!!
+    # save mstatus
     # prep s1 and s2 with bits to set/clear MBE for RV32/RV64
     # always do both.  One or the other will trap, but this
     # avoids needing separate code for the two architectures
     # code assumes s registers are saved during these tests
     
-    csrr s0, sstatus    # save CSR
+    csrr s0, mstatus    # save CSR
     #setting a trap and invoking a trap handler
     #the trap handler accepts timer interrupts and ecalls
 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            li s1, 0x1000000000       # 1 in bit 36 for mstatus.SBE (Supervisor Big Endian)
+            li s1, 0x1000000000       # 1 in bit 36 for mstatus.SBE 
         #elif __riscv_xlen == 32
-            li s1, 0x10             # 1 in bit 4 for mstatush.SBE  (Supervisor Big Endian)
+            li s1, 0x10             # 1 in bit 4 for mstatush.SBE  
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -124,12 +123,12 @@ endiantest:
     jr s6   # return (return address was stored in s6)
 
 setendianness:
-
-    // if a0 = 1, bigendian, otherwise littleendian
-    beqz a0, 1f      # little endian
+    mv s8, a0
     # Request to switch to Machine mode
     li a0, 3         # a0 = 3, change to Machine mode
     ecall            # Make a system call to enter Machine mode
+    // if a0 = 1, bigendian, otherwise littleendian
+    beqz s0, 1f      # little endian
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrs t6, mstatus, s1   # for RV64, set mstatus.SBE
@@ -140,13 +139,8 @@ setendianness:
         ERROR: __riscv_xlen not defined
     #endif
     # Switch back to Supervisor mode
-    li a0, 1         # a0 = 1, change to Supervisor mode
-    ecall            # Make a system call 
-    ret
+    j change
 1:  
-    # Request to switch to Machine mode
-    li a0, 3         # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrc t6, mstatus, s1   # for RV64, clear mstatus.SBE
@@ -156,6 +150,9 @@ setendianness:
     #else
         ERROR: __riscv_xlen not defined
     #endif
+    j change
+
+change: 
     # Switch back to Supervisor mode
     li a0, 1         # a0 = 1, change to Supervisor mode
     ecall            # Make a system call 
@@ -165,14 +162,14 @@ endianaccess:
     // Try all the accesses to make sure they work for the endianness
      mv a0, s5   # setEndianness(read)
     jal setendianness
-    lb t3, 0(s3)
-    lb t3, 1(s3)
-    lb t3, 2(s3)
-    lb t3, 3(s3)
-    lb t3, 4(s3)
-    lb t3, 5(s3)
-    lb t3, 6(s3)
-    lb t3, 7(s3)
+    lb t3,  0(s3)
+    lb t3,  1(s3)
+    lb t3,  2(s3)
+    lb t3,  3(s3)
+    lb t3,  4(s3)
+    lb t3,  5(s3)
+    lb t3,  6(s3)
+    lb t3,  7(s3)
     lbu t3, 0(s3)
     lbu t3, 1(s3)
     lbu t3, 2(s3)
@@ -181,16 +178,16 @@ endianaccess:
     lbu t3, 5(s3)
     lbu t3, 6(s3)
     lbu t3, 7(s3)
-    lh t3, 0(s3)
-    lh t3, 2(s3)
-    lh t3, 4(s3)
-    lh t3, 6(s3)
+    lh t3,  0(s3)
+    lh t3,  2(s3)
+    lh t3,  4(s3)
+    lh t3,  6(s3)
     lhu t3, 0(s3)
     lhu t3, 2(s3)
     lhu t3, 4(s3)
     lhu t3, 6(s3)
-    lw t3, 0(s3)
-    lw t3, 4(s3)
+    lw t3,  0(s3)
+    lw t3,  4(s3)
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64    
             lwu t3, 0(s3) # long loads for RV64
@@ -207,6 +204,7 @@ postendian:
 
 finished:
     j done
+
 
 
 
