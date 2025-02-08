@@ -24,7 +24,7 @@ main:
 // Saving and restoring from the stack is tricky because the
 // code must work for both RV32 and RV64, and the endianness
 // is constantly changing.  Therefore, we use s6 and s7 for
-// return addresses instead.
+// return addresses instead. 
 //
 // Registers used:
 //   s0: saved value of mstatus
@@ -34,18 +34,17 @@ main:
 //   s5: endianness for read test
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
+//   s8: stored endianess value 
 /////////////////////////////////
-  #1ST COVERPOINT:  cp_mstatus_sbe_endianness_* !!!
+  #1ST COVERPOINT:  cp_mstatus_sbe_endianness_* 
     # save mstatus
-    # prep s1 and s2 with bits to set/clear MBE for RV32/RV64
+    # ecall to move to machine mode since we are operating in supervisor mode
+    # prep s1 with bits to set/clear SBE for RV32/RV64
     # always do both.  One or the other will trap, but this
     # avoids needing separate code for the two architectures
     # code assumes s registers are saved during these tests
     
     csrr s0, mstatus    # save CSR
-    #setting a trap and invoking a trap handler
-    #the trap handler accepts timer interrupts and ecalls
-
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             li s1, 0x1000000000       # 1 in bit 36 for mstatus.SBE 
@@ -58,14 +57,14 @@ main:
     la s3, scratch  # s3 = pointer to scratch
 
     # iterate over each endianness, doing all sizes of stores and loads
-    li s4, 0        # endianness for write
-    li s5, 0        # endianness for read
+    li  s4, 0           # endianness for write
+    li  s5, 0           # endianness for read
     jal s6, endiantest  # test little-endian read and write
-    li s4, 1        # endianness for write
+    li  s4, 1           # endianness for write
     jal s6, endiantest  # test big-endian write, little-endian read
-    li s5, 1        # endianness for read
+    li  s5, 1           # endianness for read
     jal s6, endiantest  # test big-endian read and write
-    li s4, 0        # endianness for write
+    li  s4, 0           # endianness for write
     jal s6, endiantest  # test little-endian write, big-endian read
     j postendian    
 
@@ -128,7 +127,7 @@ setendianness:
     li a0, 3         # a0 = 3, change to Machine mode
     ecall            # Make a system call to enter Machine mode
     // if a0 = 1, bigendian, otherwise littleendian
-    beqz s0, 1f      # little endian
+    beqz s8, 1f      # little endian
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrs t6, mstatus, s1   # for RV64, set mstatus.SBE
@@ -162,32 +161,32 @@ endianaccess:
     // Try all the accesses to make sure they work for the endianness
      mv a0, s5   # setEndianness(read)
     jal setendianness
-    lb t3,  0(s3)
-    lb t3,  1(s3)
-    lb t3,  2(s3)
-    lb t3,  3(s3)
-    lb t3,  4(s3)
-    lb t3,  5(s3)
-    lb t3,  6(s3)
-    lb t3,  7(s3)
-    lbu t3, 0(s3)
-    lbu t3, 1(s3)
-    lbu t3, 2(s3)
-    lbu t3, 3(s3)
-    lbu t3, 4(s3)
-    lbu t3, 5(s3)
-    lbu t3, 6(s3)
-    lbu t3, 7(s3)
-    lh t3,  0(s3)
-    lh t3,  2(s3)
-    lh t3,  4(s3)
-    lh t3,  6(s3)
-    lhu t3, 0(s3)
-    lhu t3, 2(s3)
-    lhu t3, 4(s3)
-    lhu t3, 6(s3)
-    lw t3,  0(s3)
-    lw t3,  4(s3)
+    lb  t3,  0(s3)
+    lb  t3,  1(s3)
+    lb  t3,  2(s3)
+    lb  t3,  3(s3)
+    lb  t3,  4(s3)
+    lb  t3,  5(s3)
+    lb  t3,  6(s3)
+    lb  t3,  7(s3)
+    lbu t3,  0(s3)
+    lbu t3,  1(s3)
+    lbu t3,  2(s3)
+    lbu t3,  3(s3)
+    lbu t3,  4(s3)
+    lbu t3,  5(s3)
+    lbu t3,  6(s3)
+    lbu t3,  7(s3)
+    lh  t3,  0(s3)
+    lh  t3,  2(s3)
+    lh  t3,  4(s3)
+    lh  t3,  6(s3)
+    lhu t3,  0(s3)
+    lhu t3,  2(s3)
+    lhu t3,  4(s3)
+    lhu t3,  6(s3)
+    lw  t3,  0(s3)
+    lw  t3,  4(s3)
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64    
             lwu t3, 0(s3) # long loads for RV64
