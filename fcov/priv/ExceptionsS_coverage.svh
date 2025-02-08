@@ -31,7 +31,7 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
         bins ecall  = {32'h00000073};
     }
     branch: coverpoint ins.current.insn {
-        wildcard bins beq = {32'b???????_?????_?????_???_?????_1100011};
+        wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
     // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
     //       we aught to test this for a sanity check to both of these assumptions
@@ -135,38 +135,55 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_exceptionss_t ins)
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
-    medeleg_instrmisaligned_enabled: coverpoint ins.current.csr[12'h302][0] {
-        bins enabled = {1};
-    }
-    medeleg_instraccessfault_enabled: coverpoint ins.current.csr[12'h302][1] {
-        bins enabled = {1};
-    }
-    medeleg_illegalinstr_enabled: coverpoint ins.current.csr[12'h302][2] {
-        bins enabled = {1};
-    }
-    medeleg_breakpoint_enabled: coverpoint ins.current.csr[12'h302][3] {
-        bins enabled = {1};
-    }
-    medeleg_loadmisaligned_enabled: coverpoint ins.current.csr[12'h302][4] {
-        bins enabled = {1};
-    }
-    medeleg_loadaccessfault_enabled: coverpoint ins.current.csr[12'h302][5] {
-        bins enabled = {1};
-    }
-    medeleg_storemisaligned_enabled: coverpoint ins.current.csr[12'h302][6] {
-        bins enabled = {1};
-    }
-    medeleg_storeaccessfault_enabled: coverpoint ins.current.csr[12'h302][7] {
-        bins enabled = {1};
-    }
-    medeleg_ecallu_enabled: coverpoint ins.current.csr[12'h302][8] {
-        bins enabled = {1};
-    }
-    medeleg_ecalls_enabled: coverpoint ins.current.csr[12'h302][9] {
-        bins enabled = {1};
-    }
-    medeleg_ecallm_enabled: coverpoint ins.current.csr[12'h302][11] {
-        bins enabled = {1};
+    // medeleg_instrmisaligned_enabled: coverpoint ins.current.csr[12'h302][0] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_instraccessfault_enabled: coverpoint ins.current.csr[12'h302][1] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_illegalinstr_enabled: coverpoint ins.current.csr[12'h302][2] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_breakpoint_enabled: coverpoint ins.current.csr[12'h302][3] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_loadmisaligned_enabled: coverpoint ins.current.csr[12'h302][4] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_loadaccessfault_enabled: coverpoint ins.current.csr[12'h302][5] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_storemisaligned_enabled: coverpoint ins.current.csr[12'h302][6] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_storeaccessfault_enabled: coverpoint ins.current.csr[12'h302][7] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_ecallu_enabled: coverpoint ins.current.csr[12'h302][8] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_ecalls_enabled: coverpoint ins.current.csr[12'h302][9] {
+    //     bins enabled = {1};
+    // }
+    // medeleg_ecallm_enabled: coverpoint ins.current.csr[12'h302][11] {
+    //     bins enabled = {1};
+    // }
+    medeleg_walk: coverpoint ins.current.csr[12'h302] {
+        bins zeros                    = {16'b0000_0000_0000_0000};
+        bins instrmisaligned_enabled  = {16'b0000_0000_0000_0001};
+        bins instraccessfault_enabled = {16'b0000_0000_0000_0010};
+        bins illegalinstr_enabled     = {16'b0000_0000_0000_0100};
+        bins breakpoint_enabled       = {16'b0000_0000_0000_1000};
+        bins loadmisaligned_enabled   = {16'b0000_0000_0001_0000};
+        bins loadaccessfault_enabled  = {16'b0000_0000_0010_0000};
+        bins storemisaligned_enabled  = {16'b0000_0000_0100_0000};
+        bins storeaccessfault_enabled = {16'b0000_0000_1000_0000};
+        bins ecallu_enabled           = {16'b0000_0001_0000_0000};
+        bins ecalls_enabled           = {16'b0000_0010_0000_0000};
+        // bins ecallm_enabled
+        // bins 
+        // bins 
+        // TODO: Finish this coverpoint and add to delegation cross products
     }
     mtval_stval_ne: coverpoint {ins.current.csr[12'h343] != ins.current.csr[12'h143]} {
         bins notequal = {1};
