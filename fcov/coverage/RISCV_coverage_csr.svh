@@ -935,6 +935,6 @@ endfunction
 
 
 function int get_csr_addr(int hart, string s);
-  $display("ERROR: SystemVerilog Functional Coverage: get_csr_addr(%0s) not implemented yet", s);
+  // $display("ERROR: SystemVerilog Functional Coverage: get_csr_addr(%0s) not implemented yet", s);
   // $finish(-1);
 endfunction
