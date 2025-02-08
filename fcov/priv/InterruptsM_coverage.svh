@@ -81,7 +81,7 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     }
     mtvec_mode: coverpoint ins.current.csr[12'h305][1:0] {
         bins direct   = {2'b00};
-        bins vectored = {2'b01};
+        bins vector   = {2'b01};
     }
     mtvec_mode_zero: coverpoint ins.current.csr[12'h305][1:0] {
         bins direct   = {2'b00};
