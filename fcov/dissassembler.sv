@@ -93,17 +93,17 @@ module dissassembler #(parameter XLEN = 32) (
       SH:      $sformat(decoded, "sh x%0d, %0d(x%0d)", rs2, immSType, rs1);
       SLL:     $sformat(decoded, "sll x%0d, x%0d, x%0d", rd, rs1, rs2);
       SLLI:      if(XLEN == 64) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm);
-      SLLI_RV32: if(XLEN == 32) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm);
+      SLLI_RV32: if(XLEN == 32) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SLT:     $sformat(decoded, "slt x%0d, x%0d, x%0d", rd, rs1, rs2);
       SLTI:    $sformat(decoded, "slti x%0d, x%0d, %0d", rd, rs1, immIType);
       SLTIU:   $sformat(decoded, "sltiu x%0d, x%0d, %0d", rd, rs1, immIType);
       SLTU:    $sformat(decoded, "sltu x%0d, x%0d, x%0d", rd, rs1, rs2);
       SRA:     $sformat(decoded, "sra x%0d, x%0d, x%0d", rd, rs1, rs2);
       SRAI:      if(XLEN == 64) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm);
-      SRAI_RV32: if(XLEN == 32) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRAI_RV32: if(XLEN == 32) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SRL:     $sformat(decoded, "srl x%0d, x%0d, x%0d", rd, rs1, rs2);
       SRLI:      if(XLEN == 64) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm);
-      SRLI_RV32: if(XLEN == 32) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRLI_RV32: if(XLEN == 32) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SUB:     $sformat(decoded, "sub x%0d, x%0d, x%0d", rd, rs1, rs2);
       SW:      $sformat(decoded, "sw x%0d, %0d(x%0d)", rs2, immSType, rs1);
       WFI:     $sformat(decoded, "wfi");
@@ -115,11 +115,11 @@ module dissassembler #(parameter XLEN = 32) (
       LD:    $sformat(decoded, "ld x%0d, %0d(x%0d)", rd, immIType, rs1);
       LWU:   $sformat(decoded, "lwu x%0d, %0d(x%0d)", rd, immIType, rs1);
       SD:    $sformat(decoded, "sd x%0d, %0d(x%0d)", rs2, immSType, rs1);
-      SLLIW: $sformat(decoded, "slliw x%0d, x%0d, %0d", rd, rs1, uimm);
+      SLLIW: $sformat(decoded, "slliw x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SLLW:  $sformat(decoded, "sllw x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SRAIW: $sformat(decoded, "sraiw x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRAIW: $sformat(decoded, "sraiw x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SRAW:  $sformat(decoded, "sraw x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SRLIW: $sformat(decoded, "srliw x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRLIW: $sformat(decoded, "srliw x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SRLW:  $sformat(decoded, "srlw x%0d, x%0d, x%0d", rd, rs1, rs2);
       SUBW:  $sformat(decoded, "subw x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Supervisor Mode Instructions
@@ -376,7 +376,7 @@ module dissassembler #(parameter XLEN = 32) (
       SH1ADD_UW: $sformat(decoded, "sh1add.uw x%0d, x%0d, x%0d", rd, rs1, rs2);
       SH2ADD_UW: $sformat(decoded, "sh2add.uw x%0d, x%0d, x%0d", rd, rs1, rs2);
       SH3ADD_UW: $sformat(decoded, "sh3add.uw x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SLLI_UW:   $sformat(decoded, "slli.uw x%0d, x%0d, %0d", rd, rs1, uimm);
+      SLLI_UW:   $sformat(decoded, "slli.uw x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       // Zbb Extension
       ANDN:   $sformat(decoded, "andn x%0d, x%0d, x%0d", rd, rs1, rs2);
       CLZ:    $sformat(decoded, "clz x%0d, x%0d", rd, rs1);
@@ -393,7 +393,7 @@ module dissassembler #(parameter XLEN = 32) (
       ROL:    $sformat(decoded, "rol x%0d, x%0d, x%0d", rd, rs1, rs2);
       ROR:    $sformat(decoded, "ror x%0d, x%0d, x%0d", rd, rs1, rs2);
       RORI:      if(XLEN == 64) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm);
-      RORI_RV32: if(XLEN == 32) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm);
+      RORI_RV32: if(XLEN == 32) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       SEXT_B: $sformat(decoded, "sext.b x%0d, x%0d", rd, rs1);
       SEXT_H: $sformat(decoded, "sext.h x%0d, x%0d", rd, rs1);
       XNOR:   $sformat(decoded, "xnor x%0d, x%0d, x%0d", rd, rs1, rs2);
@@ -404,7 +404,7 @@ module dissassembler #(parameter XLEN = 32) (
       CPOPW:  $sformat(decoded, "cpopw x%0d, x%0d", rd, rs1);
       CTZW:   $sformat(decoded, "ctzw x%0d, x%0d", rd, rs1);
       ROLW:   $sformat(decoded, "rolw x%0d, x%0d, x%0d", rd, rs1, rs2);
-      RORIW:  $sformat(decoded, "roriw x%0d, x%0d, %0d", rd, rs1, uimm);
+      RORIW:  $sformat(decoded, "roriw x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       RORW:   $sformat(decoded, "rorw x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Zbc Extension
       CLMUL:  $sformat(decoded, "clmul x%0d, x%0d, x%0d", rd, rs1, rs2);
@@ -413,16 +413,16 @@ module dissassembler #(parameter XLEN = 32) (
       // Zbs Extension
       BCLR:  $sformat(decoded, "bclr x%0d, x%0d x%0d", rd, rs1, rs2);
       BCLRI:      if(XLEN == 64) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm);
-      BCLRI_RV32: if(XLEN == 32) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm);
+      BCLRI_RV32: if(XLEN == 32) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       BEXT:  $sformat(decoded, "bext x%0d, x%0d x%0d", rd, rs1, rs2);
       BEXTI:      if(XLEN == 64) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm);
-      BEXTI_RV32: if(XLEN == 32) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm);
+      BEXTI_RV32: if(XLEN == 32) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       BINV:  $sformat(decoded, "binv x%0d, x%0d x%0d", rd, rs1, rs2);
       BINVI:      if(XLEN == 64) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm);
-      BINVI_RV32: if(XLEN == 32) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm);
+      BINVI_RV32: if(XLEN == 32) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       BSET:  $sformat(decoded, "bset x%0d, x%0d x%0d", rd, rs1, rs2);
       BSETI:      if(XLEN == 64) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
-      BSETI_RV32: if(XLEN == 32) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
+      BSETI_RV32: if(XLEN == 32) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm[4:0]);
       // Zbkb Extension
       BREV8: $sformat(decoded, "brv8 x%0d, x%0d", rd, rs1);
       PACK:  $sformat(decoded, "pack x%0d, x%0d, x%0d", rd, rs1, rs2);
