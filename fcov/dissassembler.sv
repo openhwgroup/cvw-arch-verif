@@ -7,8 +7,8 @@ module dissassembler #(parameter XLEN = 32) (
   import riscv_instr::*;
 
   bit signed [11:0] immIType;
-  bit [11:0] immSType;
-  bit [11:0] immBType;
+  bit signed [11:0] immSType;
+  bit signed [11:0] immBType;
   bit signed [19:0] immUType;
   bit signed [20:0] immJType;
   bit [5:0]  uimm;
@@ -22,9 +22,9 @@ module dissassembler #(parameter XLEN = 32) (
   // Immediate values
   assign immIType = (instr[31:20]);
   assign immSType = ({instr[31:25], instr[11:7]});
-  assign immBType = ({instr[31], instr[7], instr[30:25], instr[11:8]});
+  assign immBType = ({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
   assign immUType = {instr[31:12]};
-  assign immJType = ({instr[31], instr[19:12], instr[20], instr[30:21]});
+  assign immJType = ({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
   assign uimm = instr[25:20];
   assign bs = instr[31:30];
 
