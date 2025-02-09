@@ -13,7 +13,11 @@ module dissassembler #(parameter XLEN = 32) (
   bit [20:0] immJType;
   bit [5:0]  uimm;
   bit [1:0]  bs
-  bit [4:0]  rs1, rs2, rs3, rd;
+
+  bit [4:0] crImm
+
+  bit [4:0]  rs1, rs2, rs3, rd, cr2;
+  bit [2:0]  rs1p, rs2p;
 
   // Immediate values
   assign immIType = (instr[31:20]);
@@ -51,6 +55,9 @@ module dissassembler #(parameter XLEN = 32) (
   assign rs2 = instr[24:20];
   assign rs3 = instr[31:27];
   assign rd  = instr[11:7];
+  assign cr2 = instr[6:2];
+  assign rs1p = instr[9:7];
+  assign rs2p = instr[4:2];
 
   /* verilator lint_off CASEINCOMPLETE */
   always_comb begin
@@ -453,7 +460,23 @@ module dissassembler #(parameter XLEN = 32) (
       AES64KS1I: $sformat(decoded, "aes64ks1i x%0d, x%0d, %0d", rd, rs1, inst[23:20]);
       AES64KS2: $sformat(decoded, "aes64ks2 x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Zknh Extension
-      
+      SHA256SIG0: $sformat(decoded, "sha256sig0 x%0d, x%0d", rd, rs1);
+      SHA256SIG1: $sformat(decoded, "sha256sig1 x%0d, x%0d", rd, rs1);
+      SHA256SUM0: $sformat(decoded, "sha256sum0 x%0d, x%0d", rd, rs1);
+      SHA256SUM1: $sformat(decoded, "sha256sum1 x%0d, x%0d", rd, rs1);
+      // RV32 Only Zknh Extension
+      SHA512SIG0H: $sformat(decoded, "sha512sig0h x%0d, x%0d, x%0d", rd, rs1, rs2);
+      SHA512SIG0L: $sformat(decoded, "sha512sig0l x%0d, x%0d, x%0d", rd, rs1, rs2);
+      SHA512SIG1H: $sformat(decoded, "sha512sig1h x%0d, x%0d, x%0d", rd, rs1, rs2);
+      SHA512SIG1L: $sformat(decoded, "sha512sig1l x%0d, x%0d, x%0d", rd, rs1, rs2);
+      SHA512SUM0R: $sformat(decoded, "sha512sum0r x%0d, x%0d, x%0d", rd, rs1, rs2);
+      SHA512SUM1R: $sformat(decoded, "sha512sum1r x%0d, x%0d, x%0d", rd, rs1, rs2);
+      // RV64 Only Zknh Extension
+      SHA512SIG0: $sformat(decoded, "sha512sig0 x%0d, x%0d", rd, rs1);
+      SHA512SIG1: $sformat(decoded, "sha512sig1 x%0d, x%0d", rd, rs1);
+      SHA512SUM0: $sformat(decoded, "sha512sum0 x%0d, x%0d", rd, rs1);
+      SHA512SUM1: $sformat(decoded, "sha512sum1 x%0d, x%0d", rd, rs1);
+
       default: decoded = "illegal";
     endcase
   end
