@@ -37,9 +37,7 @@ class RISCV_coverage
   `include "coverage/RISCV_coverage_csr.svh"
   `include "coverage/RISCV_coverage_exceptions.svh"
   `include "coverage/RISCV_coverage_hazards.svh"
-
-  // Load which extensions are supported in this configuration (from $WALLY/config/<config>/coverage.svh)
-  `include "coverage.svh"
+  `include "coverage/RISCV_coverage_config.svh"
 
   virtual rvviTrace #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) rvvi;
 
