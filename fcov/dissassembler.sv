@@ -12,9 +12,9 @@ module dissassembler #(parameter XLEN = 32) (
   bit [19:0] immUType;
   bit [20:0] immJType;
   bit [5:0]  uimm;
-  bit [1:0]  bs
+  bit [1:0]  bs;
 
-  bit [4:0] crImm
+  bit [4:0] crImm;
 
   bit [4:0]  rs1, rs2, rs3, rd, cr2;
   bit [2:0]  rs1p, rs2p;
@@ -445,7 +445,7 @@ module dissassembler #(parameter XLEN = 32) (
       XPERM8: $sformat(decoded, "xperm8 x%0d, x%0d, x%0d", rd, rs1, rs2);
       // RV32 Only Zknd Extension
       AES32DSI: $sformat(decoded, "aes32dsi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
-      AE32DSMI: $sformat(decoded, "aes32dsmi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
+      AES32DSMI: $sformat(decoded, "aes32dsmi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
       // RV64 Only Zknd Extension
       AES64DS: $sformat(decoded, "aes64ds x%0d, x%0d, x%0d", rd, rs1, rs2);
       AES64DSM: $sformat(decoded, "aes64dsm x%0d, x%0d, x%0d", rd, rs1, rs2);
@@ -457,7 +457,7 @@ module dissassembler #(parameter XLEN = 32) (
       AES64ES: $sformat(decoded, "aes64es x%0d, x%0d, x%0d", rd, rs1, rs2);
       AES64ESM: $sformat(decoded, "aes64esm x%0d, x%0d, x%0d", rd, rs1, rs2);
       // RV32 Only Zknd OR Zkne Extension
-      AES64KS1I: $sformat(decoded, "aes64ks1i x%0d, x%0d, %0d", rd, rs1, inst[23:20]);
+      AES64KS1I: $sformat(decoded, "aes64ks1i x%0d, x%0d, %0d", rd, rs1, instr[23:20]);
       AES64KS2: $sformat(decoded, "aes64ks2 x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Zknh Extension
       SHA256SIG0: $sformat(decoded, "sha256sig0 x%0d, x%0d", rd, rs1);
