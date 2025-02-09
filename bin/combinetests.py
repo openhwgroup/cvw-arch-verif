@@ -13,6 +13,8 @@ import re
 import sys
 import filecmp
 
+MAXFILESIZE = 5000000
+
 def insertTemplate(out, template):
 	with open(templatedir+"/"+template) as f:
 		out.write(f.read())
@@ -35,19 +37,10 @@ def insertTests(out, file):
 				out.write(line)
 	return int(sigsize)
 
-def combineDir(testdir):
-	files = os.listdir(testdir)
-	fname = testdir+"/WALLY-COV-ALL.S"
-	tempfname = testdir+"/WALLY-COV-ALL_temp.S"
-	with open(tempfname, "w") as out:
-		insertTemplate(out, "testgen_header.S")
-		sigsize = 0
-		for file in files:
-			if (file.endswith(".S") and file != "WALLY-COV-ALL.S" and file != "WALLY-COV-ALL_temp.S"):
-				sigsize = sigsize + insertTests(out, file)
-		# Write the signature size as the sum of the sizes from each file
-		out.write(f".EQU SIGSIZE,{sigsize} #combined\n")
-		insertTemplate(out, "testgen_footer.S")
+def finishFile(out, fname, tempfname, sigsize):
+	out.write(f".EQU SIGSIZE,{sigsize} #combined\n")
+	insertTemplate(out, "testgen_footer.S")
+	out.close()
 	# if new file is different from old file, replace old file with new file
 	if os.path.exists(fname):
 		if filecmp.cmp(fname, tempfname): # files are the same
@@ -57,6 +50,29 @@ def combineDir(testdir):
 			print("Combining "+fname)
 	else:
 		os.system(f"mv {tempfname} {fname}")
+
+def combineDir(testdir):
+	files = os.listdir(testdir)
+	batch = 1
+	fileopen = False
+	sigsize = 0
+	for file in files:
+		if (file.endswith(".S") and not file.startswith("WALLY-COV-ALL")): # .S" and file != "WALLY-COV-ALL_temp.S"):
+			if (not fileopen):
+				fname = f"{testdir}/WALLY-COV-ALL-{batch}.S"
+				tempfname = f"{testdir}/WALLY-COV-ALL-{batch}_temp.S"
+				out = open(tempfname, "w") or die(f"Cannot write file {tempfname}")
+				insertTemplate(out, "testgen_header.S")
+				fileopen = True
+				print(f" opened {tempfname}")
+			sigsize = sigsize + insertTests(out, file)
+			if (os.path.getsize(tempfname) > MAXFILESIZE):
+				finishFile(out, fname, tempfname, sigsize)
+				fileopen = False
+				batch = batch + 1
+				sigsize = 0
+	if fileopen:
+		finishFile(out, fname, tempfname, sigsize)
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
