@@ -408,7 +408,7 @@ class RISCV_instruction
   endfunction
 
   virtual function void add_imm_addr(int offset);
-    current.imm = ops[offset].key.atohex();
+    current.imm = get_imm(ops[offset].key);
   endfunction
 
   virtual function void add_csr(int offset);
