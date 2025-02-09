@@ -6,11 +6,11 @@ module dissassembler #(parameter XLEN = 32) (
 
   import riscv_instr::*;
 
-  bit [11:0] immIType;
+  bit signed [11:0] immIType;
   bit [11:0] immSType;
   bit [11:0] immBType;
-  bit [19:0] immUType;
-  bit [20:0] immJType;
+  bit signed [19:0] immUType;
+  bit signed [20:0] immJType;
   bit [5:0]  uimm;
   bit [1:0]  bs;
 
@@ -28,13 +28,13 @@ module dissassembler #(parameter XLEN = 32) (
   assign uimm = instr[25:20];
   assign bs = instr[31:30];
 
-  int immIType_int;
-  assign immIType_int = $signed({instr[31], instr[31:20]});
-  int immSType_int = $signed({instr[31], instr[31:25], instr[11:7]});
-  int immBType_int = $signed({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
-  int immUType_int;
-  assign immUType_int = $signed({instr[31:12], 12'b0});
-  int immJType_int = $signed({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
+  // int immIType_int;
+  // assign immIType_int = $signed({instr[31], instr[31:20]});
+  // int immSType_int = $signed({instr[31], instr[31:25], instr[11:7]});
+  // int immBType_int = $signed({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
+  // int immUType_int;
+  // assign immUType_int = $signed({instr[31:12], 12'b0});
+  // int immJType_int = $signed({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
 
   
   // always_comb begin
@@ -92,17 +92,17 @@ module dissassembler #(parameter XLEN = 32) (
       SB:      $sformat(decoded, "sb x%0d, %0d(x%0d)", rs2, immSType, rs1);
       SH:      $sformat(decoded, "sh x%0d, %0d(x%0d)", rs2, immSType, rs1);
       SLL:     $sformat(decoded, "sll x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SLLI:    if(XLEN == 64) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm);
+      SLLI:      if(XLEN == 64) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm);
       SLLI_RV32: if(XLEN == 32) $sformat(decoded, "slli x%0d, x%0d, %0d", rd, rs1, uimm);
       SLT:     $sformat(decoded, "slt x%0d, x%0d, x%0d", rd, rs1, rs2);
       SLTI:    $sformat(decoded, "slti x%0d, x%0d, %0d", rd, rs1, immIType);
       SLTIU:   $sformat(decoded, "sltiu x%0d, x%0d, %0d", rd, rs1, immIType);
       SLTU:    $sformat(decoded, "sltu x%0d, x%0d, x%0d", rd, rs1, rs2);
       SRA:     $sformat(decoded, "sra x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SRAI:    if(XLEN == 64) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRAI:      if(XLEN == 64) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm);
       SRAI_RV32: if(XLEN == 32) $sformat(decoded, "srai x%0d, x%0d, %0d", rd, rs1, uimm);
       SRL:     $sformat(decoded, "srl x%0d, x%0d, x%0d", rd, rs1, rs2);
-      SRLI:    if(XLEN == 64) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm);
+      SRLI:      if(XLEN == 64) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm);
       SRLI_RV32: if(XLEN == 32) $sformat(decoded, "srli x%0d, x%0d, %0d", rd, rs1, uimm);
       SUB:     $sformat(decoded, "sub x%0d, x%0d, x%0d", rd, rs1, rs2);
       SW:      $sformat(decoded, "sw x%0d, %0d(x%0d)", rs2, immSType, rs1);
@@ -148,14 +148,14 @@ module dissassembler #(parameter XLEN = 32) (
       // Zifencei Extension
       FENCE_I: $sformat(decoded, "fence.i");
       // M Extension
-      MUL:  $sformat(decoded, "mul x%0d, x%0d, x%0d", rd, rs1, rs2);
-      MULH: $sformat(decoded, "mulh x%0d, x%0d, x%0d", rd, rs1, rs2);
+      MUL:    $sformat(decoded, "mul x%0d, x%0d, x%0d", rd, rs1, rs2);
+      MULH:   $sformat(decoded, "mulh x%0d, x%0d, x%0d", rd, rs1, rs2);
       MULHSU: $sformat(decoded, "mulhsu x%0d, x%0d, x%0d", rd, rs1, rs2);
-      MULHU: $sformat(decoded, "mulhu x%0d, x%0d, x%0d", rd, rs1, rs2);
-      DIV:  $sformat(decoded, "div x%0d, x%0d, x%0d", rd, rs1, rs2);
-      DIVU: $sformat(decoded, "divu x%0d, x%0d, x%0d", rd, rs1, rs2);
-      REM:  $sformat(decoded, "rem x%0d, x%0d, x%0d", rd, rs1, rs2);
-      REMU: $sformat(decoded, "remu x%0d, x%0d, x%0d", rd, rs1, rs2);
+      MULHU:  $sformat(decoded, "mulhu x%0d, x%0d, x%0d", rd, rs1, rs2);
+      DIV:    $sformat(decoded, "div x%0d, x%0d, x%0d", rd, rs1, rs2);
+      DIVU:   $sformat(decoded, "divu x%0d, x%0d, x%0d", rd, rs1, rs2);
+      REM:    $sformat(decoded, "rem x%0d, x%0d, x%0d", rd, rs1, rs2);
+      REMU:   $sformat(decoded, "remu x%0d, x%0d, x%0d", rd, rs1, rs2);
       // RV64 Only M Extension Instructions
       MULW:  $sformat(decoded, "mulw x%0d, x%0d, x%0d", rd, rs1, rs2);
       DIVW:  $sformat(decoded, "divw x%0d, x%0d, x%0d", rd, rs1, rs2);
@@ -209,18 +209,10 @@ module dissassembler #(parameter XLEN = 32) (
       FMV_X_W:   $sformat(decoded, "fmv.x.w x%0d, f%0d", rd, rs1);
       FNMADD_S:  $sformat(decoded, "fnmadd.s f%0d, f%0d, f%0d, f%0d", rd, rs1, rs2, rs3);
       FNMSUB_S:  $sformat(decoded, "fnmsub.s f%0d, f%0d, f%0d, f%0d", rd, rs1, rs2, rs3);
-      // FRCSR:     $sformat(decoded, "");
-      // FRFLAGS:   $sformat(decoded, "");
-      // FRRM:      $sformat(decoded, "");
-      // FSCSR:     $sformat(decoded, "");
-      // FSFLAGS:   $sformat(decoded, "");
-      // FSFLAGSI:  $sformat(decoded, "");
       FSGNJ_S:   $sformat(decoded, "fsgnj.s f%0d, f%0d, f%0d", rd, rs1, rs2);
       FSGNJN_S:  $sformat(decoded, "fsgnjn.s f%0d, f%0d, f%0d", rd, rs1, rs2);
       FSGNJX_S:  $sformat(decoded, "fsgnjx.s f%0d, f%0d, f%0d", rd, rs1, rs2);
       FSQRT_S:   $sformat(decoded, "fsqrt.s f%0d, f%0d", rd, rs1);
-      // FSRM:      $sformat(decoded, "");
-      // FSRMI:     $sformat(decoded, ""); TODO: What is this??
       FSUB_S:    $sformat(decoded, "fsub.s f%0d, f%0d, f%0d", rd, rs1, rs2);
       FSW:       $sformat(decoded, "fsw f%0d, %0d(x%0d)", rs2, immSType, rs1);
       // RV64 Only F Extension Instructions
@@ -396,16 +388,16 @@ module dissassembler #(parameter XLEN = 32) (
       MINU:   $sformat(decoded, "minu x%0d, x%0d, x%0d", rd, rs1, rs2);
       ORC_B:  $sformat(decoded, "orc.b x%0d, x%0d", rd, rs1);
       ORN:    $sformat(decoded, "orn x%0d, x%0d, x%0d", rd, rs1, rs2);
-      REV8:   if(XLEN == 64) $sformat(decoded, "rev8 x%0d, x%0d", rd, rs1);
+      REV8:      if(XLEN == 64) $sformat(decoded, "rev8 x%0d, x%0d", rd, rs1);
       REV8_RV32: if(XLEN == 32) $sformat(decoded, "rev8 x%0d, x%0d", rd, rs1);
       ROL:    $sformat(decoded, "rol x%0d, x%0d, x%0d", rd, rs1, rs2);
       ROR:    $sformat(decoded, "ror x%0d, x%0d, x%0d", rd, rs1, rs2);
-      RORI:   if(XLEN == 64) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm);
+      RORI:      if(XLEN == 64) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm);
       RORI_RV32: if(XLEN == 32) $sformat(decoded, "rori x%0d, x%0d, %0d", rd, rs1, uimm);
       SEXT_B: $sformat(decoded, "sext.b x%0d, x%0d", rd, rs1);
       SEXT_H: $sformat(decoded, "sext.h x%0d, x%0d", rd, rs1);
       XNOR:   $sformat(decoded, "xnor x%0d, x%0d, x%0d", rd, rs1, rs2);
-      ZEXT_H: if(XLEN == 64) $sformat(decoded, "zext.h x%0d, x%0d", rd, rs1);
+      ZEXT_H:      if(XLEN == 64) $sformat(decoded, "zext.h x%0d, x%0d", rd, rs1);
       ZEXT_H_RV32: if(XLEN == 32) $sformat(decoded, "zext.h x%0d, x%0d", rd, rs1);
       // RV64 Only Zbb Extension Instructions
       CLZW:   $sformat(decoded, "clzw x%0d, x%0d", rd, rs1);
@@ -420,16 +412,16 @@ module dissassembler #(parameter XLEN = 32) (
       CLMULR: $sformat(decoded, "clmulr x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Zbs Extension
       BCLR:  $sformat(decoded, "bclr x%0d, x%0d x%0d", rd, rs1, rs2);
-      BCLRI: if(XLEN == 64) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm);
+      BCLRI:      if(XLEN == 64) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm);
       BCLRI_RV32: if(XLEN == 32) $sformat(decoded, "bclri x%0d, x%0d, %0d", rd, rs1, uimm);
       BEXT:  $sformat(decoded, "bext x%0d, x%0d x%0d", rd, rs1, rs2);
-      BEXTI: if(XLEN == 64) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm);
+      BEXTI:      if(XLEN == 64) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm);
       BEXTI_RV32: if(XLEN == 32) $sformat(decoded, "bexti x%0d, x%0d, %0d", rd, rs1, uimm);
       BINV:  $sformat(decoded, "binv x%0d, x%0d x%0d", rd, rs1, rs2);
-      BINVI: if(XLEN == 64) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm);
+      BINVI:      if(XLEN == 64) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm);
       BINVI_RV32: if(XLEN == 32) $sformat(decoded, "binvi x%0d, x%0d, %0d", rd, rs1, uimm);
       BSET:  $sformat(decoded, "bset x%0d, x%0d x%0d", rd, rs1, rs2);
-      BSETI: if(XLEN == 64) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
+      BSETI:      if(XLEN == 64) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
       BSETI_RV32: if(XLEN == 32) $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
       // Zbkb Extension
       BREV8: $sformat(decoded, "brv8 x%0d, x%0d", rd, rs1);
@@ -444,21 +436,21 @@ module dissassembler #(parameter XLEN = 32) (
       XPERM4: $sformat(decoded, "xperm4 x%0d, x%0d, x%0d", rd, rs1, rs2);
       XPERM8: $sformat(decoded, "xperm8 x%0d, x%0d, x%0d", rd, rs1, rs2);
       // RV32 Only Zknd Extension
-      AES32DSI: $sformat(decoded, "aes32dsi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
+      AES32DSI:  $sformat(decoded, "aes32dsi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
       AES32DSMI: $sformat(decoded, "aes32dsmi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
       // RV64 Only Zknd Extension
-      AES64DS: $sformat(decoded, "aes64ds x%0d, x%0d, x%0d", rd, rs1, rs2);
+      AES64DS:  $sformat(decoded, "aes64ds x%0d, x%0d, x%0d", rd, rs1, rs2);
       AES64DSM: $sformat(decoded, "aes64dsm x%0d, x%0d, x%0d", rd, rs1, rs2);
-      AES64IM: $sformat(decoded, "aes64im x%0d, x%0d", rd, rs1);
+      AES64IM:  $sformat(decoded, "aes64im x%0d, x%0d", rd, rs1);
       // RV32 Only Zkne Extension
-      AES32ESI: $sformat(decoded, "aes32esi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
+      AES32ESI:  $sformat(decoded, "aes32esi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
       AES32ESMI: $sformat(decoded, "aes32esmi x%0d, x%0d, x%0d, %0d", rd, rs1, rs2, bs);
       // RV64 Only Zkne Extension
-      AES64ES: $sformat(decoded, "aes64es x%0d, x%0d, x%0d", rd, rs1, rs2);
+      AES64ES:  $sformat(decoded, "aes64es x%0d, x%0d, x%0d", rd, rs1, rs2);
       AES64ESM: $sformat(decoded, "aes64esm x%0d, x%0d, x%0d", rd, rs1, rs2);
       // RV32 Only Zknd OR Zkne Extension
       AES64KS1I: $sformat(decoded, "aes64ks1i x%0d, x%0d, %0d", rd, rs1, instr[23:20]);
-      AES64KS2: $sformat(decoded, "aes64ks2 x%0d, x%0d, x%0d", rd, rs1, rs2);
+      AES64KS2:  $sformat(decoded, "aes64ks2 x%0d, x%0d, x%0d", rd, rs1, rs2);
       // Zknh Extension
       SHA256SIG0: $sformat(decoded, "sha256sig0 x%0d, x%0d", rd, rs1);
       SHA256SIG1: $sformat(decoded, "sha256sig1 x%0d, x%0d", rd, rs1);
