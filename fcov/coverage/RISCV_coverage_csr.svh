@@ -81,7 +81,6 @@ typedef enum {
 
 function int get_csr_val(int hart, int issue, int prev, string name, string field);
   int addr = get_csr_addr(hart, name);
-  $display("Attempting get_csr_val: %s--%s", name, field);
   return get_csr_val_addr(hart, issue, prev, addr, name, field);
 endfunction
 
