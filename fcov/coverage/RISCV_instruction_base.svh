@@ -331,12 +331,6 @@ class RISCV_instruction
     endcase
   endfunction
 
-  function int get_csr_addr(int hart, string s);
-    // $display("ERROR: SystemVerilog Functional Coverage: get_csr_addr(%0s) not implemented yet", s);
-    // $finish(-1);
-    // return 32'h3; //return rvviRefCsrIndex(hart, s); TODO: Implement CSR address lookup
-  endfunction
-
   // Assign operands to appropriate instruction fields in riscvTraceData (registers, immediates, CSRs, etc.)
   virtual function void add_rd(int offset);
     current.has_rd = 1;
@@ -412,7 +406,6 @@ class RISCV_instruction
   endfunction
 
   virtual function void add_csr(int offset);
-    // $display("Attempting add_csr(%0s)", ops[offset].key);
     current.imm2 = get_csr_addr(current.hart, ops[offset].key);
   endfunction
 
