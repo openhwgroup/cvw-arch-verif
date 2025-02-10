@@ -551,7 +551,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
-    lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n";
+    # Determine where to store
+    if (lockstep):
+      lines = lines + "la sp" + ", scratch" + " # base address \n"
+      lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
+    else:
+      lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in csbtype + cshtype):
@@ -2156,13 +2161,13 @@ if __name__ == '__main__':
 
   # generate files for each test\
   #for lockstep in [False, True]:
-  for lockstep in [False]: # for testing only ***
+  for lockstep in [True]: # for testing only ***
     if (lockstep):
-      #subdir = "lockstep"
-      subdir = "signature" # temporary for testing
+      subdir = "lockstep"
+      #subdir = "signature" # temporary for testing
     else:
-      #subdir = "signature"
-      subdir = "lockstep" # temporary for testing
+      subdir = "signature"
+      #subdir = "lockstep" # temporary for testing
     for xlen in xlens:
       corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
