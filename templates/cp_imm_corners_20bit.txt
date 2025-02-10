@@ -1,4 +1,4 @@
-    cp_imm_corners_20bit : coverpoint unsigned'(ins.current.imm)  iff (ins.trap == 0 )  {
+    cp_imm_corners_20bit : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
         //Imm Corners
         bins zero  = {0};
         bins p0    = {1};
@@ -23,8 +23,8 @@
         bins p18   = {262144};
         bins halfm2 = {524286};
         bins halfm1 = {524287};
-        bins half   = {524288};
-        bins palfp1 = {524289};
-        bins maxm1  = {1048574};
-        bins max    = {1048575};
+        bins n1     = {-1};
+        bins n2     = {-2};
+        bins minp1_2  = {-524287};
+        bins min_2    = {-524288};
     }
