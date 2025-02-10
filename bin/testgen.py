@@ -318,6 +318,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 9 # change to arbitrary other register
     elif (test == "c.addiw" and rd == 0):
       rd = 1
+    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
@@ -386,7 +387,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = writeJumpTest(lines, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
   elif (test in catype):
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    # lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
+    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd,rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) +", x" + str(rs2) + " # perform operation\n")
   elif (test in cbptype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+" # initialize rd'\n"
@@ -1086,16 +1087,17 @@ def make_rd_corners_lui(test, xlen, corners):
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
 
-def make_cp_gpr_hazard(test, xlen):
+def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
     return
-    '''
-  if findInstype('instructions', test, insMap) == 'csrtype' or findInstype('instructions', test, insMap) == 'csritype':
-    print("Zicsr hazards not yet implemented")
-    return
-    '''
-  for haz in ["nohaz", "raw", "waw", "war"]:
+
+  match haz_class:
+    case 'r': haztypes = ["nohaz", "raw"]
+    case 'w': haztypes = ["nohaz", "waw", "war"]
+    case _: haztypes = ["nohaz", "raw", "waw", "war"]
+
+  for haz in haztypes:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(test, rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
@@ -1596,6 +1598,9 @@ def write_tests(coverpoints, test, xlen):
       make_cp_imm_corners(test, xlen, corners_imm_20bit)
     elif (coverpoint == "cp_imm_corners_6bit"):
       make_cp_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cp_imm_corners_c"):
+      pass # handled by cr_rs1_imm_corners
+      # make_cp_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cp_imm_corners_jal"):
       make_imm_corners_jal(test, xlen)
     elif (coverpoint == "cp_imm_corners_c_jal"):
@@ -1604,12 +1609,15 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cr_rs1_imm_corners_c"):
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
-    elif (coverpoint in ["cp_gpr_hazard", "cp_gpr_hazard_r", "cp_gpr_hazard_rw", "cp_gpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint in ["cp_fpr_hazard", "cp_fpr_hazard_r", "cp_fpr_hazard_rw", "cp_fpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
+      haz_class = coverpoint.split('_')[-1] # get the suffix if there is one
+      if haz_class == "hazard": # will only happen if there was no suffix, meaning do both reads and writes
+        haz_class = 'rw'
+      make_cp_gpr_hazard(test, xlen, haz_class)
     elif (coverpoint == "cp_fclass"):
       pass
     elif (coverpoint == "cp_imm_sign"):
@@ -1995,6 +2003,8 @@ if __name__ == '__main__':
   corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                     0b101010, 0b010101, 0b010110]
   corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+  corners_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
+  corners_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
   corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                     0b00000000000000000001000000000000,0b01001010111000100000000000000000]
   c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
@@ -2156,6 +2166,7 @@ if __name__ == '__main__':
       #subdir = "signature"
       subdir = "lockstep" # temporary for testing
     for xlen in xlens:
+      corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
       for E_ext in [False]: # for testing only ***
         if (E_ext):
