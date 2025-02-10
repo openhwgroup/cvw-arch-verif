@@ -156,12 +156,12 @@ function string disassemble (logic [31:0] instr);
     CZERO_EQZ: $sformat(decoded, "czero.eqz %s, %s, %s", rd, rs1, rs2);
     CZERO_NEZ: $sformat(decoded, "czero.nez %s, %s, %s", rd, rs1, rs2);
     // Zicsr Extension
-    CSRRW:  $sformat(decoded, "csrrw %s, %0d, %s", rd, immIType, rs1);
-    CSRRS:  $sformat(decoded, "csrrs %s, %0d, %s", rd, immIType, rs1);
-    CSRRC:  $sformat(decoded, "csrrc %s, %0d, %s", rd, immIType, rs1);
-    CSRRWI: $sformat(decoded, "csrrwi %s, %0d, %0d", rd, immIType, rs1);
-    CSRRSI: $sformat(decoded, "csrrsi %s, %0d, %0d", rd, immIType, rs1);
-    CSRRCI: $sformat(decoded, "csrrci %s, %0d, %0d", rd, immIType, rs1);
+    CSRRW:  $sformat(decoded, "csrrw %s, %0d, %s", rd, get_csr_name(immIType), rs1);
+    CSRRS:  $sformat(decoded, "csrrs %s, %0d, %s", rd, get_csr_name(immIType), rs1);
+    CSRRC:  $sformat(decoded, "csrrc %s, %0d, %s", rd, get_csr_name(immIType), rs1);
+    CSRRWI: $sformat(decoded, "csrrwi %s, %0d, %0d", rd, get_csr_name(immIType), rs1);
+    CSRRSI: $sformat(decoded, "csrrsi %s, %0d, %0d", rd, get_csr_name(immIType), rs1);
+    CSRRCI: $sformat(decoded, "csrrci %s, %0d, %0d", rd, get_csr_name(immIType), rs1);
     // Zifencei Extension
     FENCE_I: $sformat(decoded, "fence.i");
     // M Extension
