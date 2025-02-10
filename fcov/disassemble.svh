@@ -19,13 +19,13 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`include "riscv_instr.svh"
+`include "coverage/RISCV_decode_pkg.svh"
 
 function string disassemble (logic [31:0] instr);
 
   string decoded;
 
-  import riscv_instr::*;
+  import RISCV_decode_pkg::*;
 
   bit signed [11:0] immIType;
   bit signed [11:0] immSType;
