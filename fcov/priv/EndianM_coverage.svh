@@ -51,13 +51,16 @@ covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
     cp_lbu: coverpoint ins.current.insn {
         wildcard bins lbu = {32'b????????????_?????_100_?????_0000011}; 
     }
-    cp_byteoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000) {
+    cp_byteoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
         // all byte offsets
     }
-    cp_halfoffset: coverpoint ins.current.imm[2:1] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[0] == 1'b0)  {
+    cp_halfoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
+        wildcard ignore_bins lsb = {3'b??1};
         // all halfword offsets
     }    
-    cp_wordoffset: coverpoint ins.current.imm[2] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[1:0] == 2'b00)  {
+    cp_wordoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
+        wildcard ignore_bins b0 = {3'b??1}; 
+        wildcard ignore_bins b2 = {3'b?1?}; 
         // all word offsets
     }    
     `ifdef XLEN64
