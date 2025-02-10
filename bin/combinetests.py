@@ -64,7 +64,7 @@ def combineDir(testdir):
 				out = open(tempfname, "w") or die(f"Cannot write file {tempfname}")
 				insertTemplate(out, "testgen_header.S")
 				fileopen = True
-				print(f" opened {tempfname}")
+				#print(f" opened {tempfname}")
 			sigsize = sigsize + insertTests(out, file)
 			if (os.path.getsize(tempfname) > MAXFILESIZE):
 				finishFile(out, fname, tempfname, sigsize)
