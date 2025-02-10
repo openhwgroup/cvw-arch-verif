@@ -440,7 +440,7 @@ function string disassemble (logic [31:0] instr);
     BSETI:      $sformat(decoded, "bseti x%0d, x%0d, %0d", rd, rs1, uimm);
   `endif
     // Zbkb Extension
-    BREV8: $sformat(decoded, "brv8 x%0d, x%0d", rd, rs1);
+    BREV8: $sformat(decoded, "brev8 x%0d, x%0d", rd, rs1);
     PACK:  $sformat(decoded, "pack x%0d, x%0d, x%0d", rd, rs1, rs2);
     PACKH: $sformat(decoded, "packh x%0d, x%0d, x%0d", rd, rs1, rs2);
   `ifdef XLEN32
