@@ -440,11 +440,14 @@ postendian2:
     csrr s0, sstatus    # save CSR
     #ifdef __riscv_xlen
         li s1, 0x40       # 1 in bit 6 for mstatus.SBE  
+
+        #  TO DO: !!!!!
         # #if __riscv_xlen == 64
         #     li s1, 0x40       # 1 in bit 6 for mstatus.SBE  
         # #elif __riscv_xlen == 32
         #     li s1, 0x40               # 1 in bit 6 for mstatush.SBE  
         # #endif
+
     #else
         ERROR: __riscv_xlen not defined
     #endif
@@ -521,12 +524,15 @@ setendianness3:
     // if a0 = 1, bigendian, otherwise littleendian
     beqz s8, 1f      # little endian
     #ifdef __riscv_xlen
-        csrrs t6, sstatus, s1   # for RV64, set sstatus.UBE
+        csrrs t6, sstatus, s1   # set sstatus.UBE
+
+          #  TO DO: !!!!!
         # #if __riscv_xlen == 64
         #     csrrs t6, sstatus, s1   # for RV64, set sstatus.UBE
         # #elif __riscv_xlen == 32
         #     csrrs t6, sstatus, s1  # for RV32, set sstatus.UBE
         # #endif
+
     #else
         ERROR: __riscv_xlen not defined
     #endif
@@ -534,12 +540,15 @@ setendianness3:
     j change3
 1:  
     #ifdef __riscv_xlen
-        csrrc t6, sstatus, s1   # for RV64, clear sstatus.UBE
+        csrrc t6, sstatus, s1   # clear sstatus.UBE
+
+        #  TO DO: !!!!!
         # #if __riscv_xlen == 64
         #     csrrc t6, sstatus, s1   # for RV64, clear sstatus.UBE
         # #elif __riscv_xlen == 32
         #     csrrc t6, sstatus, s1  # for RV32, clear sstatus.UBE
         # #endif
+
     #else
         ERROR: __riscv_xlen not defined
     #endif
@@ -593,11 +602,6 @@ endianaccess3:
     jr s7   # return (return address was stored in s7)
 postendian3: 
     csrrw t6, sstatus, s0    # restore CSR
-
-
-
-
-
 
 
 
