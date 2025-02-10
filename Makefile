@@ -4,20 +4,22 @@
 MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
-TESTDIR		 := tests/lockstep
-SELFCHECKDIR := tests/selfchecking
-SIGDIR       := tests/signature
-SRCDIR64   := $(TESTDIR)/rv64
-SRCDIR32   := $(TESTDIR)/rv32
+TESTDIR		   := tests
+LOCKSTEPDIR  := $(TESTDIR)/lockstep
+SELFCHECKDIR := $(TESTDIR)/selfchecking
+SIGDIR       := $(TESTDIR)/signature
+SRCDIR64     := $(LOCKSTEPDIR)/rv64
+SRCDIR32     := $(LOCKSTEPDIR)/rv32
 SRCSELFCHECKDIR64   := $(SELFCHECKDIR)/rv64
 SRCSELFCHECKDIR32   := $(SELFCHECKDIR)/rv32
-PRIVDIR    := $(TESTDIR)/priv
-PRIVDIR64  := $(PRIVDIR)/rv64
-PRIVDIR32  := $(PRIVDIR)/rv32
-WORK       := work
-SRCEXT     := S
-OBJEXT     := elf
-SIGEXT     := elf.signature
+PRIVDIR        := $(LOCKSTEPDIR)/priv
+PRIVHEADERSDIR := $(PRIVDIR)/headers
+PRIVDIR64      := $(PRIVDIR)/rv64
+PRIVDIR32      := $(PRIVDIR)/rv32
+WORK           := work
+SRCEXT         := S
+OBJEXT         := elf
+SIGEXT         := elf.signature
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -27,13 +29,13 @@ RV32PRIVOBJECTS = $(RV32PRIV:.$(SRCEXT)=.$(OBJEXT))
 RV64PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR64)/%)
 RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
-#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
-UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT))
+UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
+#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT)) # temporarily disable until we need signatures for signature/self-checking
 UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
-# Add headers for priv tests here. They will all be prepended with PRIVDIR
+# Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
-# See $(PRIVDIR)/Zicsr-CSR-Tests.h for an example
+# See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
 PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
@@ -56,18 +58,19 @@ covergroupgen: bin/covergroupgen.py
 
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
-	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
-	rm -rf ${TESTDIR}/*/Zaamo ${TESTDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
+	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
+#	rm -rf ${LOCKSTEPDIR}/*/Zaamo ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
+	rm -rf ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail because they load from x0; temporarily remove until fixed
 	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
 	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
-$(PRIVDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py
+$(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 
-$(PRIVDIR)/ExceptionInstr-Tests.h $(PRIVDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py
+$(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/illegalinstrtests.py
 
 # This code is added especially for running VM SV32 tests
@@ -96,11 +99,11 @@ CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
 MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
-SAIL = $(if $(findstring 64, $*),riscv_sim_RV64,riscv_sim_RV32)
+SAIL = riscv_sim_rv$(BITWIDTH)d
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
-PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVDIR)/, $(PRIV_HEADERS))
+PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVHEADERSDIR)/, $(PRIV_HEADERS))
 EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
@@ -109,7 +112,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -T$(TESTDIR)/../link.ld $<
+    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -125,12 +128,12 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Run tests while collecting functional coverage
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	#wsim rv32gc $(TESTDIR)/priv/rv32/ExceptionsInstr.elf --fcov
-	#wsim rv32gc $(TESTDIR)/priv/rv32/ZicsrM.elf --fcov
+	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ExceptionsInstr.elf --fcov
+	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
-	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
-	#wsim rv64gc $(TESTDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
-	#wsim rv32gc $(TESTDIR)/rv32/M/WALLY-COV-div.elf --fcov
+	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
+	#wsim rv64gc $(LOCKSTEPDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
+	#wsim rv32gc $(LOCKSTEPDIR)/rv32/M/WALLY-COV-div.elf --fcov
 	$(MAKE) merge
 
 # Merge coverage files and generate report
@@ -139,13 +142,12 @@ merge: $(WORK)
 	bin/coverreport.py
 
 # Create directories
-$(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
+$(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
 	@mkdir -p $@
 
 clean:
 	rm -rf fcov/unpriv/*
-	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
-	rm -rf ${PRIVDIR}/*.h
+	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf $(SELFCHECKDIR)/*
 	rm -rf $(SIGDIR)/*
 

@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import filecmp
+import math
 
 ##################################
 # functions
@@ -106,6 +107,13 @@ def unsignedImm2(imm):
 
 def unsignedImm1(imm):
   imm = imm % pow(2, 1)
+  return str(imm)
+
+def makeImm(imm, immlen, signed):
+  imm = imm % pow(2,immlen)
+  if signed:
+    if imm & pow(2, immlen-1):
+      imm = imm - pow(2, immlen)
   return str(imm)
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -270,7 +278,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     rs1val = rs1val + 2**xlen
   if (rs2val < 0):
     rs2val = rs2val + 2**xlen
-  lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed\n" # doesn't seem necessary
+  # lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rd to a random value that should get changed\n" # doesn't seem necessary
   if (test in rtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
@@ -310,6 +318,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 9 # change to arbitrary other register
     elif (test == "c.addiw" and rd == 0):
       rd = 1
+    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
@@ -378,7 +387,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = writeJumpTest(lines, 1, rs1, xlen, jumpline) # rd = 1 for compressed jumps
   elif (test in catype):
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd to a random value that should get changed\n"
+    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val) + " # initialize rd,rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) +", x" + str(rs2) + " # perform operation\n")
   elif (test in cbptype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval)+" # initialize rd'\n"
@@ -405,7 +414,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in ibwtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n")
-  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"] *** update to use constant memory
+  elif (test in amotype): 
+    storeop = "sw" if (xlen == 32) else "sd"
+    lines = lines + f"li x{rs2}, {formatstr.format(rs1val)} # load random value\n"
+    lines = lines + f"la x{rs1}, scratch # base address\n"
+    lines = lines + f"{storeop} x{rs2}, 0(x{rs1}) # store in memory\n"
+    if (rs2 != rs1):
+      lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load another value into integer register\n"
+    lines = lines + f"{test} x{rd}, x{rs2}, (x{rs1}) # perform operation\n"
+  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]  # *** update to use constant memory
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
@@ -675,10 +692,10 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
   lines = ""
 
   for testindex, test in enumerate(testlist):
-    if (test in amotype or test in sctype or test in lrtype or test in rbtype or test in irtype):
-      return ""  # TODO: AMO, lr/sc not yet supported; Hamza, please add support
+
     instype = findInstype('instructions', test, insMap)
     regconfig = regconfiglist[testindex]
+    immlen = insMap[instype].get('immlen', 12)
 
     if insMap[instype].get('loadstore') == 'load':
       lines += ( test + " " + regconfig[0] + str(registerArray[0][testindex]) +
@@ -694,23 +711,30 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
       lines += test
       for regindex, reg in enumerate(regconfiglist[testindex]):
         match reg:
+          case 'a':
+              reg = 'x'
+              lines += ","*(lines[-1*len(test):] != test) + " (" + reg + str(registerArray[regindex][testindex]) + ")"
           case 'x' | 'f':
-            lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
+              lines += ","*(lines[-1*len(test):] != test) + " " + reg + str(registerArray[regindex][testindex])
           case 'i':
             if insMap[instype].get('compressed', 0) != 0:
-              immval = signedImm6(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 6, True)
             elif test == "lui" or test == "auipc":
-              immval = unsignedImm20(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 20, False)
             elif instype in ['shiftiwtype', 'ibwtype']:
-              immval = shiftImm(immvalslist[testindex], 32)
+              immval = makeImm(immvalslist[testindex], 5, False)
             elif instype in ['shiftitype', 'ibtype']:
-              immval = shiftImm(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], int(math.log(xlen,2)), False)
             elif instype == 'flitype':
               immval = flivals[immvalslist[testindex] % 32]
             elif instype in ['csrtype', 'csritype']:
-              immval = unsignedImm5(immvalslist[testindex])
+              immval = makeImm(immvalslist[testindex], 5, False)
+            elif instype in ['rbtype']:
+              immval = makeImm(immvalslist[testindex], immlen, False)
+            elif instype in ['irtype']:
+              immval = str(immvalslist[testindex] % 0xB) # rnum values above 0xA are reserved
             else:
-              immval = signedImm12(immvalslist[testindex], xlen)
+              immval = makeImm(immvalslist[testindex], 12, True)
             lines += ","*(lines[-1*len(test):] != test) + " " + str(immval)
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
@@ -755,7 +779,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
   ins2type = findInstype('instructions', testa, insMap)
   regconfig2 = insMap[ins2type].get('regconfig','xxx_')
 
-  if test in jalrtype:
+  if testb in jalrtype:
     if haz_type != "raw":
       lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
       immvalb = 0
@@ -783,10 +807,18 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
   else:
 
-    if test in fstype + fltype + stype + loaditype:
+    if insMap[instype].get('loadstore', 0) != 0:
       lines += "la " + regconfig[1] + str(rs1b) + ", scratch\n"
       lines += "addi " + 2*(regconfig[1] + str(rs1b) + ", ") + str(signedImm12(-immvalb)) + "\n"
       if haz_type != "war":
+        rs1a = rda
+        rs2a = 0
+
+    if 'a' in regconfig:
+      rsblist = [rdb, rs1b, rs2b, rs3b]
+      
+      lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
+      if haz_type == "raw":
         rs1a = rda
         rs2a = 0
 
@@ -825,7 +857,7 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
         regsB = [rdb, rs1b, rs2b, rs3b]
 
     case "waw":
-      while (set(regsA[1:]) & set(regsB[1:])):
+      while (set(regsA) & set(regsB)):
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
       regsB[0] = regsA[0]
@@ -953,11 +985,11 @@ def make_rd_rs1(test, xlen, rng):
 def make_rd_rs2(test, xlen, rng):
   for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cmp_rd_rs2 (Test rd = rs1 = x" + str(r) + ")"
+    desc = "cmp_rd_rs2 (Test rd = rs2 = x" + str(r) + ")"
     writeCovVector(desc, rs1, r, r, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rd_rs1_rs2(test, xlen):
-  for r in range(maxreg+1):
+def make_rd_rs1_rs2(test, xlen, rng):
+  for r in rng:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     desc = "cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, r, rs1val, rs2val, immval, rdval, test, xlen)
@@ -1055,16 +1087,17 @@ def make_rd_corners_lui(test, xlen, corners):
     desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
 
-def make_cp_gpr_hazard(test, xlen):
+def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
     return
-    '''
-  if findInstype('instructions', test, insMap) == 'csrtype' or findInstype('instructions', test, insMap) == 'csritype':
-    print("Zicsr hazards not yet implemented")
-    return
-    '''
-  for haz in ["nohaz", "raw", "waw", "war"]:
+
+  match haz_class:
+    case 'r': haztypes = ["nohaz", "raw"]
+    case 'w': haztypes = ["nohaz", "waw", "war"]
+    case _: haztypes = ["nohaz", "raw", "waw", "war"]
+
+  for haz in haztypes:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(test, rs3=True)
       [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
@@ -1404,6 +1437,11 @@ def make_sbox(test, xlen):
     desc = f"cp_sbox = {sbox}"
     writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
 
+def make_nanbox(test, xlen):
+  [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+  desc = "Random test for cp_NaNBox "
+  writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1499,7 +1537,9 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cmp_rd_rs2_c"):
       make_rd_rs2(test, xlen, range(8, 16))
     elif (coverpoint == "cmp_rd_rs1_rs2"):
-      make_rd_rs1_rs2(test, xlen)
+      make_rd_rs1_rs2(test, xlen, range(maxreg+1))
+    elif (coverpoint == "cmp_rd_rs1_rs2_nx0"):
+      make_rd_rs1_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2"):
       make_rs1_rs2(test, xlen, range(maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2_nx0"):
@@ -1558,6 +1598,9 @@ def write_tests(coverpoints, test, xlen):
       make_cp_imm_corners(test, xlen, corners_imm_20bit)
     elif (coverpoint == "cp_imm_corners_6bit"):
       make_cp_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cp_imm_corners_c"):
+      pass # handled by cr_rs1_imm_corners
+      # make_cp_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cp_imm_corners_jal"):
       make_imm_corners_jal(test, xlen)
     elif (coverpoint == "cp_imm_corners_c_jal"):
@@ -1566,12 +1609,15 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cr_rs1_imm_corners_c"):
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_corners
-    elif (coverpoint in ["cp_gpr_hazard", "cp_gpr_hazard_r", "cp_gpr_hazard_rw", "cp_gpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
-    elif (coverpoint in ["cp_fpr_hazard", "cp_fpr_hazard_r", "cp_fpr_hazard_rw", "cp_fpr_hazard_w"]):
-      make_cp_gpr_hazard(test, xlen)
+    elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
+      haz_class = coverpoint.split('_')[-1] # get the suffix if there is one
+      if haz_class == "hazard": # will only happen if there was no suffix, meaning do both reads and writes
+        haz_class = 'rw'
+      make_cp_gpr_hazard(test, xlen, haz_class)
     elif (coverpoint == "cp_fclass"):
       pass
     elif (coverpoint == "cp_imm_sign"):
@@ -1633,7 +1679,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_csr_frm"):
       pass # already covered by cp_frm tests
     elif (coverpoint.startswith("cp_NaNBox")):
-      pass # doesn't require designated tests
+      make_nanbox(test, xlen)
     elif (coverpoint == "cp_rs1_fli"):
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
@@ -1706,12 +1752,14 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
       # only look for coverpoints if we are of the proper xlen
       #print("mode: " + str(mode) + " xlen: " + str(xlen) + " " + line)
       if (mode == "both" or mode == xlen):
-        m = re.search(r'cp_asm_count.*\"(.*)"', line)
+        m = re.search(r'covergroup.*?_(.*?)_cg', line)
         if (m):
-          curinstr = m.group(1)
+          curinstr = m.group(1).replace("_", ".")
+          # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
         m = re.search("\s*(\S+) :", line)
         if (m):
+          # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
     # print(coverpoints)
@@ -1827,24 +1875,10 @@ flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "
 csrtype = ["csrrw", "csrrs", "csrrc"]
 csritype = ["csrrwi", "csrrsi", "csrrci"]
 
-floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype
-# instructions with all float args
-regconfig_ffff = frtype + fr4type + fitype + flitype
-# instructions with int first arg and the rest float args
-regconfig_xfff = F2Xtype + fcomptype + fixtype
-# instructions with fp first arg and the rest int args
-regconfig_fxxx = X2Ftype + PX2Ftype
+floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
 global hazardLabel
 hazardLabel = 1
-
-# for writeHazardVectors
-rd_rs1_rs2_format = rtype + frtype + fcomptype + PX2Ftype
-rd_rs1_imm_format = shiftitype + shiftiwtype + itype + utype + shiftwtype
-rd_rs1_rs2_rs3_format = fr4type
-rd_rs1_format = F2Xtype + X2Ftype + fitype + fixtype + crtype + catype + cutype
-rd_imm_format = citype + cstype + ciwtype + cbptype
-
 
 insMap = {
   # 'loadstore': whether a function is a load or store, leave empty for neither
@@ -1903,7 +1937,12 @@ insMap = {
   'zcdtype' : {'instructions' : zcdtype, 'regconfig' : 'uuuu'},
   'flitype' : {'instructions' : flitype, 'regconfig' : 'fi__'},
   'csrtype' : {'instructions' : csrtype, 'regconfig' : 'xcx_'},
-  'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'}
+  'csritype' : {'instructions' : csritype, 'regconfig' : 'xci_'},
+  'amotype' : {'instructions' : amotype, 'regconfig' : 'xxa_'},
+  'sctype' : {'instructions' : sctype, 'regconfig' : 'xxa_'},
+  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xa__'},
+  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxxi', 'immlen' : 2, 'signed' : False},
+  'irtype' : {'instructions' : irtype, 'regconfig' : 'xxi_', 'immlen' : 4, 'signed' : False}
 }
 
 if __name__ == '__main__':
@@ -1964,6 +2003,8 @@ if __name__ == '__main__':
   corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                     0b101010, 0b010101, 0b010110]
   corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+  corners_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
+  corners_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
   corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                     0b00000000000000000001000000000000,0b01001010111000100000000000000000]
   c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
@@ -2125,6 +2166,7 @@ if __name__ == '__main__':
       #subdir = "signature"
       subdir = "lockstep" # temporary for testing
     for xlen in xlens:
+      corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
       for E_ext in [False]: # for testing only ***
         if (E_ext):
@@ -2152,7 +2194,7 @@ if __name__ == '__main__':
           else:
             storecmd = "sd"
             wordsize = 8
-          if (extension in ["D", "ZfaD", "ZfhD","Zcd"]):
+          if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
             flen = 64
           elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
             flen = 128
