@@ -28,17 +28,24 @@ function string disassemble (logic [31:0] instr);
 
   string decoded;
 
-  // Register names
+  // Register
+  automatic bit [4:0] rs1Bits = instr[19:15];
+  automatic bit [4:0] rs2Bits = instr[24:20];
+  automatic bit [4:0] rdBits  = instr[11:7];
+  automatic bit [4:0] crs2Bits = instr[6:2];
   automatic string rs1 = get_gpr_name(instr[19:15]);
   automatic string rs2 = get_gpr_name(instr[24:20]);
   automatic string rd  = get_gpr_name(instr[11:7]);
-  automatic string cr2 = get_gpr_name(instr[6:2]);
+  automatic string crs2 = get_gpr_name(instr[6:2]);
   automatic string rs1p = get_c_gpr_name(instr[9:7]);
   automatic string rs2p = get_c_gpr_name(instr[4:2]);
   automatic string fs1 = get_fpr_name(instr[19:15]);
   automatic string fs2 = get_fpr_name(instr[24:20]);
   automatic string fs3 = get_fpr_name(instr[31:27]);
   automatic string fd  = get_fpr_name(instr[11:7]);
+  automatic string cfs2 = get_fpr_name(instr[6:2]);
+  automatic string fs1p = get_c_fpr_name(instr[9:7]);
+  automatic string fs2p = get_c_fpr_name(instr[4:2]);
 
   // Immediates
   automatic bit signed [11:0] immIType = (instr[31:20]);
@@ -46,9 +53,24 @@ function string disassemble (logic [31:0] instr);
   automatic bit signed [12:0] immBType = ({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
   automatic bit signed [19:0] immUType = {instr[31:12]};
   automatic bit signed [20:0] immJType = ({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
-  automatic bit [5:0]  uimm = instr[25:20];
-  automatic bit [1:0]  bs  = instr[31:30];
-  automatic bit [4:0] crImm;
+  automatic bit [5:0] uimm = instr[25:20];
+  automatic bit [1:0] bs  = instr[31:30];
+
+  // Compressed immediates
+  automatic bit signed [5:0] immCIType = {instr[12], instr[6:2]};
+  automatic bit        [7:0] immCILSPType = {instr[3:2], instr[12], instr[6:4], 2'b00};
+  automatic bit        [8:0] immCILSPDType = {instr[4:2], instr[12], instr[6:5], 3'b000};
+  automatic bit        [9:0] immCIASPType = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
+  automatic bit        [9:0] immCIWType = {instr[10:7], instr[12:11], instr[5], instr[6], 2'b0};
+  automatic bit        [8:0] immCSSDType = {instr[9:7], instr[12:10], 3'b0};
+  automatic bit        [6:0] immCLSType = {instr[5], instr[12:10], instr[6], 2'b0};
+  automatic bit        [7:0] immCLSDType = {instr[6:5], instr[12:10], 3'b0};
+  automatic bit        [1:0] immCLSHType = {instr[5], 1'b0};
+  automatic bit        [1:0] immCLSBType = {instr[5], instr[6]};
+  automatic bit signed [8:0] immCBType = {instr[12], instr[6:5], instr[2], instr[11:10], instr[4:3], 1'b0};
+  automatic bit        [5:0] immCBpType = {instr[12], instr[6:2]};
+  automatic bit signed [11:0] immCJType = {instr[12], instr[8], instr[10:9], instr[6], instr[7], instr[2], instr[11], instr[5:3], 1'b0};
+  automatic bit        [8:0] immCSSType = {instr[8:7], instr[12:9], 2'b0};
 
   // Other fields
   automatic bit [2:0]  frm = instr[14:12];
@@ -67,7 +89,10 @@ function string disassemble (logic [31:0] instr);
     SLL:     $sformat(decoded, "sll %s, %s, %s", rd, rs1, rs2);
     SRL:     $sformat(decoded, "srl %s, %s, %s", rd, rs1, rs2);
     SRA:     $sformat(decoded, "sra %s, %s, %s", rd, rs1, rs2);
-    ADDI:    $sformat(decoded, "addi %s, %s, %0d", rd, rs1, immIType);
+    ADDI:    begin
+      $display("IN ADDI WITH INSTR %b", instr);
+    $sformat(decoded, "addi %s, %s, %0d", rd, rs1, immIType);
+    end
     ANDI:    $sformat(decoded, "andi %s, %s, %0d", rd, rs1, immIType);
     ORI:     $sformat(decoded, "ori %s, %s, %0d", rd, rs1, immIType);
     XORI:    $sformat(decoded, "xori %s, %s, %0d", rd, rs1, immIType);
@@ -466,7 +491,7 @@ function string disassemble (logic [31:0] instr);
     AES64ESM: $sformat(decoded, "aes64esm %s, %s, %s", rd, rs1, rs2);
   `endif
     // Zknd OR Zkne Extension
-  `ifdef XLEN32
+  `ifdef XLEN64
     AES64KS1I: $sformat(decoded, "aes64ks1i %s, %s, %0d", rd, rs1, instr[23:20]);
     AES64KS2:  $sformat(decoded, "aes64ks2 %s, %s, %s", rd, rs1, rs2);
   `endif
@@ -488,6 +513,71 @@ function string disassemble (logic [31:0] instr);
     SHA512SUM0: $sformat(decoded, "sha512sum0 %s, %s", rd, rs1);
     SHA512SUM1: $sformat(decoded, "sha512sum1 %s, %s", rd, rs1);
   `endif
+    // Zca Extension
+    C_ADDI4SPN: if(immCIWType != '0) $sformat(decoded, "c.addi4spn %s, sp, %0d", rs2p, immCIWType);
+    C_LW:                             $sformat(decoded, "c.lw %s, %0d(%s)", rs2p, immCLSType, rs1p);
+    C_SW:                             $sformat(decoded, "c.sw %s, %0d(%s)", rs2p, immCLSType, rs1p);
+    C_NOP: if(rdBits == '0 & immCIType == '0) $sformat(decoded, "c.nop");
+    C_ADDI: if(rdBits != '0 & immIType != '0) $sformat(decoded, "c.addi %s, %0d", rd, immCIType);
+    C_LI:   if(rdBits != '0) $sformat(decoded, "c.li %s, %0d", rd, immCIType);
+    C_LUI:  if(rdBits != '0 & rdBits != 5'd2 & immCIType != '0) $sformat(decoded, "c.lui %s, %0d", rd, immCIType);
+    C_ADDI16SP: if(rdBits == 5'd2 & immCIASPType != '0) $sformat(decoded, "c.addi16sp, sp, %0d", immCIASPType);
+    C_SRLI: $sformat(decoded, "c.srli %s, %0d", rs1p, immCBpType);
+    C_SRAI: $sformat(decoded, "c.srai %s, %0d", rs1p, immCBpType);
+    C_ANDI: $sformat(decoded, "c.andi %s, %0d", rs1p, $signed(immCBpType));
+    C_SUB:  $sformat(decoded, "c.sub %s, %s", rs1p, rs2p);
+    C_XOR:  $sformat(decoded, "c.xor %s, %s", rs1p, rs2p);
+    C_OR:   $sformat(decoded, "c.or %s, %s", rs1p, rs2p);
+    C_AND:  $sformat(decoded, "c.and %s, %s", rs1p, rs2p);
+    C_J:    $sformat(decoded, "c.j %0d", immCJType);
+    C_BEQZ: $sformat(decoded, "c.beqz %s, %0d", rs1p, immCBType);
+    C_BNEZ: $sformat(decoded, "c.bnez %s, %0d", rs1p, immCBType);
+    C_SLLI: if(rdBits != '0) $sformat(decoded, "c.slli %s, %0d", rd, immCIType);
+    C_LWSP: if(rdBits != '0) $sformat(decoded, "c.lwsp %s, %0d", rd, immCILSPType);
+    C_JR:   if(rdBits != '0 & crs2Bits == '0) $sformat(decoded, "c.jr %s", rd);
+    C_MV:   if(rdBits != '0 & crs2Bits != '0) $sformat(decoded, "c.mv %s, %s", rd, crs2);
+    C_EBREAK: if(rdBits == '0 & crs2Bits == '0) $sformat(decoded, "c.ebreak");
+    C_JALR: if(rdBits != '0 & crs2Bits == '0) $sformat(decoded, "c.jalr %s", rd);
+    C_ADD:  if(rdBits != '0 & crs2Bits != '0) $sformat(decoded, "c.add %s, %s", rd, crs2);
+    C_SWSP: $sformat(decoded, "c.swsp %s, %0d", crs2, immCSSType);
+  `ifdef XLEN32
+    C_JAL:  $sformat(decoded, "c.jal %0d", immCJType);
+  `else // XLEN64
+    C_LD:   $sformat(decoded, "c.ld %s, %0d(%s)", rs2p, immCLSDType, rs1p);
+    C_SD:   $sformat(decoded, "c.sd %s, %0d(%s)", rs2p, immCLSDType, rs1p);
+    C_ADDIW: if(rdBits != '0) $sformat(decoded, "c.addiw %s, %0d", rd, immCIType);
+    C_SUBW:  $sformat(decoded, "c.subw %s, %s", rs1p, rs2p);
+    C_ADDW:  $sformat(decoded, "c.addw %s, %s", rs1p, rs2p);
+    C_LDSP:  if(rdBits != '0) $sformat(decoded, "c.ldsp %s, %0d", rd, immCILSPDType);
+    C_SDSP:  $sformat(decoded, "c.sdsp %s, %0d", crs2, immCSSDType);
+  `endif
+    // Zcb Extension
+    C_LBU: $sformat(decoded, "c.lbu %s, %0d(%s)", rs2p, immCLSBType, rs1p);
+    C_LH:  $sformat(decoded, "c.lh %s, %0d(%s)", rs2p, immCLSHType, rs1p);
+    C_LHU: $sformat(decoded, "c.lhu %s, %0d(%s)", rs2p, immCLSHType, rs1p);
+    C_SB:  $sformat(decoded, "c.sb %s, %0d(%s)", rs2p, immCLSBType, rs1p);
+    C_SH:  $sformat(decoded, "c.sh %s, %0d(%s)", rs2p, immCLSHType, rs1p);
+    C_ZEXT_B: $sformat(decoded, "c.zext.b %s", rs1p);
+    C_SEXT_B: $sformat(decoded, "c.sext.b %s", rs1p);
+    C_ZEXT_H: $sformat(decoded, "c.zext.h %s", rs1p);
+    C_SEXT_H: $sformat(decoded, "c.sext.h %s", rs1p);
+    C_NOT:    $sformat(decoded, "c.not %s", rs1p);
+    C_MUL:   $sformat(decoded, "c.mul %s, %s", rs1p, rs2p);
+  `ifdef XLEN64
+    C_ZEXT_W: $sformat(decoded, "c.zext.w %s", rs1p);
+  `endif
+    // Zcf Extension
+  `ifdef XLEN32
+    C_FLW:  $sformat(decoded, "c.flw %s, %0d(%s)", fs2p, immCLSType, rs1p);
+    C_FSW:  $sformat(decoded, "c.fsw %s, %0d(%s)", fs2p, immCLSType, rs1p);
+    C_FLWSP: $sformat(decoded, "c.flwsp %s, %0d", fd, immCILSPType);
+    C_FSWSP: $sformat(decoded, "c.fswsp %s, %0d", cfs2, immCSSType);
+  `endif
+    // Zcd Extension
+    C_FLD:  $sformat(decoded, "c.fld %s, %0d(%s)", fs2p, immCLSDType, rs1p);
+    C_FSD:  $sformat(decoded, "c.fsd %s, %0d(%s)", fs2p, immCLSDType, rs1p);
+    C_FLDSP: $sformat(decoded, "c.fldsp %s, %0d", fd, immCILSPDType);
+    C_FSDSP: $sformat(decoded, "c.fsdsp %s, %0d", cfs2, immCSSDType);
     default: decoded = "illegal";
   endcase
   return decoded;
