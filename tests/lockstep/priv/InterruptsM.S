@@ -37,7 +37,7 @@ main:
 /////////////////////////////////
 // cp_trigger_mti
 /////////////////////////////////
-
+cp_trigger_mti:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
@@ -46,6 +46,9 @@ main:
     jal cause_timer_interrupt_now
     jal reset_timer_compare # reset mtimecmp to avoid premature interrupt in next test
 
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     jal cause_timer_interrupt_now # expecting timer interrupt, so interrupt handler will reset mtimecmp
@@ -53,7 +56,7 @@ main:
 /////////////////////////////////
 // cp_trigger_msi
 /////////////////////////////////
-
+cp_trigger_msi:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
@@ -62,6 +65,9 @@ main:
     jal set_msip
     jal reset_msip          # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
 
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     jal set_msip            # set mip.MSIP, expect interrupt
@@ -69,13 +75,16 @@ main:
 /////////////////////////////////
 // cp_trigger_mei
 /////////////////////////////////
-
+cp_trigger_mei:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     jal cause_external_interrupt
+
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
@@ -84,7 +93,7 @@ main:
 /////////////////////////////////
 // cp_trigger_sti
 /////////////////////////////////
-
+cp_trigger_sti:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
@@ -92,16 +101,21 @@ main:
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     li t0, 32               # 1 in bit 5
     csrrs t6, mip, t0
-    csrrc t6, mip, t0       # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
+    csrrc t6, mip, t0       # reset mip.STIP since the trap handler will not reset it if no interrupt occurs
+
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
+    li t0, 32               # 1 in bit 5
     csrrs t6, mip, t0       # set mip.STIP, expect interrupt
+    nop
 
 /////////////////////////////////
 // cp_trigger_ssi
 /////////////////////////////////
-
+cp_trigger_ssi:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
@@ -111,14 +125,18 @@ main:
     csrrsi t6, mip, 2
     csrrci t6, mip, 2       # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
 
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     csrrsi t6, mip, 2       # set mip.SEIP, expect interrupt
+    nop
 
 /////////////////////////////////
 // cp_trigger_sei
 /////////////////////////////////
-
+cp_trigger_sei:
     li t0, -1               # all 1s
     csrrw t6, mie, t0       # enable all interrupts
 
@@ -128,10 +146,15 @@ main:
     csrrs t6, mip, t0       # set mip.SEIP
     csrrc t6, mip, t0       # reset mip.SEIP since the trap handler will not reset it if no interrupt occurs
 
+    li t0, -1               # all 1s
+    csrrw t6, mie, t0       # enable all interrupts
+
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
+    li t0, 512              # 1 in bit 9
     csrrs t6, mip, t0       # set mip.SEIP, expect interrupt
-
+    nop
+    
     j done
 
 set_msip:
@@ -139,6 +162,7 @@ set_msip:
     lw t1, 0(t0) 
     ori t1, t1, 1 # set lowest bit for hart 0
     sw t1, 0(t0)
+    nop
 
     ret
 
@@ -182,6 +206,7 @@ cause_external_interrupt:
     sw t1, 0x28(t0) # enable high interrupt for pin 1
     sw t1, 0x08(t0) # enable output on pin 1
     sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
+    nop
 
     ret
 
@@ -220,4 +245,6 @@ cause_timer_interrupt_now:
     #else
         ERROR: __riscv_xlen not defined
     #endif
+    nop
+
     ret

@@ -105,8 +105,18 @@ interrupt:              # must be a timer interrupt
     #else
         ERROR: __riscv_xlen not defined
     #endif
+
+    la t0, 0x02000000 # clears msoftware interrupt
+    lw t1, 0(t0) 
+    andi t1, t1, -2 # set lowest bit for hart 0
+    sw t1, 0(t0)
+
     li t0, 32
     csrc sip, t0        # clears stimer interrupt
+    csrc mip, t0        # clears mtimer interrupt
+    csrrci t6, mip, 2   # clears ssoftware interrupt
+    li t0, 512
+    csrrc t6, mip, t0 # clears sexternal interrupt
     j trap_return       # clean up and return
 
 exception:
