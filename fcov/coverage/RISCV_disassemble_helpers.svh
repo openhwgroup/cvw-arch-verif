@@ -195,8 +195,8 @@ function string get_frm_string(int key);
     3'b100: return "rmm";
     3'b111: return "dyn";
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_frm_string(%0d) not found frm", key);
-          $finish(-1);
+          $display("SystemVerilog Functional Coverage: invalid rounding mode: %0d", key);
+          return $sformatf("rm%0d", key); // return rounding mode number for invalid values for coverage purposes
       end
   endcase
 endfunction
