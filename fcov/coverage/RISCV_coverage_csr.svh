@@ -79,12 +79,12 @@ typedef enum {
   vxrm
 } csr_name_t;
 
-function int get_csr_val(int hart, int issue, int prev, string name, string field);
+function int get_csr_val(int hart, int issue, int prev, string name, string field); // maybe should be `XLEN_INT
   int addr = get_csr_addr(hart, name);
   return get_csr_val_addr(hart, issue, prev, addr, name, field);
 endfunction
 
-function int get_csr_val_addr(int hart, int issue, int prev, int addr, string name, string field);
+function int get_csr_val_addr(int hart, int issue, int prev, int addr, string name, string field); // maybe should be `XLEN_INT
 
   int val;
   val = traceDataQ[hart][issue][prev].csr[addr];
