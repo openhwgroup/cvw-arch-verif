@@ -11,26 +11,6 @@ from random import seed
 import os, sys
 from os import environ
 
-def cntrwalk(pathname, regs):
-    outfile = open(pathname, 'w')
-    sys.stdout = outfile
-    for reg in regs:
-        print("\n// Testing walking zeros and ones for csr "+reg)
-        print("\tcsrr s0, "+reg+"\t# save csr")
-        print("\tli t1, -1           # all 1s")
-        print("\tli t0, 1            # 1 in lsb")
-        print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
-        print("\tcsrrs t6, "+reg+", t0    # set walking 1")
-        print("\tslli t0, t0, 1      # walk the 1")
-        print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print("\tli t0, 1            # 1 in lsb")
-        print("1:  csrrs t6, "+reg+", t1    # set all bits")
-        print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
-        print("\tslli t0, t0, 1      # walk the 1")
-        print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print("\tcsrrw t6, "+reg+", s0    # restore csr")
-    outfile.close
-
 def clinttimewalk(pathname):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
