@@ -60,7 +60,7 @@ function string disassemble (logic [31:0] instr);
   automatic bit signed [5:0] immCIType = {instr[12], instr[6:2]};
   automatic bit        [7:0] immCILSPType = {instr[3:2], instr[12], instr[6:4], 2'b00};
   automatic bit        [8:0] immCILSPDType = {instr[4:2], instr[12], instr[6:5], 3'b000};
-  automatic bit        [9:0] immCIASPType = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
+  automatic bit signed [9:0] immCIASPType = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
   automatic bit        [9:0] immCIWType = {instr[10:7], instr[12:11], instr[5], instr[6], 2'b0};
   automatic bit        [8:0] immCSSDType = {instr[9:7], instr[12:10], 3'b0};
   automatic bit        [6:0] immCLSType = {instr[5], instr[12:10], instr[6], 2'b0};
@@ -76,7 +76,6 @@ function string disassemble (logic [31:0] instr);
   automatic bit [2:0]  frm = instr[14:12];
   automatic string csr = get_csr_name(instr[31:20]);
 
-  /* verilator lint_off CASEINCOMPLETE */
   casez (instr)
     // Base Instructions
     ADD:     $sformat(decoded, "add %s, %s, %s", rd, rs1, rs2);
@@ -89,10 +88,7 @@ function string disassemble (logic [31:0] instr);
     SLL:     $sformat(decoded, "sll %s, %s, %s", rd, rs1, rs2);
     SRL:     $sformat(decoded, "srl %s, %s, %s", rd, rs1, rs2);
     SRA:     $sformat(decoded, "sra %s, %s, %s", rd, rs1, rs2);
-    ADDI:    begin
-      $display("IN ADDI WITH INSTR %b", instr);
-    $sformat(decoded, "addi %s, %s, %0d", rd, rs1, immIType);
-    end
+    ADDI:    $sformat(decoded, "addi %s, %s, %0d", rd, rs1, immIType);
     ANDI:    $sformat(decoded, "andi %s, %s, %0d", rd, rs1, immIType);
     ORI:     $sformat(decoded, "ori %s, %s, %0d", rd, rs1, immIType);
     XORI:    $sformat(decoded, "xori %s, %s, %0d", rd, rs1, immIType);
@@ -518,10 +514,10 @@ function string disassemble (logic [31:0] instr);
     C_LW:                             $sformat(decoded, "c.lw %s, %0d(%s)", rs2p, immCLSType, rs1p);
     C_SW:                             $sformat(decoded, "c.sw %s, %0d(%s)", rs2p, immCLSType, rs1p);
     C_NOP: if(rdBits == '0 & immCIType == '0) $sformat(decoded, "c.nop");
-    C_ADDI: if(rdBits != '0 & immIType != '0) $sformat(decoded, "c.addi %s, %0d", rd, immCIType);
+    C_ADDI: if(rdBits != '0 & immCIType != '0) $sformat(decoded, "c.addi %s, %0d", rd, immCIType);
     C_LI:   if(rdBits != '0) $sformat(decoded, "c.li %s, %0d", rd, immCIType);
-    C_LUI:  if(rdBits != '0 & rdBits != 5'd2 & immCIType != '0) $sformat(decoded, "c.lui %s, %0d", rd, immCIType);
-    C_ADDI16SP: if(rdBits == 5'd2 & immCIASPType != '0) $sformat(decoded, "c.addi16sp, sp, %0d", immCIASPType);
+    C_ADDI16SP: if(rdBits == 5'd2 & immCIASPType != '0) $sformat(decoded, "c.addi16sp sp, %0d", immCIASPType);
+    C_LUI: if(rdBits != '0 & rdBits != 5'd2 & immCIType != '0) $sformat(decoded, "c.lui %s, %0d", rd, immCIType);
     C_SRLI: $sformat(decoded, "c.srli %s, %0d", rs1p, immCBpType);
     C_SRAI: $sformat(decoded, "c.srai %s, %0d", rs1p, immCBpType);
     C_ANDI: $sformat(decoded, "c.andi %s, %0d", rs1p, $signed(immCBpType));
