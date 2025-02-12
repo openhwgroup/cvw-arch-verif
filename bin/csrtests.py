@@ -17,22 +17,44 @@ from os import environ
 def csrwalk(pathname, regs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
+
     for reg in regs:
-        print("\n// Testing walking zeros and ones for CSR "+reg)
-        print("\tcsrr s0, "+reg+"\t# save CSR")
-        print("\tli t1, -1           # all 1s")
-        print("\tli t0, 1            # 1 in lsb")
-        print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
-        print("\tcsrrs t6, "+reg+", t0    # set walking 1")
-        print("\tslli t0, t0, 1      # walk the 1")
-        print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print("\tli t0, 1            # 1 in lsb")
-        print("1:  csrrs t6, "+reg+", t1    # set all bits")
-        print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
-        print("\tslli t0, t0, 1      # walk the 1")
-        print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print("\tcsrrw t6, "+reg+", s0    # restore CSR")
-    outfile.close
+        # handles RV32-specific registers only for RV32
+        if reg in cntrmregs32:
+            print("\n// Testing walking zeros and ones for RV32-specific CSR " + reg)
+            print("#if __riscv_xlen == 32")
+            print("\tcsrr s0, " + reg + "\t# save csr")
+            print("\tli t1, -1           # all 1s")
+            print("\tli t0, 1            # 1 in lsb")
+            print("\t1: csrrc t6, " + reg + ", t1    # clear all bits")
+            print("\tcsrrs t6, " + reg + ", t0    # set walking 1")
+            print("\tslli t0, t0, 1      # walk the 1")
+            print("\tbnez t0, 1b         # repeat until all bits are walked")
+            print("\tli t0, 1            # 1 in lsb")
+            print("1:  csrrs t6, " + reg + ", t1    # set all bits")
+            print("\tcsrrc t6, " + reg + ", t0    # clear walking 1")
+            print("\tslli t0, t0, 1      # walk the 1")
+            print("\tbnez t0, 1b         # repeat until all bits are walked")
+            print("\tcsrrw t6, " + reg + ", s0    # restore csr")
+            print("#endif")
+        # handles general registers (tested for both RV32 and RV64)
+        else:
+            print("\n// Testing walking zeros and ones for CSR " + reg)
+            print("\tcsrr s0, " + reg + "\t# save csr")
+            print("\tli t1, -1           # all 1s")
+            print("\tli t0, 1            # 1 in lsb")
+            print("\t1: csrrc t6, " + reg + ", t1    # clear all bits")
+            print("\tcsrrs t6, " + reg + ", t0    # set walking 1")
+            print("\tslli t0, t0, 1      # walk the 1")
+            print("\tbnez t0, 1b         # repeat until all bits are walked")
+            print("\tli t0, 1            # 1 in lsb")
+            print("1:  csrrs t6, " + reg + ", t1    # set all bits")
+            print("\tcsrrc t6, " + reg + ", t0    # clear walking 1")
+            print("\tslli t0, t0, 1      # walk the 1")
+            print("\tbnez t0, 1b         # repeat until all bits are walked")
+            print("\tcsrrw t6, " + reg + ", s0    # restore csr")
+
+    outfile.close()
 
 def csrtests(pathname):
     outfile = open(pathname, 'w')
@@ -63,23 +85,50 @@ def csrtests(pathname):
 seed(0) # make tests reproducible
 
 # generate repetitive assembly language tests
-
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh"]
-sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
-uregs = ["fflags", "frm", "fcsr"]
+#for Zicsr
+csrmregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh"]
+csrsregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
+csruregs = ["fflags", "frm", "fcsr"]
+#for Zicntr
+mhpmcounters = []
+for i in range(3,32):
+    mhpmcounters.append("mhpmcounter"+ str(i))
+mhpmevents = []
+for i in range(3,32):
+    mhpmevents.append("mhpmevent"+ str(i))
+mhpmcountersh = []
+for i in range(3,32):
+    mhpmcountersh.append("mhpmcounter"+ str(i)+ "h")
+mhpmeventsh = []
+for i in range(3,32):
+    mhpmeventsh.append("mhpmevent"+ str(i)+ "h")
+cntrmregs = ["mcycle", "minstret", "mcountinhibit", "mcounteren"] + mhpmcounters + mhpmevents 
+cntrmregs32 = ["mcycleh", "minstreth"] + mhpmcountersh + mhpmeventsh
+cntrsregs = ["scounteren"] 
+cntruregs = ["time"]
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-
+#for Zicsr
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicsr-CSR-Tests.h"
 csrtests(pathname)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
-csrwalk(pathname, mregs + sregs + uregs);
+csrwalk(pathname, csrmregs + csrsregs + csruregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs);
+csrwalk(pathname, csrsregs + csruregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-Walk.h"
-csrwalk(pathname, uregs);
+csrwalk(pathname, csruregs);
+
+#for Zicntr
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
+csrwalk(pathname, cntrmregs + cntrmregs32);
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrS-Walk.h"
+csrwalk(pathname, cntrsregs + cntruregs + cntrmregs);
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrU-Walk.h"
+csrwalk(pathname, cntruregs + cntrsregs);
 
