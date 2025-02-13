@@ -40,9 +40,5 @@ class coverage #(
   function void sample(bit trap, int hart, int issue, string disass);
     save_rvvi_data(trap, hart, issue, disass);
     sample_extensions(hart, issue);
-    // super.sample_idv_metrics();
-    if (csrs_changed(hart, issue)) begin
-      sample_csrs(hart, issue); // doing anything?
-    end
   endfunction
 endclass

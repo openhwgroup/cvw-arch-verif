@@ -70,11 +70,4 @@ class RISCV_coverage
   function void sample_extensions(int hart, int issue);
     `include "RISCV_coverage_base_sample.svh"
   endfunction
-
-  // Currently not doing anything
-  function void sample_csrs(int hart, int issue);
-  endfunction
-
-  // function void sample_idv_metrics();
-  // endfunction
 endclass

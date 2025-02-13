@@ -134,12 +134,3 @@ function void save_rvvi_data(bit trap, int hart, int issue, string disass);
   end
   traceDataQ[hart][issue].push_front(rvviData);
 endfunction
-
-function int csrs_changed(int hart, int issue);
-  return traceDataQ[hart][issue][0].csr_wb != 0;
-endfunction
-
-// function longint get_metric(longint index);
-//   // $display("get_metric(%d) return %d",index, rvviRefMetricGet(rvviMetricE'(index)));
-//   // return rvviRefMetricGet(rvviMetricE'(index));
-// endfunction
