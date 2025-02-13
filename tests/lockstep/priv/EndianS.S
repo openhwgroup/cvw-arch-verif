@@ -237,6 +237,7 @@ postendian:
     #  MPP  0x1800       | 0x1800
     # --------------------------------------
     csrr s0, mstatus    # save CSR
+    csrr s1, mstatush 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             //li s2,  0x2000000000       # 1 in bit 37 for mstatus.MBE
@@ -871,6 +872,7 @@ endianaccess2:
     // Try all the accesses to make sure they work for the endianness
  //    mv a0, s5   # setEndianness(read)
  //   jal setendianness2
+    
     li t0, 0x01
     sb t0, 0(s3)
     li t0, 0x02
@@ -927,6 +929,8 @@ endianaccess2:
 //Code shared between coverpoints
 postendian2: 
     csrrw t6, mstatus, s0    # restore CSR
+    csrrw t5, mstatus, s1
+
 
 
 
