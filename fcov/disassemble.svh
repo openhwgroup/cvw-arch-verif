@@ -22,21 +22,27 @@
 `include "coverage/RISCV_decode_pkg.svh"
 `include "coverage/RISCV_disassemble_helpers.svh"
 
-function string disassemble (logic [31:0] instr);
+function string disassemble (logic [31:0] instrRaw);
 
   import RISCV_decode_pkg::*;
 
   string decoded;
 
-  // Register
-  automatic bit [4:0] rs1Bits = instr[19:15];
-  automatic bit [4:0] rs2Bits = instr[24:20];
-  automatic bit [4:0] rdBits  = instr[11:7];
+  // Mask top bits if compressed instruction
+  automatic bit compressedInstruction = instrRaw[1:0] != 2'b11;
+  automatic bit [31:0] instr = compressedInstruction ? {16'b0, instrRaw[15:0]} : instrRaw;
+
+  // Registers
+  automatic bit [4:0] rs1Bits  = instr[19:15];
+  automatic bit [4:0] rs2Bits  = instr[24:20];
+  automatic bit [4:0] rdBits   = instr[11:7];
   automatic bit [4:0] crs2Bits = instr[6:2];
-  automatic string rs1  = get_gpr_name(instr[19:15]);
-  automatic string rs2  = get_gpr_name(instr[24:20]);
-  automatic string rd   = get_gpr_name(instr[11:7]);
-  automatic string crs2 = get_gpr_name(instr[6:2]);
+
+  // Register names
+  automatic string rs1  = get_gpr_name(rs1Bits);
+  automatic string rs2  = get_gpr_name(rs2Bits);
+  automatic string rd   = get_gpr_name(rdBits);
+  automatic string crs2 = get_gpr_name(crs2Bits);
   automatic string rs1p = get_c_gpr_name(instr[9:7]);
   automatic string rs2p = get_c_gpr_name(instr[4:2]);
   automatic string fs1  = get_fpr_name(instr[19:15]);
@@ -57,20 +63,20 @@ function string disassemble (logic [31:0] instr);
   automatic bit        [1:0]  bs       = instr[31:30];
 
   // Compressed immediates
-  automatic bit signed [5:0] immCIType = {instr[12], instr[6:2]};
-  automatic bit        [7:0] immCILSPType = {instr[3:2], instr[12], instr[6:4], 2'b00};
-  automatic bit        [8:0] immCILSPDType = {instr[4:2], instr[12], instr[6:5], 3'b000};
-  automatic bit signed [9:0] immCIASPType = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
-  automatic bit        [9:0] immCIWType = {instr[10:7], instr[12:11], instr[5], instr[6], 2'b0};
-  automatic bit        [8:0] immCSSDType = {instr[9:7], instr[12:10], 3'b0};
-  automatic bit        [6:0] immCLSType = {instr[5], instr[12:10], instr[6], 2'b0};
-  automatic bit        [7:0] immCLSDType = {instr[6:5], instr[12:10], 3'b0};
-  automatic bit        [1:0] immCLSHType = {instr[5], 1'b0};
-  automatic bit        [1:0] immCLSBType = {instr[5], instr[6]};
-  automatic bit signed [8:0] immCBType = {instr[12], instr[6:5], instr[2], instr[11:10], instr[4:3], 1'b0};
-  automatic bit        [5:0] immCBpType = {instr[12], instr[6:2]};
-  automatic bit signed [11:0] immCJType = {instr[12], instr[8], instr[10:9], instr[6], instr[7], instr[2], instr[11], instr[5:3], 1'b0};
-  automatic bit        [8:0] immCSSType = {instr[8:7], instr[12:9], 2'b0};
+  automatic bit signed [5:0]  immCIType     = {instr[12], instr[6:2]};
+  automatic bit        [7:0]  immCILSPType  = {instr[3:2], instr[12], instr[6:4], 2'b00};
+  automatic bit        [8:0]  immCILSPDType = {instr[4:2], instr[12], instr[6:5], 3'b000};
+  automatic bit signed [9:0]  immCIASPType  = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
+  automatic bit        [9:0]  immCIWType    = {instr[10:7], instr[12:11], instr[5], instr[6], 2'b0};
+  automatic bit        [8:0]  immCSSDType   = {instr[9:7], instr[12:10], 3'b0};
+  automatic bit        [6:0]  immCLSType    = {instr[5], instr[12:10], instr[6], 2'b0};
+  automatic bit        [7:0]  immCLSDType   = {instr[6:5], instr[12:10], 3'b0};
+  automatic bit        [1:0]  immCLSHType   = {instr[5], 1'b0};
+  automatic bit        [1:0]  immCLSBType   = {instr[5], instr[6]};
+  automatic bit signed [8:0]  immCBType     = {instr[12], instr[6:5], instr[2], instr[11:10], instr[4:3], 1'b0};
+  automatic bit        [5:0]  immCBpType    = {instr[12], instr[6:2]};
+  automatic bit signed [11:0] immCJType     = {instr[12], instr[8], instr[10:9], instr[6], instr[7], instr[2], instr[11], instr[5:3], 1'b0};
+  automatic bit        [8:0]  immCSSType    = {instr[8:7], instr[12:9], 2'b0};
 
   // Other fields
   automatic bit [2:0]  frm = instr[14:12];
@@ -576,5 +582,11 @@ function string disassemble (logic [31:0] instr);
     C_FSDSP: $sformat(decoded, "c.fsdsp %s, %0d", cfs2, immCSSDType);
     default: decoded = "illegal";
   endcase
-  return decoded;
+
+  // Return possibly truncated instruction and decoded assembly
+  if (compressedInstruction)
+    return $sformatf("%04h %s", instr[15:0], decoded);
+  else
+    return $sformatf("%08h %s", instr[31:0], decoded);
+
 endfunction
