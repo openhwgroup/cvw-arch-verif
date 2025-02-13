@@ -170,28 +170,28 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_zicsrf_t ins);
     fs2_zero: coverpoint ins.current.rs2_val[31:0] {
         bins zero = {32'h00000000};  
     }
-    fs1_one: coverpoint ins.current.rs1_val[31:0] {
+    fs1_one: coverpoint ins.current.fs1_val[31:0] {
         bins one = {32'h3f800000};
     }
-    fs2_three: coverpoint ins.current.rs2_val[31:0] {
+    fs2_three: coverpoint ins.current.fs2_val[31:0] {
         bins three = {32'h40400000};
     }
-    fs1_largest: coverpoint ins.current.rs1_val[31:0] {
+    fs1_largest: coverpoint ins.current.fs1_val[31:0] {
         bins largest = {32'h7f7fffff};
     }
-    fs2_largest: coverpoint ins.current.rs2_val[31:0] {
+    fs2_largest: coverpoint ins.current.fs2_val[31:0] {
         bins largest = {32'h7f7fffff};
     }
-    fs1_smallest: coverpoint ins.current.rs1_val[31:0] {
+    fs1_smallest: coverpoint ins.current.fs1_val[31:0] {
         bins smallest = {32'h00800000};
     }
-    fs2_smallest: coverpoint ins.current.rs2_val[31:0] {
+    fs2_smallest: coverpoint ins.current.fs2_val[31:0] {
         bins smallest = {32'h00800000};
     }
-    fs1_infinity: coverpoint ins.current.rs1_val[31:0] {
+    fs1_infinity: coverpoint ins.current.fs1_val[31:0] {
         bins infinity = {32'h7f800000};
     }
-    fs2_infinity: coverpoint ins.current.rs2_val[31:0] {
+    fs2_infinity: coverpoint ins.current.fs2_val[31:0] {
         bins infinity = {32'h7f800000};
     }
     instrs: coverpoint ins.current.insn {
