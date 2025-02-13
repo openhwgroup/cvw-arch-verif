@@ -114,8 +114,10 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
        bins M_mode = {2'b11};
     }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
+        bins zero = {0};
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
+        bins one = {'1};
     }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
