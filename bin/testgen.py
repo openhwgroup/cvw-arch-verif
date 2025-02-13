@@ -1614,6 +1614,10 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cr_rs1_imm_corners_6bit_n0"):
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit[1:]) # exclude imm=0
+    elif (coverpoint == "cp_imm_corners_6bit_n0"):
+      pass # only used for cross product
     elif (coverpoint == "cr_rs1_imm_corners_c"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cr_rs1_rs2"):
