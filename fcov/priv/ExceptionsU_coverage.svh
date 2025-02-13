@@ -31,7 +31,7 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
         bins ecall  = {32'h00000073};
     }
     branch: coverpoint ins.current.insn {
-        wildcard bins beq = {32'b???????_?????_?????_???_?????_1100011};
+        wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
     // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
     //       we aught to test this for a sanity check to both of these assumptions
@@ -119,8 +119,10 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
     medelegb8: coverpoint ins.current.csr[12'h302][8]{
     }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
+        bins zero = {0};
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
+        bins one = {'1};
     }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
