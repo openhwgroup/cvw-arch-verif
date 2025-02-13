@@ -8,6 +8,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 #include "WALLY-init-lib.h"
+
 main:
 ///////////////////////////////// 
 // Endianness testing
@@ -203,6 +204,19 @@ postendian:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
   #2ND COVERPOINT:  cp_mstatus_mprv_sbe_endianness_*
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -222,38 +236,198 @@ postendian:
     csrr s0, mstatus    # save CSR
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            li s1,  0x1000000000       # 1 in bit 36 for mstatus.SBE 
-            li s2,  0x2000000000       # 1 in bit 37 for mstatus.MBE
-            li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV  
-            li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
-            li s11, 0x800              # 1 in bit 11 for mstatus.MPP    
+            //li s1,  0x1000000000       # 1 in bit 36 for mstatus.SBE 
+            //li s2,  0x2000000000       # 1 in bit 37 for mstatus.MBE
+            #li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV  
+            #li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
+            #li s11, 0x800              # 1 in bit 11 for mstatus.MPP 
+           
+        #16 WRITES:
+            #EXAMPLE: MPRV=0, MPP=01, MBE=0, SBE=0
+            li t3   0x3000021000    # 0s
+            li t4   0x800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2  #storing address so when you jump you can come back when done
+
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            jal s6, endiantest2 
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            jal s6, endiantest2 
+
+            
+        #16 READS:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            jal s7, endianaccess2
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            jal s7, endianaccess2
+            j postendian2
+
+
+
         #elif __riscv_xlen == 32
-            li s1,  0x10               # 1 in bit 4 for mstatush.SBE 
-            li s2,  0x20               # 1 in bit 5 for mstatush.MBE 
-            li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV   
-            li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
-            li s11, 0x800              # 1 in bit 11 for mstatus.MPP  
+            #li s1,  0x10               # 1 in bit 4 for mstatush.SBE 
+            #li s2,  0x20               # 1 in bit 5 for mstatush.MBE 
+            #li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV   
+            #li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
+            #li s11, 0x800              # 1 in bit 11 for mstatus.MPP
+            # MPRV=0, MPP=01, MBE=0, SBE=0  
+            li t3   0x21030             # 0s
+            li t4   0x800               # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2  # test little-endian read and write
+            j postendian2
+
+
+        #16 WRITES:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            jal s6, endiantest2 
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            jal s6, endiantest2 
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            jal s6, endiantest2 
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            jal s6, endiantest2 
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            jal s6, endiantest2 
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            jal s6, endiantest2 
+
+        #16 READS:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            jal s7, endianaccess2
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            jal s7, endianaccess2
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            jal s7, endianaccess2
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            jal s7, endianaccess2
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            jal s7, endianaccess2
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            jal s7, endianaccess2
+            j postendian2
+
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch  # s3 = pointer to scratch
-    # iterate over each endianness, doing all sizes of stores and loads
-    li  s4, 0           # endianness for write
-    li  s5, 0           # endianness for read
-    jal s6, endiantest2  # test little-endian read and write
-    li  s4, 1           # endianness for write
-    jal s6, endiantest2  # test big-endian write, little-endian read
-    li  s5, 1           # endianness for read
-    jal s6, endiantest2  # test big-endian read and write
-    li  s4, 0           # endianness for write
-    jal s6, endiantest2  # test little-endian write, big-endian read
-    j postendian2    
+
+# iteriationendian
+#     # iterate over each endianness, doing all sizes of stores and loads
+#     li  s4, 0           # endianness for write
+#     li  s5, 0           # endianness for read
+#     jal s6, endiantest2  # test little-endian read and write
+#    // li  s4, 1           # endianness for write
+#     jal s6, endiantest2  # test big-endian write, little-endian read
+#   //  li  s5, 1           # endianness for read
+#     jal s6, endiantest2  # test big-endian read and write
+#   //  li  s4, 0           # endianness for write
+#     jal s6, endiantest2  # test little-endian write, big-endian read
+#     j postendian2    
 
 endiantest2:
     # Try each size of stores with the write endianness, and then the loads with the read endianness
-    mv a0, s4       # setEndianness(write)
-    jal setendianness2
+    //mv a0, t6       # setEndianness(write)
+   // jal setendianness2                -> TO DO PROF HARRIS SAID WE DON'T NEED THIS
     // TO DO: FALTA CÓDIGO AQUÍ !!!!
     # Test storing bytes
     li t0, 0x01
@@ -272,7 +446,7 @@ endiantest2:
     sb t0, 6(s3)
     li t0, 0x08
     sb t0, 7(s3)
-    jal s7, endianaccess2
+    jal s7, endianaccess2 # hear is jumps to do the reading but we want to do this after
     mv a0, s4       # setEndianness(write)
     jal setendianness2
     li t0, 0x1112
@@ -286,7 +460,7 @@ endiantest2:
     jal s7, endianaccess2
     mv a0, s4       # setEndianness(write)
     jal setendianness2
-     li t0, 0x21222324
+    li t0, 0x21222324
     sw t0, 0(s3)
     li t0, 0x25262728
     sw t0, 4(s3)
@@ -306,83 +480,6 @@ endiantest2:
 
 
 
-
-
-setendianness2:
-    //TO DO continue here!!!
-    and t1, s0, s9      # Check MPRV bit (s9 = 0x20000)
-    and t2, s0, s10     # Check MPP bit 12 (s10 = 0x1000)
-    and t3, s0, s11     # Check MPP bit 11 (s11 = 0x800)
-    # Determine MPP (01 or 11)
-    srli t2, t2, 12     # Shift MPP bit 12 to LSB
-    srli t3, t3, 11     # Shift MPP bit 11 to LSB
-    or   t4, t2, t3     # Combine for full MPP value (01 or 11)
-    # Check MPP = 01 Supervisor (01)
-    li   t5, 0x1        # MPP should be 01
-    beq  t4, t5, is_msup_mode  #MPP=11 is set to machine mode (if = than jumps)
-    j not_mprv
-
-not_mprv: # We are MBE=1 and SBE=0
-        // if a0 = 1, bigendian, otherwise littleendian
-    beqz a0, 1f      # little endian
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrs t6, mstatus, s2   # for RV64, set mstatus.MBE
-        #elif __riscv_xlen == 32
-            csrrs t6, mstatush, s2  # for RV32, set mstatush.MBE
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    ret
-1:  
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrc t6, mstatus, s2   # for RV64, clear mstatus.MBE   
-        #elif __riscv_xlen == 32
-            csrrc t6, mstatush, s2  # for RV32, clear mstatush.MBE.
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    ret
-
-#GOIND HERE IF MPRV= 1 AND MPP= 
-is_msup_mode: # This is going to be for when it become supervisor mode: SBE=1
-    beqz t1, not_mprv  # If MPRV=0, go to not_mprv path      
-    #SBE=1 and MBE=0: So know I believe we use SBE to set endianess
-    mv s8, a0
-    li a0, 3         # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
-    // if a0 = 1, bigendian, otherwise littleendian
-    beqz s8, 1f      # little endian
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrs t6, mstatus, s1   # for RV64, set mstatus.SBE
-        #elif __riscv_xlen == 32
-            csrrs t6, mstatush, s1  # for RV32, set mstatush.SBE
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    # Switch back to Supervisor mode
-    j change2
-1:  
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrc t6, mstatus, s1   # for RV64, clear mstatus.SBE
-        #elif __riscv_xlen == 32
-            csrrc t6, mstatush, s1  # for RV32, clear mstatush.SBE.
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    j change2
-change2: 
-    # Switch back to Supervisor mode
-    li a0, 1         # a0 = 1, change to Supervisor mode
-    ecall            # Make a system call 
-    ret
 
 
 endianaccess2:
@@ -428,6 +525,27 @@ endianaccess2:
 //Code shared between coverpoints
 postendian2: 
     csrrw t6, mstatus, s0    # restore CSR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
