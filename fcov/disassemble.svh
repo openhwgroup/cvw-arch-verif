@@ -33,16 +33,16 @@ function string disassemble (logic [31:0] instr);
   automatic bit [4:0] rs2Bits = instr[24:20];
   automatic bit [4:0] rdBits  = instr[11:7];
   automatic bit [4:0] crs2Bits = instr[6:2];
-  automatic string rs1 = get_gpr_name(instr[19:15]);
-  automatic string rs2 = get_gpr_name(instr[24:20]);
-  automatic string rd  = get_gpr_name(instr[11:7]);
+  automatic string rs1  = get_gpr_name(instr[19:15]);
+  automatic string rs2  = get_gpr_name(instr[24:20]);
+  automatic string rd   = get_gpr_name(instr[11:7]);
   automatic string crs2 = get_gpr_name(instr[6:2]);
   automatic string rs1p = get_c_gpr_name(instr[9:7]);
   automatic string rs2p = get_c_gpr_name(instr[4:2]);
-  automatic string fs1 = get_fpr_name(instr[19:15]);
-  automatic string fs2 = get_fpr_name(instr[24:20]);
-  automatic string fs3 = get_fpr_name(instr[31:27]);
-  automatic string fd  = get_fpr_name(instr[11:7]);
+  automatic string fs1  = get_fpr_name(instr[19:15]);
+  automatic string fs2  = get_fpr_name(instr[24:20]);
+  automatic string fs3  = get_fpr_name(instr[31:27]);
+  automatic string fd   = get_fpr_name(instr[11:7]);
   automatic string cfs2 = get_fpr_name(instr[6:2]);
   automatic string fs1p = get_c_fpr_name(instr[9:7]);
   automatic string fs2p = get_c_fpr_name(instr[4:2]);
@@ -53,8 +53,8 @@ function string disassemble (logic [31:0] instr);
   automatic bit signed [12:0] immBType = ({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0});
   automatic bit signed [19:0] immUType = {instr[31:12]};
   automatic bit signed [20:0] immJType = ({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
-  automatic bit [5:0] uimm = instr[25:20];
-  automatic bit [1:0] bs  = instr[31:30];
+  automatic bit        [5:0]  uimm     = instr[25:20];
+  automatic bit        [1:0]  bs       = instr[31:30];
 
   // Compressed immediates
   automatic bit signed [5:0] immCIType = {instr[12], instr[6:2]};
@@ -160,9 +160,9 @@ function string disassemble (logic [31:0] instr);
     CSRRW:  $sformat(decoded, "csrrw %s, %0d, %s", rd, csr, rs1);
     CSRRS:  $sformat(decoded, "csrrs %s, %0d, %s", rd, csr, rs1);
     CSRRC:  $sformat(decoded, "csrrc %s, %0d, %s", rd, csr, rs1);
-    CSRRWI: $sformat(decoded, "csrrwi %s, %0d, %0d", rd, csr, rs1);
-    CSRRSI: $sformat(decoded, "csrrsi %s, %0d, %0d", rd, csr, rs1);
-    CSRRCI: $sformat(decoded, "csrrci %s, %0d, %0d", rd, csr, rs1);
+    CSRRWI: $sformat(decoded, "csrrwi %s, %0d, %0d", rd, csr, rs1Bits);
+    CSRRSI: $sformat(decoded, "csrrsi %s, %0d, %0d", rd, csr, rs1Bits);
+    CSRRCI: $sformat(decoded, "csrrci %s, %0d, %0d", rd, csr, rs1Bits);
     // Zifencei Extension
     FENCE_I: $sformat(decoded, "fence.i");
     // M Extension
