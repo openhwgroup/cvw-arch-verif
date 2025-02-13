@@ -35,12 +35,12 @@ module cvw_arch_verif(rvviTrace rvvi);
       // When sampling, format instruction as 16 or 32 bits depending on if it was compressed
       if (compressedInstruction) begin
         riscvISACOV.sample(rvvi.trap[0][0], 0, 0, {$sformatf("%04h ", trimmedInsn), disass});
-        // $display("cvw_arch_verif: sample taken for instruction %04h: %s", trimmedInsn, disass);
-        $display("0x%04h: %s", trimmedInsn, disass);
+        `cover_info($sformatf("cvw_arch_verif: sample taken for instruction %04h: %s", trimmedInsn, disass));
+        // `cover_info($sformatf("0x%04h: %s", trimmedInsn, disass));
       end else begin
         riscvISACOV.sample(rvvi.trap[0][0], 0, 0, {$sformatf("%08h ", trimmedInsn), disass});
-        // $display("cvw_arch_verif: sample taken for instruction %08h: %s", trimmedInsn, disass);
-        $display("0x%08h: %s", trimmedInsn, disass);
+        `cover_info($sformatf("cvw_arch_verif: sample taken for instruction %08h: %s", trimmedInsn, disass));
+        // `cover_info($sformatf("0x%08h: %s", trimmedInsn, disass));
       end
     end
   end
