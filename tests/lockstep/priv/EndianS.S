@@ -203,6 +203,733 @@ postendian:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+  #2ND COVERPOINT:  cp_mstatus_mprv_sbe_endianness_*
+//////////////////////////////////////////////////////////////////////////////////////////
+// Registers added: TO DO: S0,1,3,4,5,6,7,8
+//   S2: To store mstatus.MBE
+//   s9: To store mstatus.MPRV
+//   s10: To store mstatus.MPP bit 12
+//   s11: To store mstatus.MPP bit 11
+    # ---------------------------------------
+    #     XLEN=64        |     XLEN=32
+    # --------------------------------------
+    #  MBE  0x2000000000 | 0x20
+    #  SBE  0x1000000000 | 0x10
+    #  MPRV 0x20000      | 0x20000
+    #  MPP  0x1800       | 0x1800
+    # --------------------------------------
+    csrr s0, mstatus    # save CSR
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            //li s2,  0x2000000000       # 1 in bit 37 for mstatus.MBE
+            //li s1,  0x1000000000       # 1 in bit 36 for mstatus.SBE 
+            #li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV  
+            #li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
+            #li s11, 0x800              # 1 in bit 11 for mstatus.MPP 
+           
+        #16 WRITES:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            li      t3,   0x3000021000    # 0s
+            li      t4,   0x800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 #storing address so when you jump you can come back when done
+      
+        
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            li      t3,   0x2000021000    # 0s
+            li      t4,   0x1000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+    
+     
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            li      t3,   0x1000021000    # 0s
+            li      t4,   0x2000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+   
+            
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            li      t3,   0x21000         # 0s
+            li      t4,   0x3000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+            
+          
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            li      t3,   0x3000020000    # 0s
+            li      t4,   0x1800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+
+
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            li      t3,   0x2000020000    # 0s
+            li      t4,   0x1000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+        
+       
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            li      t3,   0x1000020000    # 0s
+            li      t4,   0x2000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+     
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            li      t3,   0x20000    # 0s
+            li      t4,   0x3000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+  
+
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            li      t3,   0x3000001000    # 0s
+            li      t4,   0x20800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+            
+
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            li      t3,   0x2000001000    # 0s
+            li      t4,   0x1000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+
+
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            li      t3,   0x1000001000    # 0s
+            li      t4,   0x2000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+        
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            li      t3,   0x1000    # 0s
+            li      t4,   0x3000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+
+
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            li      t3,   0x3000000000    # 0s
+            li      t4,   0x21800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+         
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            li      t3,   0x2000000000    # 0s
+            li      t4,   0x1000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+    
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            li      t3,   0x1000000000    # 0s
+            li      t4,   0x2000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+       
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            li      t3,   0x0             # 0s
+            li      t4,   0x3000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s6, endiantest2 
+           
+            
+        #16 READS:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            li      t3,   0x3000021000    # 0s
+            li      t4,   0x800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            li      t3,   0x2000021000    # 0s
+            li      t4,   0x1000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            li      t3,   0x1000021000    # 0s
+            li      t4,   0x2000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            li      t3,   0x21000         # 0s
+            li      t4,   0x3000000800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            li      t3,   0x3000020000    # 0s
+            li      t4,   0x1800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            li      t3,   0x2000020000    # 0s
+            li      t4,   0x1000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            li      t3,   0x1000020000    # 0s
+            li      t4,   0x2000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            li      t3,   0x20000    # 0s
+            li      t4,   0x3000001800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            li      t3,   0x3000001000    # 0s
+            li      t4,   0x20800           # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            li      t3,   0x2000001000    # 0s
+            li      t4,   0x1000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            li      t3,   0x1000001000    # 0s
+            li      t4,   0x2000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            li      t3,   0x1000    # 0s
+            li      t4,   0x3000020800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            li      t3,   0x3000000000    # 0s
+            li      t4,   0x21800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            li      t3,   0x2000000000    # 0s
+            li      t4,   0x1000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            li      t3,   0x1000000000    # 0s
+            li      t4,   0x2000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            li      t3,   0x0             # 0s
+            li      t4,   0x3000021800    # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            jal s7, endianaccess2
+            j postendian2
+
+
+        #elif __riscv_xlen == 32
+            #li s9,  0x20000            # 1 in bit 17 for mstatus.MPRV   
+            #li s10, 0x1000             # 1 in bit 12 for mstatus.MPP
+            #li s11, 0x800              # 1 in bit 11 for mstatus.MPP
+            #mstatush
+            #li s2,  0x20               # 1 in bit 5 for mstatush.MBE 
+            #li s1,  0x10               # 1 in bit 4 for mstatush.SBE 
+        #16 WRITES:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            li      t3, 0x21000       # 0s -> mstatus
+            li      t4, 0x800         # 1s -> mstatus
+            csrrc   t6, mstatus, t3  # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x00          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2  # test little-endian read and write
+            
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0 
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s6, endiantest2 
+
+        #16 READS:
+            #1:  MPRV=0, MPP=01, MBE=0, SBE=0
+            li      t3, 0x21000       # 0s -> mstatus
+            li      t4, 0x800         # 1s -> mstatus
+            csrrc   t6, mstatus, t3  # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x00          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #2:  MPRV=0, MPP=01, MBE=0, SBE=1
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #3:  MPRV=0, MPP=01, MBE=1, SBE=0
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #4:  MPRV=0, MPP=01, MBE=1, SBE=1
+            li      t3, 0x21000       # 0s
+            li      t4, 0x800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #5:  MPRV=0, MPP=11, MBE=0, SBE=0
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s 
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #6:  MPRV=0, MPP=11, MBE=0, SBE=1
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #7:  MPRV=0, MPP=11, MBE=1, SBE=0
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #8:  MPRV=0, MPP=11, MBE=1, SBE=1
+            li      t3, 0x20000       # 0s
+            li      t4, 0x1800         # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #9:  MPRV=1, MPP=01, MBE=0, SBE=0
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #10: MPRV=1, MPP=01, MBE=0, SBE=1
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            
+            #11: MPRV=1, MPP=01, MBE=1, SBE=0
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            
+            #12: MPRV=1, MPP=01, MBE=1, SBE=1
+            li      t3, 0x1000       # 0s
+            li      t4, 0x20800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            
+            #13: MPRV=1, MPP=11, MBE=0, SBE=0
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x30          # 0s -> mstatush
+            li      t2, 0x0          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #14: MPRV=1, MPP=11, MBE=0, SBE=1
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x20          # 0s -> mstatush
+            li      t2, 0x10          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #15: MPRV=1, MPP=11, MBE=1, SBE=0
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x10          # 0s -> mstatush
+            li      t2, 0x20          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            #16: MPRV=1, MPP=11, MBE=1, SBE=1
+            li      t3, 0x0       # 0s
+            li      t4, 0x21800       # 1s
+            csrrc   t6, mstatus, t3   # setting the 0s
+            csrrs   t6, mstatus, t4   # setting the 1s
+            li      t1, 0x0          # 0s -> mstatush
+            li      t2, 0x30          # 1s -> mstatush
+            csrrc   t6, mstatush, t1  # setting the 0s
+            csrrs   t6, mstatush, t2  # setting the 1s
+            jal s7, endianaccess2
+            j postendian2
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    la s3, scratch  # s3 = pointer to scratch
+
+endiantest2:
+    # Try each size of stores with the write endianness, and then the loads with the read endianness
+    //mv a0, t6       # setEndianness(write)
+    // jal setendianness2                -> TO DO PROF HARRIS SAID WE DON'T NEED THIS
+    // TO DO: FALTA CÓDIGO AQUÍ !!!!
+    # Test storing bytes
+    li t0, 0x01
+    sb t0, 0(s3)
+    li t0, 0x02
+    sb t0, 1(s3)
+    li t0, 0x03
+    sb t0, 2(s3)
+    li t0, 0x04
+    sb t0, 3(s3)
+    li t0, 0x05
+    sb t0, 4(s3)
+    li t0, 0x06
+    sb t0, 5(s3)
+    li t0, 0x07
+    sb t0, 6(s3)
+    li t0, 0x08
+    sb t0, 7(s3)
+// jal s7, endianaccess2 # hear is jumps to do the reading but we want to do this after
+//mv a0, s4       # setEndianness(write)
+//jal setendianness2
+    li t0, 0x1112
+    sh t0, 0(s3)
+    li t0, 0x1314
+    sh t0, 2(s3)
+    li t0, 0x1516
+    sh t0, 4(s3)
+    li t0, 0x1718
+    sh t0, 6(s3)
+// jal s7, endianaccess2
+// mv a0, s4       # setEndianness(write)
+// jal setendianness2
+    li t0, 0x21222324
+    sw t0, 0(s3)
+    li t0, 0x25262728
+    sw t0, 4(s3)
+// jal s7, endianaccess2
+//  mv a0, s4       # setEndianness(write)
+//   jal setendianness2
+    #moved here.
+    li t0, 0x3132333435363738
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd t0, 0(s3)            # sd only in RV64
+            //jal s7, endianaccess2
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    jr s6   # return (return address was stored in s6)
+
+
+
+endianaccess2:
+    // Try all the accesses to make sure they work for the endianness
+ //    mv a0, s5   # setEndianness(read)
+ //   jal setendianness2
+    li t0, 0x01
+    sb t0, 0(s3)
+    li t0, 0x02
+    sb t0, 1(s3)
+    li t0, 0x03
+    sb t0, 2(s3)
+    li t0, 0x04
+    sb t0, 3(s3)
+    li t0, 0x05
+    sb t0, 4(s3)
+    li t0, 0x06
+    sb t0, 5(s3)
+    li t0, 0x07
+    sb t0, 6(s3)
+    li t0, 0x08
+    sb t0, 7(s3)
+    #//////
+    lb  t0, 0(s3)
+    lb  t0, 1(s3)
+    lb  t0, 2(s3)
+    lb  t0, 3(s3)
+    lb  t0, 4(s3)
+    lb  t0, 5(s3)
+    lb  t0, 6(s3)
+    lb  t0, 7(s3)
+    lbu t0, 0(s3)
+    lbu t0, 1(s3)
+    lbu t0, 2(s3)
+    lbu t0, 3(s3)
+    lbu t0, 4(s3)
+    lbu t0, 5(s3)
+    lbu t0, 6(s3)
+    lbu t0, 7(s3)
+    lh  t3, 0(s3)
+    lh  t3, 2(s3)
+    lh  t3, 4(s3)
+    lh  t3, 6(s3)
+    lhu t3, 0(s3)
+    lhu t3, 2(s3)
+    lhu t3, 4(s3)
+    lhu t3, 6(s3)
+    lw  t3, 0(s3)
+    lw  t3, 4(s3)
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64    
+            lwu t3, 0(s3) # long loads for RV64
+            lwu t3, 4(s3) 
+            ld  t3, 0(s3) 
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    jr s7   # return (return address was stored in s7)
+//Code shared between coverpoints
+postendian2: 
+    csrrw t6, mstatus, s0    # restore CSR
+
+
+
 ///////////////////////////////////////////////////////////////////
 # 3RD COVERPOINT: cp_sstatus_ube_endianness_*
 ///////////////////////////////////////////////////////////////////
