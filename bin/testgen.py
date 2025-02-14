@@ -26,10 +26,8 @@ import math
 ##################################
 
 def insertTemplate(name):
-  h = open(f"{ARCH_VERIF}/templates/testgen/{name}", "r")
-  for line in h:
-    f.write(line)
-
+  with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
+    f.write(h.read())
 
 def shiftImm(imm, xlen):
   imm = imm % xlen
@@ -1458,12 +1456,7 @@ def make_nanbox(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_custom(test, xlen):
-  if ("lr" in test):
-    insertTest("lr")
-  elif ("sc" in test):
-    insertTest("sc")
-  else:
-    print("Warning: unknown custom test " + test)
+    insertTemplate(f"{test}.S")
 
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
@@ -1757,8 +1750,7 @@ def write_tests(coverpoints, test, xlen):
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
     elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
-          coverpoint == "cp_prev_store" or coverpoint == "cp_sc_fail" or coverpoint == "cp_cur_address" or
-          coverpoint == "cp_prev_address" or coverpoint == "cp_prev_address_match" or 
+          coverpoint == "cp_custom_sc_after_sc" or coverpoint == "cp_sc_fail" or coverpoint == "cp_address_difference" or
           coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
           coverpoint == "cp_custom_sc_after_store"):
       pass # Zalrsc coverpoints handled custom
