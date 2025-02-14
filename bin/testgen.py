@@ -677,9 +677,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
-    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
-  elif test in sctype + amotype:
+  elif test in sctype:
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
+  elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
@@ -1766,7 +1770,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
           curinstr = m.group(1).replace("_", ".")
           # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
-        m = re.search("\s*(\S+) :", line)
+        m = re.search(r"\s*(\S+) :", line)
         if (m):
           # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))

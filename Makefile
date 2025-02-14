@@ -59,8 +59,6 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
-#	rm -rf ${LOCKSTEPDIR}/*/Zaamo ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
-	rm -rf ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail because they load from x0; temporarily remove until fixed
 	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
@@ -127,11 +125,11 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 # Run tests while collecting functional coverage
 sim:
-	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
+	#rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ExceptionsInstr.elf --fcov
 	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ZicsrM.elf --fcov
 	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
+	wsim rv32gc $(LOCKSTEPDIR)/rv32/Zalrsc/WALLY-COV-ALL-1.elf --fcov --lockstep
 	#wsim rv64gc $(LOCKSTEPDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
 	#wsim rv32gc $(LOCKSTEPDIR)/rv32/M/WALLY-COV-div.elf --fcov
 	$(MAKE) merge
