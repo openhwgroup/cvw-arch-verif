@@ -1451,6 +1451,17 @@ def make_nanbox(test, xlen):
   desc = "Random test for cp_NaNBox "
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_custom(test, xlen):
+  if ("lr" in test):
+    insertTest("lr")
+  elif ("sc" in test):
+    insertTest("sc")
+  else:
+    print("Warning: unknown custom test " + test)
+
+def insertTest(test):
+  f.write(f"\n# Stub for {test}")
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1739,8 +1750,14 @@ def write_tests(coverpoints, test, xlen):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
-    elif (coverpoint == "cp_sc"):
-      pass # TODO does this need to be implemented?
+    elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
+          coverpoint == "cp_prev_store" or coverpoint == "cp_sc_fail" or coverpoint == "cp_cur_address" or
+          coverpoint == "cp_prev_address" or coverpoint == "cp_prev_address_match" or 
+          coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
+          coverpoint == "cp_custom_sc_after_store"):
+      pass # Zalrsc coverpoints handled custom
+    elif (coverpoint == "cp_custom_aqrl"):
+      make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 

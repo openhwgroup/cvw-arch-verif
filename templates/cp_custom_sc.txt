@@ -36,6 +36,6 @@
         // Combinations of acquire and release
         ignore_bins aq_norl = {2'b10};
     }
-    cp_custom_scd_lrsc : cross cp_prev_lr, cp_sc_fail;
+    cp_custom_sc_lrsc : cross cp_prev_lr, cp_sc_fail;
     cp_custom_sc_addresses : cross cp_prev_sc, cp_cur_address, cp_prev_address;
     cp_custom_sc_after_store : cross cp_prev_store, cp_prev_address_match;
