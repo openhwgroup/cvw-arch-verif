@@ -25,6 +25,12 @@ import math
 # functions
 ##################################
 
+def insertTemplate(name):
+  h = open(f"{ARCH_VERIF}/templates/testgen/{name}", "r")
+  for line in h:
+    f.write(line)
+
+
 def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
@@ -2277,9 +2283,7 @@ if __name__ == '__main__':
             #f.write(line)
 
             # insert generic header
-            h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_header.S")
 
             sigOffset = 0 # offset of signature from signature pointer
             sigTotal = 0 # total number of bytes in signature
@@ -2295,9 +2299,7 @@ if __name__ == '__main__':
             # print footer
             line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
             f.write(line)
-            h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_footer.S")  
 
             # Finish
             f.close()
