@@ -4,7 +4,7 @@
 MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
-TESTDIR		   := tests
+TESTDIR      := tests
 LOCKSTEPDIR  := $(TESTDIR)/lockstep
 SELFCHECKDIR := $(TESTDIR)/selfchecking
 SIGDIR       := $(TESTDIR)/signature
@@ -44,7 +44,7 @@ PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompresse
 all: unpriv priv
 
 unpriv: testgen
-	$(MAKE) $(UNPRIVOBJECTS)	
+	$(MAKE) $(UNPRIVOBJECTS)
 
 selfcheck: UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 selfcheck: selfchecking $(UNPRIVSELFCHECK_SOURCES)
