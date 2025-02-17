@@ -36,10 +36,19 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     mip_mtip_one: coverpoint ins.current.csr[12'h344][7] {
         bins one = {1};
     }
+    mip_stip_one: coverpoint ins.current.csr[12'h344][5] {
+        bins one = {1};
+    }
     mip_msip_one: coverpoint ins.current.csr[12'h344][3] {
         bins one = {1};
     }
+    mip_ssip_one: coverpoint ins.current.csr[12'h344][1] {
+        bins one = {1};
+    }
     mip_meip_one: coverpoint ins.current.csr[12'h344][11] {
+        bins one = {1};
+    }
+    mip_seip_one: coverpoint ins.current.csr[12'h344][9] {
         bins one = {1};
     }
     mie_mtie_one: coverpoint ins.current.csr[12'h304][7] {
@@ -98,21 +107,34 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     csrrs: coverpoint ins.current.insn {
         wildcard bins csrrs = {32'b????????????_?????_010_?????_1110011};
     }
+    clint_msip_set: coverpoint (ins.current.insn[6:0] == 7'b0100011)                  & // the current instruction is a store
+                               (ins.current.imm + ins.current.rs1_val == `CLINT_BASE) & // store address is clint base + 0 (msip)
+                               (ins.current.rs1_val[0] == 1) {                          // value to store has a 1 in bit 0 
+        bins clint_msip_set = {1};
+    }
+    wfi: coverpoint ins.current.insn {
+        bins wfi = {32'b0001000_00101_00000_000_00000_1110011};
+    }
 
-    // TODO: Need a helper coverpoint for PLIC/EIC interrupts, and one for mtimecmp
+    // TODO: Need a helper coverpoint for PLIC/EIC interrupts for sei3
 
     // main coverpoints
 
+    cp_trigger_mti:      cross mstatus_mie, mie_ones, mip_ssip_one;
+    cp_trigger_msi:      cross mstatus_mie, mie_ones, mip_msip_one, clint_msip_set;
+    cp_trigger_mei:      cross mstatus_mie, mie_ones, mip_meip_one;
+    cp_trigger_sti:      cross mstatus_mie, mie_ones, mip_stip_one;
     cp_trigger_ssi_mip:  cross csrrw, write_mip_ssip, mstatus_mie, mie_ones; 
-    // cp_trigger_sei_plic: cross 
+    cp_trigger_sei_plic: cross mstatus_mie, mie_ones, mip_seip_one;
     cp_trigger_sei_sie:  cross csrrw, write_mip_seip, mstatus_mie, mie_ones;
-    cp_global:           cross mstatus_mie, mtvec_mode_zero, mip_walking, mie_walking;
+    cp_global_ie:        cross mstatus_mie, mstatus_sie, mip_walking, mie_walking;
+    cp_interrupts:       cross mstatus_mie, mtvec_mode_zero, mip_walking, mie_walking;
     cp_vectored:         cross mstatus_mie_one, mtvec_mode, mip_walking, mie_walking;
     cp_priority:         cross mstatus_mie_one, mie_mtie_msie_meie, mip_mtip_msip_meip;
-    // cp_wfi:              cross 
-    cp_sei1:             cross csrrw, write_mip_seip, mstatus_mie_zero, mip_seip_zero;
+    cp_wfi:              cross wfi, mstatus_mie, mstatus_sie, mstatus_tw, mie_mtie_one, mip_mtip_one;
+    cp_sei1:             cross csrrw, write_mip_seip, mstatus_mie_zero, mip_seip_zero; // TODO MIGHT NEED TO BE INS.PREV
     cp_sei2:             cross csrrs, write_mip_seip, mstatus_mie_zero, mip_seip_zero;
-    // cp_sei3:             cross 
+    // cp_sei3:             cross mstatus_mie_zero, mip_seip_zero, 
 
 endgroup
 
