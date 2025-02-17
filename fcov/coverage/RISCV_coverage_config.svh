@@ -44,29 +44,29 @@
 `ifdef ZBS_COVERAGE
   `include "Zbs_coverage.svh"
 `endif
-`ifdef ZFA_F_COVERAGE
+`ifdef ZFA_COVERAGE
   `include "ZfaF_coverage.svh"
-`endif
-`ifdef ZFA_D_COVERAGE
-  `include "ZfaD_coverage.svh"
-`endif
-`ifdef ZFA_ZFH_COVERAGE
-  `include "ZfaZfh_coverage.svh"
-`endif
-`ifdef ZFA_ZFH_D_COVERAGE
-  `include "ZfaZfhD_coverage.svh"
-`endif
-`ifdef ZFH_D_COVERAGE
-  `include "ZfhD_coverage.svh"
+  `ifdef D_COVERAGE
+    `include "ZfaD_coverage.svh"
+  `endif
+  `ifdef ZFH_COVERAGE
+    `include "ZfaZfh_coverage.svh"
+    `ifdef D_COVERAGE
+      `include "ZfaZfhD_coverage.svh"
+    `endif
+  `endif
 `endif
 `ifdef ZFH_COVERAGE
   `include "Zfh_coverage.svh"
+  `ifdef D_COVERAGE
+    `include "ZfhD_coverage.svh"
+  `endif
 `endif
 `ifdef ZFHMIN_COVERAGE
   `include "Zfhmin_coverage.svh"
-`endif
-`ifdef ZFHMIN_D_COVERAGE
-  `include "ZfhminD_coverage.svh"
+  `ifdef D_COVERAGE
+    `include "ZfhminD_coverage.svh"
+  `endif
 `endif
 `ifdef ZMMUL_COVERAGE
   `include "Zmmul_coverage.svh"
@@ -79,15 +79,19 @@
 `endif
 `ifdef ZCB_COVERAGE
   `include "Zcb_coverage.svh"
-`endif
-`ifdef ZCB_M_COVERAGE
-  `include "ZcbM_coverage.svh"
-`endif
-`ifdef ZCB_ZBB_COVERAGE
-  `include "ZcbZbb_coverage.svh"
-`endif
-`ifdef ZCB_ZBA_COVERAGE
-  `include "ZcbZba_coverage.svh"
+  `ifdef M_COVERAGE
+    `include "ZcbM_coverage.svh"
+  `elsif ZMMUL_COVERAGE
+    `include "ZcbM_coverage.svh"
+  `endif
+  `ifdef ZBB_COVERAGE
+    `include "ZcbZbb_coverage.svh"
+  `endif
+  `ifdef XLEN64
+    `ifdef ZBA_COVERAGE
+      `include "ZcbZba_coverage.svh"
+    `endif
+  `endif
 `endif
 `ifdef ZCD_COVERAGE
   `include "Zcd_coverage.svh"
