@@ -1,3 +1,0 @@
-    cp_mem_unaligned : coverpoint is_unaligned_mem_access(ins.hart, ins.issue)  {
-        //Memory unaligned access
-    }
