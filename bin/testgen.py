@@ -26,6 +26,7 @@ import math
 ##################################
 
 def insertTemplate(name):
+  f.write(f"\n # {name}\n")
   with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
     f.write(h.read())
 

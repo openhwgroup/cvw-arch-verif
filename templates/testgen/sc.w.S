@@ -22,14 +22,14 @@
     sc.w t2, t3, (t0) # succeeds
     sc.w t5, t4, (t0) # fails
 
-# cp_custom_sc_address
+# cp_custom_sc_addresses
     # loop over distances of 0 to 120 from lr to sc address
     li t6, 0        # initialize offset to 0
 1:
     add t5, t0, t6      # scratch address + offset
     lr.w t1, (t0)       # load from reservation set
-    sc.w t5, t3, (t5)   # try store conditional, should succeed if in same set
-    sc.w t5, t3, (t5)   # try again, and it should fail this time
+    sc.w t1, t3, (t5)   # try store conditional, should succeed if in same set
+    sc.w t1, t3, (t5)   # try again, and it should fail this time
     addi t6, t6, 4      # increment offset
     slti t5, t6, 129    # offset <= 128
     bnez t5, 1b         # repeat until done
