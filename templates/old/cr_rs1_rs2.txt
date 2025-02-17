@@ -1,3 +1,0 @@
-    cr_rs1_rs2 : cross cp_rs1_sign,cp_rs2_sign  iff (ins.trap == 0 )  {
-        //Cross coverage of RS1 sign and RS2 sign
-    }
