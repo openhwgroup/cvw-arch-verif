@@ -46,7 +46,9 @@ module cvw_arch_verif(rvviTrace rvvi);
     if (rvvi.valid[0][0] == 1) begin
       disass = disassemble(rvvi.insn[0][0]);
       riscvISACOV.sample(rvvi.trap[0][0], 0, 0, disass);
-      `cover_info($sformatf("cvw_arch_verif: sample taken for instruction %s", disass));
+      `ifdef FCOV_VERBOSE
+        $display("cvw_arch_verif: sample taken for PC 0x%h instruction %s", rvvi.pc_rdata[0][0], disass);
+      `endif
     end
   end
 
