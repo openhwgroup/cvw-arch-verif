@@ -220,13 +220,13 @@ postendian:
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////
-  #2ND COVERPOINT:  cp_mstatus_mprv_sbe_endianness_*
-//////////////////////////////////////////////////////////////////////////////////////////
-// Registers added: TO DO: S0,1,3,4,5,6,7,8
-//   S2: To store mstatus.MBE
-//   s9: To store mstatus.MPRV
-//   s10: To store mstatus.MPP bit 12
+# ///////////////////////////////////////////////////////////////////////////////////////////
+#   #2ND COVERPOINT:  cp_mstatus_mprv_sbe_endianness_*
+# //////////////////////////////////////////////////////////////////////////////////////////
+# // Registers added: TO DO: S0,1,3,4,5,6,7,8
+# //   S2: To store mstatus.MBE
+# //   s9: To store mstatus.MPRV
+# //   s10: To store mstatus.MPP bit 12
 //   s11: To store mstatus.MPP bit 11
     # ---------------------------------------
     #     XLEN=64        |     XLEN=32
@@ -237,6 +237,9 @@ postendian:
     #  MPP  0x1800       | 0x1800
     # --------------------------------------
     csrr s0, mstatus    # save CSR
+
+    li a0, 3         # a0 = 3, change to Machine mode
+    ecall            # Make a system call to enter Machine mode
     
     la s3, scratch  # s3 = pointer to scratch
     #ifdef __riscv_xlen
@@ -954,6 +957,8 @@ postendian2:
 ///////////////////////////////////////////////////////////////////
 
     csrr s0, sstatus    # save CSR
+    li a0, 1         # a0 = 3, change to user mode
+    ecall            # Make a system call to enter Machine mode
     #ifdef __riscv_xlen
         li s1, 0x40       # 1 in bit 6 for mstatus.SBE  
     #else
