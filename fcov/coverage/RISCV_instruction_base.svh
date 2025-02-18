@@ -133,7 +133,7 @@ class RISCV_instruction
     end
   endfunction
 
-  // Lookup integer refister value
+  // Lookup integer register value
   virtual function `XLEN_INT get_gpr_val(int hart, int issue, string key, int prev);
     int idx = get_gpr_num(key);
     if (idx >= 0) begin
