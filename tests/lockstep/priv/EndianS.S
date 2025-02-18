@@ -44,6 +44,8 @@ main:
     # code assumes s registers are saved during these tests
     
     csrr s0, mstatus    # save CSR
+    li a0, 1         # a0 = 1, change to supervisor  mode
+    ecall            # Make a system call to enter Machine mode
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             li s1, 0x1000000000       # 1 in bit 36 for mstatus.SBE 
