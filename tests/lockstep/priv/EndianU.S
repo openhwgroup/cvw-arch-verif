@@ -44,6 +44,8 @@ main:
     # code assumes s registers are saved during these tests
     
     csrr s0, mstatus    # save CSR
+    li a0, 1         # a0 = 3, change to user mode
+    ecall            # Make a system call to enter Machine mode
     #setting a trap and invoking a trap handler
     #the trap handler accepts timer interrupts and ecalls
 
