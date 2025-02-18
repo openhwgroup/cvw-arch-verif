@@ -13,7 +13,7 @@ self_loop:
 
 .align 4
 scratch:
-    .bss 8
+    .bss 136
 
 .data 
 
