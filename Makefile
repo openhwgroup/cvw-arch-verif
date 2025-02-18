@@ -59,8 +59,6 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
-#	rm -rf ${LOCKSTEPDIR}/*/Zaamo ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
-	rm -rf ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail because they load from x0; temporarily remove until fixed
 	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory

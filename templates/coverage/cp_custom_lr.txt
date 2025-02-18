@@ -1,0 +1,4 @@
+    cp_custom_aqrl : coverpoint ins.current.insn[26:25]  iff (ins.trap == 0 )  {
+        // Combinations of acquire and release
+        ignore_bins rl_noaq = {2'b01};
+    }
