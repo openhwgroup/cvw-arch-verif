@@ -8,12 +8,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 #include "WALLY-init-lib.h"
+#include "WALLY-priv-endian.h"
 
 main:
 ///////////////////////////////// 
 // Endianness testing
 // cp_mstatus_sbe_endianness_*
-// cp_sstatus_ube_endianness_*
+// cp_mstatus_mprv_sbe_endianness_*
 // cp_sstatus_ube_endianness_*
 //
 // Goal is to store a pattern to a scratch location in memory
@@ -44,9 +45,11 @@ main:
     # always do both.  One or the other will trap, but this
     # avoids needing separate code for the two architectures
     # code assumes s registers are saved during these tests
-    
+    # setting endiannes for write and read, prilige mode
+    # calling WALLY-priv-endian.h to store and load 
+
     csrr s0, mstatus    # save CSR
-    li a0, 1            # a0 = 1, change to supervisor  mode
+    li   a0, 1          # a0 = 1, change to supervisor  mode
     ecall               # Make a system call to enter supervisor mode
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
@@ -58,8 +61,12 @@ main:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch                    # s3 = pointer to scratch
+    //s9, s10, s11 used in WALLY-priv-endian.h
+    li s9,  1  # setendianess function: 1 to stay in func and run mstatush 
+    li s10, 1  # setendianess function: 1 to stay in func since running mstatus
+    li s11, 1  # resetting privilige after accessing mstatush
 
-    # iterate over each endianness, doing all sizes of stores and loads
+    # Iterate over each endianness, doing all sizes of stores and loads
     li  s4, 0           # endianness for write
     li  s5, 0           # endianness for read
     jal s6, endiantest  # test little-endian read and write
@@ -68,144 +75,10 @@ main:
     li  s5, 1           # endianness for read
     jal s6, endiantest  # test big-endian read and write
     li  s4, 0           # endianness for write
-    jal s6, endiantest  # test little-endian write, big-endian read
-    j postendian    
-endiantest:
-    # Try each size of stores with the write endianness, and then the loads with the read endianness
-    mv a0, s4       # setEndianness(write)
-    jal setendianness
-    # Test storing bytes
-    li t0, 0x01
-    sb t0, 0(s3)
-    li t0, 0x02
-    sb t0, 1(s3)
-    li t0, 0x03
-    sb t0, 2(s3)
-    li t0, 0x04
-    sb t0, 3(s3)
-    li t0, 0x05
-    sb t0, 4(s3)
-    li t0, 0x06
-    sb t0, 5(s3)
-    li t0, 0x07
-    sb t0, 6(s3)
-    li t0, 0x08
-    sb t0, 7(s3)
-    jal s7, endianaccess
-    mv a0, s4       # setEndianness(write)
-    jal setendianness
-    li t0, 0x1112
-    sh t0, 0(s3)
-    li t0, 0x1314
-    sh t0, 2(s3)
-    li t0, 0x1516
-    sh t0, 4(s3)
-    li t0, 0x1718
-    sh t0, 6(s3)
-    jal s7, endianaccess
-    mv a0, s4       # setEndianness(write)
-    jal setendianness
-     li t0, 0x21222324
-    sw t0, 0(s3)
-    li t0, 0x25262728
-    sw t0, 4(s3)
-    jal s7, endianaccess
-    mv a0, s4       # setEndianness(write)
-    jal setendianness
-    li t0, 0x3132333435363738
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(s3)            # sd only in RV64
-            jal s7, endianaccess
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    jr s6   # return (return address was stored in s6)
+    jal s6, endiantest  # test little-endian write, big-endian read   
 
-setendianness:
-    mv s8, a0
-    # Request to switch to Machine mode
-    li a0, 3         # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
-    // if a0 = 1, bigendian, otherwise littleendian
-    beqz s8, 1f      # little endian
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrs t6, mstatus, s1   # for RV64, set mstatus.SBE
-        #elif __riscv_xlen == 32
-            csrrs t6, mstatush, s1  # for RV32, set mstatush.SBE
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    // Switch back to Supervisor mode
-    j change
-1:  
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            csrrc t6, mstatus, s1   # for RV64, clear mstatus.SBE
-        #elif __riscv_xlen == 32
-            csrrc t6, mstatush, s1  # for RV32, clear mstatush.SBE.
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    j change
-
-change: 
-    # Switch back to Supervisor mode
-    li a0, 1         # a0 = 1, change to Supervisor mode
-    ecall            # Make a system call 
-    ret
-
-endianaccess:
-    // Try all the accesses to make sure they work for the endianness
-     mv a0, s5   # setEndianness(read)
-    jal setendianness
-    lb  t3,  0(s3)
-    lb  t3,  1(s3)
-    lb  t3,  2(s3)
-    lb  t3,  3(s3)
-    lb  t3,  4(s3)
-    lb  t3,  5(s3)
-    lb  t3,  6(s3)
-    lb  t3,  7(s3)
-    lbu t3,  0(s3)
-    lbu t3,  1(s3)
-    lbu t3,  2(s3)
-    lbu t3,  3(s3)
-    lbu t3,  4(s3)
-    lbu t3,  5(s3)
-    lbu t3,  6(s3)
-    lbu t3,  7(s3)
-    lh  t3,  0(s3)
-    lh  t3,  2(s3)
-    lh  t3,  4(s3)
-    lh  t3,  6(s3)
-    lhu t3,  0(s3)
-    lhu t3,  2(s3)
-    lhu t3,  4(s3)
-    lhu t3,  6(s3)
-    lw  t3,  0(s3)
-    lw  t3,  4(s3)
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64    
-            lwu t3, 0(s3) # long loads for RV64
-            lwu t3, 4(s3) 
-            ld t3, 0(s3) 
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    jr s7   # return (return address was stored in s7)
-
-postendian:
+post_cp_mstatus_sbe_endianness:
     csrrw t6, mstatus, s0    # restore CSR
-
-
-
-
 
 
 
@@ -215,7 +88,7 @@ postendian:
     # save mstatus
     # ecall to move to supervisor mode
     # Setting 16 cases for MPRV, MPP, SBE and MBE
-    #1st 16 cases are write and the  2nd 16 cases are read
+    # 1st 16 cases are write and the  2nd 16 cases are read
     # ---------------------------------------
     #     XLEN=64        |     XLEN=32
     # --------------------------------------
@@ -227,12 +100,13 @@ postendian:
     # bit 17 for mstatus.MPRV  
     # bit 12 for mstatus.MPP
     # bit 11 for mstatus.MPP 
-    #64 bits: use mstatus
-        # bit 37 for mstatus.MBE
-        # bit 36 for mstatus.SBE 
-    #32 bits: use mstatush
-        # bit 5 for mstatush.MBE 
-        # bit 4 for mstatush.SBE 
+    # MBE AND SBE:
+    #   64 bits: use mstatus
+            # bit 37 for mstatus.MBE
+            # bit 36 for mstatus.SBE 
+    #   32 bits: use mstatush
+            # bit 5 for mstatush.MBE 
+            # bit 4 for mstatush.SBE 
            
     csrr s0, mstatus    # save CSR
     li a0, 3         # a0 = 3, change to Machine mode
@@ -435,7 +309,7 @@ postendian:
             csrrc   t6, mstatus, t3   # setting the 0s
             csrrs   t6, mstatus, t4   # setting the 1s
             jal s7, endianread2
-            j postendian2
+            j post_cp_mstatus_mprv_sbe_endianness
 
 
         #elif __riscv_xlen == 32
@@ -763,7 +637,7 @@ postendian:
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
             jal s7, endianread2
-            j postendian2
+            j post_cp_mstatus_mprv_sbe_endianness
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -869,8 +743,7 @@ endianread2:
     #endif
     jr s7   # return (return address was stored in s7)
 
-//Code shared between coverpoints
-postendian2: 
+post_cp_mstatus_mprv_sbe_endianness: 
     csrrw t6, mstatus, s0    # restore CSR
     #restoring mstatush if rv32 
     #ifdef __riscv_xlen
@@ -882,156 +755,43 @@ postendian2:
     #endif
 
 
-
 ///////////////////////////////////////////////////////////////////
 # 3RD COVERPOINT: cp_sstatus_ube_endianness_*
 ///////////////////////////////////////////////////////////////////
     #Runs tests in user mode and endianness given in sstatus.UBE
-    #save mstatus
-    csrr s0, sstatus    # save CSR
-    li a0, 1         # a0 = 3, change to user mode
-    ecall            # Make a system call to enter uer mode
+    #save sstatus
+    # ecall to move to user mode
+    # prep s1 with bits to set/clear UBE 
+    # code assumes s registers are saved during these tests
+    # setting endiannes for write and read, prilige mode
+    # calling WALLY-priv-endian.h to store and load 
+
+    csrr s0, sstatus      # save CSR
+    li a0, 0              # a0 = 0, change to user mode
+    ecall                 # Make a system call
     #ifdef __riscv_xlen
         li s1, 0x40       # 1 in bit 6 for mstatus.SBE  
     #else
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch  # s3 = pointer to scratch
+    //s9, s10 used in WALLY-priv-endian.h
+    li s9,  1   # setendianess function: 1 to stay in function since you want to branch for s10
+    li s10, 0   # setendianess function: 0 to branch to status
+
     # iterate over each endianness, doing all sizes of stores and loads
     li  s4, 0           # endianness for write
     li  s5, 0           # endianness for read
-    jal s6, endiantest3  # test little-endian read and write
+    jal s6, endiantest  # test little-endian read and write
     li  s4, 1           # endianness for write
-    jal s6, endiantest3  # test big-endian write, little-endian read
+    jal s6, endiantest  # test big-endian write, little-endian read
     li  s5, 1           # endianness for read
-    jal s6, endiantest3  # test big-endian read and write
+    jal s6, endiantest  # test big-endian read and write
     li  s4, 0           # endianness for write
-    jal s6, endiantest3  # test little-endian write, big-endian read
-    j postendian3    
-endiantest3:
-    # Try each size of stores with the write endianness, and then the loads with the read endianness
-    mv a0, s4       # setEndianness(write)
-    jal setendianness3
-    # Test storing bytes
-    li t0, 0x01
-    sb t0, 0(s3)
-    li t0, 0x02
-    sb t0, 1(s3)
-    li t0, 0x03
-    sb t0, 2(s3)
-    li t0, 0x04
-    sb t0, 3(s3)
-    li t0, 0x05
-    sb t0, 4(s3)
-    li t0, 0x06
-    sb t0, 5(s3)
-    li t0, 0x07
-    sb t0, 6(s3)
-    li t0, 0x08
-    sb t0, 7(s3)
-    jal s7, endianaccess3
-    mv a0, s4       # setEndianness(write)
-    jal setendianness3
-    li t0, 0x1112
-    sh t0, 0(s3)
-    li t0, 0x1314
-    sh t0, 2(s3)
-    li t0, 0x1516
-    sh t0, 4(s3)
-    li t0, 0x1718
-    sh t0, 6(s3)
-    jal s7, endianaccess3
-    mv a0, s4       # setEndianness(write)
-    jal setendianness3
-     li t0, 0x21222324
-    sw t0, 0(s3)
-    li t0, 0x25262728
-    sw t0, 4(s3)
-    jal s7, endianaccess3
-    mv a0, s4       # setEndianness(write)
-    jal setendianness3
-    li t0, 0x3132333435363738
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(s3)            # sd only in RV64
-            jal s7, endianaccess3
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    jr s6   # return (return address was stored in s6)
+    jal s6, endiantest  # test little-endian write, big-endian read
 
-setendianness3:
-    mv s8, a0
-    # Request to switch to Machine mode
-    li a0, 3         # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
-    // if a0 = 1, bigendian, otherwise littleendian
-    beqz s8, 1f      # little endian
-    #ifdef __riscv_xlen
-        csrrs t6, sstatus, s1   # set sstatus.UBE
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    // Switch back to Supervisor mode
-    j change3
-1:  
-    #ifdef __riscv_xlen
-        csrrc t6, sstatus, s1   # clear sstatus.UBE
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    j change3
-
-change3: 
-    # Switch back to user mode
-    li a0, 0         # a0 = 0, change to USER mode
-    ecall            # Make a system call 
-    ret
-
-endianaccess3:
-    // Try all the accesses to make sure they work for the endianness
-     mv a0, s5   # setEndianness(read)
-    jal setendianness3
-    lb  t3,  0(s3)
-    lb  t3,  1(s3)
-    lb  t3,  2(s3)
-    lb  t3,  3(s3)
-    lb  t3,  4(s3)
-    lb  t3,  5(s3)
-    lb  t3,  6(s3)
-    lb  t3,  7(s3)
-    lbu t3,  0(s3)
-    lbu t3,  1(s3)
-    lbu t3,  2(s3)
-    lbu t3,  3(s3)
-    lbu t3,  4(s3)
-    lbu t3,  5(s3)
-    lbu t3,  6(s3)
-    lbu t3,  7(s3)
-    lh  t3,  0(s3)
-    lh  t3,  2(s3)
-    lh  t3,  4(s3)
-    lh  t3,  6(s3)
-    lhu t3,  0(s3)
-    lhu t3,  2(s3)
-    lhu t3,  4(s3)
-    lhu t3,  6(s3)
-    lw  t3,  0(s3)
-    lw  t3,  4(s3)
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64    
-            lwu t3, 0(s3) # long loads for RV64
-            lwu t3, 4(s3) 
-            ld t3, 0(s3) 
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    jr s7   # return (return address was stored in s7)
-postendian3: 
+post_cp_sstatus_ube_endianness: 
     csrrw t6, sstatus, s0    # restore CSR
-
 
 
 finished:
