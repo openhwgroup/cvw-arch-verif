@@ -76,14 +76,16 @@ covergroup InterruptsU_cg with function sample(ins_interruptsu_t ins);
                                (ins.current.rs1_val[0] == 1) {                          // value to store has a 1 in bit 0 
         bins clint_msip_set = {1};
     }
+    priv_mode_u: coverpoint ins.current.mode {
+        bins U_mode = {2'b00};
+    }
 
     // main coverpoints
-    cp_user_mti:    cross mtvec_mode, mstatus_mie, mstatus_sie, mideleg_mti_zero, mie_mtie_one, mip_mtip; 
-    cp_user_msi:    cross mtvec_mode, mstatus_mie, mstatus_sie, mideleg_msi_zero, mie_msie_one, clint_msip_set;
-    cp_user_mei:    cross mtvec_mode, mstatus_mie, mstatus_sie, mideleg_mei_zero, mie_meie_one, mip_meip;
-    cp_user_sei:    cross mtvec_mode, mstatus_mie, mstatus_sie, mideleg_sei_zero, mie_seie_one, mip_seip;
-    cp_wfi:         cross wfi,        mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_mtip;
-    cp_wfi_timeout: cross wfi,        mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, timeout;
+    cp_user_mti:    cross priv_mode_u, mtvec_mode, mstatus_mie, mstatus_sie, mie_mtie_one, mip_mtip; 
+    cp_user_msi:    cross priv_mode_u, mtvec_mode, mstatus_mie, mstatus_sie, mie_msie_one, clint_msip_set;
+    cp_user_mei:    cross priv_mode_u, mtvec_mode, mstatus_mie, mstatus_sie, mie_meie_one, mip_meip;
+    cp_wfi:         cross priv_mode_u, wfi,        mstatus_mie, mstatus_sie, mstatus_tw, mie_mtie_one, mip_mtip;
+    cp_wfi_timeout: cross priv_mode_u, wfi,        mstatus_mie, mstatus_sie, mstatus_tw, mie_mtie_one, timeout;
 
 endgroup
 
