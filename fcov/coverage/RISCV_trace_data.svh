@@ -71,6 +71,25 @@ class riscvTraceData
 
   logic                      lrsc_cancel;   // Implementation defined cancel
 
+// Virtual Memory signals for verification
+  localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
+  localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
+
+  logic [(XLEN-1):0]     virt_adr_i;         // Instruction virtual address
+  logic [(XLEN-1):0]     virt_adr_d;         // Data virtual address
+  logic [(PA_BITS-1):0]  phys_adr_i;           // Instruction physical address
+  logic [(PA_BITS-1):0]  phys_adr_d;           // Data physical address
+  logic [(XLEN-1):0]     pte_i;         // Instruction page table entry
+  logic [(XLEN-1):0]     pte_d;         // Data page table entry
+  logic [(PPN_BITS-1):0] ppn_i;         // Instruction physical page number
+  logic [(PPN_BITS-1):0] ppn_d;         // Data physical page number
+  logic [1:0]            page_type_i;    // Instruction page type
+  logic [1:0]            page_type_d;    // Data page type
+  logic                  read_access;    // Read access
+  logic                  write_access;   // Write access
+  logic                  execute_access; // Execute access
+
+
   int                         hart;
   int                         issue;
   // Decoded instruction info
@@ -113,26 +132,4 @@ class riscvTraceData
   bit [(XLEN-1):0]          imm2;
   bit [(XLEN-1):0]          imm3;
   bit [(XLEN-1):0]          mem_addr;
-
-  //For VM Verification
-
-  logic [(XLEN-1):0]         VAdrI;
-  logic [(XLEN-1):0]         VAdrD;
-
-  localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
-  logic [(PA_BITS-1):0]           PAI;
-  logic [(PA_BITS-1):0]           PAD;
-
-  logic ReadAccess;
-  logic WriteAccess;
-  logic ExecuteAccess;
-
-  logic [(XLEN-1):0]  PTE_i;
-  logic [(XLEN-1):0]  PTE_d;
-
-  localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
-  logic [(PPN_BITS-1):0]           PPN_i;
-  logic [(PPN_BITS-1):0]           PPN_d;
-
-  logic [1:0] PageType_i, PageType_d;
 endclass
