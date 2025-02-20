@@ -116,7 +116,7 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
         bins U_mode = {2'b00};
     }
     // main coverpoints
-    cp_uprivinst:  cross privinstrs, priv_mode_u;
+    cp_uprivinst:  cross privinstrs, old_priv_mode_u;
     cp_mret:       cross mret, old_priv_mode_u; // should trap 
     cp_sret:       cross sret, old_priv_mode_u; // should trap 
 endgroup
