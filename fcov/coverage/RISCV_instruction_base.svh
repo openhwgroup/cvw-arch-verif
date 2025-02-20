@@ -133,7 +133,7 @@ class RISCV_instruction
     end
   endfunction
 
-  // Lookup integer refister value
+  // Lookup integer register value
   virtual function `XLEN_INT get_gpr_val(int hart, int issue, string key, int prev);
     int idx = get_gpr_num(key);
     if (idx >= 0) begin
@@ -457,23 +457,6 @@ class RISCV_instruction
     end else begin
       current.fs3_val = prev.f_wdata[get_fpr_num(ops[offset].key)];
     end
-  endfunction
-
-  // For VM Coverage TODO: Make this generic beyond the WALLY testbench
-  virtual function void add_vm_signals(int offset);
-    current.VAdrI         = $root.testbench.wallyTracer.IVAdrW;
-    current.VAdrD         = $root.testbench.wallyTracer.DVAdrW;
-    current.PAI           = $root.testbench.wallyTracer.IPAW;
-    current.PAD           = $root.testbench.wallyTracer.DPAW;
-    current.ReadAccess    = $root.testbench.wallyTracer.ReadAccessW;
-    current.WriteAccess   = $root.testbench.wallyTracer.WriteAccessW;
-    current.ExecuteAccess = $root.testbench.wallyTracer.ExecuteAccessW;
-    current.PTE_i         = $root.testbench.wallyTracer.IPTEW;
-    current.PTE_d         = $root.testbench.wallyTracer.DPTEW;
-    current.PPN_i         = $root.testbench.wallyTracer.IPPNW;
-    current.PPN_d         = $root.testbench.wallyTracer.DPPNW;
-    current.PageType_i    = $root.testbench.wallyTracer.IPageTypeW;
-    current.PageType_d    = $root.testbench.wallyTracer.DPageTypeW;
   endfunction
 
 endclass

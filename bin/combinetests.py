@@ -16,8 +16,8 @@ import filecmp
 MAXFILESIZE = 5000000
 
 def insertTemplate(out, template):
-    with open(templatedir+"/"+template) as f:
-        out.write(f.read())
+	with open(templatedir+"/testgen/"+template) as f:
+		out.write(f.read())
 
 def insertTests(out, file):
     out.write("\n\n// ******************\n")
