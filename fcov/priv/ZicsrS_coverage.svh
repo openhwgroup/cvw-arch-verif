@@ -290,7 +290,7 @@ covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
     }
 
     // main coverpoints
-    cp_csrr:         cross csrr,    csr_no_satp, priv_mode_s, nonzerord;             
+    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
     cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
