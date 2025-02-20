@@ -23,12 +23,12 @@ typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32cbo_p
 covergroup RV32CBO_PMP_exceptions_cg with function sample(ins_rv32cbo_pmp_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
-    PTE_d: coverpoint ins.current.PTE_d[7:0] {
+    PTE_d: coverpoint ins.current.pte_d[7:0] {
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
     //PageType for DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PPN)
-    PageType_d: coverpoint ins.current.PageType_d {
+    PageType_d: coverpoint ins.current.page_type_d {
         bins mega = {2'b01};
         bins kilo = {2'd0};
     }
@@ -38,7 +38,7 @@ covergroup RV32CBO_PMP_exceptions_cg with function sample(ins_rv32cbo_pmp_t ins)
     }
 
     //For crosses with write accesses and its corresponding faults
-    write_acc: coverpoint ins.current.WriteAccess {
+    write_acc: coverpoint ins.current.write_access {
         bins set = {1};
     }
 
@@ -78,7 +78,6 @@ function void rv32cbo_pmp_sample(int hart, int issue);
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
-    ins.add_vm_signals(1);
     
     RV32CBO_PMP_exceptions_cg.sample(ins);
 endfunction

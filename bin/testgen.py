@@ -25,6 +25,11 @@ import math
 # functions
 ##################################
 
+def insertTemplate(name):
+  f.write(f"\n # {name}\n")
+  with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
+    f.write(h.read())
+
 def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
@@ -677,9 +682,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
-    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
-  elif test in sctype + amotype:
+  elif test in sctype:
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
+  elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
@@ -1447,6 +1456,12 @@ def make_nanbox(test, xlen):
   desc = "Random test for cp_NaNBox "
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_custom(test, xlen):
+    insertTemplate(f"{test}.S")
+
+def insertTest(test):
+  f.write(f"\n# Stub for {test}")
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1735,8 +1750,13 @@ def write_tests(coverpoints, test, xlen):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
-    elif (coverpoint == "cp_sc"):
-      pass # TODO does this need to be implemented?
+    elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
+          coverpoint == "cp_custom_sc_after_sc" or coverpoint == "cp_sc_fail" or coverpoint == "cp_address_difference" or
+          coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
+          coverpoint == "cp_custom_sc_after_store"):
+      pass # Zalrsc coverpoints handled custom
+    elif (coverpoint == "cp_custom_aqrl"):
+      make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1766,7 +1786,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
           curinstr = m.group(1).replace("_", ".")
           # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
-        m = re.search("\s*(\S+) :", line)
+        m = re.search(r"\s*(\S+) :", line)
         if (m):
           # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
@@ -2256,9 +2276,7 @@ if __name__ == '__main__':
             #f.write(line)
 
             # insert generic header
-            h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_header.S")
 
             sigOffset = 0 # offset of signature from signature pointer
             sigTotal = 0 # total number of bytes in signature
@@ -2274,9 +2292,7 @@ if __name__ == '__main__':
             # print footer
             line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
             f.write(line)
-            h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_footer.S")  
 
             # Finish
             f.close()
