@@ -292,7 +292,7 @@ covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
     // main coverpoints
     cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
-    cp_csrcs:        cross csrop,   csr,         priv_mode_s, rs1_ones;    
+    cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
     cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
     cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
