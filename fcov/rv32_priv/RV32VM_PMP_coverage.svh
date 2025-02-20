@@ -24,22 +24,22 @@ typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32vm_pm
 covergroup RV32VM_PMP_cg with function sample(ins_rv32vm_pmp_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
-    PTE_i: coverpoint ins.current.PTE_i[7:0] {
+    PTE_i: coverpoint ins.current.pte_i[7:0] {
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
-    PTE_d: coverpoint ins.current.PTE_d[7:0] {
+    PTE_d: coverpoint ins.current.pte_d[7:0] {
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
     
     //Pagetype for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
-    PageType_i: coverpoint ins.current.PageType_i {
+    PageType_i: coverpoint ins.current.page_type_i {
         bins mega = {2'b01};
         bins kilo = {2'd0};
     }
 
-    PageType_d: coverpoint ins.current.PageType_d {
+    PageType_d: coverpoint ins.current.page_type_d {
         bins mega = {2'b01};
         bins kilo = {2'd0};
     }
@@ -50,13 +50,13 @@ covergroup RV32VM_PMP_cg with function sample(ins_rv32vm_pmp_t ins);
     }
 
     //For crosses with Read, write and execute accesses and their corresponding faults
-    exec_acc: coverpoint ins.current.ExecuteAccess {
+    exec_acc: coverpoint ins.current.execute_access {
         bins set = {1};
     }
-    read_acc: coverpoint ins.current.ReadAccess {
+    read_acc: coverpoint ins.current.read_access {
         bins set = {1};
     }
-    write_acc: coverpoint ins.current.WriteAccess {
+    write_acc: coverpoint ins.current.write_access {
         bins set = {1};
     }
 
@@ -159,7 +159,6 @@ function void rv32vm_pmp_sample(int hart, int issue);
 
     ins = new(hart, issue, traceDataQ); 
     ins.add_csr(0);
-    ins.add_vm_signals(1);
     
     RV32VM_PMP_cg.sample(ins);
 endfunction

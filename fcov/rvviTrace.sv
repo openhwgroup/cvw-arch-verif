@@ -96,6 +96,12 @@ interface rvviTrace
   wire [4095:0][(XLEN-1):0] csr        [(NHART-1):0][(RETIRE-1):0];   // Full CSR Address range
   wire [4095:0]             csr_wb     [(NHART-1):0][(RETIRE-1):0];   // CSR writeback (change) flag
 
+  // Interrupts
+  wire                      m_ext_intr  [(NHART-1):0][(RETIRE-1):0];   // Machine external interrupt
+  wire                      s_ext_intr  [(NHART-1):0][(RETIRE-1):0];   // Supervisor external interrupt
+  wire                      m_timer_intr[(NHART-1):0][(RETIRE-1):0];   // Machine timer interrupt
+  wire                      m_soft_intr [(NHART-1):0][(RETIRE-1):0];   // Machine software interrupt
+
   // Atomic Memory Control
   wire                      lrsc_cancel[(NHART-1):0][(RETIRE-1):0];   // Implementation defined cancel
 
@@ -107,6 +113,24 @@ interface rvviTrace
   wire                      halt       [(NHART-1):0][(RETIRE-1):0];   // Halted  instruction
   wire [1:0]                ixl        [(NHART-1):0][(RETIRE-1):0];   // XLEN mode 32/64 bit
   wire [1:0]                mode       [(NHART-1):0][(RETIRE-1):0];   // Privilege mode of operation
+
+  // Virtual Memory signals for verification
+  localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
+  localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
+
+  wire [(XLEN-1):0]     virt_adr_i     [(NHART-1):0][(RETIRE-1):0]; // Instruction virtual address
+  wire [(XLEN-1):0]     virt_adr_d     [(NHART-1):0][(RETIRE-1):0]; // Data virtual address
+  wire [(PA_BITS-1):0]  phys_adr_i     [(NHART-1):0][(RETIRE-1):0]; // Instruction physical address
+  wire [(PA_BITS-1):0]  phys_adr_d     [(NHART-1):0][(RETIRE-1):0]; // Data physical address
+  wire [(XLEN-1):0]     pte_i          [(NHART-1):0][(RETIRE-1):0]; // Instruction page table entry
+  wire [(XLEN-1):0]     pte_d          [(NHART-1):0][(RETIRE-1):0]; // Data page table entry
+  wire [(PPN_BITS-1):0] ppn_i          [(NHART-1):0][(RETIRE-1):0]; // Instruction physical page number
+  wire [(PPN_BITS-1):0] ppn_d          [(NHART-1):0][(RETIRE-1):0]; // Data physical page number
+  wire [1:0]            page_type_i    [(NHART-1):0][(RETIRE-1):0]; // Instruction page type
+  wire [1:0]            page_type_d    [(NHART-1):0][(RETIRE-1):0]; // Data page type
+  wire                  read_access    [(NHART-1):0][(RETIRE-1):0]; // Read access
+  wire                  write_access   [(NHART-1):0][(RETIRE-1):0]; // Write access
+  wire                  execute_access [(NHART-1):0][(RETIRE-1):0]; // Execute access
 
   //
   // Optional DMI Interface
