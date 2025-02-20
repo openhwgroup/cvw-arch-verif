@@ -127,7 +127,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstep
+	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 	$(MAKE) merge
 
 # Merge coverage files and generate report
