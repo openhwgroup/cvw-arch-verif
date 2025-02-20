@@ -675,16 +675,15 @@ endianwrite2:
     sw t0, 0(s3)
     li t0, 0x25262728
     sw t0, 4(s3)
-    li t0, 0x3132333435363738
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
+            li t0, 0x3132333435363738
             sd t0, 0(s3)            # sd only in RV64
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
     jr s6   # return (return address was stored in s6)
-
 
 
 endianread2:
