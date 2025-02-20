@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    mcounters_cg = new();         mcounters_cg.set_inst_name("obj_mcounters");
+    ZicntrM_mcounters_cg = new();         ZicntrM_mcounters_cg.set_inst_name("obj_mcounters");
