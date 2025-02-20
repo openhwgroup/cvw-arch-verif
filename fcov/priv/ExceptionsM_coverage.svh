@@ -331,8 +331,8 @@ function void exceptionsm_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
 
-    $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    $display("func3: %b, A=B: %b, A<B S: %b, A<B U: %b,  PCbit1: %b, immbit1: %b",ins.current.insn[14:12], (ins.current.rs1_val == ins.current.rs2_val), $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), ins.current.rs1_val < ins.current.rs2_val, ins.current.pc_rdata[1], ins.current.imm[1]);
+    //$display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
+    //$display("func3: %b, A=B: %b, A<B S: %b, A<B U: %b,  PCbit1: %b, immbit1: %b",ins.current.insn[14:12], (ins.current.rs1_val == ins.current.rs2_val), $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), ins.current.rs1_val < ins.current.rs2_val, ins.current.pc_rdata[1], ins.current.imm[1]);
 
     ExceptionsM_exceptions_cg.sample(ins);
     ExceptionsM_instr_cg.sample(ins);
