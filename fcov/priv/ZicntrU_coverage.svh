@@ -24,7 +24,7 @@
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicntru_t;
 
 
-covergroup ucounters_cg with function sample(ins_zicntru_t ins);
+covergroup ZicntrU_ucounters_cg with function sample(ins_zicntru_t ins);
     option.per_instance = 0; 
     // Counter access in user mode 
 
@@ -268,6 +268,6 @@ function void zicntru_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
 
-    ucounters_cg.sample(ins);
+    ZicntrU_ucounters_cg.sample(ins);
 
 endfunction
