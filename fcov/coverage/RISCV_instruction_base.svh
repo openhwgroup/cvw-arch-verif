@@ -459,21 +459,4 @@ class RISCV_instruction
     end
   endfunction
 
-  // For VM Coverage TODO: Make this generic beyond the WALLY testbench
-  virtual function void add_vm_signals(int offset);
-    current.VAdrI         = $root.testbench.wallyTracer.IVAdrW;
-    current.VAdrD         = $root.testbench.wallyTracer.DVAdrW;
-    current.PAI           = $root.testbench.wallyTracer.IPAW;
-    current.PAD           = $root.testbench.wallyTracer.DPAW;
-    current.ReadAccess    = $root.testbench.wallyTracer.ReadAccessW;
-    current.WriteAccess   = $root.testbench.wallyTracer.WriteAccessW;
-    current.ExecuteAccess = $root.testbench.wallyTracer.ExecuteAccessW;
-    current.PTE_i         = $root.testbench.wallyTracer.IPTEW;
-    current.PTE_d         = $root.testbench.wallyTracer.DPTEW;
-    current.PPN_i         = $root.testbench.wallyTracer.IPPNW;
-    current.PPN_d         = $root.testbench.wallyTracer.DPPNW;
-    current.PageType_i    = $root.testbench.wallyTracer.IPageTypeW;
-    current.PageType_d    = $root.testbench.wallyTracer.DPageTypeW;
-  endfunction
-
 endclass

@@ -132,20 +132,20 @@ endgroup
 
 covergroup RV64VM_PA_VA_cg with function sample(ins_rv64vm_t ins); //checking that all bits of PA and VA are live
     option.per_instance = 0; 
-    VA_i: coverpoint ins.current.VAdrI { 
+    VA_i: coverpoint ins.current.virt_adr_i { 
         bins all_zeros = {64'd0};
         bins all_ones  = {64'hFFFFFFFF_FFFFFFFF};
     }
-    VA_d: coverpoint ins.current.VAdrD { 
+    VA_d: coverpoint ins.current.virt_adr_d { 
         bins all_zeros = {64'd0};
         bins all_ones  = {64'hFFFFFFFF_FFFFFFFF};
     }
 
-    PA_i: coverpoint ins.current.PAI {
+    PA_i: coverpoint ins.current.phys_adr_i {
         bins all_zeros = {56'd0};
         bins all_ones  = {56'hFFFFFF_FFFFFFFF};
     }
-    PA_d: coverpoint ins.current.PAD {
+    PA_d: coverpoint ins.current.phys_adr_d {
         bins all_zeros = {56'd0};
         bins all_ones  = {56'hFFFFFF_FFFFFFFF};
     }
@@ -204,13 +204,13 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         bins U_mode = {2'b00};
         bins S_mode = {2'b01};
     }
-    read_acc: coverpoint ins.current.ReadAccess {
+    read_acc: coverpoint ins.current.read_access {
         bins set = {1};
     }
-    write_acc: coverpoint ins.current.WriteAccess {
+    write_acc: coverpoint ins.current.write_access {
         bins set = {1};
     }
-    exec_acc: coverpoint ins.current.ExecuteAccess {
+    exec_acc: coverpoint ins.current.execute_access {
         bins set = {1};
     }
     satp_mode: coverpoint ins.current.csr[12'h180][63:60] {
@@ -233,13 +233,13 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         ignore_bins ig1 = binsof(priv_mode.S_mode);
     }
 
-    PTE_upage_i: coverpoint ins.current.PTE_i[7:0] { //ms.3 & 4
+    PTE_upage_i: coverpoint ins.current.pte_i[7:0] { //ms.3 & 4
         wildcard bins leaflvl_u = {8'b???11111};
     }
-    PTE_upage_d: coverpoint ins.current.PTE_d[7:0] { //ms.3 & 4
+    PTE_upage_d: coverpoint ins.current.pte_d[7:0] { //ms.3 & 4
         wildcard bins leaflvl_u = {8'b???11111};
     }
-    PageType_i: coverpoint ins.current.PageType_i {
+    PageType_i: coverpoint ins.current.page_type_i {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -248,7 +248,7 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         bins kilo = {2'd0};
     }
 
-    PageType_d: coverpoint ins.current.PageType_d {
+    PageType_d: coverpoint ins.current.page_type_d {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -313,7 +313,7 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_rv64vm_t ins);
         ignore_bins ig4 = binsof(sum_sstatus.notset);
     }
 
-    PTE_sbe_d: coverpoint ins.current.PTE_d[7:0] { //ms.5
+    PTE_sbe_d: coverpoint ins.current.pte_d[7:0] { //ms.5
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
@@ -334,115 +334,115 @@ endgroup
 covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
-    PTE_i_inv: coverpoint ins.current.PTE_i[7:0] { //pte.2
+    PTE_i_inv: coverpoint ins.current.pte_i[7:0] { //pte.2
         wildcard bins leaflvl_u = {8'b???11??0};
         wildcard bins leaflvl_s = {8'b???01??0};
     }
-    PTE_d_inv: coverpoint ins.current.PTE_d[7:0] { //pte.2
+    PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //pte.2
         wildcard bins leaflvl_u_r = {8'b???1??10};
         wildcard bins leaflvl_u_w = {8'b???1?110};
         wildcard bins leaflvl_s_r = {8'b???0??10};
         wildcard bins leaflvl_s_w = {8'b???0?110};
     }
 
-    PTE_i_res_rwx: coverpoint ins.current.PTE_i[7:0] { //pte.3
+    PTE_i_res_rwx: coverpoint ins.current.pte_i[7:0] { //pte.3
         wildcard bins leaflvl_exec_u = {8'b???11101};
         wildcard bins leaflvl_noexec_u = {8'b???10101};
         wildcard bins leaflvl_exec_s = {8'b???01101};
         wildcard bins leaflvl_noexec_s = {8'b???00101};
     }
-    PTE_d_res_rwx: coverpoint ins.current.PTE_d[7:0] { //pte.3
+    PTE_d_res_rwx: coverpoint ins.current.pte_d[7:0] { //pte.3
         wildcard bins leaflvl_exec_u = {8'b???11101};
         wildcard bins leaflvl_noexec_u = {8'b???10101};
         wildcard bins leaflvl_exec_s = {8'b???01101};
         wildcard bins leaflvl_noexec_s = {8'b???00101};
     }
 
-    PTE_nonleaf_lvl0_i: coverpoint ins.current.PTE_i[7:0] { //pte.4
+    PTE_nonleaf_lvl0_i: coverpoint ins.current.pte_i[7:0] { //pte.4
         wildcard bins lvl0_s = {8'b???00001};
         wildcard bins lvl0_u = {8'b???10001};
     }
-    PTE_nonleaf_lvl0_d: coverpoint ins.current.PTE_d[7:0] { //pte.4
+    PTE_nonleaf_lvl0_d: coverpoint ins.current.pte_d[7:0] { //pte.4
         wildcard bins lvl0_s = {8'b???00001};
         wildcard bins lvl0_u = {8'b???10001};
     }
 
-    PTE_x_spage_i: coverpoint ins.current.PTE_i[7:0] { //pte.5 & 6
+    PTE_x_spage_i: coverpoint ins.current.pte_i[7:0] { //pte.5 & 6
         wildcard bins leaflvl_x_0 = {8'b???00??1};
         wildcard bins leaflvl_x_1 = {8'b???01??1};
     }
-    PTE_rw_spage_d: coverpoint ins.current.PTE_d[7:0] { //pte.5 & 6
+    PTE_rw_spage_d: coverpoint ins.current.pte_d[7:0] { //pte.5 & 6
         wildcard bins leaflvl_w_0 = {8'b???0?0?1};
         wildcard bins leaflvl_w_1 = {8'b???0?111};
         wildcard bins leaflvl_r_0 = {8'b???0??01};
         wildcard bins leaflvl_r_1 = {8'b???0??11};
     }
 
-    PTE_spage_i: coverpoint ins.current.PTE_i[7:0] { //pte.7
+    PTE_spage_i: coverpoint ins.current.pte_i[7:0] { //pte.7
         wildcard bins leaflvl_s = {8'b???01111};
     }
-    PTE_spage_d: coverpoint ins.current.PTE_d[7:0] { //pte.7
+    PTE_spage_d: coverpoint ins.current.pte_d[7:0] { //pte.7
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
-    PTE_upage_i: coverpoint ins.current.PTE_i[7:0] { //pte.8 & 9
+    PTE_upage_i: coverpoint ins.current.pte_i[7:0] { //pte.8 & 9
         wildcard bins leaflvl_u = {8'b???11111};
     }
-    PTE_upage_d: coverpoint ins.current.PTE_d[7:0] { //pte.8 & 9
+    PTE_upage_d: coverpoint ins.current.pte_d[7:0] { //pte.8 & 9
         wildcard bins leaflvl_u = {8'b???11111};
     }
 
-    PTE_x_upage_i: coverpoint ins.current.PTE_i[7:0] { //pte.10
+    PTE_x_upage_i: coverpoint ins.current.pte_i[7:0] { //pte.10
         wildcard bins leaflvl_x_0 = {8'b???10??1};
         wildcard bins leaflvl_x_1 = {8'b???11??1};
     }
-    PTE_rw_upage_d: coverpoint ins.current.PTE_d[7:0] { //pte.10
+    PTE_rw_upage_d: coverpoint ins.current.pte_d[7:0] { //pte.10
         wildcard bins leaflvl_w_0 = {8'b???1?0?1};
         wildcard bins leaflvl_w_1 = {8'b???1?111};
         wildcard bins leaflvl_r_0 = {8'b???1??01};
         wildcard bins leaflvl_r_1 = {8'b???1??11};
     }
 
-    PTE_XnoRW_d: coverpoint ins.current.PTE_d[7:0] { //pte.11 & 12
+    PTE_XnoRW_d: coverpoint ins.current.pte_d[7:0] { //pte.11 & 12
         wildcard bins leaflvl_u = {8'b???11001};
         wildcard bins leaflvl_s = {8'b???01001};
     }
 
-    PTE_Abit_unset_i: coverpoint ins.current.PTE_i[7:0] { //pte.14
+    PTE_Abit_unset_i: coverpoint ins.current.pte_i[7:0] { //pte.14
         wildcard bins leaflvl_u = {8'b?0?11111};
         wildcard bins leaflvl_s = {8'b?0?01111};
     }
-    PTE_Abit_unset_d: coverpoint ins.current.PTE_d[7:0] { //pte.14
+    PTE_Abit_unset_d: coverpoint ins.current.pte_d[7:0] { //pte.14
         wildcard bins leaflvl_u = {8'b?0?11111};
         wildcard bins leaflvl_s = {8'b?0?01111};
     }
 
-    PTE_Dbit_set_W_d: coverpoint ins.current.PTE_d[7:0] { //pte.15
+    PTE_Dbit_set_W_d: coverpoint ins.current.pte_d[7:0] { //pte.15
         wildcard bins leaflvl_u = {8'b01?1?111};
         wildcard bins leaflvl_s = {8'b01?0?111};
     }
 
-    PTE_RWX_i: coverpoint ins.current.PTE_i[7:0] { //pte.16
+    PTE_RWX_i: coverpoint ins.current.pte_i[7:0] { //pte.16
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
-    PTE_RWX_d: coverpoint ins.current.PTE_d[7:0] { //pte.16
+    PTE_RWX_d: coverpoint ins.current.pte_d[7:0] { //pte.16
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
-    PTE_canonical_i: coverpoint ins.current.PTE_i[7:0] { //va.1
+    PTE_canonical_i: coverpoint ins.current.pte_i[7:0] { //va.1
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
-    PTE_canonical_d: coverpoint ins.current.PTE_d[7:0] { //va.1
+    PTE_canonical_d: coverpoint ins.current.pte_d[7:0] { //va.1
         wildcard bins leaflvl_u = {8'b???11111};
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
     //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
 
-    PageType_i: coverpoint ins.current.PageType_i {
+    PageType_i: coverpoint ins.current.page_type_i {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -451,7 +451,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
         bins kilo = {2'd0};
     }
 
-    PageType_d: coverpoint ins.current.PageType_d {
+    PageType_d: coverpoint ins.current.page_type_d {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -460,14 +460,14 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
         bins kilo = {2'd0};
     }
 
-    misaligned_PPN_i: coverpoint ins.current.PPN_i[26:0] {
+    misaligned_PPN_i: coverpoint ins.current.ppn_i[26:0] {
         `ifdef sv48
             bins tera_not_zero = {[27'd1:27'd134217727]};
         `endif
         bins giga_not_zero = {[18'd1:18'd262143]};
         bins mega_not_zero = {[9'd1:9'd511]};
     }
-    misaligned_PPN_d: coverpoint ins.current.PPN_d[26:0] {
+    misaligned_PPN_d: coverpoint ins.current.ppn_d[26:0] {
         `ifdef sv48
             bins tera_not_zero = {[27'd1:27'd134217727]};
         `endif
@@ -486,13 +486,13 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     }
 
     //For crosses with Read, write and execute accesses and their corresponding faults
-    exec_acc: coverpoint ins.current.ExecuteAccess {
+    exec_acc: coverpoint ins.current.execute_access {
         bins set = {1};
     }
-    read_acc: coverpoint ins.current.ReadAccess {
+    read_acc: coverpoint ins.current.read_access {
         bins set = {1};
     }
-    write_acc: coverpoint ins.current.WriteAccess{
+    write_acc: coverpoint ins.current.write_access{
         bins set = {1};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
@@ -895,7 +895,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     }
 
     `ifdef sv48
-        VA_sv48: coverpoint ins.current.VAdrI[63:48] { //va.1
+        VA_sv48: coverpoint ins.current.virt_adr_i[63:48] { //va.1
             bins not_zero_and_not_all_ones = {[16'b1:16'b1111_1111_1111_1110]};
         }
 
@@ -934,7 +934,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_rv64vm_t ins);
     `endif
 
     `ifdef sv39
-        VA_sv39: coverpoint ins.current.VAdrI[63:39] { //va.1
+        VA_sv39: coverpoint ins.current.virt_adr_i[63:39] { //va.1
             bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
         }
         sv39_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, read_acc { //va.1
@@ -976,7 +976,7 @@ endgroup
 covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins); 
     option.per_instance = 0; 
     //pte.1
-    RSW: coverpoint ins.current.PTE_i[9:8] {
+    RSW: coverpoint ins.current.pte_i[9:8] {
         bins all_comb[] = {[2'd0:2'd3]}; 
     }      
     mode: coverpoint  ins.current.csr[12'h180][63:60] {
@@ -990,16 +990,16 @@ covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins);
     rsw_pte: cross RSW, mode;
 
     //pte.13
-    global_PTE_i: coverpoint ins.current.PTE_i[7:0] {
+    global_PTE_i: coverpoint ins.current.pte_i[7:0] {
         wildcard bins leaflvl_u = {8'b??111111};
         wildcard bins leaflvl_s = {8'b??101111};
     }
-    global_PTE_d: coverpoint ins.current.PTE_d[7:0] {
+    global_PTE_d: coverpoint ins.current.pte_d[7:0] {
         wildcard bins leaflvl_u = {8'b??111111};
         wildcard bins leaflvl_s = {8'b??101111};
     }
 
-    PageType_i: coverpoint ins.current.PageType_i {
+    PageType_i: coverpoint ins.current.page_type_i {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -1008,7 +1008,7 @@ covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins);
         bins kilo = {2'd0};
     }
 
-    PageType_d: coverpoint ins.current.PageType_d {
+    PageType_d: coverpoint ins.current.page_type_d {
         `ifdef sv48
             bins tera = {2'b11};
         `endif
@@ -1017,13 +1017,13 @@ covergroup RV64VM_res_global_pte_cg with function sample(ins_rv64vm_t ins);
         bins kilo = {2'd0};
     }
 
-    exec_acc: coverpoint ins.current.ExecuteAccess {
+    exec_acc: coverpoint ins.current.execute_access {
         bins set = {1};
     }
-    read_acc : coverpoint ins.current.ReadAccess {
+    read_acc : coverpoint ins.current.read_access {
         bins set = {1};
     }
-    write_acc: coverpoint ins.current.WriteAccess {
+    write_acc: coverpoint ins.current.write_access {
         bins set = {1};
     }
 
@@ -1049,13 +1049,13 @@ endgroup
 
 covergroup RV64VM_add_feature_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
-    PTE_i: coverpoint ins.current.PTE_i[63:54] {
+    PTE_i: coverpoint ins.current.pte_i[63:54] {
         bins all_zeros = {10'd0};
         bins svnapot = {10'b10000_00000}; 
         bins svpbmt = {10'b01100_00000, 10'b01000_00000, 10'b00100_00000};
         bins reserved = {[10'd1:10'd127]};
     }   
-    PTE_d: coverpoint ins.current.PTE_d[63:54] {
+    PTE_d: coverpoint ins.current.pte_d[63:54] {
         bins all_zeros = {10'd0};
         bins svnapot = {10'b10000_00000}; 
         bins svpbmt = {10'b01100_00000, 10'b01000_00000, 10'b00100_00000};
@@ -1072,13 +1072,13 @@ covergroup RV64VM_add_feature_cg with function sample(ins_rv64vm_t ins);
             bins sv39   = {4'b1000};
         `endif
     }
-    exec_acc: coverpoint ins.current.ExecuteAccess {
+    exec_acc: coverpoint ins.current.execute_access {
         bins set = {1};
     }
-    read_acc : coverpoint ins.current.ReadAccess {
+    read_acc : coverpoint ins.current.read_access {
         bins set = {1};
     }
-    write_acc: coverpoint ins.current.WriteAccess {
+    write_acc: coverpoint ins.current.write_access {
         bins set = {1};
     }
     Mcause: coverpoint  ins.current.csr[12'h342] {
@@ -1158,7 +1158,6 @@ function void rv64vm_sample(int hart, int issue);
         ins_rv64vm_t ins;
         ins = new(hart, issue, traceDataQ); 
         ins.add_csr(0);
-        ins.add_vm_signals(1);
         
         RV64VM_PA_VA_cg.sample(ins);
         RV64VM_satp_cg.sample(ins);
