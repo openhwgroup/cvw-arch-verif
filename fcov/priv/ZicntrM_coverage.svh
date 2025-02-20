@@ -23,7 +23,7 @@
 `define COVER_ZICNTRM
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicntrm_t;
 
-covergroup mcounters_cg with function sample(ins_zicntrm_t ins);
+covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
     option.per_instance = 0; 
     // Counter access in machine mode
 
@@ -392,6 +392,6 @@ function void zicntrm_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    mcounters_cg.sample(ins);
+    ZicntrM_mcounters_cg.sample(ins);
     
 endfunction
