@@ -40,6 +40,17 @@
 .section .text.init
 .global rvtest_entry_point
 
+#define GPIO_BASE_ADDR 0x10060000
+#define PLIC_BASE_ADDR 0x0C000000
+
+#define THRESHOLD_0     (PLIC_BASE_ADDR + 0x200000)
+#define THRESHOLD_1     (PLIC_BASE_ADDR + 0x201000)
+#define INT_PRIORITY_3  (PLIC_BASE_ADDR + 0x00000C)
+#define INT_EN_00       (PLIC_BASE_ADDR + 0x002000)
+
+#define GPIO_OUTPUT_EN  (GPIO_BASE_ADDR + 0x08)
+#define GPIO_OUTPUT_VAL (GPIO_BASE_ADDR + 0x0C)
+
 rvtest_entry_point:
     la sp, topofstack       # Initialize stack pointer (not used)
 
@@ -110,6 +121,32 @@ interrupt:              # must be a timer interrupt
     lw t1, 0(t0) 
     andi t1, t1, -2     # set lowest bit for hart 0
     sw t1, 0(t0)        # clear CLINT.MSIP
+
+    # set M-mode interrupt threshold to 7
+    la t0, THRESHOLD_0
+    li t1, 7
+    sw t1, 0(t0)
+    
+    # set S-mode interrupt threshold to 7
+    la t0, THRESHOLD_1
+    li t1, 7
+    sw t1, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    sw zero, 0x18(t0) # clear rise
+    sw zero, 0x20(t0) # clear fall
+    sw zero, 0x28(t0) # clear high
+    sw zero, 0x30(t0) # clear low
+
+    # clear all external interrupts pending to make sure interrupt doesn't loop after trap return
+    # writing a 1 to a GPIO ip pin resets it
+    la t0, GPIO_BASE_ADDR
+    li t1, 0
+    sw t1, 0x1C(t0) # clear rise
+    sw t1, 0x24(t0) # clear fall
+    sw t1, 0x2C(t0) # clear high
+    sw t1, 0x34(t0) # clear low
 
     li t0, 32
     csrc mip, t0        # clear mip.STIP
