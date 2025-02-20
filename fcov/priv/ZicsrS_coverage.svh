@@ -436,8 +436,8 @@ function void zicsrs_sample(int hart, int issue);
     ins.add_csr(1);
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
 
-    scsr_cg.sample(ins);
-    scause_cg.sample(ins);
-    sstatus_cg.sample(ins);
-    sprivinst_cg.sample(ins);
+    ZicsrS_scsr_cg.sample(ins);
+    ZicsrS_scause_cg.sample(ins);
+    ZicsrS_sstatus_cg.sample(ins);
+    ZicsrS_sprivinst_cg.sample(ins);
 endfunction
