@@ -23,7 +23,7 @@
 `define COVER_ZICSRS
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrs_t;
 
-covergroup scsr_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -299,7 +299,7 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
-covergroup scause_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scause_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
  
     csrrw_scause: coverpoint ins.current.insn {
@@ -364,7 +364,7 @@ covergroup scause_cg with function sample(ins_zicsrs_t ins);
 endgroup
 
 
-covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sstatus_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
@@ -386,7 +386,7 @@ covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
 
  endgroup
 
-covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sprivinst_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
