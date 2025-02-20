@@ -185,3 +185,6 @@
 `ifdef ZICNTRM_COVERAGE
   `include "ZicntrM_coverage.svh"
 `endif
+`ifdef INTERRUPTSS_COVERAGE
+  `include "InterruptsS_coverage.svh"
+`endif
