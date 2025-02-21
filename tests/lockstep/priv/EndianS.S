@@ -769,7 +769,7 @@ post_cp_mstatus_mprv_sbe_endianness:
     li a0, 0              # a0 = 0, change to user mode
     ecall                 # Make a system call
     #ifdef __riscv_xlen
-        li s1, 0x40       # 1 in bit 6 for mstatus.SBE  
+        li s1, 0x40       # 1 in bit 6 for mstatus.UBE  
     #else
         ERROR: __riscv_xlen not defined
     #endif
@@ -777,6 +777,7 @@ post_cp_mstatus_mprv_sbe_endianness:
     //s9, s10 used in WALLY-priv-endian.h
     li s9,  1   # setendianess function: 1 to stay in function since you want to branch for s10
     li s10, 0   # setendianess function: 0 to branch to status
+    li s11, 0   # switching back to user mode in lybrary function
 
     # iterate over each endianness, doing all sizes of stores and loads
     li  s4, 0           # endianness for write
