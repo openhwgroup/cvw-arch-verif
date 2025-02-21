@@ -121,6 +121,19 @@ def makeImm(imm, immlen, signed):
       imm = imm - pow(2, immlen)
   return str(imm)
 
+def writeSIGUPD(rd):
+    [storeinstr, offsetInc] = getSigInfo(False)
+    tempReg = 0 # *** need to change this to get self-checking working with no conflicts on registers
+    l = f"RVTEST_SIGUPD(x{sigReg}, x{tempReg}, x{rd}, {sigOffset})\n"
+    #l = f"RVTEST_SIGUPD2({sigReg}, {rd})\n"
+    l = l + incrementSigOffset(offsetInc)
+    return l
+
+def writeSIGUPD_F(rd):
+    # *** write this
+    return ""
+
+
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
@@ -154,12 +167,17 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
 def handleSignaturePointerConflict(lines, rs1, rs2, rd):
   global sigReg # this function can modify the signature register
   l = lines
-  if (not lockstep): # only needed for signature tests
-    oldSigReg = sigReg
-    while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
-      sigReg = (sigReg + 1) % 4 + 4
-    if (sigReg != oldSigReg):
-      l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
+  oldSigReg = sigReg
+  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
+    sigReg = (sigReg + 1) % 4 + 4
+  if (sigReg != oldSigReg):
+    l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
+  # if (not lockstep): # only needed for signature tests
+  #   oldSigReg = sigReg
+  #   while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
+  #     sigReg = (sigReg + 1) % 4 + 4
+  #   if (sigReg != oldSigReg):
+  #     l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
   return l
 
 # getSigInfo returns the store instruction and offset increment for the current test
@@ -197,24 +215,29 @@ def incrementSigOffset(amount):
     return l
   return ""
     
+
 # writeTest appends the test to the lines.  
 # When doing signature generation, it also appends
 # the signature logic
 def writeTest(lines, rd, xlen, floatdest, testline):
   l = lines + testline
-  if (not lockstep):
-    if (floatdest):
-      comment = "# FLOAT SIGNATURE\n"
-    else:
-      comment = "# INT SIGNATURE\n"
-    [storeinstr, offsetInc] = getSigInfo(floatdest)
-    rdPrefix = "f" if floatdest else "x"
-    l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}); nop; nop {comment}\n"
-    if (floatdest):
-      [intstoreinstr, dummy] = getSigInfo(False)
-      l = l + f"csrr x{rd}, fflags # read fflags\n"
-      l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}); nop; nop # FFLAGS SIGNATURE\n"
-    l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
+  if (floatdest):
+    l = l + writeSIGUPD_F(rd)
+  else:
+    l = l + writeSIGUPD(rd)
+  # if (not lockstep):
+  #   if (floatdest):
+  #     comment = "# FLOAT SIGNATURE\n"
+  #   else:
+  #     comment = "# INT SIGNATURE\n"
+  #   [storeinstr, offsetInc] = getSigInfo(floatdest)
+  #   rdPrefix = "f" if floatdest else "x"
+  #   l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}); nop; nop {comment}\n"
+  #   if (floatdest):
+  #     [intstoreinstr, dummy] = getSigInfo(False)
+  #     l = l + f"csrr x{rd}, fflags # read fflags\n"
+  #     l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}); nop; nop # FFLAGS SIGNATURE\n"
+  #   l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
   return l
 
 def writeJumpTest(lines, rd, rs1, xlen, jumpline):
@@ -2208,6 +2231,7 @@ if __name__ == '__main__':
           maxreg = 31 # I uses registers x0-x31
         #print(extensions)
         for extension in extensions:
+        #for extension in ["I"]:  # temporary for faster run
           coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
           coverfiles = [extension]
           coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
