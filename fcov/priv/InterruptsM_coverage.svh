@@ -37,7 +37,6 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     mstatus_tw:  coverpoint ins.current.csr[12'h300][21] {
         // autofill 0/1
     }
-
     mie_mtie_one: coverpoint ins.current.csr[12'h304][7] {
         bins one = {1};
     }
@@ -49,6 +48,9 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     }
     mip_mtip: coverpoint ins.current.csr[12'h344][7] {
         // autofill 0/1
+    }
+    mie_mtip_one: coverpoint ins.current.csr[12'h344][7] {
+        bins one = {1};
     }
     mip_mtip_one: coverpoint ins.current.csr[12'h344][7] {
         bins one = {1};
@@ -92,26 +94,25 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     priv_mode_m: coverpoint ins.current.mode {
         bins M_mode = {2'b11};
     }
-    m_ext_intr: coverpoint ins.current.m_ext_intr {
-        bins mei = {1};
-    }
-    m_timer_intr: coverpoint ins.current.m_timer_intr {
-        bins mti = {1};
-    }
-    m_soft_intr: coverpoint ins.current.m_soft_intr {
-        bins msi = {1};
-    }
+    // m_ext_intr: coverpoint ins.current.m_ext_intr {
+    //     bins mei = {1};
+    // }
+    // m_timer_intr: coverpoint ins.current.m_timer_intr {
+    //     bins mti = {1};
+    // }
+    // m_soft_intr: coverpoint ins.current.m_soft_intr {
+    //     bins msi = {1};
+    // }
 
     // main coverpoints
 
-    cp_trigger_mti:      cross priv_mode_m, mstatus_mie, mie_ones, m_timer_intr, mip_mtip_one; // redundant to check both?
-    cp_trigger_msi:      cross priv_mode_m, mstatus_mie, mie_ones, m_soft_intr,  mip_msip_one; // if not, should we check rising
-    cp_trigger_mei:      cross priv_mode_m, mstatus_mie, mie_ones, m_ext_intr,   mip_meip_one; // edge transitions for m*ip?
-    cp_global_ie:        cross priv_mode_m, mstatus_mie, mip_walking, mie_walking;
+    cp_trigger_mti:      cross priv_mode_m, mstatus_mie, mie_ones, mip_mtip_one;
+    cp_trigger_msi:      cross priv_mode_m, mstatus_mie, mie_ones, mip_msip_one;
+    cp_trigger_mei:      cross priv_mode_m, mstatus_mie, mie_ones, mip_meip_one;
     cp_interrupts:       cross priv_mode_m, mstatus_mie, mtvec_direct, mip_walking, mie_walking;
     cp_vectored:         cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mip_walking, mie_walking;
     cp_priority:         cross priv_mode_m, mstatus_mie_one, mie_meie_mtie_msie, mip_meip_mtip_msip;
-    cp_wfi:              cross priv_mode_m, wfi, mstatus_mie, mstatus_tw, mie_mtie_one, m_timer_intr;
+    cp_wfi:              cross priv_mode_m, wfi, mstatus_mie, mstatus_tw, mie_mtie_one, mie_mtip_one;
 endgroup
 
 function void interruptsm_sample(int hart, int issue);
