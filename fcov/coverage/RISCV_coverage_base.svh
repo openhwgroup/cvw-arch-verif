@@ -32,6 +32,9 @@ class RISCV_coverage
   parameter int NHART  = 1,   // Number of harts reported
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 );
+
+  typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_t;
+
   // Additional functions for coverage collection
   `include "coverage/RISCV_coverage_rvvi.svh"
   `include "coverage/RISCV_coverage_csr.svh"
@@ -68,6 +71,7 @@ class RISCV_coverage
 
   // Runs all of the sample functions created per extension from templates
   function void sample_extensions(int hart, int issue);
+    `include "RISCV_instruction_sample.svh"
     `include "RISCV_coverage_base_sample.svh"
   endfunction
 endclass
