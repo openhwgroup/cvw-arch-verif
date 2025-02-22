@@ -51,12 +51,12 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
                                    ins.current.rs1_val == ins.current.rs2_val,                  // A == B  
                                    $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                    $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
-        wildcard bins beq_nottaken  = {3'b000_0_?_?};
-        wildcard bins bne_nottaken  = {3'b001_1_?_?};
-        wildcard bins blt_nottaken  = {3'b100_?_0_?};
-        wildcard bins bge_nottaken  = {3'b101_?_1_?};
-        wildcard bins bltu_nottaken = {3'b110_?_?_0};
-        wildcard bins bgeu_nottaken = {3'b111_?_?_1};
+        wildcard bins beq_nottaken  = {6'b000_0_?_?};
+        wildcard bins bne_nottaken  = {6'b001_1_?_?};
+        wildcard bins blt_nottaken  = {6'b100_?_0_?};
+        wildcard bins bge_nottaken  = {6'b101_?_1_?};
+        wildcard bins bltu_nottaken = {6'b110_?_?_0};
+        wildcard bins bgeu_nottaken = {6'b111_?_?_1};
     }
     jal: coverpoint ins.current.insn {
         wildcard bins jal = {32'b????????????????????_?????_1101111};
