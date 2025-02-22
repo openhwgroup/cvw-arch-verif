@@ -769,7 +769,7 @@ post_cp_mstatus_mprv_sbe_endianness:
     li a0, 0              # a0 = 0, change to user mode
     ecall                 # Make a system call
     #ifdef __riscv_xlen
-        li s1, 0x40       # 1 in bit 6 for mstatus.UBE  
+        li s1, 0x40       # 1 in bit 6 for sstatus.UBE  
     #else
         ERROR: __riscv_xlen not defined
     #endif

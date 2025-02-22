@@ -90,7 +90,6 @@ post_cp_mstatus_ube_endianness:
     #     XLEN=64        |     XLEN=32
     # --------------------------------------
     #  MBE  0x2000000000 | 0x20
-    #  SBE  0x1000000000 | 0x10
     #  MPRV 0x20000      | 0x20000
     #  MPP  0x1800       | 0x1800
     #  UBE  0X40         | 0X40
@@ -102,10 +101,8 @@ post_cp_mstatus_ube_endianness:
     # MBE AND SBE:
     #   64 bits: use mstatus
             # bit 37 for mstatus.MBE
-            # bit 36 for mstatus.SBE 
     #   32 bits: use mstatush
             # bit 5 for mstatush.MBE 
-            # bit 4 for mstatush.SBE 
            
     csrr s0, mstatus    # save CSR
     li a0, 3         # a0 = 3, change to Machine mode

@@ -86,8 +86,8 @@ endiantest: //Write to memory function
 
 
 setendianness:  //function to set/clear the bits depending on the endianness specified in the covergroups
-    beq s9, x0, onlymstatus  // if s9 set to 0 => branch: coverpoint would only run mstatus & no need for msatush 
-    beq s10, x0, onlysstatus3 //this line is to check whether the coverpoint gets endianness from status or not
+    beq s9, x0, onlymstatus  // branch if bit is writing the same for 32 and 64 bits, and no need for msatush 
+    beq s10, x0, onlysstatus3 //branch if endianness is given from sstatus (3 bc used by 3rd cp in endianS)
 
     // if s8 = 1, bigendian, otherwise littleendian
     li a0, 3         # a0 = 3, change to Machine mode
@@ -114,7 +114,6 @@ setendianness:  //function to set/clear the bits depending on the endianness spe
         ERROR: __riscv_xlen not defined
     #endif
     j change
-
 
 
 onlymstatus: //run only mstatus and not also mstatush
@@ -158,31 +157,25 @@ onlysstatus3: //used for 3rd EndianS coverpoint: cp_sstatus_ube_endianness_*
     #endif
     j change
 
-
 change: 
     // Switch privilege mode
     mv a0, s11       # s11 has privilege mode
     ecall            # Make a system call 
     ret
 
-// change3: 
-//     # Switch back to user mode
-//     li a0, 0         # a0 = 0, change to USER mode
-//     ecall            # Make a system call 
-//     ret
 
 endianaccess: 
     // Try all the accesses to make sure they work for the endianness
      mv s8, s5   # setEndianness(read)
     jal setendianness
-    lb t3, 0(s3)
-    lb t3, 1(s3)
-    lb t3, 2(s3)
-    lb t3, 3(s3)
-    lb t3, 4(s3)
-    lb t3, 5(s3)
-    lb t3, 6(s3)
-    lb t3, 7(s3)
+    lb  t3, 0(s3)
+    lb  t3, 1(s3)
+    lb  t3, 2(s3)
+    lb  t3, 3(s3)
+    lb  t3, 4(s3)
+    lb  t3, 5(s3)
+    lb  t3, 6(s3)
+    lb  t3, 7(s3)
     lbu t3, 0(s3)
     lbu t3, 1(s3)
     lbu t3, 2(s3)
@@ -191,16 +184,16 @@ endianaccess:
     lbu t3, 5(s3)
     lbu t3, 6(s3)
     lbu t3, 7(s3)
-    lh t3, 0(s3)
-    lh t3, 2(s3)
-    lh t3, 4(s3)
-    lh t3, 6(s3)
+    lh  t3, 0(s3)
+    lh  t3, 2(s3)
+    lh  t3, 4(s3)
+    lh  t3, 6(s3)
     lhu t3, 0(s3)
     lhu t3, 2(s3)
     lhu t3, 4(s3)
     lhu t3, 6(s3)
-    lw t3, 0(s3)
-    lw t3, 4(s3)
+    lw  t3, 0(s3)
+    lw  t3, 4(s3)
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64    
             lwu t3, 0(s3) # long loads for RV64
