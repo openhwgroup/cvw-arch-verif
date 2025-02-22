@@ -116,7 +116,7 @@ post_cp_mstatus_ube_endianness:
         #16 WRITES:
         #16 WRITES:
             #1:  MPRV=0, MPP=00, MBE=0, UBE=0
-            li      t3,   0x1000021840    # 0s
+            li      t3,   0x2000021840    # 0s
             li      t4,   0x0           # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
             csrrs   t6, mstatus, t4   # setting the 1s
@@ -183,7 +183,7 @@ post_cp_mstatus_ube_endianness:
             jal s6, endianwrite2 
             #12: MPRV=1, MPP=00, MBE=1, UBE=1
             li      t3,   0x1800    # 0s
-            li      t4,   0x20040    # 1s
+            li      t4,   0x2000020040    # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
             csrrs   t6, mstatus, t4   # setting the 1s
             jal s6, endianwrite2 
@@ -215,7 +215,7 @@ post_cp_mstatus_ube_endianness:
         #16 READS:
         
             #1:  MPRV=0, MPP=00, MBE=0, UBE=0
-            li      t3,   0x1000021840    # 0s
+            li      t3,   0x2000021840    # 0s
             li      t4,   0x0           # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
             csrrs   t6, mstatus, t4   # setting the 1s
@@ -282,7 +282,7 @@ post_cp_mstatus_ube_endianness:
             jal s7, endianread2
             #12: MPRV=1, MPP=00, MBE=1, UBE=1
             li      t3,   0x1800    # 0s
-            li      t4,   0x20040    # 1s
+            li      t4,   0x2000020040    # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
             csrrs   t6, mstatus, t4   # setting the 1s
             jal s7, endianread2
