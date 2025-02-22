@@ -29,7 +29,7 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
     // building blocks for the main coverpoints
     
     mstatus_mie_one: coverpoint ins.current.csr[12'h300][3] {
-        bins zero = {1};
+        bins one = {1};
     }
     mstatus_mie: coverpoint ins.current.csr[12'h300][3]  {
         // autofill 0/1
@@ -41,7 +41,7 @@ covergroup InterruptsM_cg with function sample(ins_interruptsm_t ins);
         bins one = {1};
     }
     mie_ones: coverpoint ins.current.csr[12'h304][15:0] {
-        wildcard bins ones = {16'b????1???1???1???}; // ones in every field that is not tied to zero
+        wildcard bins ones = {16'b????1???1???1???}; // ones in all machine interrupt enable bits
     }
     mip_msip_one: coverpoint ins.current.csr[12'h344][3] {
         bins one = {1};
