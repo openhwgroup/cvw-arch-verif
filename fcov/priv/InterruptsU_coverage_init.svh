@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZicntrU_ucounters_cg = new();         ZicntrU_ucounters_cg.set_inst_name("obj_zicntru");
+    InterruptsU_cg = new();         InterruptsU_cg.set_inst_name("obj_interruptsu");

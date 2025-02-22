@@ -23,7 +23,7 @@
 `define COVER_ZICSRS
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrs_t;
 
-covergroup scsr_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -292,14 +292,14 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
     // main coverpoints
     cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
-    cp_csrcs:        cross csrop,   csr,         priv_mode_s, rs1_ones;    
+    cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
     cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
     cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
-covergroup scause_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scause_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
  
     csrrw_scause: coverpoint ins.current.insn {
@@ -364,7 +364,7 @@ covergroup scause_cg with function sample(ins_zicsrs_t ins);
 endgroup
 
 
-covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sstatus_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
@@ -386,7 +386,7 @@ covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
 
  endgroup
 
-covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sprivinst_cg with function sample(ins_zicsrs_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
@@ -436,8 +436,8 @@ function void zicsrs_sample(int hart, int issue);
     ins.add_csr(1);
     // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
 
-    scsr_cg.sample(ins);
-    scause_cg.sample(ins);
-    sstatus_cg.sample(ins);
-    sprivinst_cg.sample(ins);
+    ZicsrS_scsr_cg.sample(ins);
+    ZicsrS_scause_cg.sample(ins);
+    ZicsrS_sstatus_cg.sample(ins);
+    ZicsrS_sprivinst_cg.sample(ins);
 endfunction

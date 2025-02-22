@@ -23,7 +23,7 @@
 `define COVER_ZICNTRS
 typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicntrs_t;
 
-covergroup scounters_cg with function sample(ins_zicntrs_t ins);
+covergroup ZicntrS_scounters_cg with function sample(ins_zicntrs_t ins);
     option.per_instance = 0; 
     // counter access in supervisor mode
 
@@ -408,6 +408,6 @@ function void zicntrs_sample(int hart, int issue);
     ins.add_rs1(2);
     ins.add_csr(1);
     
-    scounters_cg.sample(ins);
+    ZicntrS_scounters_cg.sample(ins);
     
 endfunction
