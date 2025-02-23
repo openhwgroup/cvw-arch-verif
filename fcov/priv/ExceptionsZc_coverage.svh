@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSZC
-covergroup ExceptionsZc_exceptions_cg with function sample(ins_exceptionszc_t ins);
+covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -74,7 +74,7 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_exceptionszc_t in
 endgroup
 
 // more detailed illegal instruction testing
-covergroup ExceptionsZc_instr_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsZc_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     cp_compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {

@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_RV32VM
-covergroup RV32VM_satp_cg with function sample(ins_rv32vm_t ins);
+covergroup RV32VM_satp_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     mode_supported: coverpoint ins.current.csr[12'h180][31] { //sat.2
         bins sv32   = {1'b1};
@@ -95,7 +95,7 @@ covergroup RV32VM_satp_cg with function sample(ins_rv32vm_t ins);
     }
 endgroup
 
-covergroup RV32VM_PA_VA_cg with function sample(ins_rv32vm_t ins); //checking that all bits of PA and VA are live
+covergroup RV32VM_PA_VA_cg with function sample(ins_t ins); //checking that all bits of PA and VA are live
     option.per_instance = 0; 
     VA_i: coverpoint ins.current.virt_adr_i { 
         bins all_zeros = {32'd0};
@@ -126,14 +126,14 @@ covergroup RV32VM_PA_VA_cg with function sample(ins_rv32vm_t ins); //checking th
     PA_d_sv32: cross mode_supported, PA_d;
 endgroup
 
-covergroup RV32VM_sfence_cg with function sample(ins_rv32vm_t ins); //sf.1
+covergroup RV32VM_sfence_cg with function sample(ins_t ins); //sf.1
     option.per_instance = 0; 
     ins: coverpoint ins.current.insn { 
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
 
-covergroup RV32VM_mstatus_mprv_cg with function sample(ins_rv32vm_t ins);
+covergroup RV32VM_mstatus_mprv_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
@@ -275,7 +275,7 @@ covergroup RV32VM_mstatus_mprv_cg with function sample(ins_rv32vm_t ins);
     }
 endgroup
 
-covergroup RV32VM_vm_permissions_cg with function sample(ins_rv32vm_t ins);
+covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.pte_i[7:0] { //pte.2
@@ -783,7 +783,7 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_rv32vm_t ins);
 
 endgroup
 
-covergroup RV32VM_res_global_pte_cg with function sample(ins_rv32vm_t ins); 
+covergroup RV32VM_res_global_pte_cg with function sample(ins_t ins); 
     option.per_instance = 0; 
     //pte.1
     RSW: coverpoint ins.current.pte_i[9:8] {
@@ -850,7 +850,7 @@ covergroup RV32VM_res_global_pte_cg with function sample(ins_rv32vm_t ins);
 
 endgroup
 
-covergroup RV32VM_add_feature_cg with function sample(ins_rv32vm_t ins);
+covergroup RV32VM_add_feature_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     mode: coverpoint  ins.current.csr[12'h180][31] {
         bins sv32   = {1'b1};

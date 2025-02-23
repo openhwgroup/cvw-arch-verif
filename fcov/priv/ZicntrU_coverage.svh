@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICNTRU
-covergroup ZicntrU_ucounters_cg with function sample(ins_zicntru_t ins);
+covergroup ZicntrU_ucounters_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // Counter access in user mode 
 

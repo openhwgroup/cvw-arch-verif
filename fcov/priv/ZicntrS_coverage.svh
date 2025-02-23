@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICNTRS
-covergroup ZicntrS_scounters_cg with function sample(ins_zicntrs_t ins);
+covergroup ZicntrS_scounters_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // counter access in supervisor mode
 

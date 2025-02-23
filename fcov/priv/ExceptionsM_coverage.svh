@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSM
-covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -151,7 +151,7 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
 endgroup
 
 // more detailed illegal instruction testing
-covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     
     cp_illegal : coverpoint ins.current.insn { // illegal in RVA22S64; will trap if not in an implemented extension

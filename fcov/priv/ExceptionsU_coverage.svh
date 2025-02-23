@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSU
-covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins);
+covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints

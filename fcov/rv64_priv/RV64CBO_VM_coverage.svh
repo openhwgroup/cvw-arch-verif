@@ -18,7 +18,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64CBO_VM
-covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
+covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //exp.1

@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANU
-covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
+covergroup EndianU_endian_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // "Endianness tests in user mode"
 

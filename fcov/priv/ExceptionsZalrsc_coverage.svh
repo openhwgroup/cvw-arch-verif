@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSZALRSC
-covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_exceptionszalrsc_t ins);
+covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints

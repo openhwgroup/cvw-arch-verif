@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSZICBOS
-covergroup ExceptionsZicboS_exceptions_cg with function sample(ins_exceptionszicbos_t ins);
+covergroup ExceptionsZicboS_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints

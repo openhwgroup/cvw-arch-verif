@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_RV32VM_PMP
-covergroup RV32VM_PMP_cg with function sample(ins_rv32vm_pmp_t ins);
+covergroup RV32VM_PMP_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_i: coverpoint ins.current.pte_i[7:0] {

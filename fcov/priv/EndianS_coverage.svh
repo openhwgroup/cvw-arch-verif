@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANS
-covergroup EndianS_endian_cg with function sample(ins_endians_t ins);
+covergroup EndianS_endian_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // "Endianness tests in machine mode"
 

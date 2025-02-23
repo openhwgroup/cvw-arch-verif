@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_INTERRUPTSU
-covergroup InterruptsU_cg with function sample(ins_interruptsu_t ins);
+covergroup InterruptsU_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints

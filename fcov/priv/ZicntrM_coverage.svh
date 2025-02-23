@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICNTRM
-covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
+covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // Counter access in machine mode
 

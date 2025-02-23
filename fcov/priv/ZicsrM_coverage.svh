@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRM
-covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -185,7 +185,7 @@ covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
     cp_mcsrwalk : cross csrname, csrop, priv_mode_m, walking_ones;
 endgroup
 
-covergroup ZicsrM_mcause_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcause_cg with function sample(ins_t ins);
     option.per_instance = 0; 
  
     csrrw_mcause: coverpoint ins.current.insn {
@@ -251,7 +251,7 @@ covergroup ZicsrM_mcause_cg with function sample(ins_zicsrm_t ins);
 endgroup
 
 
-covergroup ZicsrM_mstatus_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mstatus_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // SD COVERPOINTS
@@ -277,7 +277,7 @@ covergroup ZicsrM_mstatus_cg with function sample(ins_zicsrm_t ins);
 
  endgroup
 
-covergroup ZicsrM_mprivinst_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mprivinst_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {

@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRU
-covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // "ZicsrU ucsr"
 
@@ -61,7 +61,7 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
     cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
 endgroup
 
-covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
+covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // "ZicsrU uprivinst"
 

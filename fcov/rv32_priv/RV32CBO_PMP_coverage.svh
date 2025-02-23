@@ -18,7 +18,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV32CBO_PMP
-covergroup RV32CBO_PMP_exceptions_cg with function sample(ins_rv32cbo_pmp_t ins);
+covergroup RV32CBO_PMP_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d: coverpoint ins.current.pte_d[7:0] {

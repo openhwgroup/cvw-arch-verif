@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRS
-covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -297,7 +297,7 @@ covergroup ZicsrS_scsr_cg with function sample(ins_zicsrs_t ins);
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
-covergroup ZicsrS_scause_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scause_cg with function sample(ins_t ins);
     option.per_instance = 0; 
  
     csrrw_scause: coverpoint ins.current.insn {
@@ -362,7 +362,7 @@ covergroup ZicsrS_scause_cg with function sample(ins_zicsrs_t ins);
 endgroup
 
 
-covergroup ZicsrS_sstatus_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sstatus_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
@@ -384,7 +384,7 @@ covergroup ZicsrS_sstatus_cg with function sample(ins_zicsrs_t ins);
 
  endgroup
 
-covergroup ZicsrS_sprivinst_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
