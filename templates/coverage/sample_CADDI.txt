@@ -1,5 +1,4 @@
         "INSTR"     : begin 
-            ins = new(hart, issue, traceDataQ); 
             if (traceDataQ[hart][issue][0].insn[15:0] == 1) begin   // c.nop
                 ins.ins_str = "c.nop";  // Using correct inst name (c.nop instead of c.addi)
                 ARCHCASE_c_nop_cg.sample(ins); 

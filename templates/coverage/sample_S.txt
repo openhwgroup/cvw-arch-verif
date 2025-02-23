@@ -1,5 +1,4 @@
         "INSTR"     : begin 
-            ins = new(hart, issue, traceDataQ); 
             ins.add_rs2(0);
             ins.add_imm(1);
             ins.add_rs1(2);
