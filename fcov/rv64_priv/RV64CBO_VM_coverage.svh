@@ -18,9 +18,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64CBO_VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_vm_t;
-
-covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
+covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //exp.1
@@ -193,11 +191,6 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     }
 endgroup
 
-function void rv64cbo_vm_sample(int hart, int issue);
-    ins_rv64cbo_vm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_csr(0);
-    
+function void rv64cbo_vm_sample(int hart, int issue, ins_t ins);
     RV64CBO_VM_exceptions_cg.sample(ins);
 endfunction

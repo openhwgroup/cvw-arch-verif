@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsm_t;
-
-covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -153,7 +151,7 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
 endgroup
 
 // more detailed illegal instruction testing
-covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     
     cp_illegal : coverpoint ins.current.insn { // illegal in RVA22S64; will trap if not in an implemented extension
@@ -324,18 +322,7 @@ covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
 
 endgroup
 
-function void exceptionsm_sample(int hart, int issue);
-    ins_exceptionsm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-
-    //$display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    //$display("func3: %b, A=B: %b, A<B S: %b, A<B U: %b,  PCbit1: %b, immbit1: %b",ins.current.insn[14:12], (ins.current.rs1_val == ins.current.rs2_val), $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), ins.current.rs1_val < ins.current.rs2_val, ins.current.pc_rdata[1], ins.current.imm[1]);
-
+function void exceptionsm_sample(int hart, int issue, ins_t ins);
     ExceptionsM_exceptions_cg.sample(ins);
     ExceptionsM_instr_cg.sample(ins);
-    
 endfunction
