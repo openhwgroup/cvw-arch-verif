@@ -9,7 +9,7 @@
 ///////////////////////////////////////////
 
 #include "WALLY-init-lib.h"
-#include "WALLY-priv-endian.h"
+#include "priv-endian.h"
 main:
 
 /////////////////////////////////
@@ -36,16 +36,15 @@ main:
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
 /////////////////////////////////
-    # save mstatus
-    # prep s1 with bits to set/clear MBE for RV32/RV64
-    # always do both.  One or the other will trap, but this
-    # avoids needing separate code for the two architectures
-    # code assumes s registers are saved during these tests
-    # setting endiannes for write and read, prilige mode
-    # calling WALLY-priv-endian.h to store and load 
+    // save mstatus
+    // prep s1 with bits to set/clear MBE for RV32/RV64
+    // always do both.  One or the other will trap, but this
+    // avoids needing separate code for the two architectures
+    // code assumes s registers are saved during these tests
+    // setting endiannes for write and read, prilige mode
+    // calling WALLY-priv-endian.h to store and load 
+
     csrr s0, mstatus    # save CSR
-    li a0,  3 #DO I NEED THIS?        # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             li s1, 0x2000000000     # 1 in bit 37 for mstatus.MBE
@@ -56,11 +55,11 @@ main:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch  # s3 = pointer to scratch
-    li s11, 3 #passing privilige mode: machine
-    li s9,  1   # 1 if we need mestatush to run functions
+    li s11, 3       #passing privilige mode: machine
+    li s9,  1       # 1 if we need mestatush to run functions
     li s10, 1
     
-    # iterate over each endianness, doing all sizes of stores and loads
+    // iterate over each endianness, doing all sizes of stores and loads
     li s4, 0        # endianness for write
     li s5, 0        # endianness for read
     jal s6, endiantest  # test little-endian read and write

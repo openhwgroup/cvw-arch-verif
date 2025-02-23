@@ -97,14 +97,14 @@ covergroup EndianS_endian_cg with function sample(ins_endians_t ins);
         bins M_Mode = {2'b11};
     }
     // main coverpoints
-    cp_sstatus_sbe_endianness_sw:  cross priv_mode_s, mstatus_sbe, cp_sw,  cp_wordoffset;
-    cp_sstatus_sbe_endianness_sh:  cross priv_mode_s, mstatus_sbe, cp_sh,  cp_halfoffset;
-    cp_sstatus_sbe_endianness_sb:  cross priv_mode_s, mstatus_sbe, cp_sb,  cp_byteoffset;
-    cp_sstatus_sbe_endianness_lw:  cross priv_mode_s, mstatus_sbe, cp_lw,  cp_wordoffset;
-    cp_sstatus_sbe_endianness_lh:  cross priv_mode_s, mstatus_sbe, cp_lh,  cp_halfoffset;
-    cp_sstatus_sbe_endianness_lb:  cross priv_mode_s, mstatus_sbe, cp_lb,  cp_byteoffset;
-    cp_sstatus_sbe_endianness_lhu: cross priv_mode_s, mstatus_sbe, cp_lhu, cp_halfoffset;
-    cp_sstatus_sbe_endianness_lbu: cross priv_mode_s, mstatus_sbe, cp_lbu, cp_byteoffset;
+    cp_mstatus_sbe_endianness_sw:  cross priv_mode_s, mstatus_sbe, cp_sw,  cp_wordoffset;
+    cp_mstatus_sbe_endianness_sh:  cross priv_mode_s, mstatus_sbe, cp_sh,  cp_halfoffset;
+    cp_mstatus_sbe_endianness_sb:  cross priv_mode_s, mstatus_sbe, cp_sb,  cp_byteoffset;
+    cp_mstatus_sbe_endianness_lw:  cross priv_mode_s, mstatus_sbe, cp_lw,  cp_wordoffset;
+    cp_mstatus_sbe_endianness_lh:  cross priv_mode_s, mstatus_sbe, cp_lh,  cp_halfoffset;
+    cp_mstatus_sbe_endianness_lb:  cross priv_mode_s, mstatus_sbe, cp_lb,  cp_byteoffset;
+    cp_mstatus_sbe_endianness_lhu: cross priv_mode_s, mstatus_sbe, cp_lhu, cp_halfoffset;
+    cp_mstatus_sbe_endianness_lbu: cross priv_mode_s, mstatus_sbe, cp_lbu, cp_byteoffset;
     cp_mstatus_mprv_sbe_endianness_sw:  cross priv_mode_m, mstatus_sbe, cp_sw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     cp_mstatus_mprv_sbe_endianness_sh:  cross priv_mode_m, mstatus_sbe, cp_sh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     cp_mstatus_mprv_sbe_endianness_sb:  cross priv_mode_m, mstatus_sbe, cp_sb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
@@ -137,9 +137,9 @@ covergroup EndianS_endian_cg with function sample(ins_endians_t ins);
         cp_mstatus_mbe_endianness_sd:  cross priv_mode_s, mstatus_sbe, cp_sd,  cp_doubleoffset;
         cp_mstatus_mbe_endianness_ld:  cross priv_mode_s, mstatus_sbe, cp_ld,  cp_doubleoffset;
         cp_mstatus_mbe_endianness_lwu: cross priv_mode_s, mstatus_sbe, cp_lwu, cp_wordoffset;
-        cp_mstatus_mpr_ube_endianness_sd:  cross priv_mode_m, mstatus_sbe, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_ld:  cross priv_mode_m, mstatus_sbe, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_lwu: cross priv_mode_m, mstatus_sbe, cp_lwu,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_sbe_endianness_sd:  cross priv_mode_m, mstatus_sbe, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_sbe_endianness_ld:  cross priv_mode_m, mstatus_sbe, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_sbe_endianness_lwu: cross priv_mode_m, mstatus_sbe, cp_lwu,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
         cp_sstatus_ube_endianness_sd:  cross priv_mode_u, sstatus_ube, cp_sd,  cp_doubleoffset;
         cp_sstatus_ube_endianness_ld:  cross priv_mode_u, sstatus_ube, cp_ld,  cp_doubleoffset;
         cp_sstatus_ube_endianness_lwu: cross priv_mode_u, sstatus_ube, cp_lwu, cp_wordoffset;
@@ -158,3 +158,4 @@ function void endians_sample(int hart, int issue);
     EndianS_endian_cg.sample(ins);
     
 endfunction
+

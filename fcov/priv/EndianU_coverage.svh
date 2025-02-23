@@ -120,9 +120,9 @@ covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
         cp_mstatus_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, cp_doubleoffset;
         cp_mstatus_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, cp_doubleoffset;
         cp_mstatus_ube_endianness_lwu: cross priv_mode_u, mstatus_ube, cp_lwu, cp_wordoffset;
-        cp_mstatus_mpr_ube_endianness_sd:  cross priv_mode_m, mstatus_ube, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_ld:  cross priv_mode_m, mstatus_ube, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_lwu: cross priv_mode_m, mstatus_ube, cp_lwu, cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_sd:  cross priv_mode_m, mstatus_ube, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_ld:  cross priv_mode_m, mstatus_ube, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_lwu: cross priv_mode_m, mstatus_ube, cp_lwu, cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     `endif
 endgroup
 
@@ -133,9 +133,8 @@ function void endianu_sample(int hart, int issue);
     ins.add_rd(0);
     ins.add_rs1(2);
     ins.add_csr(1);
-    $display("Instruction is: PC %h: %h, priv_mode %b,  mstatus_ube %b,    cp_sw %b,      cp_wordoffset %b,  mstatus_mprv %b,  mstatus_mbe %b,   mstatus_mpp%b", ins.current.pc_rdata, ins.current.insn, ins.current.mode, ins.current.csr[12'h300][6], ins.current.insn,  {ins.current.imm + ins.current.rs1_val}[2:0] , ins.current.csr[12'h300][17],  ins.current.csr[12'h310][5], ins.current.csr[12'h300][12:11]);
-
-
+   
     EndianU_endian_cg.sample(ins);
     
 endfunction
+
