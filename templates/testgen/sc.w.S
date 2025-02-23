@@ -48,3 +48,13 @@
     sw t3, 0(t0)      # store word
     sc.w t5, t4, (t0) # succeeds
 
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lr.w t1, (t0)
+            sd t3, 0(t0)      # store double
+            sc.w t5, t4, (t0) # succeeds
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+

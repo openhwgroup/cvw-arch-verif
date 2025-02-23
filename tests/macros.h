@@ -40,8 +40,6 @@
         #define FLREG flq
         #define FSREG fsq
     #endif
-#else
-    ERROR: __riscv_flen not defined
 #endif
 
 #if LOCKSTEP==1

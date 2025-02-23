@@ -60,3 +60,4 @@
     lr.d t1, (t0)
     sd t3, 0(t0)      # store double
     sc.d t5, t4, (t0) # succeeds
+    
