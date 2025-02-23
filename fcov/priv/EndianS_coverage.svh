@@ -134,9 +134,9 @@ covergroup EndianS_endian_cg with function sample(ins_endians_t ins);
         cp_doubleoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000)  {
             bins zero = {3'b000};
         }
-        cp_mstatus_mbe_endianness_sd:  cross priv_mode_s, mstatus_sbe, cp_sd,  cp_doubleoffset;
-        cp_mstatus_mbe_endianness_ld:  cross priv_mode_s, mstatus_sbe, cp_ld,  cp_doubleoffset;
-        cp_mstatus_mbe_endianness_lwu: cross priv_mode_s, mstatus_sbe, cp_lwu, cp_wordoffset;
+        cp_mstatus_sbe_endianness_sd:  cross priv_mode_s, mstatus_sbe, cp_sd,  cp_doubleoffset;
+        cp_mstatus_sbe_endianness_ld:  cross priv_mode_s, mstatus_sbe, cp_ld,  cp_doubleoffset;
+        cp_mstatus_sbe_endianness_lwu: cross priv_mode_s, mstatus_sbe, cp_lwu, cp_wordoffset;
         cp_mstatus_mprv_sbe_endianness_sd:  cross priv_mode_m, mstatus_sbe, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
         cp_mstatus_mprv_sbe_endianness_ld:  cross priv_mode_m, mstatus_sbe, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
         cp_mstatus_mprv_sbe_endianness_lwu: cross priv_mode_m, mstatus_sbe, cp_lwu,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;

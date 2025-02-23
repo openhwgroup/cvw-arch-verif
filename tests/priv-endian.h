@@ -1,5 +1,5 @@
 ///////////////////////////////////////////
-// WALLY-priv-endian.h
+// priv-endian.h
 //
 // Written: mbellido@hmc.edu 18 february 2025
 // Adapted for to support both RV32 and RV64 mbellido@hmc.edu 
@@ -24,11 +24,20 @@
 // License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
+//
+// Registers used:
+//   s1: a 1 in bit specific to SBE or UBE to set/clear mstatus, mstatush or status
+//   s3: scratch address
+//   s4: endianness for write test
+//   s5: endianness for read test
+//   s6: return address for calls to endiantest
+//   s7: return address for calls to endianaccess
+//   s8: stored endianess value 
+//   s10: 0 to set/clear sstatus.UBE  (any other value otherwisse )
+//   s11: To switch back to running privilege mode once set/clear endianness
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 // Library used for EndianU, EndianM and EndianS
-// will store and load using the provided read and write endianness, and privilege mode 
+// will store and load using the provided read and write endianness
 
 endiantest: //Write to memory function 
     # Try each size of stores with the write endianness, and then the loads with the read endianness
@@ -86,13 +95,12 @@ endiantest: //Write to memory function
 
 
 setendianness:  //function to set/clear the bits depending on the endianness specified in the covergroups
-    beq s9, x0, onlymstatus  // branch if bit is writing the same for 32 and 64 bits, and no need for msatush 
     beq s10, x0, onlysstatus3 //branch if endianness is given from sstatus (3 bc used by 3rd cp in endianS)
-
+    
     // if s8 = 1, bigendian, otherwise littleendian
     li a0, 3         # a0 = 3, change to Machine mode
     ecall            # Make a system call to enter Machine mode
-    beqz s8, 1f      # little endian
+    beqz s8, littleendian      # little endian
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrs t6, mstatus, s1   # for RV64, set mstatus
@@ -103,10 +111,10 @@ setendianness:  //function to set/clear the bits depending on the endianness spe
         ERROR: __riscv_xlen not defined
     #endif
     j change
-1:  
+littleendian:  
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            csrrc t6, mstatus, s1   # for RV64, clear mstatus.
+            csrrc t6, mstatus, s1   # for RV64, clear mstatus
         #elif __riscv_xlen == 32
             csrrc t6, mstatush, s1  # for RV32, clear mstatush
         #endif
@@ -116,45 +124,15 @@ setendianness:  //function to set/clear the bits depending on the endianness spe
     j change
 
 
-onlymstatus: //run only mstatus and not also mstatush
-    li a0, 3         # a0 = 3, change to Machine mode
-    ecall            # Make a system call to enter Machine mode
-    beqz s8, 1f      # little endian
-    #ifdef __riscv_xlen
-            csrrs t6, mstatus, s1   # for RV64, set mstatus
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    j change
-1:  
-    #ifdef __riscv_xlen
-            csrrc t6, mstatus, s1   # for RV64, clear mstatus.
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    j change
-
-
 onlysstatus3: //used for 3rd EndianS coverpoint: cp_sstatus_ube_endianness_* 
               // endianness given in sstatus.UBE
-    //mv s8, a0
     li a0, 1         # a0 = 1, change to supervisor mode ->to write to sstatus
     ecall            # Make a system call 
-    // if s8 = 1, bigendian, otherwise littleendian
-    beqz s8, 1f      # little endian
-    #ifdef __riscv_xlen
-        csrrs t6, sstatus, s1   # set sstatus.UBE
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    // Switch back to Supervisor mode
+    beqz s8, littleendian3      # little endian
+    csrrs t6, sstatus, s1   # set sstatus.UBE
     j change
-1:  
-    #ifdef __riscv_xlen
-        csrrc t6, sstatus, s1   # clear sstatus.UBE
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+littleendian3:  
+    csrrc t6, sstatus, s1   # clear sstatus.UBE
     j change
 
 change: 

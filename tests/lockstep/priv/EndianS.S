@@ -29,13 +29,15 @@ main:
 //
 // Registers used:
 //   s0: saved value of mstatus
-//   s1: a 1 in bit 5 to set/clear mstatush.MBE (RV32) or bit 37 to set/clear mstatus.MBE (RV64)
+//   s1: a 1 in bit specific to SBE or UBE to set/clear mstatus, mstatush or status
 //   s3: scratch address
 //   s4: endianness for write test
 //   s5: endianness for read test
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
-//   s8: stored endianess value 
+//   s10: 0 to set/clear sstatus.UBE  (any other value otherwisse )
+//   s11: To switch back to running privilege mode once set/clear endianness
+
 /////////////////////////////////
 
   // 1ST COVERPOINT:  cp_mstatus_sbe_endianness_* 
@@ -45,7 +47,7 @@ main:
     // always do both.  One or the other will trap, but this
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
-    // setting endiannes for write and read, prilige mode
+    // saving and restoring mstatus based on endianness
     // calling WALLY-priv-endian.h to store and load 
 
     csrr s0, mstatus    # save CSR
@@ -59,8 +61,7 @@ main:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch                    # s3 = pointer to scratch
-    //s9, s10, s11 used in WALLY-priv-endian.h
-    li s9,  1  # setendianess function: 1 to stay in func and run mstatush 
+    // s10, s11 used in WALLY-priv-endian.h
     li s10, 1  # setendianess function: 1 to stay in func since running mstatus
     li s11, 1  # resetting privilige after accessing mstatush
 
@@ -760,7 +761,7 @@ post_cp_mstatus_mprv_sbe_endianness:
     // ecall to move to user mode
     // prep s1 with bits to set/clear UBE 
     // code assumes s registers are saved during these tests
-    // setting endiannes for write and read, prilige mode
+    // saving and restoring mstatus based on endianness
     // calling WALLY-priv-endian.h to store and load 
 
     csrr s0, sstatus      # save CSR
@@ -772,8 +773,7 @@ post_cp_mstatus_mprv_sbe_endianness:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch  # s3 = pointer to scratch
-    //s9, s10 used in WALLY-priv-endian.h
-    li s9,  1   # setendianess function: 1 to stay in function since you want to branch for s10
+    // s10 used in WALLY-priv-endian.h
     li s10, 0   # setendianess function: 0 to branch to status
     li s11, 0   # switching back to user mode in lybrary function
 

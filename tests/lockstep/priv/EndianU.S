@@ -36,6 +36,8 @@ main:
 //   s5: endianness for read test
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
+//   s10: 0 to set/clear sstatus.UBE  (any other value otherwisse )
+//   s11: To switch back to running privilege mode once set/clear endianness
 /////////////////////////////////
     // 1ST COVERPOINT:  cp_mstatus_ube_endianness_*!!!
     // save mstatus
@@ -43,6 +45,7 @@ main:
     // always do both.  One or the other will trap, but this
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
+    // saving and restoring mstatus based on endianness
     
     csrr s0, mstatus     # save CSR
     #ifdef __riscv_xlen
@@ -51,8 +54,7 @@ main:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch       # s3 = pointer to scratch
-    // s9, s10, s11 used in WALLY-priv-endian.h
-    li s9,  0   # setendianess function: 0 to branch and run only mstatus
+    // s10, s11 used in WALLY-priv-endian.h
     li s10, 1   # setendianess function: aready branch in s9, but 1 just in case
     li s11, 0   #resseting user mode
     // iterate over each endianness, doing all sizes of stores and loads

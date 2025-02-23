@@ -24,7 +24,7 @@ main:
 //
 // Saving and restoring from the stack is tricky because the
 // code must work for both RV32 and RV64, and the endianness
-// is constantly changing.  Therefore, we use s6 and s7 for
+// is constantly changing.  Therefore, we use s6 and s7 (found in priv-endian.h)for
 // return addresses instead.
 //
 // Registers used:
@@ -33,15 +33,15 @@ main:
 //   s3: scratch address
 //   s4: endianness for write test
 //   s5: endianness for read test
-//   s6: return address for calls to endiantest
-//   s7: return address for calls to endianaccess
+//   s10: 0 to set/clear sstatus.UBE  (any other value otherwisse )
+//   s11: To switch back to running privilege mode once set/clear endianness
 /////////////////////////////////
     // save mstatus
     // prep s1 with bits to set/clear MBE for RV32/RV64
     // always do both.  One or the other will trap, but this
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
-    // setting endiannes for write and read, prilige mode
+    // saving and restoring mstatus based on endianness
     // calling WALLY-priv-endian.h to store and load 
 
     csrr s0, mstatus    # save CSR
@@ -55,9 +55,8 @@ main:
         ERROR: __riscv_xlen not defined
     #endif
     la s3, scratch  # s3 = pointer to scratch
-    li s11, 3       #passing privilige mode: machine
-    li s9,  1       # 1 if we need mestatush to run functions
     li s10, 1
+    li s11, 3       #passing privilige mode: machine
     
     // iterate over each endianness, doing all sizes of stores and loads
     li s4, 0        # endianness for write
