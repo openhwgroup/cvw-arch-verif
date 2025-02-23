@@ -21,8 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsru_t;
-
 covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
     option.per_instance = 0; 
     // "ZicsrU ucsr"
@@ -84,10 +82,10 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
         bins sret   = {32'h10200073};
     }
     priv_mode_u: coverpoint ins.current.mode {
-       bins U_mode = {2'b00};
+        bins U_mode = {2'b00};
     }
     old_priv_mode_u: coverpoint ins.prev.mode {
-       bins U_mode = {2'b00};
+        bins U_mode = {2'b00};
     }
     // main coverpoints
     cp_uprivinst:  cross privinstrs, priv_mode_u;
@@ -95,15 +93,7 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
     cp_sret:       cross sret, old_priv_mode_u; // should trap 
 endgroup
 
-function void zicsru_sample(int hart, int issue);
-    ins_zicsru_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void zicsru_sample(int hart, int issue, ins_t ins);
     ZicsrU_ucsr_cg.sample(ins);
     ZicsrU_uprivinst_cg.sample(ins);
-    
 endfunction

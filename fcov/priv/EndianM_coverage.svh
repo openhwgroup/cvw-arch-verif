@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endianm_t;
-
 covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
     option.per_instance = 0; 
     // "Endianness tests in machine mode"
@@ -103,14 +101,6 @@ covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
 
 endgroup
 
-function void endianm_sample(int hart, int issue);
-    ins_endianm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void endianm_sample(int hart, int issue, ins_t ins);
     EndianM_endian_cg.sample(ins);
-    
 endfunction

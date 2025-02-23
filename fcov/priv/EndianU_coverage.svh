@@ -21,8 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endianu_t;
-
 covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
     option.per_instance = 0; 
     // "Endianness tests in user mode"
@@ -123,14 +121,6 @@ covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
     `endif
 endgroup
 
-function void endianu_sample(int hart, int issue);
-    ins_endianu_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void endianu_sample(int hart, int issue, ins_t ins);
     EndianU_endian_cg.sample(ins);
-    
 endfunction

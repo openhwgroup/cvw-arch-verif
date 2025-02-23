@@ -21,8 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSZALRSC
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszalrsc_t;
-
 covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_exceptionszalrsc_t ins);
     option.per_instance = 0; 
 
@@ -57,14 +55,6 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_exceptionszal
     
 endgroup
 
-function void exceptionszalrsc_sample(int hart, int issue);
-    ins_exceptionszalrsc_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void exceptionszalrsc_sample(int hart, int issue, ins_t ins);
     ExceptionsZalrsc_exceptions_cg.sample(ins);
-    
 endfunction

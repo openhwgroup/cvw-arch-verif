@@ -21,8 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSF
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsf_t;
-
 covergroup ExceptionsF_exceptions_cg with function sample(ins_exceptionsf_t ins);
     option.per_instance = 0; 
 
@@ -98,14 +96,6 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_exceptionsf_t ins)
     cp_badfrm: cross dyn_instrs, mstatus_FS_nonzero, frm_illegal;
 endgroup
 
-function void exceptionsf_sample(int hart, int issue);
-    ins_exceptionsf_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void exceptionsf_sample(int hart, int issue, ins_t ins);
     ExceptionsF_exceptions_cg.sample(ins);
-    
 endfunction

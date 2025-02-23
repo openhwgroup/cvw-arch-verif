@@ -21,8 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSZC
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionszc_t;
-
 covergroup ExceptionsZc_exceptions_cg with function sample(ins_exceptionszc_t ins);
     option.per_instance = 0; 
 
@@ -100,17 +98,7 @@ covergroup ExceptionsZc_instr_cg with function sample(ins_exceptionsm_t ins);
     }
 endgroup
 
-function void exceptionszc_sample(int hart, int issue);
-    ins_exceptionszc_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    
+function void exceptionszc_sample(int hart, int issue, ins_t ins);
     ExceptionsZc_exceptions_cg.sample(ins);
     ExceptionsZc_instr_cg.sample(ins);
-
 endfunction
