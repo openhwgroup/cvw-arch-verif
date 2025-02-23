@@ -39,6 +39,17 @@
     lr.d t1, (t0)       # load from reservation set
     sc.d t1, t3, (t5)   # try store conditional, should succeed if in same set
     sc.d t1, t3, (t5)   # try again, and it should fail this time
+
+    # for RV64, also check different size lr vs. sc
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lr.w t1, (t0)
+            sc.d t1, t3, (t5)
+         #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+   
     addi t6, t6, 8      # increment offset
     slti t5, t6, 129    # offset <= 128
     bnez t5, 1b         # repeat until done
@@ -60,4 +71,69 @@
     lr.d t1, (t0)
     sd t3, 0(t0)      # store double
     sc.d t5, t4, (t0) # succeeds
-    
+
+# cp_custom_sc_after_load
+    # should not care about intervening loads
+
+    lr.w t1, (t0)
+    lb t3, 3(t0)      # load byte
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lb t3, 128(t0)      # load byte
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lbu t3, 2(t0)      # load byte unsigned
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lbu t3, 128(t0)      # load byte unsigned
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lh t3, 2(t0)      # load half
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lh t3, 128(t0)      # load half
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lhu t3, 0(t0)      # load half unsigned
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lhu t3, 128(t0)      # load half unsigned
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lw t3, 0(t0)      # load word
+    sc.d t5, t4, (t0) # succeeds
+
+    lr.w t1, (t0)
+    lw t3, 128(t0)      # load word
+    sc.d t5, t4, (t0) # succeeds
+
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lr.w t1, (t0)
+            lwu t3, 0(t0)      # load word unsigned
+            sc.d t5, t4, (t0) # succeeds
+
+            lr.w t1, (t0)
+            lwu t3, 128(t0)      # load word unsigned
+            sc.d t5, t4, (t0) # succeeds
+
+            lr.w t1, (t0)
+            ld t3, 0(t0)      # load double
+            sc.d t5, t4, (t0) # succeeds
+
+            lr.w t1, (t0)
+            ld t3, 128(t0)      # load double
+            sc.d t5, t4, (t0) # succeeds
+
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
