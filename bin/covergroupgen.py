@@ -116,54 +116,54 @@ def writeSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64) 
         if (match32 and match64):
-            f.write(customizeTemplate(covergroupTemplates, "instruction_sample", arch, instr))
+            f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
 
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
 # all instructions in each testplan
 
 def writeCovergroups(testPlans, covergroupTemplates):
-    covergroupDir = ARCH_VERIF+'/fcov/unpriv'
-    for arch, tp in testPlans.items():
-        #subdir = re.search("(RV..)", arch).group(1).lower()
-        #subdir = os.path.join(subdir, "coverage")
-        os.system("mkdir -p " + covergroupDir)
-        file = arch + "_coverage.svh"
-        initfile = arch + "_coverage_init.svh"
-        print("***** Writing " + file)
-        with open(os.path.join(covergroupDir,file), "w") as f:
-            finit = open(os.path.join(covergroupDir,initfile), "w")
-            #print(covergroupTemplates)
-            f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
-            finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
-            k = list(tp.keys())
-            k.sort()
+    covergroupDir = ARCH_VERIF+'/fcov/'
+    with open(os.path.join(covergroupDir,"coverage/RISCV_instruction_sample.svh"), "w") as fsample:
 
-            writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
-            if (anyExclusion("RV64", k, tp)):
-                f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
-                finit.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
-                writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, False)
-                f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
-                finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
-            if (anyExclusion("RV32", k, tp)):
-                f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
-                finit.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
-                writeInstrs(f, finit, k, covergroupTemplates, tp, arch, False, True)
-                f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
-                finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
+        for arch, tp in testPlans.items():
+            os.makedirs(f"{covergroupDir}/unpriv", exist_ok=True)
+            file = arch + "_coverage.svh"
+            initfile = arch + "_coverage_init.svh"
+            print("***** Writing " + file)
+            with open(os.path.join(covergroupDir,"unpriv",file), "w") as f:
+                finit = open(os.path.join(covergroupDir,"unpriv",initfile), "w")
+                #print(covergroupTemplates)
+                f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
+                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
+                k = list(tp.keys())
+                k.sort()
 
-            # Sample functions: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
-            f.write(customizeTemplate(covergroupTemplates, "sample_header", arch, "NA3"))
-            writeSampleFunctions(f, k, covergroupTemplates, tp, arch, True, True)
-            if (anyExclusion("RV64", k, tp)):
-                f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
-                writeSampleFunctions(f, k, covergroupTemplates, tp, arch, True, False)
-                f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))                
-            if (anyExclusion("RV32", k, tp)):
-                f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
-                writeSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
-                f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))                
-            f.write(customizeTemplate(covergroupTemplates, "sample_end", arch, "NA3"))
+                writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
+                if (anyExclusion("RV64", k, tp)):
+                    f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
+                    finit.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
+                    writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, False)
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
+                    finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
+                if (anyExclusion("RV32", k, tp)):
+                    f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
+                    finit.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
+                    writeInstrs(f, finit, k, covergroupTemplates, tp, arch, False, True)
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
+                    finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
+
+                # Sample functions: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
+                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header", arch, "NA3"))
+                writeSampleFunctions(f, k, covergroupTemplates, tp, arch, True, True)
+                if (anyExclusion("RV64", k, tp)):
+                    f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
+                    writeSampleFunctions(f, k, covergroupTemplates, tp, arch, True, False)
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))                
+                if (anyExclusion("RV32", k, tp)):
+                    f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
+                    writeSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))                
+                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
