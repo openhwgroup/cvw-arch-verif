@@ -87,16 +87,29 @@ covergroup ExceptionsZc_instr_cg with function sample(ins_exceptionsm_t ins);
         // exhaustive test of 2^14 compressed instructions with op = 01 with following exceptions that would be hard to test
         bins c01[] = {[0:14'b00011111111111]};
         ignore_bins c_jal = {[14'b00100000000000:14'b00111111111111]};
-        bins c01b[] = {[14'b01000000000000:14'b10011111111111]};
+        bins c01b[] = {[14'b01000000000000:14'b10001_111111111]};
+        `ifdef XLEN32
+            ignore_bins c_srli_srai_custom = {[14'b10010_000000000:14'b10010_111111111]}; // reserved for custom use in RV32Zca; behavior is unpredictable
+        `else
+            bins c_srli_srai_rv64[] = {[14'b10010_000000000:14'b10010_111111111]}; // RV64Zca c.srli/srai with shift amount of 32-63
+        `endif
+        bins c01c[] = {[14'b10011_000000000:14'b10011_111111111]};
         ignore_bins c_j = {[14'b10100000000000:14'b10111111111111]};
         ignore_bins c_bez_bez = {[14'b11000000000000:14'b11111111111111]};
      }
     cp_compressed10 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b10) {
         // exhaustive test of 2^14 compressed instructions with op = 10
-        bins c10a[] = {[0:14'b01111111111111]};
+        //bins c10a[] = {[0:14'b01111111111111]};
+        bins c10a[] = {[0:14'b0000_1111111111]};
+        `ifdef XLEN32
+            ignore_bins c_slii_custom = {[14'b0001_0000000000:14'b0001_1111111111]}; // reserved for custom use in RV32Zca; behavior is unpredictable
+        `else
+            bins c_slli_rv64[] = {[14'b0001_0000000000:14'b0001_1111111111]}; // RV64Zca c.slli with shift amount of 32-63
+        `endif
+        bins c10b[] = {[14'b001_00000000000:14'b01111111111111]};
         ignore_bins c_jr = {[14'b10000000000000:14'b10001111111111]};
         ignore_bins c_jalr = {[14'b10010000000000:14'b10011111111111]};
-        bins c10b[] = {[14'b10100000000000:$]};
+        bins c10c[] = {[14'b10100000000000:$]};
     }
 endgroup
 
