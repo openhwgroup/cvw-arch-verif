@@ -21,10 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICNTRU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicntru_t;
-
-
-covergroup ZicntrU_ucounters_cg with function sample(ins_zicntru_t ins);
+covergroup ZicntrU_ucounters_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // Counter access in user mode 
 
@@ -260,14 +257,6 @@ covergroup ZicntrU_ucounters_cg with function sample(ins_zicntru_t ins);
 
 endgroup
 
-function void zicntru_sample(int hart, int issue);
-    ins_zicntru_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-
+function void zicntru_sample(int hart, int issue, ins_t ins);
     ZicntrU_ucounters_cg.sample(ins);
-
 endfunction

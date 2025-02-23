@@ -19,9 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrm_t;
-
-covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -214,7 +212,7 @@ covergroup ZicsrM_mcsr_cg with function sample(ins_zicsrm_t ins);
     cp_mcsrwalk : cross mcsrname, csrop, priv_mode_m, walking_ones;
 endgroup
 
-covergroup ZicsrM_mcause_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mcause_cg with function sample(ins_t ins);
     option.per_instance = 0; 
  
     csrrw_mcause: coverpoint ins.current.insn {
@@ -280,7 +278,7 @@ covergroup ZicsrM_mcause_cg with function sample(ins_zicsrm_t ins);
 endgroup
 
 
-covergroup ZicsrM_mstatus_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mstatus_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // SD COVERPOINTS
@@ -306,7 +304,7 @@ covergroup ZicsrM_mstatus_cg with function sample(ins_zicsrm_t ins);
 
  endgroup
 
-covergroup ZicsrM_mprivinst_cg with function sample(ins_zicsrm_t ins);
+covergroup ZicsrM_mprivinst_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
@@ -355,15 +353,7 @@ covergroup ZicsrM_mprivinst_cg with function sample(ins_zicsrm_t ins);
     cp_sret: cross sret, old_priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
 endgroup
 
-function void zicsrm_sample(int hart, int issue);
-    ins_zicsrm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-
+function void zicsrm_sample(int hart, int issue, ins_t ins);
     ZicsrM_mcsr_cg.sample(ins);
     ZicsrM_mcause_cg.sample(ins);
     ZicsrM_mstatus_cg.sample(ins);

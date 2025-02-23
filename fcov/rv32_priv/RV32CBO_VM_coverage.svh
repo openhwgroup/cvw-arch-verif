@@ -18,9 +18,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV32CBO_VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32cbo_vm_t;
-
-covergroup RV32CBO_VM_exceptions_cg with function sample(ins_rv32cbo_vm_t ins);
+covergroup RV32CBO_VM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //exp.1
@@ -170,11 +168,6 @@ covergroup RV32CBO_VM_exceptions_cg with function sample(ins_rv32cbo_vm_t ins);
     }
 endgroup
 
-function void rv32cbo_vm_sample(int hart, int issue);
-    ins_rv32cbo_vm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_csr(0);
-    
+function void rv32cbo_vm_sample(int hart, int issue, ins_t ins);
     RV32CBO_VM_exceptions_cg.sample(ins);
 endfunction

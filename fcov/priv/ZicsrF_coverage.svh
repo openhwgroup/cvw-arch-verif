@@ -19,9 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRF
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrf_t;
-
-covergroup ZicsrF_fcsr_cg with function sample(ins_zicsrf_t ins);
+covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -256,14 +254,6 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_zicsrf_t ins);
     cp_mstatus_FS_transition: cross instrs,                           mstatus_FS;
 endgroup
 
-function void zicsrf_sample(int hart, int issue);
-    ins_zicsrf_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void zicsrf_sample(int hart, int issue, ins_t ins);
     ZicsrF_fcsr_cg.sample(ins);
-    
 endfunction

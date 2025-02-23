@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_INTERRUPTSU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_interruptsu_t;
-
-covergroup InterruptsU_cg with function sample(ins_interruptsu_t ins);
+covergroup InterruptsU_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -90,14 +88,6 @@ covergroup InterruptsU_cg with function sample(ins_interruptsu_t ins);
 
 endgroup
 
-function void interruptsu_sample(int hart, int issue);
-    ins_interruptsu_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void interruptsu_sample(int hart, int issue, ins_t ins);
     InterruptsU_cg.sample(ins);
-    
 endfunction
