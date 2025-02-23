@@ -116,9 +116,7 @@ def writeSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64) 
         if (match32 and match64):
-            for cp in cps:
-                if (cp in cps and cp.startswith("sample_")):
-                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+            f.write(customizeTemplate(covergroupTemplates, "instruction_sample", arch, instr))
 
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
 # all instructions in each testplan
