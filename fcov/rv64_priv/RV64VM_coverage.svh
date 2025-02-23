@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_RV64VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64vm_t;
-
 covergroup RV64VM_satp_cg with function sample(ins_rv64vm_t ins);
     option.per_instance = 0; 
 
@@ -1154,11 +1152,7 @@ covergroup RV64VM_add_feature_cg with function sample(ins_rv64vm_t ins);
     svadu_not_supported: cross menvcfg, mode;
 endgroup
 
-function void rv64vm_sample(int hart, int issue);
-        ins_rv64vm_t ins;
-        ins = new(hart, issue, traceDataQ); 
-        ins.add_csr(0);
-        
+function void rv64vm_sample(int hart, int issue, ins_t ins);
         RV64VM_PA_VA_cg.sample(ins);
         RV64VM_satp_cg.sample(ins);
         RV64VM_sfence_cg.sample(ins);
@@ -1167,5 +1161,3 @@ function void rv64vm_sample(int hart, int issue);
         RV64VM_res_global_pte_cg.sample(ins);
         RV64VM_add_feature_cg.sample(ins);
 endfunction
-
-   

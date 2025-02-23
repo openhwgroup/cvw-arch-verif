@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_RV32VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv32vm_t;
-
 covergroup RV32VM_satp_cg with function sample(ins_rv32vm_t ins);
     option.per_instance = 0; 
     mode_supported: coverpoint ins.current.csr[12'h180][31] { //sat.2
@@ -865,11 +863,7 @@ covergroup RV32VM_add_feature_cg with function sample(ins_rv32vm_t ins);
     svadu_not_supported: cross menvcfgh, mode;
 endgroup
 
-function void rv32vm_sample(int hart, int issue);
-        ins_rv32vm_t ins;
-        ins = new(hart, issue, traceDataQ); 
-        ins.add_csr(0);
-        
+function void rv32vm_sample(int hart, int issue, ins_t ins);
         RV32VM_PA_VA_cg.sample(ins);
         RV32VM_satp_cg.sample(ins);
         RV32VM_sfence_cg.sample(ins);
