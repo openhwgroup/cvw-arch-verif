@@ -167,7 +167,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_zicsrf_t ins);
     fmul: coverpoint ins.current.insn {
         wildcard bins fmul = {32'b00010_00_?????_?????_???_?????_1010011};
     }
-    fs2_zero: coverpoint ins.current.rs2_val[31:0] {
+    fs2_zero: coverpoint ins.current.fs2_val[31:0] {
         bins zero = {32'h00000000};  
     }
     fs1_one: coverpoint ins.current.fs1_val[31:0] {
