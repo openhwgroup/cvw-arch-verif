@@ -410,7 +410,7 @@ function string disassemble (logic [31:0] instrRaw);
     SH1ADD_UW: $sformat(decoded, "sh1add.uw %s, %s, %s", rd, rs1, rs2);
     SH2ADD_UW: $sformat(decoded, "sh2add.uw %s, %s, %s", rd, rs1, rs2);
     SH3ADD_UW: $sformat(decoded, "sh3add.uw %s, %s, %s", rd, rs1, rs2);
-    SLLI_UW:   $sformat(decoded, "slli.uw %s, %s, %0d", rd, rs1, uimm[4:0]);
+    SLLI_UW:   $sformat(decoded, "slli.uw %s, %s, %0d", rd, rs1, uimm);
   `endif
     // Zbb Extension
     ANDN:   $sformat(decoded, "andn %s, %s, %s", rd, rs1, rs2);
