@@ -116,7 +116,8 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64) 
         if (match32 and match64):
-            f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
+            if arch != "E": # E currently breaks coverage
+                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
 
 def writeInstructionSampleFunction(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
     for instr in k:
@@ -191,27 +192,18 @@ def writeCovergroups(testPlans, covergroupTemplates):
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
     keys.sort()
-    #List of priv cover groups
-    priv_defines = ["RV32VM", "RV32VM_PMP", "RV64VM", "RV64VM_PMP", "RV64CBO_PMP", "RV64CBO_VM", "ZicsrM", "ZicsrS", "ZicsrU",
-                    "ZicntrM", "ZicsrF", "ZicntrS", "ZicntrU", "EndianU", "EndianS", "EndianM", "ExceptionsM", "ExceptionsS", "ExceptionsU",
-                    "ExceptionsZc", "ExceptionsF", "ExceptionsZalrsc", "ExceptionsZicboU", "ExceptionsZaamo", "ExceptionsZicboS", "InterruptsU"]
-    file = "../coverage/RISCV_coverage_base_init.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    # Add priv covergroups to list for initialization and sampling
+    keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/priv") if f.endswith("_coverage.svh"))
+    keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/rv32_priv") if f.endswith("_coverage.svh"))
+    keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/rv64_priv") if f.endswith("_coverage.svh"))
+    file = f"{covergroupDir}/coverage/RISCV_coverage_base_init.svh"
+    with open(os.path.join(file), "w") as f:
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
-        for define in priv_defines:
-            f.write(f"   `ifdef COVER_{define.upper()}\n")
-            f.write(f"        `cover_info(\"//      {define} - Enabled\");\n")
-            f.write(f"       `include \"{define}_coverage_init.svh\"\n")
-            f.write(f"   `endif\n \n")
-    file = "../coverage/RISCV_coverage_base_sample.svh"
-    with open(os.path.join(covergroupDir,file), "w") as f:
+    file = f"{covergroupDir}/coverage/RISCV_coverage_base_sample.svh"
+    with open(os.path.join(file), "w") as f:
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
-        for define in priv_defines:
-            f.write(f"   `ifdef COVER_{define.upper()}\n")
-            f.write(f"       {define.lower()}_sample(hart, issue);\n")
-            f.write(f"   `endif\n \n")
 
 
 
