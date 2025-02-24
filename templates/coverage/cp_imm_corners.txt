@@ -12,6 +12,8 @@
         bins Hval1    = {44};
         bins Hval2    = {45};
         bins Hval3    = {46};
+        bins Hmaxm1   = {62};
+        bins Hmax     = {63};
         bins p6       = {64};
         bins p7       = {128};
         bins p8       = {256};
@@ -30,6 +32,7 @@
         bins max      = {2047};
         bins min      = {-2048};
         bins minp1    = {-2047};
+        bins walkoddm1 = {-1367};
         bins walkodd  = {-1366};
         bins walkoddp1 = {-1365};
         bins nHval1   = {-45};
