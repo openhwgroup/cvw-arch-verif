@@ -116,6 +116,33 @@ formbits:
     csrrw t6, sstatus, s0    # restore CSR
 
 /////////////////////////////////
+// cp_satp
+/////////////////////////////////
+cp_satp:
+    csrr t0, satp
+    li t1, -1
+    csrrc t3, satp, t1      # clear all bits
+
+    // logic to exclude mode bits
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            li t2, 0b1111
+            slli t2, t2, 60
+        #elif __riscv_xlen == 32
+            li t2, 0b1
+            slli t2, t2 31
+        #endif
+        not t2, t2
+        and t1, t1, t2
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    csrrw t3, satp, t1 # write all 1s except mode
+    csrrw t3, satp, x0 # write all 0s
+    csrrs t3, satp, t1 # set all except mode
+    csrrw t3, satp, t0
+
+/////////////////////////////////
 // cp_sprivinst
 /////////////////////////////////
     // ecall
