@@ -243,6 +243,13 @@ sretsetup:
     j postsrettest
 
 srettest:
+    addi sp, sp, -16
+    sw ra, 8(sp)
+    sw a0, 0(sp)
+    jal setmstatus
+    lw ra, 8(sp)
+    lw a0, 0(sp)
+    addi sp, sp, 16
     la t1, srettest_sepc    
     csrrw t6, sepc, t1      # return to srettest_sepc when done
     csrrw t6, sstatus, a0   # preload sstatus with argument
@@ -250,10 +257,22 @@ srettest:
     nop                     # should be skipped
     nop                     # should be skipped
 
+setmstatus:
+    li t1, 0b100001
+    slli t1, t1, 17
+    and t1, t1, a0
+
+    li a0, 3
+    ecall
+    csrrs t6, mstatus, t1
+    li a0, 1
+    ecall
+    ret
+
 srettest_sepc:
     li a0, 1               
     ecall                   # make sure we return to supervisor mode
-    csrrw t6, sstatus, s0   # restore mstatus
+    csrrw t6, sstatus, s0   # restore sstatus
     ret
 
 postsrettest:
