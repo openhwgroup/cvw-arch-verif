@@ -209,10 +209,10 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
                                       ins.current.csr[12'h303][1]} {
         // auto fills all 2^6 combinations
     }
-    mip_mie_eq: coverpoint (ins.current.csr[12'h304] == ins.current.csr[12'h344][11:0]) {
+    mip_mie_eq: coverpoint (ins.current.csr[12'h304][11:0] == ins.current.csr[12'h344][11:0]) {
         bins equal = {1};
     }
-    mideleg_mie_eq: coverpoint (ins.current.csr[12'h303] == ins.current.csr[12'h344][11:0]) {
+    mideleg_mie_eq: coverpoint (ins.current.csr[12'h303][11:0] == ins.current.csr[12'h344][11:0]) {
         bins equal = {1};
     }
     stvec_mode: coverpoint ins.current.csr[12'h105][1:0] {
