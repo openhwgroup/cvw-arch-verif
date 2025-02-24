@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsm_t;
-
-covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -51,12 +49,12 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
                                    ins.current.rs1_val == ins.current.rs2_val,                  // A == B  
                                    $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                    $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
-        wildcard bins beq_nottaken  = {3'b000_0_?_?};
-        wildcard bins bne_nottaken  = {3'b001_1_?_?};
-        wildcard bins blt_nottaken  = {3'b100_?_0_?};
-        wildcard bins bge_nottaken  = {3'b101_?_1_?};
-        wildcard bins bltu_nottaken = {3'b110_?_?_0};
-        wildcard bins bgeu_nottaken = {3'b111_?_?_1};
+        wildcard bins beq_nottaken  = {6'b000_0_?_?};
+        wildcard bins bne_nottaken  = {6'b001_1_?_?};
+        wildcard bins blt_nottaken  = {6'b100_?_0_?};
+        wildcard bins bge_nottaken  = {6'b101_?_1_?};
+        wildcard bins bltu_nottaken = {6'b110_?_?_0};
+        wildcard bins bgeu_nottaken = {6'b111_?_?_1};
     }
     jal: coverpoint ins.current.insn {
         wildcard bins jal = {32'b????????????????????_?????_1101111};
@@ -153,21 +151,21 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_exceptionsm_t ins)
 endgroup
 
 // more detailed illegal instruction testing
-covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
+covergroup ExceptionsM_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     
     cp_illegal : coverpoint ins.current.insn { // illegal in RVA22S64; will trap if not in an implemented extension
-        wildcard bins op2  = {32'b?????????????????????????_0001011}; // unused ops
-        wildcard bins op7  = {32'b?????????????????????????_0011111}; // unused ops
-        wildcard bins op10 = {32'b?????????????????????????_0101011}; // unused ops
-        wildcard bins op15 = {32'b?????????????????????????_0111111}; // unused ops
-        wildcard bins op21 = {32'b?????????????????????????_1010111}; // unused ops
-        wildcard bins op22 = {32'b?????????????????????????_1011011}; // unused ops
-        wildcard bins op23 = {32'b?????????????????????????_1011111}; // unused ops
-        wildcard bins op26 = {32'b?????????????????????????_1101011}; // unused ops
-        wildcard bins op29 = {32'b?????????????????????????_1110111}; // unused ops
-        wildcard bins op30 = {32'b?????????????????????????_1111011}; // unused ops
-        wildcard bins op31 = {32'b?????????????????????????_1111111}; // unused ops
+        // wildcard bins op2  = {32'b?????????????????????????_0001011}; // unused ops custom-0
+        wildcard bins op7  = {32'b?????????????????????????_0011111}; // unused ops, reserved for 48-bit
+        // wildcard bins op10 = {32'b?????????????????????????_0101011}; // unused ops custom-1
+        wildcard bins op15 = {32'b?????????????????????????_0111111}; // unused ops, reserved for 64-bit
+        wildcard bins op21 = {32'b?????????????????????????_1010111}; // vector ops
+        // wildcard bins op22 = {32'b?????????????????????????_1011011}; // unused ops custom-2/rv128
+        wildcard bins op23 = {32'b?????????????????????????_1011111}; // unused ops, reserved for 48-bit
+        wildcard bins op26 = {32'b?????????????????????????_1101011}; // reserved
+        wildcard bins op29 = {32'b?????????????????????????_1110111}; // VE vector ops
+        // wildcard bins op30 = {32'b?????????????????????????_1111011}; // unused ops custom-2/rv128
+        wildcard bins op31 = {32'b?????????????????????????_1111111}; // unused ops, reserved for 80+ bit
     }
     // Loads op = 0000011
     cp_load : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0000011) { 
@@ -297,6 +295,7 @@ covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
     // focus on funct3 = 0; others are covered by csr tests
     cp_privileged_000 : coverpoint ins.current.insn[31:20] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[14:12] == 3'b000 & ins.current.insn[19:15] == 5'b00000 & ins.current.insn[11:7] == 5'b00000) {
         // Exhaustive test of 2^12 encodings, only a few are legal
+        wildcard ignore_bins custom = {12'b1???11??????}; // custom System instructions don't need checking
     }
     // if funct3 = 0, rd must be 0
     cp_privileged_rd : coverpoint ins.current.insn[11:7] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[14:12] == 3'b000) {
@@ -323,18 +322,7 @@ covergroup ExceptionsM_instr_cg with function sample(ins_exceptionsm_t ins);
 
 endgroup
 
-function void exceptionsm_sample(int hart, int issue);
-    ins_exceptionsm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-
-    //$display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    //$display("func3: %b, A=B: %b, A<B S: %b, A<B U: %b,  PCbit1: %b, immbit1: %b",ins.current.insn[14:12], (ins.current.rs1_val == ins.current.rs2_val), $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), ins.current.rs1_val < ins.current.rs2_val, ins.current.pc_rdata[1], ins.current.imm[1]);
-
+function void exceptionsm_sample(int hart, int issue, ins_t ins);
     ExceptionsM_exceptions_cg.sample(ins);
     ExceptionsM_instr_cg.sample(ins);
-    
 endfunction

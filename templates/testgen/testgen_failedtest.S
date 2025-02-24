@@ -1,12 +1,4 @@
 
-# define native sized loads and stores
-#if __riscv_xlen == 64
-  #define STORE sd
-  #define LOAD  ld
-#else
-  #define STORE sw
-  #define LOAD  lw
-#endif
 
 # Expects a PC16550-compatible UART.
 # Change these addresses to match your memory map
@@ -30,15 +22,15 @@
 # Log failure.  x31 contains return address of jal from the failure and x30 is vacant
 failedtest:
     la x30, begin_signature
-    STORE x31, 248(x30) # store return address
+    SREG x31, 248(x30) # store return address
     j failedtest_saveregs
 
 # like failedtest, but x29 contains the return address from the failure and x28 is vacant
 failedtest2:
     la x28, begin_signature
-    STORE x29, 232(x28) # store return address
-    STORE x30, 240(x28) # save x30
-    STORE x31, 248(x28) # save x31
+    SREG x29, 232(x28) # store return address
+    SREG x30, 240(x28) # save x30
+    SREG x31, 248(x28) # save x31
     mv x31, x29      # move return address into x31
     la x30, begin_signature
     # now x31 has the return address of jal from the failure and x30 is vacant.
@@ -46,35 +38,35 @@ failedtest2:
 
 # for the rest of this code, x31 contains return address of jal from the valure, x30 points to signature
 failedtest_saveregs:
-    STORE x1, 8(x30)
-    STORE x2, 16(x30)
-    STORE x3, 24(x30)
-    STORE x4, 32(x30)
-    STORE x5, 40(x30)
-    STORE x6, 48(x30)
-    STORE x7, 56(x30)
-    STORE x8, 64(x30)
-    STORE x9, 72(x30)
-    STORE x10, 80(x30)
-    STORE x11, 88(x30)
-    STORE x12, 96(x30)
-    STORE x13, 104(x30)
-    STORE x14, 112(x30)
-    STORE x15, 120(x30)
-    STORE x16, 128(x30)
-    STORE x17, 136(x30)
-    STORE x18, 144(x30)
-    STORE x19, 152(x30)
-    STORE x20, 160(x30)
-    STORE x21, 168(x30)
-    STORE x22, 176(x30)
-    STORE x23, 174(x30)
-    STORE x24, 192(x30)
-    STORE x25, 200(x30)
-    STORE x26, 208(x30)
-    STORE x27, 216(x30)
-    STORE x28, 224(x30)
-    STORE x29, 232(x30)
+    SREG x1, 8(x30)
+    SREG x2, 16(x30)
+    SREG x3, 24(x30)
+    SREG x4, 32(x30)
+    SREG x5, 40(x30)
+    SREG x6, 48(x30)
+    SREG x7, 56(x30)
+    SREG x8, 64(x30)
+    SREG x9, 72(x30)
+    SREG x10, 80(x30)
+    SREG x11, 88(x30)
+    SREG x12, 96(x30)
+    SREG x13, 104(x30)
+    SREG x14, 112(x30)
+    SREG x15, 120(x30)
+    SREG x16, 128(x30)
+    SREG x17, 136(x30)
+    SREG x18, 144(x30)
+    SREG x19, 152(x30)
+    SREG x20, 160(x30)
+    SREG x21, 168(x30)
+    SREG x22, 176(x30)
+    SREG x23, 174(x30)
+    SREG x24, 192(x30)
+    SREG x25, 200(x30)
+    SREG x26, 208(x30)
+    SREG x27, 216(x30)
+    SREG x28, 224(x30)
+    SREG x29, 232(x30)
     # x30 and x31 have already been saved if relevant
 
 # failedtest_saveresults
@@ -99,16 +91,16 @@ failedtest_saveregs:
     # save bad value form rs1
     slli t0, t1, 3      # rs1 * 8
     add  t0, x30, t0    # address of signature memory containing rs1
-    LOAD t0, 0(t0)        # value of rs1 (bad result of operation)
-    STORE t0, 272(x30)     # record bad value
+    LREG t0, 0(t0)        # value of rs1 (bad result of operation)
+    SREG t0, 272(x30)     # record bad value
     # save expected value from rs2
     slli t0, t2, 3      # rs2 * 8
     add t0, x30, t0     # address of signature memory containing rs2
-    LOAD t0, 0(t0)        # value of rs2 (expected result of operation)
-    STORE t0, 280(x30)     # record expected value
+    LREG t0, 0(t0)        # value of rs2 (expected result of operation)
+    SREG t0, 280(x30)     # record expected value
     # Save failing address
     addi t0, x31, -12   # address of the failing instruction (possibly including half of previous instruction)
-    STORE t0, 264(x30)
+    SREG t0, 264(x30)
     
 # print results
     jal failedtest_uartinit
