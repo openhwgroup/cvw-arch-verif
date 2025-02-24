@@ -1,0 +1,2 @@
+Instruction,Type,RV32,RV64,cp_asm_count,cp_vd,cp_vs2,cp_mask_corners
+vandn.vv,VV,x,x,x,x,x,x
