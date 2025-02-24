@@ -8,9 +8,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    scsr_cg = new();        scsr_cg.set_inst_name("obj_scsr");
-    scause_cg = new();      scause_cg.set_inst_name("obj_scause");
-    sstatus_cg = new();     sstatus_cg.set_inst_name("obj_sstatus");
-    sprivinst_cg = new();   sprivinst_cg.set_inst_name("obj_sprivinst");
-
- 
+    ZicsrS_scsr_cg = new();        ZicsrS_scsr_cg.set_inst_name("obj_scsr");
+    ZicsrS_scause_cg = new();      ZicsrS_scause_cg.set_inst_name("obj_scause");
+    ZicsrS_sstatus_cg = new();     ZicsrS_sstatus_cg.set_inst_name("obj_sstatus");
+    ZicsrS_sprivinst_cg = new();   ZicsrS_sprivinst_cg.set_inst_name("obj_sprivinst");

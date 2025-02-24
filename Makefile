@@ -21,6 +21,12 @@ SRCEXT         := S
 OBJEXT         := elf
 SIGEXT         := elf.signature
 
+# temporary for faster testing
+#SRCDIR64     := $(LOCKSTEPDIR)/rv65
+#SRCDIR32     := $(LOCKSTEPDIR)/rv32/I
+#PRIVDIR 	:= $(LOCKSTEPDIR)/bogus
+
+
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 PRIVSOURCES     = $(shell find $(PRIVDIR) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -110,8 +116,10 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld $<
+    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
+#    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DSIGNATURE=1 $<   # for signature generation
 	$(MAKE) $@.objdump $@.memfile
+#	$(MAKE) $@.memfile $@.signature # uncomment for signature generation
 
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases $< > $@
@@ -127,7 +135,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstep
+	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 	$(MAKE) merge
 
 # Merge coverage files and generate report

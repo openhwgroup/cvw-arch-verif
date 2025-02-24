@@ -155,11 +155,14 @@
 `ifdef ZICSRM_COVERAGE
   `include "ZicsrM_coverage.svh"
 `endif
-`ifdef ZICSRF_COVERAGE
-  `include "ZicsrF_coverage.svh"
+`ifdef ZICSRS_COVERAGE
+  `include "ZicsrS_coverage.svh"
 `endif
 `ifdef ZICSRU_COVERAGE
   `include "ZicsrU_coverage.svh"
+`endif
+`ifdef ZICSRF_COVERAGE
+  `include "ZicsrF_coverage.svh"
 `endif
 `ifdef ENDIANU_COVERAGE
   `include "EndianU_coverage.svh"
@@ -187,4 +190,7 @@
 `endif
 `ifdef INTERRUPTSS_COVERAGE
   `include "InterruptsS_coverage.svh"
+`endif
+`ifdef INTERRUPTSU_COVERAGE
+  `include "InterruptsU_coverage.svh"
 `endif
