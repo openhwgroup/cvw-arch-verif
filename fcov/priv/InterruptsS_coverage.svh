@@ -21,9 +21,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_INTERRUPTSS
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_interruptss_t;
 
-covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
+covergroup InterruptsS_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -48,6 +47,9 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
     }
     mstatus_tw:  coverpoint ins.current.csr[12'h300][21] {
         // autofill 0/1
+    }
+    mstatus_tw_one:  coverpoint ins.current.csr[12'h300][21] {
+        bins one = {1};
     }
     mideleg_msi: coverpoint ins.current.csr[12'h303][3] {
         // autofill 0/1
@@ -157,57 +159,31 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
         bins msip = {6'b000010};
         bins ssip = {6'b000001};
     }
-    mie_s_walking: coverpoint {ins.current.csr[12'h304][11], 
-                               ins.current.csr[12'h304][9], 
-                               ins.current.csr[12'h304][7], 
-                               ins.current.csr[12'h304][5], 
-                               ins.current.csr[12'h304][3], 
-                               ins.current.csr[12'h304][1]} {
-        // bins meie = {6'b100000};
-        bins seie = {6'b010000};
-        // bins mtie = {6'b001000};
-        bins stie = {6'b000100};
-        // bins msie = {6'b000010};
-        bins ssie = {6'b000001};
+    mie_s_ones: coverpoint {ins.current.csr[12'h304][9], 
+                            ins.current.csr[12'h304][5], 
+                            ins.current.csr[12'h304][1]} {
+        bins ones = {3'b111};
     }
-    mip_s_walking: coverpoint {ins.current.csr[12'h344][11], 
-                               ins.current.csr[12'h344][9], 
-                               ins.current.csr[12'h344][7], 
-                               ins.current.csr[12'h344][5], 
-                               ins.current.csr[12'h344][3], 
-                               ins.current.csr[12'h344][1]} {
-        // bins meip = {6'b100000};
-        bins seip = {6'b010000};
-        // bins mtip = {6'b001000};
-        bins stip = {6'b000100};
-        // bins msip = {6'b000010};
-        bins ssip = {6'b000001};
+    mip_s_walking: coverpoint {ins.current.csr[12'h304][9], 
+                               ins.current.csr[12'h304][5], 
+                               ins.current.csr[12'h304][1]}  {
+        bins seip = {3'b100};
+        bins stip = {3'b010};
+        bins ssip = {3'b001};
     }
     mie_m_walking: coverpoint {ins.current.csr[12'h304][11], 
-                               ins.current.csr[12'h304][9], 
                                ins.current.csr[12'h304][7], 
-                               ins.current.csr[12'h304][5], 
-                               ins.current.csr[12'h304][3], 
-                               ins.current.csr[12'h304][1]} {
-        bins meie = {6'b100000};
-        // bins seie = {6'b010000};
-        bins mtie = {6'b001000};
-        // bins stie = {6'b000100};
-        bins msie = {6'b000010};
-        // bins ssie = {6'b000001};
+                               ins.current.csr[12'h304][3]} {
+        bins meie = {3'b100};
+        bins mtie = {3'b010};
+        bins msie = {3'b001};
     }
     mip_m_walking: coverpoint {ins.current.csr[12'h344][11], 
-                               ins.current.csr[12'h344][9], 
                                ins.current.csr[12'h344][7], 
-                               ins.current.csr[12'h344][5], 
-                               ins.current.csr[12'h344][3], 
-                               ins.current.csr[12'h344][1]} {
-        bins meip = {6'b100000};
-        // bins seip = {6'b010000};
-        bins mtip = {6'b001000};
-        // bins stip = {6'b000100};
-        bins msip = {6'b000010};
-        // bins ssip = {6'b000001};
+                               ins.current.csr[12'h344][3]} {
+        bins meip = {3'b100};
+        bins mtip = {3'b010};
+        bins msip = {3'b001};
     }
     mie_combinations: coverpoint {ins.current.csr[12'h304][11],
                                   ins.current.csr[12'h304][9],
@@ -233,14 +209,17 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
                                       ins.current.csr[12'h303][1]} {
         // auto fills all 2^6 combinations
     }
-    mip_mie_eq: coverpoint (ins.current.csr[12'h304] == ins.current.csr[12'h344]) {
+    mip_mie_eq: coverpoint (ins.current.csr[12'h304] == ins.current.csr[12'h344][11:0]) {
         bins equal = {1};
     }
-    mideleg_mie_eq: coverpoint (ins.current.csr[12'h303] == ins.current.csr[12'h344]) {
+    mideleg_mie_eq: coverpoint (ins.current.csr[12'h303] == ins.current.csr[12'h344][11:0]) {
         bins equal = {1};
     }
     stvec_mode: coverpoint ins.current.csr[12'h105][1:0] {
         bins direct   = {2'b00};
+        bins vector   = {2'b01};
+    }
+    stvec_vectored: coverpoint ins.current.csr[12'h105][1:0] {
         bins vector   = {2'b01};
     }
     mtvec_direct: coverpoint ins.current.csr[12'h305][1:0] {
@@ -276,19 +255,22 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
     timeout: coverpoint ins.current.csr[12'h344][7] iff (ins.trap == 1) {
         bins no_timer_int = {0};
     }
-    m_ext_intr: coverpoint ins.current.m_ext_intr {
-        bins mei = {1};
-    }
-    m_timer_intr: coverpoint ins.current.m_timer_intr {
-        bins mti = {1};
-    }
-    m_soft_intr: coverpoint ins.current.m_soft_intr {
-        bins msi = {1};
-    }
+    // m_ext_intr: coverpoint ins.current.m_ext_intr {
+    //     bins mei = {1};
+    // }
+    // m_timer_intr: coverpoint ins.current.m_timer_intr {
+    //     bins mti = {1};
+    // }
+    // m_soft_intr: coverpoint ins.current.m_soft_intr {
+    //     bins msi = {1};
+    // }
     s_ext_intr: coverpoint ins.current.s_ext_intr {
+        // autofill 0/1
+    }
+    s_ext_intr_high: coverpoint ins.current.s_ext_intr {
         bins sei = {1};
     }
-    no_sei: coverpoint ins.current.s_ext_intr {
+    s_ext_intr_low: coverpoint ins.current.s_ext_intr {
         bins no_sei = {0};
     }
     priv_mode_m: coverpoint ins.current.mode {
@@ -302,22 +284,22 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
     }
 
     // main coverpoints
-    cp_trigger_mti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_mtip_one, m_timer_intr;
-    cp_trigger_msi:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_msip_one, m_soft_intr;
-    cp_trigger_mei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_meip_one, m_ext_intr;
+    cp_trigger_mti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_mtip_one;
+    cp_trigger_msi:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_msip_one;
+    cp_trigger_mei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_meip_one;
     cp_trigger_sti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_stip_one;
     cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_ssip_one; 
     cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_sip_ssip;
-    cp_trigger_sei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, sip_seip_one, s_ext_intr;
-    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_mip_seip;
+    cp_trigger_sei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, sip_seip_one, s_ext_intr_high;
+    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_low;
     cp_trigger_changingtos_mti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_mtip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_msi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_msip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_mei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_meip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_stip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_ssip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_seip_one, csrrs, write_sstatus_sie;
-    cp_interrupts:              cross priv_mode_s, mstatus_mie, mtvec_direct, mip_walking, mie_walking;
-    cp_vectored:                cross priv_mode_s, mstatus_mie_one, mie_ones, mideleg_ones, mtvec_vectored, mip_walking, csrrs, write_sstatus_sie;
+    cp_interrupts_s:            cross priv_mode_s, mstatus_mie, mideleg_zeros, mtvec_direct, mip_walking, mie_walking;
+    cp_vectored_s:              cross priv_mode_s, mstatus_mie_one, mie_ones, mideleg_ones, stvec_vectored, mip_walking, csrrs, write_sstatus_sie;
     cp_priority_mip_m:          cross priv_mode_s, mstatus_mie_zero, mip_combinations, mie_ones,   mideleg_zeros, csrrs, write_sstatus_sie;
     cp_priority_mie_m:          cross priv_mode_s, mstatus_mie_zero, mie_combinations, mip_ones,   mideleg_zeros, csrrs, write_sstatus_sie;
     cp_priority_both_m:         cross priv_mode_s, mstatus_mie_zero, mie_combinations, mip_mie_eq, mideleg_zeros, csrrs, write_sstatus_sie;
@@ -326,46 +308,38 @@ covergroup InterruptsS_cg with function sample(ins_interruptss_t ins);
     cp_priority_both_s:         cross priv_mode_s, mstatus_mie_one,  mie_combinations, mip_mie_eq, mideleg_ones,  csrrs, write_sstatus_sie;
     cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mie_ones, csrrs, write_sstatus_sie;
     cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mideleg_mie_eq, csrrs, write_sstatus_sie;
-    cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, m_ext_intr;
-    cp_wfi_timeout:             cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, timeout;
+    cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_meip_one; // could cause funky coverage since WFI often doesn't retire. Revisit later
+    cp_wfi_timeout:             cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
     
     cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_ones_zeros, mip_walking, mie_walking; 
-    cp_vectored_m:            cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mideleg_zeros, mip_s_walking, mie_s_walking;
+    cp_vectored_m:            cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mideleg_zeros, mip_s_walking, mie_s_ones;
     cp_priority_mip:          cross priv_mode_m, mie_ones, mideleg_zeros, mip_combinations, mstatus_mie_rise;
     cp_priority_mie:          cross priv_mode_m, mip_ones, mideleg_zeros, mie_combinations, mstatus_mie_rise;
-    cp_wfi_m:                 cross priv_mode_m, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw, mie_mtie_one, m_ext_intr;
+    cp_wfi_m:                 cross priv_mode_m, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw, mie_mtie_one, mip_meip_one;
     cp_trigger_ssi_sip_m:     cross priv_mode_m, mstatus_mie, mie_ones, csrrs, write_sip_ssip;
-    cp_trigger_changetom_mti: cross priv_mode_m, mideleg_zeros, mie_ones, mip_mtip_one, csrrs, write_mstatus_mie;
-    cp_trigger_changetom_msi: cross priv_mode_m, mideleg_zeros, mie_ones, mip_msip_one, csrrs, write_mstatus_mie;
-    cp_trigger_changetom_mei: cross priv_mode_m, mideleg_zeros, mie_ones, mip_meip_one, csrrs, write_mstatus_mie;
-    cp_trigger_changetom_sti: cross priv_mode_m, mideleg_zeros, mie_ones, mip_stip_one, csrrs, write_mstatus_mie;
-    cp_trigger_changetom_ssi: cross priv_mode_m, mideleg_zeros, mie_ones, mip_ssip_one, csrrs, write_mstatus_mie;
-    cp_trigger_changetom_sei: cross priv_mode_m, mideleg_zeros, mie_ones, mip_seip_one, csrrs, write_mstatus_mie;
-    cp_sei1:                  cross priv_mode_m, mstatus_mie_zero, mip_seip_rise, no_sei, csrrw, write_mip_seip;
-    cp_sei2:                  cross priv_mode_m, mstatus_mie_zero, mip_seip_rise, no_sei, csrrs, write_mip_seip;
-    cp_sei3:                  cross priv_mode_m, mstatus_mie_zero, mip_seip_rise, s_ext_intr;
-    cp_sei4:                  cross priv_mode_m, mstatus_mie_zero, prev_mip_seip_one, no_sei, csrrc, write_mip_seip;
-    cp_sei5:                  cross priv_mode_m, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr, csrrc, write_mip_seip;
-    // cp_sei6:                  cross priv_mode_m, 
-    // cp_sei7:                  cross priv_mode_m, 
-    cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mie_m_walking;
+    cp_trigger_mti_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_mtip_one, csrrs, write_mstatus_mie;
+    cp_trigger_msi_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_msip_one, csrrs, write_mstatus_mie;
+    cp_trigger_mei_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_meip_one, csrrs, write_mstatus_mie;
+    cp_trigger_sti_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_stip_one, csrrs, write_mstatus_mie;
+    cp_trigger_ssi_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_ssip_one, csrrs, write_mstatus_mie;
+    cp_trigger_sei_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_seip_one, csrrs, write_mstatus_mie;
+    cp_sei1:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr_low, csrrw, write_mip_seip;
+    cp_sei2:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr_low, csrrs, write_mip_seip;
+    cp_sei3:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr_high;
+    cp_sei4:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_low,  csrrc, write_mip_seip;
+    cp_sei5:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_high, csrrc, write_mip_seip;
+    cp_sei6_7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
+    // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,  
+    cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq; 
 
 
-    cp_user_mti: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip, m_timer_intr;
-    cp_user_msi: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi, mie_msie, mip_msip, m_soft_intr;
-    cp_user_mei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei, mie_meie, mip_meip, m_ext_intr;
-    cp_user_sei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_sei, mie_seie, mip_seip, s_ext_intr;
+    cp_user_mti: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip;
+    cp_user_msi: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi, mie_msie, mip_msip;
+    cp_user_mei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei, mie_meie, mip_meip;
+    cp_user_sei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_sei, mie_seie, mip_seip;
 
 endgroup
 
-function void interruptss_sample(int hart, int issue);
-    ins_interruptss_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
-    
 endfunction
