@@ -44,7 +44,8 @@ covergroup ZicsrM_mcsr_cg with function sample(ins_t ins);
         bins hyper_std1[] = {[12'h600:12'h6BF]};
         ignore_bins hyper_custom1[] = {[12'h6C0:12'h6FF]};
         bins mach_std1[] = {[12'h700:12'h7AF]};
-        ignore_bins mach_debug[] = {[12'h7B0:12'h7BF]}; // toggling debug registers could do weird stuff
+        ignore_bins mach_debug[] = {[12'h7A0:12'h7AF]}; // toggling debug registers could do weird stuff
+        bins debug_only[] = {[12'h7B0:12'h7BF]}; // access to debug mode registers raises illegal instruction even in machine mode
         ignore_bins mach_custom1[] = {[12'h7C0:12'h7FF]};
         ignore_bins user_custom2[] = {[12'h800:12'h8FF]};
         bins super_std2[] = {[12'h900:12'h9BF]};

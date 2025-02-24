@@ -7,15 +7,15 @@
 // for simplifed test generation
 
 #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            #define SREG sw
-            #define LREG lw
-        #elif __riscv_xlen == 64
-            #define SREG sd
-            #define LREG ld
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
+    #if __riscv_xlen == 32
+        #define SREG sw
+        #define LREG lw
+    #elif __riscv_xlen == 64
+        #define SREG sd
+        #define LREG ld
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
 #endif
 
 // #if   XLEN==32
@@ -29,15 +29,17 @@
 //     #define LREG lq
 // #endif
 
-#if FLEN==32
-    #define FLREG flw
-    #define FSREG fsw
-#elif FLEN==64
-    #define FLREG fld
-    #define FSREG fsd
-#elif FLEN==128
-    #define FLREG flq
-    #define FSREG fsq
+#ifdef __riscv_flen
+    #if __riscv_flen == 32
+        #define FLREG flw
+        #define FSREG fsw
+    #elif __riscv_flen == 64
+        #define FLREG fld
+        #define FSREG fsd
+    #elif __riscv_flen == 128
+        #define FLREG flq
+        #define FSREG fsq
+    #endif
 #endif
 
 #if LOCKSTEP==1
