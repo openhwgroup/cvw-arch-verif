@@ -44,14 +44,6 @@ def signedImm12(imm, immOffset = False):
     imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
   return str(imm)
 
-def unsignedImm12(imm, immOffset = False):
-#                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
-  pos = imm > 0
-  imm = imm % pow(2, 12)
-  if immOffset and imm == -2048:
-    imm += 1 +  pos * 0x0ffe # change to abs(2047) with the sign of the original
-  return str(imm)
-
 def unsignedImm20(imm):
   imm = imm % pow(2, 20)
   return str(imm)
