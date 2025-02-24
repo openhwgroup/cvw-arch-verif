@@ -148,8 +148,8 @@ main:
     //cp_instr_access_fault
     /////////////////////////////////
 
-    # li  t0, ACCESS_FAULT_ADDRESS  // Load the fault address into t0
-    # jr  t0                // Jump to the fault address
+    # li  t1, ACCESS_FAULT_ADDRESS  // Load the fault address into t0
+    # jr  t1                        // Jump to the fault address
 
     /////////////////////////////////
     //cp_illegal_instruction
@@ -219,12 +219,12 @@ load_loop:
     lbu     t2, 0(t1)     # load byte (unsigned)
    
    # Attempt to load doubleword for RV64  
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            lwu     t2, 0(t1)     # load word (unsigned)
-            ld      t2, 0(t1)     # load doubleword (64 bits)
-        #endif
-    #endif
+    # #ifdef __riscv_xlen
+    #     #if __riscv_xlen == 64
+    #         lwu     t2, 0(t1)     # load word (unsigned)
+    #         ld      t2, 0(t1)     # load doubleword (64 bits)
+    #     #endif
+    # #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -249,12 +249,12 @@ load_loop:
     lw t5, 0(t0)
 
     // Attempt to load doubleword for RV64
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            lwu  t6, 0(t0)   # Load word (unsigned)
-            ld   t6, 0(t0)   # Load doubleword
-        #endif
-    #endif
+    # #ifdef __riscv_xlen
+    #     #if __riscv_xlen == 64
+    #         lwu  t6, 0(t0)   # Load word (unsigned)
+    #         ld   t6, 0(t0)   # Load doubleword
+    #     #endif
+    # #endif
 
     /////////////////////////////////
     //cp_store_address_misaligned
@@ -281,11 +281,11 @@ store_loop:
     sw      t2, 0(t1)     # store word (32 bits)
 
     # Attempt to store doubleword on RV64.
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd      t2, 0(t1)     # store doubleword (64 bits)
-        #endif
-    #endif
+    # #ifdef __riscv_xlen
+    #     #if __riscv_xlen == 64
+    #         sd      t2, 0(t1)     # store doubleword (64 bits)
+    #     #endif
+    # #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -330,16 +330,80 @@ store_loop:
     //cp_misaligned_priority
     /////////////////////////////////
 
-    //load the illegal address into a register and misalign the address
-    la      t0, ACCESS_FAULT_ADDRESS
-    addi    t0, t0, 1       
+    //Test misaligned priority for load instructions
+
+  # Get a pointer to an access fault address and deliberately misalign it by adding 1
+    la      t4, ACCESS_FAULT_ADDRESS
+    addi    t4, t4, 1       
+
+    # Initialize loop counter (offset) from 0 to 7
+    li      t0, 0         # t0 = loop index (offset)
+    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+
+load_loop_priority:
+    # Compute effective address = base (t4) + current offset (t0)
+    add     t1, t4, t0    # t1 = effective address with 3 LSBs = t0
+
+    # The following five load instructions will use the same effective address.
+    # Depending on the current offset, these accesses are misaligned and on a fault access
+    # relative to the load's natural alignment. In such cases, the processor 
+    # will trigger a load misaligned exception, caught by trap_handler.
     
-    //Attemmpt 
+    lh      t2, 0(t1)     # load halfword (16 bits)
+    lhu     t2, 0(t1)     # load halfword unsigned
+    lw      t2, 0(t1)     # load word (32 bits)
+    lb      t2, 0(t1)     # load byte (signed)
+    lbu     t2, 0(t1)     # load byte (unsigned)
+   
+   # Attempt to load doubleword for RV64  
+    # #ifdef __riscv_xlen
+    #     #if __riscv_xlen == 64
+    #         lwu     t2, 0(t1)     # load word (unsigned)
+    #         ld      t2, 0(t1)     # load doubleword (64 bits)
+    #     #endif
+    # #endif
 
-    lw t6, 0(t0)
+    # Increment loop counter and iterate if less than 8.
+    addi    t0, t0, 1
+    blt     t0, t5, load_loop_priority 
 
-    li t3, 0xADDEDCAB
-    sw t3, 0(t0)
+    # Initialize loop counter (offset) from 0 to 7
+    li      t0, 0         # t0 = loop index (offset)
+    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+
+
+    //Test misaligned priority for store instructions
+
+        # Get a pointer to scratch data and deliberately misalign it by adding 1.
+    la      t4, ACCESS_FAULT_ADDRESS
+    addi    t4, t4, 1       # Now t4 is misaligned
+
+    # Initialize loop counter (offset) from 0 to 7.
+    li      t0, 0         # t0 = loop index (offset)
+    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+
+store_loop_priority:
+    # Compute effective address = base (t4) + current offset (t0)
+    add     t1, t4, t0    # t1 = effective address with 3 LSBs = t0
+
+    # Prepare a test value to store.
+    li      t2, 0xDECAFCAB
+
+    # Attempt store instructions at the misaligned effective address.
+    sb      t2, 0(t1)     # store byte (8 bits)
+    sh      t2, 0(t1)     # store halfword (16 bits)
+    sw      t2, 0(t1)     # store word (32 bits)
+
+    # Attempt to store doubleword on RV64.
+    # #ifdef __riscv_xlen
+    #     #if __riscv_xlen == 64
+    #         sd      t2, 0(t1)     # store doubleword (64 bits)
+    #     #endif
+    # #endif
+
+    # Increment loop counter and iterate if less than 8.
+    addi    t0, t0, 1
+    blt     t0, t5, store_loop_priority
     
     /////////////////////////////////
     //cp_mstatus_ie
