@@ -437,8 +437,8 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     old_priv_mode_s: coverpoint ins.prev.mode { 
        bins S_mode = {2'b01};
     }
-    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
-    }
+    // old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
+    // }
     old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
     }
     old_sstatus_spp: coverpoint ins.prev.csr[12'h100][8] {
@@ -450,10 +450,12 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     // main coverpoints
     cp_mprivinst: cross privinstrs, old_priv_mode_s;
     cp_mret:      cross mret,       old_priv_mode_s;
-    cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_mprv, old_mstatus_tsr;
+    cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);
+
+    $display("PC: %h; CSRR: %b; CSR: %b; Current Mode; Nonzero RD: %b", ins.current.pc_rdata, ins.current.insn, ins.current.insn[31:20], ins.current.mode, ins.current.insn[11:7]);
     ZicsrS_scsr_cg.sample(ins);
     ZicsrS_scause_cg.sample(ins);
     ZicsrS_sstatus_cg.sample(ins);
