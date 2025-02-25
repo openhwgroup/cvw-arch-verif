@@ -243,13 +243,11 @@ sretsetup:
     j postsrettest
 
 srettest:
-    addi sp, sp, -16
-    sw ra, 8(sp)
-    sw a0, 0(sp)
+    mv s0, ra
+    mv s1, a0
     jal setmstatus
-    lw ra, 8(sp)
-    lw a0, 0(sp)
-    addi sp, sp, 16
+    mv ra, s0
+    mv a0, s1
     la t1, srettest_sepc    
     csrrw t6, sepc, t1      # return to srettest_sepc when done
     csrrw t6, sstatus, a0   # preload sstatus with argument
