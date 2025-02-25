@@ -37,7 +37,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins zero = {0};
     }
     mstatus_mie_one: coverpoint ins.current.csr[12'h300][3] {
-        bins zero = {1};
+        bins one = {1};
     }
     mstatus_mie_rise: coverpoint ins.current.csr[12'h300][3] {
         wildcard bins rise = (0 => 1);
@@ -63,13 +63,13 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     mideleg_mei: coverpoint ins.current.csr[12'h303][11] {
         // autofill 0/1
     }
-    mideleg_zeros: coverpoint ins.current.csr[12'h303] {
+    mideleg_zeros: coverpoint ins.current.csr[12'h303][15:0] {
         wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
     }
-    mideleg_ones: coverpoint ins.current.csr[12'h303] {
+    mideleg_ones: coverpoint ins.current.csr[12'h303][15:0] {
         wildcard bins ones  = {16'b????1?1?1?1?1?1?}; //  ones in every field that is not tied to zero
     }
-    mideleg_ones_zeros: coverpoint ins.current.csr[12'h303] {
+    mideleg_ones_zeros: coverpoint ins.current.csr[12'h303][15:0] {
         wildcard bins ones  = {16'b????1?1?1?1?1?1?}; //  ones in every field that is not tied to zero
         wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
     }
