@@ -135,7 +135,12 @@ interrupt:              # must be a timer interrupt
     csrc mip, t0       # reset mip.SEIP
 
     li t0, 32
-    csrc sip, t0        # clears stimer interrupt
+    csrc mip, t0        # clear mip.STIP
+    csrrci t6, mip, 2   # clear mip.SSIP
+
+    li t0, 512          # 1 in bit 9
+    csrrc t6, mip, t0   # clear mip.SEIP
+
     j trap_return       # clean up and return
 
 exception:
