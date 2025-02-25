@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    scounters_cg = new();         scounters_cg.set_inst_name("obj_zicntrs");
+    ZicntrS_scounters_cg = new();         ZicntrS_scounters_cg.set_inst_name("obj_zicntrs");

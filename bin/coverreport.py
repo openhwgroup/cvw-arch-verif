@@ -44,8 +44,8 @@ def remove_duplicates_after_second_header(file_path):
 WALLY = os.environ.get('WALLY')
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 if not WALLY:
-	print("ERROR: WALLY environment variable not set")
-	exit(1)
+    print("ERROR: WALLY environment variable not set")
+    exit(1)
 ucdbdir = f"{WALLY}/sim/questa/fcov_ucdb"
 reportdir = f"{ARCH_VERIF}/work"
 

@@ -4,7 +4,7 @@
 MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
-TESTDIR		   := tests
+TESTDIR      := tests
 LOCKSTEPDIR  := $(TESTDIR)/lockstep
 SELFCHECKDIR := $(TESTDIR)/selfchecking
 SIGDIR       := $(TESTDIR)/signature
@@ -20,6 +20,12 @@ WORK           := work
 SRCEXT         := S
 OBJEXT         := elf
 SIGEXT         := elf.signature
+
+# temporary for faster testing
+#SRCDIR64     := $(LOCKSTEPDIR)/rv65
+#SRCDIR32     := $(LOCKSTEPDIR)/rv32/I
+#PRIVDIR 	:= $(LOCKSTEPDIR)/bogus
+
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -44,7 +50,7 @@ PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompresse
 all: unpriv priv
 
 unpriv: testgen
-	$(MAKE) $(UNPRIVOBJECTS)	
+	$(MAKE) $(UNPRIVOBJECTS)
 
 selfcheck: UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
 selfcheck: selfchecking $(UNPRIVSELFCHECK_SOURCES)
@@ -59,8 +65,6 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
-#	rm -rf ${LOCKSTEPDIR}/*/Zaamo ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail; temporarily remove until fixed
-	rm -rf ${LOCKSTEPDIR}/*/Zalrsc # *** these hang Sail because they load from x0; temporarily remove until fixed
 	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
@@ -112,8 +116,10 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld $<
+    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
+#    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DSIGNATURE=1 $<   # for signature generation
 	$(MAKE) $@.objdump $@.memfile
+#	$(MAKE) $@.memfile $@.signature # uncomment for signature generation
 
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases $< > $@
@@ -128,12 +134,8 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Run tests while collecting functional coverage
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ExceptionsInstr.elf --fcov
-	#wsim rv32gc $(LOCKSTEPDIR)/priv/rv32/ZicsrM.elf --fcov
-	#wsim rv64gc ${WALLY}/tests/riscof/work/wally-riscv-arch-test/rv64i_m/privilege/src/WALLY-mmu-sv39-svadu-svnapot-svpbmt-01.S/ref/ref.elf --fcov
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL.elf --fcov
-	#wsim rv64gc $(LOCKSTEPDIR)/rv64/Zca/WALLY-COV-ALL.elf --fcov
-	#wsim rv32gc $(LOCKSTEPDIR)/rv32/M/WALLY-COV-div.elf --fcov
+# Modify the following line to run a specific test
+	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 	$(MAKE) merge
 
 # Merge coverage files and generate report

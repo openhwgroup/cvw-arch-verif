@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRS
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsrs_t;
-
-covergroup scsr_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -37,8 +35,36 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
+    // csr is similar to in ZicsrM, but also exercises custom/debug machine mode CSRs, which should trap from supervisor level
     csr: coverpoint ins.current.insn[31:20]  {
-        bins all[] = {[0:$]};
+        bins user_std0[] = {[12'h000:12'h0FF]};
+        bins super_std0[] = {[12'h100:12'h1FF]};
+        bins hyper_std0[] = {[12'h200:12'h2FF]};
+        bins mach_std0[] = {[12'h300:12'h3FF]};
+        bins user_std1[] = {[12'h400:12'h4FF]};
+        bins super_std1[] = {[12'h500:12'h5BF]};
+        ignore_bins super_custom1[] = {[12'h5C0:12'h5FF]};
+        bins hyper_std1[] = {[12'h600:12'h6BF]};
+        ignore_bins hyper_custom1[] = {[12'h6C0:12'h6FF]};
+        bins mach_std1[] = {[12'h700:12'h7AF]};
+        bins mach_debug[] = {[12'h7A0:12'h7AF]}; // toggling debug registers could do weird stuff
+        bins debug_only[] = {[12'h7B0:12'h7BF]}; // access to debug mode registers raises illegal instruction even in machine mode
+        bins mach_custom1[] = {[12'h7C0:12'h7FF]};
+        ignore_bins user_custom2[] = {[12'h800:12'h8FF]};
+        bins super_std2[] = {[12'h900:12'h9BF]};
+        ignore_bins super_custom22[] = {[12'h9C0:12'h9FF]};
+        bins hyper_std2[] = {[12'hA00:12'hABF]};
+        ignore_bins hyper_custom22[] = {[12'hAC0:12'hAFF]};
+        bins mach_std2[] = {[12'hB00:12'hBBF]};
+        bins mach_custom2[] = {[12'hBC0:12'hBFF]};
+        bins user_std3[] = {[12'hC00:12'hCBF]};
+        ignore_bins user_custom3[] = {[12'hCC0:12'hCFF]};
+        bins super_std3[] = {[12'hD00:12'hDBF]};
+        ignore_bins super_custom3[] = {[12'hDC0:12'hDFF]};
+        bins hyper_std3[] = {[12'hE00:12'hEBF]};
+        ignore_bins hyper_custom3[] = {[12'hEC0:12'hEFF]};
+        bins mach_std3[] = {[12'hF00:12'hFBF]};
+        bins mach_custom3[] = {[12'hFC0:12'hFFF]};
     }
     csr_no_satp: coverpoint ins.current.insn[31:20]  {
         bins all[] = {[0:$]};
@@ -292,14 +318,14 @@ covergroup scsr_cg with function sample(ins_zicsrs_t ins);
     // main coverpoints
     cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
-    cp_csrcs:        cross csrop,   csr,         priv_mode_s, rs1_ones;    
+    cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
     cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
     cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
-covergroup scause_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_scause_cg with function sample(ins_t ins);
     option.per_instance = 0; 
  
     csrrw_scause: coverpoint ins.current.insn {
@@ -364,7 +390,7 @@ covergroup scause_cg with function sample(ins_zicsrs_t ins);
 endgroup
 
 
-covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sstatus_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
@@ -386,7 +412,7 @@ covergroup sstatus_cg with function sample(ins_zicsrs_t ins);
 
  endgroup
 
-covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
+covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     privinstrs: coverpoint ins.current.insn  {
@@ -427,17 +453,9 @@ covergroup sprivinst_cg with function sample(ins_zicsrs_t ins);
     cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_mprv, old_mstatus_tsr;
 endgroup
 
-function void zicsrs_sample(int hart, int issue);
-    ins_zicsrs_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-
-    scsr_cg.sample(ins);
-    scause_cg.sample(ins);
-    sstatus_cg.sample(ins);
-    sprivinst_cg.sample(ins);
+function void zicsrs_sample(int hart, int issue, ins_t ins);
+    ZicsrS_scsr_cg.sample(ins);
+    ZicsrS_scause_cg.sample(ins);
+    ZicsrS_sstatus_cg.sample(ins);
+    ZicsrS_sprivinst_cg.sample(ins);
 endfunction

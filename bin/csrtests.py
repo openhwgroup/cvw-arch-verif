@@ -38,6 +38,9 @@ def csrtests(pathname):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
     for i in range(4096):
+        if (i in list(range (0x800, 0x900)) + list(range(0x5C0, 0x600)) + list(range(0x6C0, 0x700)) + list(range(0x7B0-0x7C0)) + list(range(0x9C0, 0xA00)) + 
+            list(range(0xBC0, 0xC00)) + list(range(0xCC0, 0xD00)) + list(range(0xDC0, 0xE00)) + list(range(0xEC0, 0xF00)) + list(range(0xFC0, 0x1000))): 
+            continue # skip custom CSRs
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
         reg3 = randint(1, 31)
@@ -65,7 +68,7 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh"]
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh", "menvcfgh", "0x312"] # 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp", "0x120"] # 0x120 is scountinhibit
 uregs = ["fflags", "frm", "fcsr"]
 

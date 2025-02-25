@@ -25,6 +25,11 @@ import math
 # functions
 ##################################
 
+def insertTemplate(name):
+  f.write(f"\n # {name}\n")
+  with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
+    f.write(h.read())
+
 def shiftImm(imm, xlen):
   imm = imm % xlen
   return str(imm)
@@ -116,6 +121,19 @@ def makeImm(imm, immlen, signed):
       imm = imm - pow(2, immlen)
   return str(imm)
 
+def writeSIGUPD(rd):
+    [storeinstr, offsetInc] = getSigInfo(False)
+    tempReg = 0 # *** need to change this to get self-checking working with no conflicts on registers
+    l = f"RVTEST_SIGUPD(x{sigReg}, x{tempReg}, x{rd}, {sigOffset})\n"
+    #l = f"RVTEST_SIGUPD2({sigReg}, {rd})\n"
+    l = l + incrementSigOffset(offsetInc)
+    return l
+
+def writeSIGUPD_F(rd):
+    # *** write this
+    return ""
+
+
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   lines = "" # f"# Loading value {val} into f{reg}\n"
@@ -149,12 +167,17 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
 def handleSignaturePointerConflict(lines, rs1, rs2, rd):
   global sigReg # this function can modify the signature register
   l = lines
-  if (not lockstep): # only needed for signature tests
-    oldSigReg = sigReg
-    while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
-      sigReg = (sigReg + 1) % 4 + 4
-    if (sigReg != oldSigReg):
-      l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
+  oldSigReg = sigReg
+  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
+    sigReg = (sigReg + 1) % 4 + 4
+  if (sigReg != oldSigReg):
+    l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
+  # if (not lockstep): # only needed for signature tests
+  #   oldSigReg = sigReg
+  #   while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
+  #     sigReg = (sigReg + 1) % 4 + 4
+  #   if (sigReg != oldSigReg):
+  #     l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
   return l
 
 # getSigInfo returns the store instruction and offset increment for the current test
@@ -192,24 +215,29 @@ def incrementSigOffset(amount):
     return l
   return ""
     
+
 # writeTest appends the test to the lines.  
 # When doing signature generation, it also appends
 # the signature logic
 def writeTest(lines, rd, xlen, floatdest, testline):
   l = lines + testline
-  if (not lockstep):
-    if (floatdest):
-      comment = "# FLOAT SIGNATURE\n"
-    else:
-      comment = "# INT SIGNATURE\n"
-    [storeinstr, offsetInc] = getSigInfo(floatdest)
-    rdPrefix = "f" if floatdest else "x"
-    l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}); nop; nop {comment}\n"
-    if (floatdest):
-      [intstoreinstr, dummy] = getSigInfo(False)
-      l = l + f"csrr x{rd}, fflags # read fflags\n"
-      l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}); nop; nop # FFLAGS SIGNATURE\n"
-    l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
+  if (floatdest):
+    l = l + writeSIGUPD_F(rd)
+  else:
+    l = l + writeSIGUPD(rd)
+  # if (not lockstep):
+  #   if (floatdest):
+  #     comment = "# FLOAT SIGNATURE\n"
+  #   else:
+  #     comment = "# INT SIGNATURE\n"
+  #   [storeinstr, offsetInc] = getSigInfo(floatdest)
+  #   rdPrefix = "f" if floatdest else "x"
+  #   l = l + f"{storeinstr} {rdPrefix}{rd}, {sigOffset}(x{sigReg}); nop; nop {comment}\n"
+  #   if (floatdest):
+  #     [intstoreinstr, dummy] = getSigInfo(False)
+  #     l = l + f"csrr x{rd}, fflags # read fflags\n"
+  #     l = l + f"{intstoreinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}); nop; nop # FFLAGS SIGNATURE\n"
+  #   l = l + incrementSigOffset(offsetInc*(2 if floatdest else 1))
   return l
 
 def writeJumpTest(lines, rd, rs1, xlen, jumpline):
@@ -551,7 +579,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
-    lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n";
+    # Determine where to store
+    if (lockstep):
+      lines = lines + "la sp" + ", scratch" + " # base address \n"
+      lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
+    else:
+      lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in csbtype + cshtype):
@@ -672,9 +705,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
-    lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
-  elif test in sctype + amotype:
+  elif test in sctype:
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
+  elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
@@ -1442,6 +1479,12 @@ def make_nanbox(test, xlen):
   desc = "Random test for cp_NaNBox "
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_custom(test, xlen):
+    insertTemplate(f"{test}.S")
+
+def insertTest(test):
+  f.write(f"\n# Stub for {test}")
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1609,6 +1652,10 @@ def write_tests(coverpoints, test, xlen):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
     elif (coverpoint == "cr_rs1_imm_corners_6bit"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
+    elif (coverpoint == "cr_rs1_imm_corners_6bit_n0"):
+      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit[1:]) # exclude imm=0
+    elif (coverpoint == "cp_imm_corners_6bit_n0"):
+      pass # only used for cross product
     elif (coverpoint == "cr_rs1_imm_corners_c"):
       make_cr_rs1_imm_corners(test, xlen, corners_imm_c)
     elif (coverpoint == "cr_rs1_rs2"):
@@ -1726,8 +1773,13 @@ def write_tests(coverpoints, test, xlen):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
-    elif (coverpoint == "cp_sc"):
-      pass # TODO does this need to be implemented?
+    elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
+          coverpoint == "cp_custom_sc_after_sc" or coverpoint == "cp_sc_fail" or coverpoint == "cp_address_difference" or
+          coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
+          coverpoint == "cp_custom_sc_after_store"):
+      pass # Zalrsc coverpoints handled custom
+    elif (coverpoint == "cp_custom_aqrl"):
+      make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1757,7 +1809,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
           curinstr = m.group(1).replace("_", ".")
           # print(f'instr is: {curinstr}')
           coverpoints[curinstr] = []
-        m = re.search("\s*(\S+) :", line)
+        m = re.search(r"\s*(\S+) :", line)
         if (m):
           # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
@@ -2158,13 +2210,13 @@ if __name__ == '__main__':
 
   # generate files for each test\
   #for lockstep in [False, True]:
-  for lockstep in [False]: # for testing only ***
+  for lockstep in [True]: # for testing only ***
     if (lockstep):
-      #subdir = "lockstep"
-      subdir = "signature" # temporary for testing
+      subdir = "lockstep"
+      #subdir = "signature" # temporary for testing
     else:
-      #subdir = "signature"
-      subdir = "lockstep" # temporary for testing
+      subdir = "signature"
+      #subdir = "lockstep" # temporary for testing
     for xlen in xlens:
       corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
@@ -2179,6 +2231,7 @@ if __name__ == '__main__':
           maxreg = 31 # I uses registers x0-x31
         #print(extensions)
         for extension in extensions:
+        #for extension in ["I"]:  # temporary for faster run
           coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
           coverfiles = [extension]
           coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
@@ -2204,9 +2257,9 @@ if __name__ == '__main__':
           formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
           corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
           if (xlen == 32):
-            corners = corners + [0b01011011101111001000100001110111, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+            corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
           else:
-            corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110111, # random
+            corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
                                 0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
                                 0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
                                 0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
@@ -2247,9 +2300,7 @@ if __name__ == '__main__':
             #f.write(line)
 
             # insert generic header
-            h = open(f"{ARCH_VERIF}/templates/testgen_header.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_header.S")
 
             sigOffset = 0 # offset of signature from signature pointer
             sigTotal = 0 # total number of bytes in signature
@@ -2265,9 +2316,7 @@ if __name__ == '__main__':
             # print footer
             line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
             f.write(line)
-            h = open(f"{ARCH_VERIF}/templates/testgen_footer.S", "r")
-            for line in h:
-              f.write(line)
+            insertTemplate("testgen_footer.S")  
 
             # Finish
             f.close()
