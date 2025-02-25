@@ -421,7 +421,9 @@ setmstatus:
 
     li a0, 3
     ecall
-    csrrs t6, mstatus, t1
+    csrr t2, mstatus
+    or t1, t2, t1
+    csrrw t6, mstatus, t1
     li a0, 1
     ecall
     ret
