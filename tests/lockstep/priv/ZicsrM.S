@@ -268,7 +268,7 @@ cp_satp:
             slli t2, t2, 60
         #elif __riscv_xlen == 32
             li t2, 0b1
-            slli t2, t2 31
+            slli t2, t2, 31
         #endif
         not t2, t2
         and t1, t1, t2
