@@ -98,10 +98,10 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
         bins mach_std3[] = {[12'hF00:12'hFBF]};
         bins mach_custom3[] = {[12'hFC0:12'hFFF]};
     }
-    priv_mode_s: coverpoint ins.current.mode {
+    old_priv_mode_s: coverpoint ins.prev.mode {
         bins S_mode = {2'b01};
     }
-    priv_mode_m: coverpoint ins.current.mode {
+    old_priv_mode_m: coverpoint ins.prev.mode {
         bins M_mode = {2'b11};
     }
     rs1_ones: coverpoint ins.current.rs1_val {
@@ -344,13 +344,13 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
-    cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
-    cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
-    cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
-    cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
-    cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
-    cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
+    cp_csrr:         cross csrr,    csr,         old_priv_mode_s, nonzerord;             
+    cp_csrw_corners: cross csrrw,   csr_no_satp, old_priv_mode_s, rs1_corners;   
+    cp_csrcs:        cross csrop,   csr_no_satp, old_priv_mode_s, rs1_ones;    
+    cp_scsrwalk:     cross csrname, csrop,       old_priv_mode_s, walking_ones;
+    cp_satp:         cross csrop,   satp,        old_priv_mode_s, satp_walking;
+    cp_shadow_m:     cross csrrw,   mcsrs,       old_priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
+    cp_shadow_s:     cross csrrw,   scsrs,       old_priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
 covergroup ZicsrS_scause_cg with function sample(ins_t ins);
