@@ -36,13 +36,14 @@ def csrwalk(pathname, regs):
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
     outfile.close
 
-def csrtests(pathname):
+def csrtests(pathname, skipCsrs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
     for i in range(4096):
-        if (i in list(range (0x800, 0x900)) + list(range(0x5C0, 0x600)) + list(range(0x6C0, 0x700)) + list(range(0x7B0-0x7C0)) + list(range(0x9C0, 0xA00)) + 
-            list(range(0xBC0, 0xC00)) + list(range(0xCC0, 0xD00)) + list(range(0xDC0, 0xE00)) + list(range(0xEC0, 0xF00)) + list(range(0xFC0, 0x1000))): 
+        if (i in skipCsrs): 
             continue # skip custom CSRs
+        if (i == 0x180):
+            continue # skip satp (custom tests)
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
         reg3 = randint(1, 31)
@@ -58,8 +59,6 @@ def csrtests(pathname):
         print("\n// Testing CSR "+ih)
         print("\tcsrr x"+str(reg1)+", "+ ih + "\t// Read CSR")
         print("\tli x"+reg2+", -1")
-        if (i == 0x180):
-            continue
         print("\tcsrrw x"+reg3+", "+ih+", x"+reg2+"\t// Write all 1s to CSR")
         print("\tcsrrw x"+reg3+", "+ih+", x0\t// Write all 0s to CSR")
         print("\tcsrrs x"+reg3+", "+ih+", x"+reg2+"\t// Set all CSR bits")
@@ -74,13 +73,26 @@ seed(0) # make tests reproducible
 
 # writable registers to test with walking 1s and 0s
 mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh"]
-sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "satp"] # 0x120 is scountinhibit, currently unsupported
+sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip"] # 0x120 is scountinhibit, currently unsupported
 uregs = ["fflags", "frm", "fcsr"]
+
+uCsrSkip = list(range(0x800, 0x900)) + list(range(0xCC0, 0xD00))
+sCsrSkip = list(range(0x5C0, 0x600)) + list(range(0x6C0, 0x700)) + \
+           list(range(0x9C0, 0xA00)) + list(range(0xAC0, 0xB00)) + \
+           list(range(0xDC0, 0xE00)) + list(range(0xEC0, 0xF00))
+mCsrSkip = list(range(0x7A0, 0x7B0)) + list(range(0x7C0, 0x800)) + \
+           list(range(0xBC0, 0xC00)) + list(range(0xFC0, 0x1000))
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicsr-CSR-Tests.h"
-csrtests(pathname)
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-CSR-Tests.h"
+csrtests(pathname, mCsrSkip + sCsrSkip + uCsrSkip)
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-CSR-Tests.h"
+csrtests(pathname, sCsrSkip + uCsrSkip)
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-CSR-Tests.h"
+csrtests(pathname, uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs);
