@@ -1,4 +1,2 @@
         "INSTR"     : begin 
-            ins = new(hart, issue, traceDataQ); 
-            ARCHCASE_INSTRNODOT_cg.sample(ins); 
         end

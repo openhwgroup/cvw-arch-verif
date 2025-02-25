@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 
+#include "macros.h"
+
 .section .text.init
 .globl rvtest_entry_point
 
