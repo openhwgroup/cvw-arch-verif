@@ -71,7 +71,7 @@ postsrettest:
     li a0, 0
     ecall
 #include "ZicsrU-Walk.h"
-#include "Zicsr-CSR-Tests.h"
+#include "ZicsrU-CSR-Tests.h"
 
 finished:
     // return to machine mode

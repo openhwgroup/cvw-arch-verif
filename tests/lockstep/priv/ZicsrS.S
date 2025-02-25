@@ -447,7 +447,7 @@ postsrettest:
     li a0, 1
     ecall
 #include "ZicsrS-Walk.h"
-#include "Zicsr-CSR-Tests.h"
+#include "ZicsrS-CSR-Tests.h"
 
 finished:
     // return to machine mode
