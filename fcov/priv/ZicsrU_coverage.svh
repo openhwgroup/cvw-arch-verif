@@ -68,7 +68,7 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
         bins mach_std3[] = {[12'hF00:12'hFBF]};
         bins mach_custom3[] = {[12'hFC0:12'hFFF]};
     }
-    priv_mode_u: coverpoint ins.current.mode {
+    old_priv_mode_u: coverpoint ins.prev.mode {
         bins U_mode = {2'b00};
     }
     rs1_ones: coverpoint ins.current.rs1_val {
@@ -84,9 +84,9 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
     }
     
     // main coverpoints
-    cp_csrr:         cross csrr,  csr, priv_mode_u, nonzerord;
-    cp_csrw_corners: cross csrrw, csr, priv_mode_u, rs1_corners;
-    cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
+    cp_csrr:         cross csrr,  csr, old_priv_mode_u, nonzerord;
+    cp_csrw_corners: cross csrrw, csr, old_priv_mode_u, rs1_corners;
+    cp_csrcs:        cross csrop, csr, old_priv_mode_u, rs1_ones;
 endgroup
 
 covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
