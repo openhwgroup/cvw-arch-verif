@@ -482,8 +482,6 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);
-
-    $display("PC: %h; CSRR: %b; CSR: %b; Current Mode; Nonzero RD: %b", ins.current.pc_rdata, ins.current.insn, ins.current.insn[31:20], ins.current.mode, ins.current.insn[11:7]);
     ZicsrS_scsr_cg.sample(ins);
     ZicsrS_scause_cg.sample(ins);
     ZicsrS_sstatus_cg.sample(ins);
