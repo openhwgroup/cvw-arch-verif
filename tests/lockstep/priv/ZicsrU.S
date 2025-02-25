@@ -38,14 +38,33 @@ cp_uprivinst:
     ebreak       # take a trap, and the trap handler returns
 
     // fences.  These aren't really privileged instructions, but don't have a better place to test
+    li a0, 0
+    ecall
     fence
     fence rw, rw
     fence.tso
+    li a0, 0
+    ecall
     pause
+
+/////////////////////////////////
+// cp_satp
+/////////////////////////////////
+cp_satp:
+    li t1, -1
+    csrr t0, satp
+    csrrc t3, satp, t1
+    csrrw t3, satp, t1
+    csrrw t3, satp, x0
+    csrrs t3, satp, t1
+    csrrw t3, satp, t0
+
 /////////////////////////////////
 // cp_mret
 /////////////////////////////////
 cp_mret:   
+    li a0, 0
+    ecall
     // Executing mret in user mode
     // Should throw an illegal instruction exception
     mret
@@ -54,6 +73,8 @@ cp_mret:
 // cp_sret
 /////////////////////////////////
 cp_sret:
+    li a0, 0
+    ecall
     // Executing sret in user mode
     // Should throw an illegal instruction exception
     sret
