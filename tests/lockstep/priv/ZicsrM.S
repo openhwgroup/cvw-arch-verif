@@ -281,6 +281,41 @@ cp_satp:
     csrrw t3, satp, t0
 
 /////////////////////////////////
+// cp_csrwalk_satp
+/////////////////////////////////
+
+cp_csrwalk_satp:
+    csrr t6, satp      # save satp
+    li t0, 1           # 1 in LSB
+    li t1, -1          # all 1s
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            li t2, 0b1111
+            slli t2, t2, 60
+        #elif __riscv_xlen == 32
+            li t2, 0b1
+            slli t2, t2, 31
+        #endif
+        not t2, t2
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    csrrc x0, satp, t1 # clear all bits
+    2:
+        csrrw t3, satp, t0 # write value
+        slli t0, t0, 1 # shift left
+        bleu t0, t2, 2b # repeat until all bits are set
+
+    li t0, 1
+    3:
+        csrrc x0, satp, t0 # clear walking 1
+        slli t0, t0, 1 # walke the 1
+        bleu t0, t2, 3b # repeat until all bits are set
+
+    csrrw t3, satp, t6 # restore satp
+
+/////////////////////////////////
 // cp_privinst
 /////////////////////////////////
 
