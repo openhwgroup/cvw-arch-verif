@@ -199,18 +199,141 @@ cp_sprivinst:
 /////////////////////////////////
 // cp_mret
 /////////////////////////////////
+cp_mret:
 // Executing mret in supervisor mode
 // Should throw an illegal instruction exception
     mret
 
-sretsetup:
+/////////////////////////////////
+// cp_shadow
+/////////////////////////////////
+cp_shadow_mstatus:
+    li t3, -1
+    li a0, 3
+    ecall
+    csrr t1, mstatus
+    csrrw t6, mstatus, x0 # write all 0s
+    li a0, 1
+    ecall
+    csrr t2, sstatus # read back sstatus
+
+    li a0, 3
+    ecall
+    csrrw t6, mstatus, t3 # write all 1s
+    li a0, 1
+    ecall
+    csrr t2, sstatus # read back sstatus
+
+    li a0, 3
+    ecall
+    csrrw t6, mstatus, t1 # restore mstatus
+    li a0, 1
+    ecall
+
+cp_shadow_mie:
+    li a0, 3
+    ecall
+    csrr t1, mie
+    csrrw t6, mie, x0 # write all 0s
+    li a0, 1
+    ecall
+    csrr t2, sie # read back sie
+
+    li a0, 3
+    ecall
+    csrrw t6, mie, t3 # write all 1s
+    li a0, 1
+    ecall
+    csrr t2, sie # read back sie
+
+    li a0, 3
+    ecall
+    csrrw t6, mie, t1 # restore mie
+    li a0, 1
+    ecall
+
+cp_shadow_mip:
+    li a0, 3
+    ecall
+    csrr t1, mip
+    csrrw t6, mip, x0 # write all 0s
+    li a0, 1
+    ecall
+    csrr t2, sip # read back sip
+
+    li a0, 3
+    ecall
+    csrrw t6, mip, t3 # write all 1s
+    li a0, 1
+    ecall
+    csrr t2, sip # read back sip
+
+    li a0, 3
+    ecall
+    csrrw t6, mip, t1 # restore mip
+    li a0, 1
+    ecall
+
+cp_shadow_sstatus:
+    csrr t1, sstatus
+    csrrw t6, sstatus, x0 # write all 0s
+    li a0, 3
+    ecall
+    csrr t2, mstatus # read back mstatus
+    li a0, 1
+    ecall
+
+    csrrw t6, sstatus, t3 # write all 1s
+    li a0, 3
+    ecall
+    csrr t2, mstatus # read back mstatus
+    li a0, 1
+    ecall
+
+    csrrw t6, sstatus, t1 # restore sstatus
+
+cp_shadow_sie:
+    csrr t1, sie
+    csrrw t6, sie, x0 # write all 0s
+    li a0, 3
+    ecall
+    csrr t2, mie # read back mie
+    li a0, 1
+    ecall
+
+    csrrw t6, sie, t3 # write all 1s
+    li a0, 3
+    ecall
+    csrr t2, mie # read back mie
+    li a0, 1
+    ecall
+
+    csrrw t6, sie, t1 # restore sie
+
+cp_shadow_sip:
+    csrr t1, sip
+    csrrw t6, sip, x0 # write all 0s
+    li a0, 3
+    ecall
+    csrr t2, mip # read back mip
+    li a0, 1
+    ecall
+
+    csrrw t6, sip, t3 # write all 1s
+    li a0, 3
+    ecall
+    csrr t2, mip # read back mip
+    csrrw t6, sip, t1 # restore sip
+    li a0, 1
+    ecall
+
 
 /////////////////////////////////
 // cp_sret
 /////////////////////////////////
 // Sweep executing sret in supervisor mode across cross-product of spp, mprv, tsr, spie, sie
-
-     csrr s0, sstatus    # save sstatus
+cp_sret:
+    csrr s0, sstatus    # save sstatus
 
     li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
     jal srettest
