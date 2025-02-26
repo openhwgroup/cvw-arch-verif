@@ -132,6 +132,8 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
     }
+    offset: coverpoint ins.current.imm[1:0] {
+    }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
@@ -173,7 +175,7 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_s; 
     cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_s;  
     cp_instr_adr_misaligned_jal:             cross jal, pc_bit_1, imm_bit_1, priv_mode_s;
-    cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, imm_bit_1, priv_mode_s;
+    cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, offset, priv_mode_s;
     cp_instr_access_fault:                   cross jalr, illegal_address, priv_mode_s;
     cp_illegal_instruction:                  cross illegalops, priv_mode_s;
     cp_illegal_instruction_seed:             cross csrops, rs1_zero, seed, priv_mode_s;

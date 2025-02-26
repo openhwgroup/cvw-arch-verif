@@ -118,7 +118,7 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     imm_bit_1: coverpoint ins.current.imm[1] {
         bins one = {'1};
     }
-    offset: coverpoint ins.current.imm[1] {
+    offset: coverpoint ins.current.imm[1:0] {
     }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
