@@ -12,7 +12,6 @@
 #include "WALLY-init-lib.h"
 
 //Move to  WALLY-init-lib.h eventually
-#define ACCESS_FAULT_ADDRESS 0
 
 main:
     // Set up the trap handler
@@ -99,7 +98,7 @@ main:
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t0, 0
     addi    t0, t0, 9       # t0 now has lower two bits 01
-    jalr    t1, t0, 9
+    jalr    t1, t0, 8       # lower bits of offset 00
     nop
     .word   0x00010013
 
@@ -112,7 +111,7 @@ main:
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 10
     auipc   t1, 0
     addi    t1, t1, 10      # lower two bits become 10
-    jalr    t1, t1, 9
+    jalr    t1, t1, 8       # lower bits of offset 00
     nop
     .word   0x00010013
 
@@ -125,7 +124,7 @@ main:
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 11
     auipc   t1, 0
     addi    t1, t1, 11      # lower two bits become 11
-    jalr    t1, t1, 9
+    jalr    t1, t1, 8
     nop
     .word   0x00010013
 
@@ -138,7 +137,7 @@ main:
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 00
     auipc   t1, 0
     addi    t1, t1, 8       # lower two bits are 00
-    jalr    t1, t1, 9
+    jalr    t1, t1, 8
     nop
     .word   0x00010013
 
