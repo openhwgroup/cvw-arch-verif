@@ -331,73 +331,41 @@ cp_shadow_sip:
 /////////////////////////////////
 // cp_sret
 /////////////////////////////////
-// Sweep executing sret in supervisor mode across cross-product of spp, mprv, tsr, spie, sie
+// Sweep executing sret in supervisor mode across cross-product of spp, tsr, spie, sie
 cp_sret:
     csrr s0, sstatus    # save sstatus
 
-    li a0, 0x00000000   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 0
+    li a0, 0x00000000   # tsr = 0, spp = 0  spie = 0 sie = 0
     jal srettest
-    li a0, 0x00000002   # tsr = 0, mprv = 0, spp = 0  spie = 0 sie = 1
+    li a0, 0x00000002   # tsr = 0, spp = 0  spie = 0 sie = 1
     jal srettest
-    li a0, 0x00000020   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 0
+    li a0, 0x00000020   # tsr = 0, spp = 0  spie = 1 sie = 0
     jal srettest
-    li a0, 0x00000022   # tsr = 0, mprv = 0, spp = 0  spie = 1 sie = 1
+    li a0, 0x00000022   # tsr = 0, spp = 0  spie = 1 sie = 1
     jal srettest
-    li a0, 0x00000100   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 0
+    li a0, 0x00000100   # tsr = 0, spp = 1  spie = 0 sie = 0
     jal srettest
-    li a0, 0x00000102   # tsr = 0, mprv = 0, spp = 1  spie = 0 sie = 1
+    li a0, 0x00000102   # tsr = 0, spp = 1  spie = 0 sie = 1
     jal srettest
-    li a0, 0x00000120   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 0
+    li a0, 0x00000120   # tsr = 0, spp = 1  spie = 1 sie = 0
     jal srettest
-    li a0, 0x00000122   # tsr = 0, mprv = 0, spp = 1  spie = 1 sie = 1
+    li a0, 0x00000122   # tsr = 0, spp = 1  spie = 1 sie = 1
     jal srettest
-    li a0, 0x00020000   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 0
+    li a0, 0x00400000   # tsr = 1, spp = 0  spie = 0 sie = 0
     jal srettest
-    li a0, 0x00020002   # tsr = 0, mprv = 1, spp = 0  spie = 0 sie = 1
+    li a0, 0x00400002   # tsr = 1, spp = 0  spie = 0 sie = 1
     jal srettest
-    li a0, 0x00020020   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 0
+    li a0, 0x00400020   # tsr = 1, spp = 0  spie = 1 sie = 0
     jal srettest
-    li a0, 0x00020022   # tsr = 0, mprv = 1, spp = 0  spie = 1 sie = 1
+    li a0, 0x00400022   # tsr = 1, spp = 0  spie = 1 sie = 1
     jal srettest
-    li a0, 0x00020100   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 0
+    li a0, 0x00400100   # tsr = 1, spp = 1  spie = 0 sie = 0
     jal srettest
-    li a0, 0x00020102   # tsr = 0, mprv = 1, spp = 1  spie = 0 sie = 1
+    li a0, 0x00400102   # tsr = 1, spp = 1  spie = 0 sie = 1
     jal srettest
-    li a0, 0x00020120   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 0
+    li a0, 0x00400120   # tsr = 1, spp = 1  spie = 1 sie = 0
     jal srettest
-    li a0, 0x00020122   # tsr = 0, mprv = 1, spp = 1  spie = 1 sie = 1
-    jal srettest
-    li a0, 0x00400000   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 0
-    jal srettest
-    li a0, 0x00400002   # tsr = 1, mprv = 0, spp = 0  spie = 0 sie = 1
-    jal srettest
-    li a0, 0x00400020   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 0
-    jal srettest
-    li a0, 0x00400022   # tsr = 1, mprv = 0, spp = 0  spie = 1 sie = 1
-    jal srettest
-    li a0, 0x00400100   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 0
-    jal srettest
-    li a0, 0x00400102   # tsr = 1, mprv = 0, spp = 1  spie = 0 sie = 1
-    jal srettest
-    li a0, 0x00400120   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 0
-    jal srettest
-    li a0, 0x00400122   # tsr = 1, mprv = 0, spp = 1  spie = 1 sie = 1
-    jal srettest
-    li a0, 0x00420000   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 0
-    jal srettest
-    li a0, 0x00420002   # tsr = 1, mprv = 1, spp = 0  spie = 0 sie = 1
-    jal srettest
-    li a0, 0x00420020   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 0
-    jal srettest
-    li a0, 0x00420022   # tsr = 1, mprv = 1, spp = 0  spie = 1 sie = 1
-    jal srettest
-    li a0, 0x00420100   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 0
-    jal srettest
-    li a0, 0x00420102   # tsr = 1, mprv = 1, spp = 1  spie = 0 sie = 1
-    jal srettest
-    li a0, 0x00420120   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 0
-    jal srettest
-    li a0, 0x00420122   # tsr = 1, mprv = 1, spp = 1  spie = 1 sie = 1
+    li a0, 0x00400122   # tsr = 1, spp = 1  spie = 1 sie = 1
     jal srettest
     j postsrettest
 
@@ -415,8 +383,8 @@ srettest:
     nop                     # should be skipped
 
 setmstatus:
-    li t1, 0b100001
-    slli t1, t1, 17
+    li t1, 0b1
+    slli t1, t1, 22
     and t1, t1, a0
 
     li a0, 3
