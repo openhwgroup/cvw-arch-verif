@@ -86,60 +86,115 @@ main:
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_jalr
-    /////////////////////////////////   
-    //note all the auipc instructions  //////////add on next line (//Ensure jumps start aligned)
+    /////////////////////////////////
 
     .align 2 //Ensure jumps start aligned
 
-    // test offset[1] = 1, odd multiple of 2, rs1[1:0] = 01
+    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 01
     auipc   t0, 0          # t0 = PC (aligned)
     addi    t0, t0, 9       # 9 mod 4 = 1, so lower two bits become 01
     jalr    t1, t0, 6
     .word   0x00010013
 
-    // test offset[1] = 0, odd multiple of 2+1, rs1[1:0] = 01
+    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t0, 0
     addi    t0, t0, 9       # t0 now has lower two bits 01
     jalr    t1, t0, 9
     nop
     .word   0x00010013
 
-    // test offset[1] = 1, odd multiple of 2, rs1[1:0] = 10
+    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
     addi    t1, t1, 10      # 10 mod 4 = 2, so lower two bits become 10
     jalr    t1, t1, 6
     .word   0x00010013
 
-    // test offset[1] = 0, odd multiple of 2+1, rs1[1:0] = 10
+    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 10
     auipc   t1, 0
     addi    t1, t1, 10      # lower two bits become 10
     jalr    t1, t1, 9
     nop
     .word   0x00010013
 
-    // test offset[1] = 1, odd multiple of 2, rs1[1:0] = 11
-    auipc   t2, 0
-    addi    t2, t2, 11      # 11 mod 4 = 3, so lower two bits become 11
-    jalr    t1, t2, 6
+    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 11      # 11 mod 4 = 3, so lower two bits become 11
+    jalr    t1, t1, 6
     .word   0x00010013
 
-    // test offset[1] = 0, odd multiple of 2+1, rs1[1:0] = 11
-    auipc   t2, 0
-    addi    t2, t2, 11      # lower two bits become 11
-    jalr    t1, t2, 9
+    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 11      # lower two bits become 11
+    jalr    t1, t1, 9
     nop
     .word   0x00010013
 
-    // test offset[1] = 1, odd multiple of 2, rs1[1:0] = 00
-    auipc   t3, 0
-    addi    t3, t3, 8       # 8 mod 4 = 0, so lower two bits are 00
-    jalr    t1, t3, 6
+    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8       # 8 mod 4 = 0, so lower two bits are 00
+    jalr    t1, t1, 6
     .word   0x00010013
 
-    // test offset[1] = 0, odd multiple of 2+1, rs1[1:0] = 00
-    auipc   t3, 0
-    addi    t3, t3, 8       # lower two bits are 00
-    jalr    t1, t3, 9
+    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8       # lower two bits are 00
+    jalr    t1, t1, 9
+    nop
+    .word   0x00010013
+
+    // For rs1[1:0] = 01 (base value = 9)
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 01
+    auipc   t1, 0
+    addi    t1, t1, 9       # 9 mod 4 = 1, so rs1[1:0] becomes 01
+    jalr    t1, t1, 10     # jalr immediate 10 gives effective offset with lower bits “10”
+    .word   0x00010013
+
+    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 01
+    auipc   t1, 0
+    addi    t1, t1, 9       # rs1[1:0] = 01
+    jalr    t1, t1, 11     # jalr immediate 11 gives effective offset with lower bits “11”
+    nop
+    .word   0x00010013
+
+    // For rs1[1:0] = 10 (base value = 10)
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 10
+    auipc   t1, 0
+    addi    t1, t1, 10      # 10 mod 4 = 2, so rs1[1:0] becomes 10
+    jalr    t1, t1, 10
+    .word   0x00010013
+
+    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 10
+    auipc   t1, 0
+    addi    t1, t1, 10      # rs1[1:0] = 10
+    jalr    t1, t1, 11
+    nop
+    .word   0x00010013
+
+    // For rs1[1:0] = 11 (base value = 11)
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 11      # 11 mod 4 = 3, so rs1[1:0] becomes 11
+    jalr    t1, t1, 10
+    .word   0x00010013
+
+    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 11      # rs1[1:0] = 11
+    jalr    t1, t1, 11
+    nop
+    .word   0x00010013
+
+    // For rs1[1:0] = 00 (base value = 8)
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8       # 8 mod 4 = 0, so rs1[1:0] becomes 00
+    jalr    t1, t1, 10
+    .word   0x00010013
+
+    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8       # rs1[1:0] = 00
+    jalr    t1, t1, 11
     nop
     .word   0x00010013
 
@@ -148,9 +203,9 @@ main:
     //cp_instr_access_fault
     /////////////////////////////////
 
-    # li  t1, ACCESS_FAULT_ADDRESS  // Load the fault address into t0
-    # jr  t1                        // Jump to the fault address
-
+    li    t1, ACCESS_FAULT_ADDRESS       // Load the fault address into t0
+    jalr  ra, t1, 0                      // Jump to the fault address (return address must be in t2)
+    nop
     /////////////////////////////////
     //cp_illegal_instruction
     /////////////////////////////////
@@ -195,9 +250,8 @@ main:
     //cp_load_address_misaligned
     /////////////////////////////////
 
-    # Get a pointer to scratch data and deliberately misalign it by adding 1
+    # Get a pointer to scratch data
     la      t4, scratch
-    addi    t4, t4, 1       # t4 is misaligned
 
     # Initialize loop counter (offset) from 0 to 7
     li      t0, 0         # t0 = loop index (offset)
@@ -219,12 +273,12 @@ load_loop:
     lbu     t2, 0(t1)     # load byte (unsigned)
    
    # Attempt to load doubleword for RV64  
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         lwu     t2, 0(t1)     # load word (unsigned)
-    #         ld      t2, 0(t1)     # load doubleword (64 bits)
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lwu     t2, 0(t1)     # load word (unsigned)
+            ld      t2, 0(t1)     # load doubleword (64 bits)
+        #endif
+    #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -249,12 +303,12 @@ load_loop:
     lw t5, 0(t0)
 
     // Attempt to load doubleword for RV64
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         lwu  t6, 0(t0)   # Load word (unsigned)
-    #         ld   t6, 0(t0)   # Load doubleword
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lwu  t6, 0(t0)   # Load word (unsigned)
+            ld   t6, 0(t0)   # Load doubleword
+        #endif
+    #endif
 
     /////////////////////////////////
     //cp_store_address_misaligned
@@ -262,7 +316,6 @@ load_loop:
 
     # Get a pointer to scratch data and deliberately misalign it by adding 1.
     la      t4, scratch
-    addi    t4, t4, 1       # Now t4 is misaligned
 
     # Initialize loop counter (offset) from 0 to 7.
     li      t0, 0         # t0 = loop index (offset)
@@ -281,11 +334,11 @@ store_loop:
     sw      t2, 0(t1)     # store word (32 bits)
 
     # Attempt to store doubleword on RV64.
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         sd      t2, 0(t1)     # store doubleword (64 bits)
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd      t2, 0(t1)     # store doubleword (64 bits)
+        #endif
+    #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -310,13 +363,13 @@ store_loop:
     li t3, 0xADDEDCAB
     sw t3, 0(t0)
 
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         // Attempt to store doubleword
-    #         li t4, 0xDEADBEEFDEADBEEF
-    #         sd t4, 0(t0)
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            // Attempt to store doubleword
+            li t4, 0xDEADBEEFDEADBEEF
+            sd t4, 0(t0)
+        #endif
+    #endif
 
     /////////////////////////////////
     //cp_ecall_m
@@ -334,7 +387,6 @@ store_loop:
 
   # Get a pointer to an access fault address and deliberately misalign it by adding 1
     la      t4, ACCESS_FAULT_ADDRESS
-    addi    t4, t4, 1       
 
     # Initialize loop counter (offset) from 0 to 7
     li      t0, 0         # t0 = loop index (offset)
@@ -356,12 +408,12 @@ load_loop_priority:
     lbu     t2, 0(t1)     # load byte (unsigned)
    
    # Attempt to load doubleword for RV64  
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         lwu     t2, 0(t1)     # load word (unsigned)
-    #         ld      t2, 0(t1)     # load doubleword (64 bits)
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            lwu     t2, 0(t1)     # load word (unsigned)
+            ld      t2, 0(t1)     # load doubleword (64 bits)
+        #endif
+    #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -376,7 +428,6 @@ load_loop_priority:
 
         # Get a pointer to scratch data and deliberately misalign it by adding 1.
     la      t4, ACCESS_FAULT_ADDRESS
-    addi    t4, t4, 1       # Now t4 is misaligned
 
     # Initialize loop counter (offset) from 0 to 7.
     li      t0, 0         # t0 = loop index (offset)
@@ -395,11 +446,11 @@ store_loop_priority:
     sw      t2, 0(t1)     # store word (32 bits)
 
     # Attempt to store doubleword on RV64.
-    # #ifdef __riscv_xlen
-    #     #if __riscv_xlen == 64
-    #         sd      t2, 0(t1)     # store doubleword (64 bits)
-    #     #endif
-    # #endif
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            sd      t2, 0(t1)     # store doubleword (64 bits)
+        #endif
+    #endif
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
@@ -418,11 +469,13 @@ store_loop_priority:
     # Clear the MIE bit in mstatus so that on exception entry MPIE becomes 0.
     csrrc   x0, mstatus, t1
 
+    li     a0, 3
     ecall                     # Execute ecall with MIE = 0; trap entry will set MPIE = 0.
 
     # Set the MIE bit in mstatus so that on exception entry MPIE becomes 1.
     csrrs   x0, mstatus, t1
 
+    li     a0, 3
     ecall                     # Execute ecall with MIE = 1; trap entry will set MPIE = 1.
 
     # Restore the original mstatus.
