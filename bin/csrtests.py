@@ -72,8 +72,8 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh", "menvcfgh", "0x312"]
-sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip"] # 0x120 is scountinhibit, currently unsupported
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh", "menvcfgh", "0x312"] # 0x312 is medelegeh; RV64 compiler isn't accepting the name
+sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
 uregs = ["fflags", "frm", "fcsr"]
 
 uCsrSkip = list(range(0x800, 0x900)) + list(range(0xCC0, 0xD00))
