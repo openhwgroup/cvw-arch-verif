@@ -27,6 +27,68 @@ main:
     ecall
 
 /////////////////////////////////
+// cp_satp
+/////////////////////////////////
+cp_satp:
+    csrr t0, satp
+    li t1, -1
+    csrrc t3, satp, t1      # clear all bits
+
+    // logic to exclude mode bits
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            li t2, 0b1111
+            slli t2, t2, 60
+        #elif __riscv_xlen == 32
+            li t2, 0b1
+            slli t2, t2, 31
+        #endif
+        not t2, t2
+        and t1, t1, t2
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    csrrw t3, satp, t1 # write all 1s except mode
+    csrrw t3, satp, x0 # write all 0s
+    csrrs t3, satp, t1 # set all except mode
+    csrrw t3, satp, t0
+
+/////////////////////////////////
+// cp_csrwalk_satp
+/////////////////////////////////
+
+cp_csrwalk_satp:
+    csrr t6, satp      # save satp
+    li t0, 1           # 1 in LSB
+    li t1, -1          # all 1s
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+            li t2, 0b1111
+            slli t2, t2, 60
+        #elif __riscv_xlen == 32
+            li t2, 0b1
+            slli t2, t2, 31
+        #endif
+        not t2, t2
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    2:
+        csrrc x0, satp, t1 # clear all bits
+        csrrs t3, satp, t0 # set walking 1
+        slli t0, t0, 1 # shift left
+        bleu t0, t2, 2b # repeat until all bits are set
+
+    li t0, 1
+    3:
+        csrrc x0, satp, t0 # clear walking 1
+        slli t0, t0, 1 # walk the 1
+        bleu t0, t2, 3b # repeat until all bits are set
+
+    csrrw t3, satp, t6 # restore satp
+
+/////////////////////////////////
 // cp_scause_write
 /////////////////////////////////
     csrr s0, scause     # save CSR
@@ -114,68 +176,6 @@ formbits:
     bnez t0, fsloop     # repeat until both cases of SD are covered
 
     csrrw t6, sstatus, s0    # restore CSR
-
-/////////////////////////////////
-// cp_satp
-/////////////////////////////////
-cp_satp:
-    csrr t0, satp
-    li t1, -1
-    csrrc t3, satp, t1      # clear all bits
-
-    // logic to exclude mode bits
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            li t2, 0b1111
-            slli t2, t2, 60
-        #elif __riscv_xlen == 32
-            li t2, 0b1
-            slli t2, t2, 31
-        #endif
-        not t2, t2
-        and t1, t1, t2
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    csrrw t3, satp, t1 # write all 1s except mode
-    csrrw t3, satp, x0 # write all 0s
-    csrrs t3, satp, t1 # set all except mode
-    csrrw t3, satp, t0
-
-/////////////////////////////////
-// cp_csrwalk_satp
-/////////////////////////////////
-
-cp_csrwalk_satp:
-    csrr t6, satp      # save satp
-    li t0, 1           # 1 in LSB
-    li t1, -1          # all 1s
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            li t2, 0b1111
-            slli t2, t2, 60
-        #elif __riscv_xlen == 32
-            li t2, 0b1
-            slli t2, t2, 31
-        #endif
-        not t2, t2
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-
-    2:
-        csrrc x0, satp, t1 # clear all bits
-        csrrs t3, satp, t0 # set walking 1
-        slli t0, t0, 1 # shift left
-        bleu t0, t2, 2b # repeat until all bits are set
-
-    li t0, 1
-    3:
-        csrrc x0, satp, t0 # clear walking 1
-        slli t0, t0, 1 # walk the 1
-        bleu t0, t2, 3b # repeat until all bits are set
-
-    csrrw t3, satp, t6 # restore satp
 
 /////////////////////////////////
 // cp_sprivinst
