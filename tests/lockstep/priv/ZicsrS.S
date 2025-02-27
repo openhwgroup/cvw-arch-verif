@@ -373,29 +373,28 @@ cp_sret:
     ecall
     j postsrettest
 
-srettest:
-    mv s0, ra
-    mv s1, a0
-    jal setmstatus
-    mv ra, s0
-    mv a0, s1
-    la t1, srettest_sepc    
+srettest:                   # takes in the desired sstatus and mstatus, sets them and takes sret
+    mv s0, ra               # save ra
+    mv s1, a0               # save sstatus
+    jal setmstatus          # set mstatus
+    mv ra, s0               # restore ra
+    mv a0, s1               # restore sstatus
+    la t1, srettest_sepc    # load addr of srettest_sepc
     csrrw t6, sepc, t1      # return to srettest_sepc when done
     csrrw t6, sstatus, a0   # preload sstatus with argument
     sret                    # take the sret. Should go to srettest_mepc and adjust sstatus
     nop                     # should be skipped
     nop                     # should be skipped
 
-setmstatus:
+setmstatus:                 # takes in the desired mstatus and sets it
     li t1, 0b1
-    slli t1, t1, 22
-    and t1, t1, a0
+    slli t1, t1, 22         # shift to the mstatus.tsr bit mask
+    and t1, t1, a0          # isolate the mstatus.tsr bit
 
-    li a0, 3
+    li a0, 3                # switch into machine mode to set mstatus
     ecall
-    csrr t2, mstatus
-    or t1, t2, t1
-    csrrw t6, mstatus, t1
+
+    csrrs t6, mstatus, t1   # set mstatus.tsr
     li a0, 1
     ecall
     ret
