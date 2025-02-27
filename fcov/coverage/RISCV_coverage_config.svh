@@ -176,6 +176,9 @@
 `ifdef EXCEPTIONSM_COVERAGE
   `include "ExceptionsM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSU_COVERAGE
+  `include "ExceptionsU_coverage.svh"
+`endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
 `endif
