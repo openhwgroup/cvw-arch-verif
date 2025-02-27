@@ -30,21 +30,14 @@ main:
 // cp_uprivinst
 /////////////////////////////////
 cp_uprivinst:
-    // ecall
-    li a0, 0
-    ecall       # switch from user mode to user mode
 
     // ebreak
     ebreak       # take a trap, and the trap handler returns
 
     // fences.  These aren't really privileged instructions, but don't have a better place to test
-    li a0, 0
-    ecall
     fence
     fence rw, rw
     fence.tso
-    li a0, 0
-    ecall
     pause
 
 /////////////////////////////////
@@ -62,9 +55,7 @@ cp_satp:
 /////////////////////////////////
 // cp_mret
 /////////////////////////////////
-cp_mret:   
-    li a0, 0
-    ecall
+cp_mret:
     // Executing mret in user mode
     // Should throw an illegal instruction exception
     mret
@@ -73,8 +64,6 @@ cp_mret:
 // cp_sret
 /////////////////////////////////
 cp_sret:
-    li a0, 0
-    ecall
     // Executing sret in user mode
     // Should throw an illegal instruction exception
     sret
