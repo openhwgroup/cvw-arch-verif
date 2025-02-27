@@ -97,6 +97,3 @@ csrwalk(pathname, mregs + sregs + uregs + ["satp"])
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
 csrwalk(pathname, sregs + uregs);
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-Walk.h"
-csrwalk(pathname, uregs);
