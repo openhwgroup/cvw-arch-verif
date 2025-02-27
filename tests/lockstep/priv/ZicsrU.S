@@ -41,18 +41,6 @@ cp_uprivinst:
     pause
 
 /////////////////////////////////
-// cp_satp
-/////////////////////////////////
-cp_satp:
-    li t1, -1
-    csrr t0, satp
-    csrrc t3, satp, t1
-    csrrw t3, satp, t1
-    csrrw t3, satp, x0
-    csrrs t3, satp, t1
-    csrrw t3, satp, t0
-
-/////////////////////////////////
 // cp_mret
 /////////////////////////////////
 cp_mret:
