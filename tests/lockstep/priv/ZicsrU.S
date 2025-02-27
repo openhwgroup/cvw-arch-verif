@@ -30,6 +30,8 @@ main:
 // cp_uprivinst
 /////////////////////////////////
 cp_uprivinst:
+    li a0, 0     # test switching from user mode to user mode
+    ecall
 
     // ebreak
     ebreak       # take a trap, and the trap handler returns
