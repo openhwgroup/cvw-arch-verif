@@ -42,8 +42,6 @@ def csrtests(pathname, skipCsrs):
     for i in range(4096):
         if (i in skipCsrs): 
             continue # skip custom CSRs
-        if (i == 0x180):
-            continue # skip satp (custom tests)
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
         reg3 = randint(1, 31)
@@ -89,13 +87,13 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-CSR-Tests.h"
 csrtests(pathname, mCsrSkip + sCsrSkip + uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-CSR-Tests.h"
-csrtests(pathname, sCsrSkip + uCsrSkip)
+csrtests(pathname, sCsrSkip + uCsrSkip + [0x180]) # 0x180 is satp, turns on virtual memory
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-CSR-Tests.h"
 csrtests(pathname, uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
-csrwalk(pathname, mregs + sregs + uregs);
+csrwalk(pathname, mregs + sregs + uregs + ["satp"])
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
 csrwalk(pathname, sregs + uregs);
