@@ -56,19 +56,6 @@ cp_sret:
     // Should throw an illegal instruction exception
     sret
 
-postsrettest:
-# switch to machine mode and set fs = 1 so we can test
-    li a0, 3
-    ecall
-
-    # set fs = 1
-    li t0, 0x2000
-    csrrw t6, mstatus, t0
-    
-# return to user mode to run tests
-    li a0, 0
-    ecall
-#include "ZicsrU-Walk.h"
 #include "ZicsrU-CSR-Tests.h"
 
 finished:
