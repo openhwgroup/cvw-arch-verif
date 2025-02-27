@@ -207,126 +207,118 @@ cp_mret:
 /////////////////////////////////
 // cp_shadow
 /////////////////////////////////
-cp_shadow_mstatus:
+cp_shadow_mstatus:          # write to mstatus in machine mode, read back sstatus in supervisor mode
     li t3, -1
     li a0, 3
     ecall
-    csrr t1, mstatus
-    csrrw t6, mstatus, x0 # write all 0s
+    csrr t1, mstatus        # save the current mstatus
+    csrrw t6, mstatus, x0   # write all 0s in machine mode
     li a0, 1
     ecall
-    csrr t2, sstatus # read back sstatus
+    csrr t2, sstatus        # read back sstatus in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mstatus, t3 # write all 1s
+    csrrw t6, mstatus, t3   # write all 1s in machine mode
     li a0, 1
     ecall
-    csrr t2, sstatus # read back sstatus
+    csrr t2, sstatus        # read back sstatus in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mstatus, t1 # restore mstatus
-    li a0, 1
-    ecall
+    csrrw t6, mstatus, t1   # restore original mstatus
 
-cp_shadow_mie:
-    li a0, 3
-    ecall
+cp_shadow_mie:              # write to mie in machine mode, read back sie in supervisor mode
     csrr t1, mie
-    csrrw t6, mie, x0 # write all 0s
+    csrrw t6, mie, x0       # write all 0s in machine mode
     li a0, 1
     ecall
-    csrr t2, sie # read back sie
+    csrr t2, sie            # read back sie in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mie, t3 # write all 1s
+    csrrw t6, mie, t3       # write all 1s in machine mode
     li a0, 1
     ecall
-    csrr t2, sie # read back sie
+    csrr t2, sie            # read back sie in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mie, t1 # restore mie
-    li a0, 1
-    ecall
+    csrrw t6, mie, t1       # restore original mie
 
-cp_shadow_mip:
-    li a0, 3
-    ecall
+cp_shadow_mip:              # write to mip in machine mode, read back sip in supervisor mode
     csrr t1, mip
-    csrrw t6, mip, x0 # write all 0s
+    csrrw t6, mip, x0       # write all 0s in machine mode
     li a0, 1
     ecall
-    csrr t2, sip # read back sip
+    csrr t2, sip            # read back sip in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mip, t3 # write all 1s
+    csrrw t6, mip, t3       # write all 1s in machine mode
     li a0, 1
     ecall
-    csrr t2, sip # read back sip
+    csrr t2, sip            # read back sip in supervisor mode
 
     li a0, 3
     ecall
-    csrrw t6, mip, t1 # restore mip
+    csrrw t6, mip, t1       # restore original mip
     li a0, 1
     ecall
 
-cp_shadow_sstatus:
+cp_shadow_sstatus:          # write to sstatus in supervisor mode, read back mstatus in machine mode
     csrr t1, sstatus
-    csrrw t6, sstatus, x0 # write all 0s
+    csrrw t6, sstatus, x0   # write all 0s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mstatus # read back mstatus
+    csrr t2, mstatus        # read back mstatus in machine mode
     li a0, 1
     ecall
 
-    csrrw t6, sstatus, t3 # write all 1s
+    csrrw t6, sstatus, t3   # write all 1s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mstatus # read back mstatus
+    csrr t2, mstatus        # read back mstatus in machine mode
     li a0, 1
     ecall
 
-    csrrw t6, sstatus, t1 # restore sstatus
+    csrrw t6, sstatus, t1   # restore original sstatus
 
-cp_shadow_sie:
+cp_shadow_sie:              # write to sie in supervisor mode, read back mie in machine mode
     csrr t1, sie
-    csrrw t6, sie, x0 # write all 0s
+    csrrw t6, sie, x0       # write all 0s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mie # read back mie
+    csrr t2, mie            # read back mie in machine mode
     li a0, 1
     ecall
 
-    csrrw t6, sie, t3 # write all 1s
+    csrrw t6, sie, t3       # write all 1s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mie # read back mie
+    csrr t2, mie            # read back mie in machine mode
     li a0, 1
     ecall
 
-    csrrw t6, sie, t1 # restore sie
+    csrrw t6, sie, t1       # restore original sie
 
-cp_shadow_sip:
+cp_shadow_sip:              # write to sip in supervisor mode, read back mip in machine mode
     csrr t1, sip
-    csrrw t6, sip, x0 # write all 0s
+    csrrw t6, sip, x0       # write all 0s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mip # read back mip
+    csrr t2, mip            # read back mip in machine mode
     li a0, 1
     ecall
 
-    csrrw t6, sip, t3 # write all 1s
+    csrrw t6, sip, t3       # write all 1s in supervisor mode
     li a0, 3
     ecall
-    csrr t2, mip # read back mip
-    csrrw t6, sip, t1 # restore sip
+    csrr t2, mip            # read back mip in machine mode
     li a0, 1
     ecall
 
+    csrrw t6, sip, t1       # restore original sip
 
 /////////////////////////////////
 // cp_sret
