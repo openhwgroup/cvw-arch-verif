@@ -127,6 +127,11 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
         bins S_mode = {2'b01};
         bins U_mode = {2'b00};
     }
+    priv_mode_sum: coverpoint ins.current.mode {
+        bins M_mode = {2'b11};
+        bins S_mode = {2'b01};
+        bins U_mode = {2'b00};
+    }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
         bins zero = {0};
     }
@@ -187,23 +192,15 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_s;
     cp_ecall_s:                              cross ecall, priv_mode_s;
     cp_misaligned_priority:                  cross sw_lw_jalr, illegal_address_misaligned, priv_mode_s;
-    cp_medeleg_su_instrmisaligned:           cross jalr,     rs1_1_0, imm_bit_1, priv_mode_su, medeleg_walk;
-    cp_medeleg_su_loadmisaligned:            cross loadops,    adr_LSBs,         priv_mode_su, medeleg_walk;
-    cp_medeleg_su_storemisaligned:           cross storeops,   adr_LSBs,         priv_mode_su, medeleg_walk;
-    cp_medeleg_su_instraccessfault:          cross jalr,       illegal_address,  priv_mode_su, medeleg_walk;
-    cp_medeleg_su_loadaccessfault:           cross loadops,    illegal_address,  priv_mode_su, medeleg_walk;
-    cp_medeleg_su_storeaccessfault:          cross storeops,   illegal_address,  priv_mode_su, medeleg_walk;
-    cp_medeleg_su_illegalinstruction:        cross illegalops,                   priv_mode_su, medeleg_walk;
-    cp_medeleg_su_ecall:                     cross ecall,                        priv_mode_su, medeleg_walk;
-    cp_medeleg_su_ebreak:                    cross ebreak,                       priv_mode_su, medeleg_walk;
-    cp_medeleg_m_instrmisaligned:            cross jalr,     rs1_1_0, imm_bit_1, priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_loadmisaligned:             cross loadops,    adr_LSBs,         priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_storemisaligned:            cross storeops,   adr_LSBs,         priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_instraccessfault:           cross jalr,       illegal_address,  priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_loadaccessfault:            cross loadops,    illegal_address,  priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_storeaccessfault:           cross storeops,   illegal_address,  priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_illegalinstruction:         cross illegalops,                   priv_mode_m,  medeleg_walk;
-    cp_medeleg_m_ebreak:                     cross ebreak,                       priv_mode_m,  medeleg_walk;
+    cp_medeleg_sum_instrmisaligned:          cross jalr,     rs1_1_0, imm_bit_1, priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_instraccessfault:         cross jalr,       illegal_address,  priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_loadaccessfault:          cross loadops,    illegal_address,  priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_storeaccessfault:         cross storeops,   illegal_address,  priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_illegalinstruction:       cross illegalops,                   priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_ecall:                    cross ecall,                        priv_mode_sum, medeleg_walk;
+    cp_medeleg_sum_ebreak:                   cross ebreak,                       priv_mode_sum, medeleg_walk;
     cp_stvec:                                cross jalr, illegal_address, priv_mode_su, medeleg_instraccessfault_enabled, mtvec_stvec_ne; // Testplan was not specific, I chose instr access fault for the delegated exception
     cp_xstatus_ie:                           cross ecall, priv_mode_su, mstatus_MIE, sstatus_SIE, medeleg_b9_8;
 
