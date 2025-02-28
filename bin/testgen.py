@@ -1773,10 +1773,10 @@ def write_tests(coverpoints, test, xlen):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
-    elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
-          coverpoint == "cp_custom_sc_after_sc" or coverpoint == "cp_sc_fail" or coverpoint == "cp_address_difference" or
-          coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
-          coverpoint == "cp_custom_sc_after_store"):
+    elif (coverpoint in ["cp_sc", "cp_prev_lr", "cp_prev_sc", "cp_custom_sc_after_sc", "cp_custom_sc_after_store",
+                         "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
+                         "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
+
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
       make_custom(test, xlen)
