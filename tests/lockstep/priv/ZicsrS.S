@@ -371,8 +371,12 @@ cp_sret:
     ecall
     j postsrettest
 
-srettest:                   # takes in the desired sstatus and mstatus, sets them and takes sret
-    mv s0, ra               # save ra
+// takes in the desired mstatus, sets it, and then takes an sret
+//      inputs:
+//          a0 = desired status bits (bit 22: mstatus.tsr, bit 8: sstatus.spp, bit 5: sstatus.spie, bit 1: sstatus.sie)
+//          ra = return address (right after the call to srettest)
+srettest:
+    mv s0, ra               # save ra to call setmstatus
     mv s1, a0               # save sstatus
     jal setmstatus          # set mstatus
     mv ra, s0               # restore ra
