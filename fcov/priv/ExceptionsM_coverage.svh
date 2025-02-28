@@ -118,14 +118,13 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     imm_bit_1: coverpoint ins.current.imm[1] {
         bins one = {'1};
     }
-    offset: coverpoint ins.current.imm[1] {
+    offset: coverpoint ins.current.imm[1:0] {
     }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
-    // TODO: this has some complicated bit swizzling, aught to be human tested to ensure it accurately reflects test plan
     illegal_address_priority: coverpoint {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000} {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
