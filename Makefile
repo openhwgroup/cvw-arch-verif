@@ -42,7 +42,7 @@ UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 # Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
 # See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
-PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
+PRIV_HEADERS  = ZicsrM-CSR-Tests.h ZicsrS-CSR-Tests.h ZicsrU-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
@@ -71,7 +71,11 @@ selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
 	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
-$(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+$(PRIVHEADERSDIR)/ZicsrM-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+	bin/csrtests.py
+$(PRIVHEADERSDIR)/ZicsrS-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+	bin/csrtests.py
+$(PRIVHEADERSDIR)/ZicsrU-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 
 $(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
