@@ -379,16 +379,40 @@ srettest:
     mv s0, ra               # save ra to call setmstatus
     mv s1, a0               # save sstatus
     jal setmstatus          # set mstatus
-    mv ra, s0               # restore ra
     mv a0, s1               # restore sstatus
     la t1, srettest_sepc    # load addr of srettest_sepc
     csrrw t6, sepc, t1      # return to srettest_sepc when done
-    csrrw t6, sstatus, a0   # preload sstatus with argument
-    sret                    # take the sret. Should go to srettest_mepc and adjust sstatus
-    nop                     # should be skipped
-    nop                     # should be skipped
 
-setmstatus:                 # takes in the desired mstatus and sets it
+    li t1, 0b1
+
+    slli t1, t1, 1       # shift to the sstatus.sie bit mask
+    and t2, t1, a0       # isolate the sstatus.sie bit
+    jal writebits        # write sstatus.sie
+
+    slli t1, t1, 4       # shift to the sstatus.spie bit mask
+    and t2, t1, a0       # isolate the sstatus.spie bit
+    jal writebits        # write sstatus.spie
+
+    slli t1, t1, 3       # shift to the sstatus.spp bit mask
+    and t2, t1, a0       # isolate the sstatus.spp bit
+    jal writebits        # write sstatus.spp
+
+    j postsetup
+
+    writebits:                  # takes in t1, which is the mask, as well as t2, indicating value
+        beqz t2, clearbits      # checks if bit is 0 or 1
+        csrrs t6, sstatus, t1   # set bits as specified in t1
+        ret
+        clearbits:
+            csrrc t6, sstatus, t1   # clear bits as specified in t1
+            ret
+
+    postsetup:
+        mv ra, s0               # restore ra for after srettest_mepc
+        sret                    # take the sret. Should go to srettest_mepc and adjust sstatus
+
+
+setmstatus:                 # takes in the desired mstatus.tsr in bit 22 of a0 and sets it
     li t1, 0b1
     slli t1, t1, 22         # shift to the mstatus.tsr bit mask
     and t1, t1, a0          # isolate the mstatus.tsr bit
