@@ -325,9 +325,8 @@ cp_shadow_sip:              # write to sip in supervisor mode, read back mip in 
 /////////////////////////////////
 // Sweep executing sret in supervisor mode across cross-product of spp, tsr, spie, sie
 cp_sret:
-    li a0, 3            # switch into machine mode to save sstatus and mstatus
+    li a0, 3            # switch into machine mode to save mstatus
     ecall
-    csrr s11, sstatus   # save sstatus
     csrr s10, mstatus   # save mstatus
     li a0, 1            # switch back to supervisor mode for tests
     ecall
@@ -367,7 +366,6 @@ cp_sret:
 
     li a0, 3                 # switch into machine mode to restore sstatus and mstatus
     ecall
-    csrrw t6, sstatus, s11   # restore sstatus
     csrrw t6, mstatus, s10   # restore mstatus
     li a0, 1                 # switch back to supervisor mode for tests
     ecall
