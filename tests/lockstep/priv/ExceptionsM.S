@@ -11,8 +11,6 @@
 
 #include "WALLY-init-lib.h"
 
-//Move to  WALLY-init-lib.h eventually
-
 main:
     // Set up the trap handler
     la t0, trap_handler
