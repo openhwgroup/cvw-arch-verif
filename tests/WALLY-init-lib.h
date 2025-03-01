@@ -39,6 +39,7 @@
 
 //Macros
 #define ACCESS_FAULT_ADDRESS 0
+#define CLINT_MTIME_ADDRESS 0x0200BFF8
 
 .section .text.init
 .global rvtest_entry_point
