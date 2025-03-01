@@ -31,13 +31,10 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     branch: coverpoint ins.current.insn {
         wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
-    // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
-    //       we aught to test this for a sanity check to both of these assumptions
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                 ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                 $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
-        //wildcard bins beq_taken  = {3'b000, 1'b1, 1'b?, 1'b?};
         wildcard bins beq_taken  = {6'b000_1_?_?};
         wildcard bins bne_taken  = {6'b001_0_?_?};
         wildcard bins blt_taken  = {6'b100_?_1_?};
