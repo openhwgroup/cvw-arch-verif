@@ -815,40 +815,377 @@ function string disassemble (logic [31:0] instrRaw);
 
     VRGATHEREI16_VV:  $sformat(decoded, "vrgatherei16.vv %s, %s, %s%s",   vd, vs2, vs1, vm);
 
+    VLE8_V:       $sformat(decoded, "vle8.v %s, (%s)%s",          vd, rs1, vm); 
+    VLE16_V:      $sformat(decoded, "vle16.v %s, (%s)%s",         vd, rs1, vm);
+    VLE32_V:      $sformat(decoded, "vle32.v %s, (%s)%s",         vd, rs1, vm);
+    VLE64_V:      $sformat(decoded, "vle64.v %s, (%s)%s",         vd, rs1, vm);
+    VLE8FF_V:     $sformat(decoded, "vle8ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLE16FF_V:    $sformat(decoded, "vle16ff.v %s, (%s)%s",       vd, rs1, vm);
+    VLE32FF_V:    $sformat(decoded, "vle32ff.v %s, (%s)%s",       vd, rs1, vm);
+    VLE64FF_V:    $sformat(decoded, "vle64ff.v %s, (%s)%s",       vd, rs1, vm);
+    VLSE8_V:      $sformat(decoded, "vlse8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSE16_V:     $sformat(decoded, "vlse16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSE32_V:     $sformat(decoded, "vlse32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSE64_V:     $sformat(decoded, "vlse64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLUXEI8_V:    $sformat(decoded, "vluxei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXEI16_V:   $sformat(decoded, "vluxei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXEI32_V:   $sformat(decoded, "vluxei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXEI64_V:   $sformat(decoded, "vluxei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXEI8_V:    $sformat(decoded, "vloxei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXEI16_V:   $sformat(decoded, "vloxei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXEI32_V:   $sformat(decoded, "vloxei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXEI64_V:   $sformat(decoded, "vloxei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    
+    VLSEG2E8_V:      $sformat(decoded, "vlseg2e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG2E16_V:     $sformat(decoded, "vlseg2e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG2E32_V:     $sformat(decoded, "vlseg2e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG2E64_V:     $sformat(decoded, "vlseg2e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E8_V:      $sformat(decoded, "vlseg3e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG3E16_V:     $sformat(decoded, "vlseg3e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E32_V:     $sformat(decoded, "vlseg3e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E64_V:     $sformat(decoded, "vlseg3e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E8_V:      $sformat(decoded, "vlseg4e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG4E16_V:     $sformat(decoded, "vlseg4e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E32_V:     $sformat(decoded, "vlseg4e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E64_V:     $sformat(decoded, "vlseg4e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E8_V:      $sformat(decoded, "vlseg5e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG5E16_V:     $sformat(decoded, "vlseg5e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E32_V:     $sformat(decoded, "vlseg5e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E64_V:     $sformat(decoded, "vlseg5e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E8_V:      $sformat(decoded, "vlseg6e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG6E16_V:     $sformat(decoded, "vlseg6e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E32_V:     $sformat(decoded, "vlseg6e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E64_V:     $sformat(decoded, "vlseg6e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E8_V:      $sformat(decoded, "vlseg7e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG7E16_V:     $sformat(decoded, "vlseg7e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E32_V:     $sformat(decoded, "vlseg7e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E64_V:     $sformat(decoded, "vlseg7e64.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E8_V:      $sformat(decoded, "vlseg8e8.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG8E16_V:     $sformat(decoded, "vlseg8e16.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E32_V:     $sformat(decoded, "vlseg8e32.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E64_V:     $sformat(decoded, "vlseg8e64.v %s, (%s)%s",        vd, rs1, vm);
 
-// vle<eew>.v
-// vle<eew>ff.v
-// vlse<eew>.v
-// vluxei<eew>.v
-// vloxei<eew>.v
-// vlseg<nf>e<eew>.v
-// vlseg<nf>e<eew>ff.v
-// vlsseg<nf>e<eew>.v
-// vluxseg<nf>ei<eew>.v
-// vloxseg<nf>ei<eew>.v
-// vl<nf>re<eew>.v    
-// vlm.v 
+    VLSEG2E8FF_V:      $sformat(decoded, "vlseg2e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG2E16FF_V:     $sformat(decoded, "vlseg2e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG2E32FF_V:     $sformat(decoded, "vlseg2e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG2E64FF_V:     $sformat(decoded, "vlseg2e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E8FF_V:      $sformat(decoded, "vlseg3e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG3E16FF_V:     $sformat(decoded, "vlseg3e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E32FF_V:     $sformat(decoded, "vlseg3e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG3E64FF_V:     $sformat(decoded, "vlseg3e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E8FF_V:      $sformat(decoded, "vlseg4e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG4E16FF_V:     $sformat(decoded, "vlseg4e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E32FF_V:     $sformat(decoded, "vlseg4e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG4E64FF_V:     $sformat(decoded, "vlseg4e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E8FF_V:      $sformat(decoded, "vlseg5e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG5E16FF_V:     $sformat(decoded, "vlseg5e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E32FF_V:     $sformat(decoded, "vlseg5e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG5E64FF_V:     $sformat(decoded, "vlseg5e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E8FF_V:      $sformat(decoded, "vlseg6e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG6E16FF_V:     $sformat(decoded, "vlseg6e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E32FF_V:     $sformat(decoded, "vlseg6e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG6E64FF_V:     $sformat(decoded, "vlseg6e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E8FF_V:      $sformat(decoded, "vlseg7e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG7E16FF_V:     $sformat(decoded, "vlseg7e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E32FF_V:     $sformat(decoded, "vlseg7e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG7E64FF_V:     $sformat(decoded, "vlseg7e64ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E8FF_V:      $sformat(decoded, "vlseg8e8ff.v %s, (%s)%s",         vd, rs1, vm);
+    VLSEG8E16FF_V:     $sformat(decoded, "vlseg8e16ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E32FF_V:     $sformat(decoded, "vlseg8e32ff.v %s, (%s)%s",        vd, rs1, vm);
+    VLSEG8E64FF_V:     $sformat(decoded, "vlseg8e64ff.v %s, (%s)%s",        vd, rs1, vm);
 
-// vse<eew>.v
-// vse<eew>.v
-// vsuxei<eew>.v
-// vsoxei<eew>.v
-// vsseg<nf>e<eew>.v
-// vssseg<nf>e<eew>.v
-// vsuxseg<nf>ei<eew>.v
-// vsoxseg<nf>ei<eew>.v
-// vs<nf>r.v 
-// vsm.v 
+    VLSSEG2E8_V:      $sformat(decoded, "vlsseg2e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG2E16_V:     $sformat(decoded, "vlsseg2e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG2E32_V:     $sformat(decoded, "vlsseg2e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG2E64_V:     $sformat(decoded, "vlsseg2e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG3E8_V:      $sformat(decoded, "vlsseg3e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG3E16_V:     $sformat(decoded, "vlsseg3e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG3E32_V:     $sformat(decoded, "vlsseg3e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG3E64_V:     $sformat(decoded, "vlsseg3e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG4E8_V:      $sformat(decoded, "vlsseg4e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG4E16_V:     $sformat(decoded, "vlsseg4e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG4E32_V:     $sformat(decoded, "vlsseg4e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG4E64_V:     $sformat(decoded, "vlsseg4e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG5E8_V:      $sformat(decoded, "vlsseg5e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG5E16_V:     $sformat(decoded, "vlsseg5e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG5E32_V:     $sformat(decoded, "vlsseg5e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG5E64_V:     $sformat(decoded, "vlsseg5e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG6E8_V:      $sformat(decoded, "vlsseg6e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG6E16_V:     $sformat(decoded, "vlsseg6e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG6E32_V:     $sformat(decoded, "vlsseg6e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG6E64_V:     $sformat(decoded, "vlsseg6e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG7E8_V:      $sformat(decoded, "vlsseg7e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG7E16_V:     $sformat(decoded, "vlsseg7e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG7E32_V:     $sformat(decoded, "vlsseg7e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG7E64_V:     $sformat(decoded, "vlsseg7e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG8E8_V:      $sformat(decoded, "vlsseg8e8.v %s, (%s), %s%s",     vd, rs1, rs2, vm);
+    VLSSEG8E16_V:     $sformat(decoded, "vlsseg8e16.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG8E32_V:     $sformat(decoded, "vlsseg8e32.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
+    VLSSEG8E64_V:     $sformat(decoded, "vlsseg8e64.v %s, (%s), %s%s",    vd, rs1, rs2, vm);
 
-// vsetvli
-// vsetivli
-// vsetvl
+    VLUXSEG2EI8_V:    $sformat(decoded, "vluxseg2ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG2EI16_V:   $sformat(decoded, "vluxseg2ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG2EI32_V:   $sformat(decoded, "vluxseg2ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG2EI64_V:   $sformat(decoded, "vluxseg2ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG3EI8_V:    $sformat(decoded, "vluxseg3ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG3EI16_V:   $sformat(decoded, "vluxseg3ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG3EI32_V:   $sformat(decoded, "vluxseg3ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG3EI64_V:   $sformat(decoded, "vluxseg3ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG4EI8_V:    $sformat(decoded, "vluxseg4ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG4EI16_V:   $sformat(decoded, "vluxseg4ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG4EI32_V:   $sformat(decoded, "vluxseg4ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG4EI64_V:   $sformat(decoded, "vluxseg4ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG5EI8_V:    $sformat(decoded, "vluxseg5ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG5EI16_V:   $sformat(decoded, "vluxseg5ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG5EI32_V:   $sformat(decoded, "vluxseg5ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG5EI64_V:   $sformat(decoded, "vluxseg5ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG6EI8_V:    $sformat(decoded, "vluxseg6ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG6EI16_V:   $sformat(decoded, "vluxseg6ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG6EI32_V:   $sformat(decoded, "vluxseg6ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG6EI64_V:   $sformat(decoded, "vluxseg6ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG7EI8_V:    $sformat(decoded, "vluxseg7ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG7EI16_V:   $sformat(decoded, "vluxseg7ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG7EI32_V:   $sformat(decoded, "vluxseg7ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG7EI64_V:   $sformat(decoded, "vluxseg7ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG8EI8_V:    $sformat(decoded, "vluxseg8ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLUXSEG8EI16_V:   $sformat(decoded, "vluxseg8ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG8EI32_V:   $sformat(decoded, "vluxseg8ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLUXSEG8EI64_V:   $sformat(decoded, "vluxseg8ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+
+    VLOXSEG2EI8_V:    $sformat(decoded, "vloxseg2ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG2EI16_V:   $sformat(decoded, "vloxseg2ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG2EI32_V:   $sformat(decoded, "vloxseg2ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG2EI64_V:   $sformat(decoded, "vloxseg2ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG3EI8_V:    $sformat(decoded, "vloxseg3ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG3EI16_V:   $sformat(decoded, "vloxseg3ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG3EI32_V:   $sformat(decoded, "vloxseg3ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG3EI64_V:   $sformat(decoded, "vloxseg3ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG4EI8_V:    $sformat(decoded, "vloxseg4ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG4EI16_V:   $sformat(decoded, "vloxseg4ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG4EI32_V:   $sformat(decoded, "vloxseg4ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG4EI64_V:   $sformat(decoded, "vloxseg4ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG5EI8_V:    $sformat(decoded, "vloxseg5ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG5EI16_V:   $sformat(decoded, "vloxseg5ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG5EI32_V:   $sformat(decoded, "vloxseg5ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG5EI64_V:   $sformat(decoded, "vloxseg5ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG6EI8_V:    $sformat(decoded, "vloxseg6ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG6EI16_V:   $sformat(decoded, "vloxseg6ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG6EI32_V:   $sformat(decoded, "vloxseg6ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG6EI64_V:   $sformat(decoded, "vloxseg6ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG7EI8_V:    $sformat(decoded, "vloxseg7ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG7EI16_V:   $sformat(decoded, "vloxseg7ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG7EI32_V:   $sformat(decoded, "vloxseg7ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG7EI64_V:   $sformat(decoded, "vloxseg7ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG8EI8_V:    $sformat(decoded, "vloxseg8ei8.v %s, (%s), %s%s",   vd, rs1, vs2, vm);
+    VLOXSEG8EI16_V:   $sformat(decoded, "vloxseg8ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG8EI32_V:   $sformat(decoded, "vloxseg8ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    VLOXSEG8EI64_V:   $sformat(decoded, "vloxseg8ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
+    
+    VL1RE8_V:         $sformat(decoded, "vl1re8.v %s, (%s)",             vd, rs1);
+    VL1RE16_V:        $sformat(decoded, "vl1re16.v %s, (%s)",            vd, rs1);
+    VL1RE32_V:        $sformat(decoded, "vl1re32.v %s, (%s)",            vd, rs1);
+    VL1RE64_V:        $sformat(decoded, "vl1re64.v %s, (%s)",            vd, rs1);
+    VL2RE8_V:         $sformat(decoded, "vl2re8.v %s, (%s)",             vd, rs1);
+    VL2RE16_V:        $sformat(decoded, "vl2re16.v %s, (%s)",            vd, rs1);
+    VL2RE32_V:        $sformat(decoded, "vl2re32.v %s, (%s)",            vd, rs1);
+    VL2RE64_V:        $sformat(decoded, "vl2re64.v %s, (%s)",            vd, rs1);
+    VL4RE8_V:         $sformat(decoded, "vl4re8.v %s, (%s)",             vd, rs1);
+    VL4RE16_V:        $sformat(decoded, "vl4re16.v %s, (%s)",            vd, rs1);
+    VL4RE32_V:        $sformat(decoded, "vl4re32.v %s, (%s)",            vd, rs1);
+    VL4RE64_V:        $sformat(decoded, "vl4re64.v %s, (%s)",            vd, rs1);
+    VL8RE8_V:         $sformat(decoded, "vl8re8.v %s, (%s)",             vd, rs1);
+    VL8RE16_V:        $sformat(decoded, "vl8re16.v %s, (%s)",            vd, rs1);
+    VL8RE32_V:        $sformat(decoded, "vl8re32.v %s, (%s)",            vd, rs1);
+    VL8RE64_V:        $sformat(decoded, "vl8re64.v %s, (%s)",            vd, rs1);
+
+    VLM_V:            $sformat(decoded, "vlm.v %s, (%s)",                vd, rs1);
+
+    VSE8_V:      $sformat(decoded, "vse8.v %s, (%s)%s",          vs3, rs1, vm);
+    VSE16_V:     $sformat(decoded, "vse16.v %s, (%s)%s",         vs3, rs1, vm);
+    VSE32_V:     $sformat(decoded, "vse32.v %s, (%s)%s",         vs3, rs1, vm);
+    VSE64_V:     $sformat(decoded, "vse64.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSE8_V:     $sformat(decoded, "vsse8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSE16_V:    $sformat(decoded, "vsse16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSE32_V:    $sformat(decoded, "vsse32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSE64_V:    $sformat(decoded, "vsse64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSUXEI8_V:   $sformat(decoded, "vsuxe8.v %s, (%s), %s%s",    vs3, rs1, vs2, vm);
+    VSUXEI16_V:  $sformat(decoded, "vsuxe16.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXEI32_V:  $sformat(decoded, "vsuxe32.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXEI64_V:  $sformat(decoded, "vsuxe64.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXEI8_V:   $sformat(decoded, "vsoxei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXEI16_V:  $sformat(decoded, "vsoxei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXEI32_V:  $sformat(decoded, "vsoxei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXEI64_V:  $sformat(decoded, "vsoxei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+
+    VSSEG2E8_V:      $sformat(decoded, "vsseg2e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG2E16_V:     $sformat(decoded, "vsseg2e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG2E32_V:     $sformat(decoded, "vsseg2e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG2E64_V:     $sformat(decoded, "vsseg2e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG3E8_V:      $sformat(decoded, "vsseg3e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG3E16_V:     $sformat(decoded, "vsseg3e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG3E32_V:     $sformat(decoded, "vsseg3e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG3E64_V:     $sformat(decoded, "vsseg3e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG4E8_V:      $sformat(decoded, "vsseg4e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG4E16_V:     $sformat(decoded, "vsseg4e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG4E32_V:     $sformat(decoded, "vsseg4e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG4E64_V:     $sformat(decoded, "vsseg4e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG5E8_V:      $sformat(decoded, "vsseg5e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG5E16_V:     $sformat(decoded, "vsseg5e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG5E32_V:     $sformat(decoded, "vsseg5e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG5E64_V:     $sformat(decoded, "vsseg5e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG6E8_V:      $sformat(decoded, "vsseg6e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG6E16_V:     $sformat(decoded, "vsseg6e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG6E32_V:     $sformat(decoded, "vsseg6e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG6E64_V:     $sformat(decoded, "vsseg6e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG7E8_V:      $sformat(decoded, "vsseg7e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG7E16_V:     $sformat(decoded, "vsseg7e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG7E32_V:     $sformat(decoded, "vsseg7e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG7E64_V:     $sformat(decoded, "vsseg7e64.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG8E8_V:      $sformat(decoded, "vsseg8e8.v %s, (%s)%s",         vs3, rs1, vm);
+    VSSEG8E16_V:     $sformat(decoded, "vsseg8e16.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG8E32_V:     $sformat(decoded, "vsseg8e32.v %s, (%s)%s",        vs3, rs1, vm);
+    VSSEG8E64_V:     $sformat(decoded, "vsseg8e64.v %s, (%s)%s",        vs3, rs1, vm);
+
+    VSSSEG2E8_V:      $sformat(decoded, "vssseg2e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG2E16_V:     $sformat(decoded, "vssseg2e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG2E32_V:     $sformat(decoded, "vssseg2e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG2E64_V:     $sformat(decoded, "vssseg2e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG3E8_V:      $sformat(decoded, "vssseg3e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG3E16_V:     $sformat(decoded, "vssseg3e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG3E32_V:     $sformat(decoded, "vssseg3e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG3E64_V:     $sformat(decoded, "vssseg3e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG4E8_V:      $sformat(decoded, "vssseg4e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG4E16_V:     $sformat(decoded, "vssseg4e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG4E32_V:     $sformat(decoded, "vssseg4e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG4E64_V:     $sformat(decoded, "vssseg4e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG5E8_V:      $sformat(decoded, "vssseg5e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG5E16_V:     $sformat(decoded, "vssseg5e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG5E32_V:     $sformat(decoded, "vssseg5e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG5E64_V:     $sformat(decoded, "vssseg5e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG6E8_V:      $sformat(decoded, "vssseg6e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG6E16_V:     $sformat(decoded, "vssseg6e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG6E32_V:     $sformat(decoded, "vssseg6e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG6E64_V:     $sformat(decoded, "vssseg6e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG7E8_V:      $sformat(decoded, "vssseg7e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG7E16_V:     $sformat(decoded, "vssseg7e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG7E32_V:     $sformat(decoded, "vssseg7e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG7E64_V:     $sformat(decoded, "vssseg7e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG8E8_V:      $sformat(decoded, "vssseg8e8.v %s, (%s), %s%s",     vs3, rs1, rs2, vm);
+    VSSSEG8E16_V:     $sformat(decoded, "vssseg8e16.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG8E32_V:     $sformat(decoded, "vssseg8e32.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+    VSSSEG8E64_V:     $sformat(decoded, "vssseg8e64.v %s, (%s), %s%s",    vs3, rs1, rs2, vm);
+
+    VSUXSEG2EI8_V:    $sformat(decoded, "vsuxseg2ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG2EI16_V:   $sformat(decoded, "vsuxseg2ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG2EI32_V:   $sformat(decoded, "vsuxseg2ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG2EI64_V:   $sformat(decoded, "vsuxseg2ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG3EI8_V:    $sformat(decoded, "vsuxseg3ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG3EI16_V:   $sformat(decoded, "vsuxseg3ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG3EI32_V:   $sformat(decoded, "vsuxseg3ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG3EI64_V:   $sformat(decoded, "vsuxseg3ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG4EI8_V:    $sformat(decoded, "vsuxseg4ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG4EI16_V:   $sformat(decoded, "vsuxseg4ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG4EI32_V:   $sformat(decoded, "vsuxseg4ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG4EI64_V:   $sformat(decoded, "vsuxseg4ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG5EI8_V:    $sformat(decoded, "vsuxseg5ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG5EI16_V:   $sformat(decoded, "vsuxseg5ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG5EI32_V:   $sformat(decoded, "vsuxseg5ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG5EI64_V:   $sformat(decoded, "vsuxseg5ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG6EI8_V:    $sformat(decoded, "vsuxseg6ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG6EI16_V:   $sformat(decoded, "vsuxseg6ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG6EI32_V:   $sformat(decoded, "vsuxseg6ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG6EI64_V:   $sformat(decoded, "vsuxseg6ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG7EI8_V:    $sformat(decoded, "vsuxseg7ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG7EI16_V:   $sformat(decoded, "vsuxseg7ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG7EI32_V:   $sformat(decoded, "vsuxseg7ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG7EI64_V:   $sformat(decoded, "vsuxseg7ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG8EI8_V:    $sformat(decoded, "vsuxseg8ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSUXSEG8EI16_V:   $sformat(decoded, "vsuxseg8ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG8EI32_V:   $sformat(decoded, "vsuxseg8ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSUXSEG8EI64_V:   $sformat(decoded, "vsuxseg8ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+
+    VSOXSEG2EI8_V:    $sformat(decoded, "vsoxseg2ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG2EI16_V:   $sformat(decoded, "vsoxseg2ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG2EI32_V:   $sformat(decoded, "vsoxseg2ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG2EI64_V:   $sformat(decoded, "vsoxseg2ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG3EI8_V:    $sformat(decoded, "vsoxseg3ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG3EI16_V:   $sformat(decoded, "vsoxseg3ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG3EI32_V:   $sformat(decoded, "vsoxseg3ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG3EI64_V:   $sformat(decoded, "vsoxseg3ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG4EI8_V:    $sformat(decoded, "vsoxseg4ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG4EI16_V:   $sformat(decoded, "vsoxseg4ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG4EI32_V:   $sformat(decoded, "vsoxseg4ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG4EI64_V:   $sformat(decoded, "vsoxseg4ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG5EI8_V:    $sformat(decoded, "vsoxseg5ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG5EI16_V:   $sformat(decoded, "vsoxseg5ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG5EI32_V:   $sformat(decoded, "vsoxseg5ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG5EI64_V:   $sformat(decoded, "vsoxseg5ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG6EI8_V:    $sformat(decoded, "vsoxseg6ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG6EI16_V:   $sformat(decoded, "vsoxseg6ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG6EI32_V:   $sformat(decoded, "vsoxseg6ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG6EI64_V:   $sformat(decoded, "vsoxseg6ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG7EI8_V:    $sformat(decoded, "vsoxseg7ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG7EI16_V:   $sformat(decoded, "vsoxseg7ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG7EI32_V:   $sformat(decoded, "vsoxseg7ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG7EI64_V:   $sformat(decoded, "vsoxseg7ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG8EI8_V:    $sformat(decoded, "vsoxseg8ei8.v %s, (%s), %s%s",   vs3, rs1, vs2, vm);
+    VSOXSEG8EI16_V:   $sformat(decoded, "vsoxseg8ei16.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG8EI32_V:   $sformat(decoded, "vsoxseg8ei32.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
+    VSOXSEG8EI64_V:   $sformat(decoded, "vsoxseg8ei64.v %s, (%s), %s%s",  vs3, rs1, vs2, vm);
 
 
+    VS1R_V:           $sformat(decoded, "vs1r.v %s, (%s)",                vs3, rs1);
+    VS2R_V:           $sformat(decoded, "vs2r.v %s, (%s)",                vs3, rs1);
+    VS4R_V:           $sformat(decoded, "vs4r.v %s, (%s)",                vs3, rs1);
+    VS8R_V:           $sformat(decoded, "vs8r.v %s, (%s)",                vs3, rs1);
 
+    VSM_V:            $sformat(decoded, "vsm.v %s, (%s)",                 vs3, rs1);
 
+    VSETVLI:          $sformat(decoded, "vsetvli %s, %s, %s, %s, %s, %s", rd, rs1, eSEW, mLMUL, ta, ma);
+    VSETIVLI:         $sformat(decoded, "vsetivli %s, %s, %s, %s, %s, %s", rd, uimm5, eSEW, mLMUL, ta, ma);
+    VSETVL:           $sformat(decoded, "vsetvl %s, %s, %s",              rd, rs1, rs2);
 
+    VANDN_VV:    $sformat(decoded, "vandn.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VANDN_VX:    $sformat(decoded, "vandn.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+    VBREV_V:     $sformat(decoded, "vbrev.v %s, %s%s", vd, vs2, vm);
+    VBREV8_V:    $sformat(decoded, "vbrev8.v %s, %s%s", vd, vs2, vm);
+    VREV8_V:     $sformat(decoded, "vrev8.v %s, %s%s", vd, vs2, vm);
+    VCLZ_V:      $sformat(decoded, "vclz.v %s, %s%s", vd, vs2, vm);
+    VCTZ_V:      $sformat(decoded, "vctz.v %s, %s%s", vd, vs2, vm);
+    VCPOP_V:     $sformat(decoded, "vcpop.v %s, %s%s", vd, vs2, vm);
+    VROL_VV:     $sformat(decoded, "vrol.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VROL_VX:     $sformat(decoded, "vrol.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+    VROR_VV:     $sformat(decoded, "vror.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VROR_VX:     $sformat(decoded, "vror.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+    VROR_VI:     $sformat(decoded, "vror.vi %s, %s, %s%s", vd, vs2, uimm5, vm); 
+    VWSLL_VV:    $sformat(decoded, "vwsll.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VWSLL_VX:    $sformat(decoded, "vwsll.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+    VWSLL_VI:    $sformat(decoded, "vwsll.vi %s, %s, %s%s", vd, vs2, uimm5, vm);      
 
+    VCLMUL_VV:   $sformat(decoded, "vclmul.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VCLMUL_VX:   $sformat(decoded, "vclmul.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+    VCLMULH_VV:  $sformat(decoded, "vclmulh.vv %s, %s, %s%s", vd, vs2, vs1, vm);
+    VCLMULH_VX:  $sformat(decoded, "vclmulh.vx %s, %s, %s%s", vd, vs2, rs1, vm);
+
+    VGHSH_VV:    $sformat(decoded, "vghsh.vv %s, %s, %s", vd, vs2, vs1);
+    VGMUL_VV:    $sformat(decoded, "vgmul.vv %s, %s", vd, vs2);
+
+    VAESDM_VV:   $sformat(decoded, "vaesdm.vv %s, %s", vd, vs2);
+    VAESDM_VS    $sformat(decoded, "vaesdm.vs %s, %s", vd, vs2);
+    VAESDF_VV:   $sformat(decoded, "vaesdf.vv %s, %s", vd, vs2);
+    VAESDF_VS:   $sformat(decoded, "vaesdf.vs %s, %s", vd, vs2);
+    VAESEM_VV:   $sformat(decoded, "vaesem.vv %s, %s", vd, vs2);
+    VAESEM_VS:   $sformat(decoded, "vaesem.vs %s, %s", vd, vs2);
+    VAESEF_VV:   $sformat(decoded, "vaesef.vv %s, %s", vd, vs2);
+    VAESEF_VS:   $sformat(decoded, "vaesef.vs %s, %s", vd, vs2);
+
+    VAESZ_VS:     $sformat(decoded, "vaesz.vs %s, %s",                vd, vs2);
+    VAESKF1_VI:   $sformat(decoded, "vaeskf1.vi %s, %s",              vd, uimm5); 
+    VAESKF2_VI:   $sformat(decoded, "vaeskf2.vi %s, %s",              vd, uimm5); 
+
+    VSHA2MS_VV:   $sformat(decoded, "vsha2ms.vv %s, %s, %s",              vd, vs2, vs1);
+    VSHA2CH_VV:   $sformat(decoded, "vsha2ch.vv %s, %s, %s",              vd, vs2, vs1);
+    VSHA2CL_VV:   $sformat(decoded, "vsha2cl.vv %s, %s, %s",              vd, vs2, vs1);
 
     default: decoded = "illegal";
   endcase
