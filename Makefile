@@ -84,7 +84,7 @@ $(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompres
 # This code is added especially for running VM SV32 tests
 # Replace --fcov with --lockstepverbose for debugging
 SV32DIR := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
-SV32OBJ = $(shell find $(SV32DIR)/*/dut -type f -name "*.$(OBJEXT)" | sort)
+SV32OBJ = $(shell find $(SV32DIR)/*/ref -type f -name "*.$(OBJEXT)" | sort)
 # "make get_vm" outputs all the available SV32 tests in cvw-arch-verif/vm_tests.sh and "make vm" runs them
 get_vm:
 	@rm -f vm_tests.sh
