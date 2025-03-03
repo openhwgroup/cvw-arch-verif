@@ -178,7 +178,7 @@ main:
     nop
     .word   0x00010013
 
-    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 10
+    // test offset[1:0] = 11, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
     addi    t1, t1, 6       # 6 mod 4 = 2, so rs1[1:0] becomes 10
     jalr    t1, t1, 7
