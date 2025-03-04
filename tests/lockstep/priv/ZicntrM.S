@@ -1,0 +1,89 @@
+///////////////////////////////////////////
+// ZicntrM.S
+//
+// Written: David_Harris@hmc.edu 27 February 2024
+//
+// Purpose: Functional coverage tests for counters in machine mode
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+///////////////////////////////////////////
+
+// General notes:
+// Use csrrw/csrrs/csrrc t6, csr, rs1    when modifying a CSR to also check the old value.
+
+#include "WALLY-init-lib.h"
+
+// define store instruction
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+       #define STORE sw
+    #else
+       #define STORE sd
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
+main:
+
+    # set up fast trap handler for uncompressed illegal instructions
+    # because Zicsr tests will throw a lot of illegal instruction traps while attempting to access CSRs
+    # This cuts the instruction count and runtime by nearly 2x
+    # However, don't blindly use this handler in other privileged tests
+    la t0, trap_handler_fastuncompressedillegalinstr
+    csrw mtvec, t0
+
+/////////////////////////////////
+// cp_mtime_write
+/////////////////////////////////
+
+    li t0, 0x80
+    csrci mstatus, 0x8   # Turn off mstatus.MIE global interrupt enable
+
+// Testing walking zeros and ones for mtime in CLINT
+    la a0, CLINT_MTIME_ADDRESS  # address if mtime register
+    jal walk
+
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        addi a0, a0, 4      # upper word of MTIME
+        jal walk
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
+
+/////////////////////////////////
+// cp_cntr_write
+/////////////////////////////////
+
+#include "ZicntrM-Walk.h"
+
+/////////////////////////////////
+// cp_cntrh_write
+/////////////////////////////////
+
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        #include "ZicntrhM-Walk.h"
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
+finished:
+    j done
+
+walk:
+    STORE zero, 0(a0)   # clear mtime
+	li t1, -1           # all 1s
+    STORE t1, 0(a0)     # set mtime
+	li t0, 1            # 1 in lsb
+1:
+    STORE t0, 0(a0)     # walking 1s
+    not t1, t0          # walking zeros
+    STORE t1, 0(a0)     # write walking 0
+	slli t0, t0, 1      # move the 1
+	bnez t0, 1b         # repeat until all bits are walked
+    ret
