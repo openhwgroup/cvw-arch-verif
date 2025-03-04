@@ -87,17 +87,25 @@ done:
 
 .align 4                # trap handlers must be aligned to multiple of 4
 trap_handler:
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop                 # nops to allow for vectored interrupts
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0, t1, and x1 on the stack
+            sd t0, 0(tp)        # Save t0, t1, and ra on the stack
             sd t1, -8(tp)
-            sd x1, -16(tp)
+            sd ra, -16(tp)
         #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0 and t1 on the stack
+            sw t0, 0(tp)        # Save t0, t1, and ra on the stack
             sw t1, -4(tp)
-            sw x1, -8(tp)
+            sw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -138,11 +146,10 @@ interrupt:              # must be a timer interrupt
     csrc mip, t0       # reset mip.SEIP
 
     li t0, 32
-    csrc mip, t0        # clear mip.STIP
-    csrrci t6, mip, 2   # clear mip.SSIP
-
-    li t0, 512          # 1 in bit 9
-    csrrc t6, mip, t0   # clear mip.SEIP
+    csrc mip, t0       # reset mip.STIP
+    csrci mip, 2       # reset mip.SSIP
+    li t0, 512              # 1 in bit 9
+    csrc mip, t0       # reset mip.SEIP
 
     j trap_return       # clean up and return
 
@@ -319,7 +326,7 @@ trap_handler_returnplus2:
     mret
 
 /////////////////////////////////
-// interrupt clearing helper functions
+// Interrupt reset routines
 /////////////////////////////////
 
 reset_msip:
@@ -373,6 +380,118 @@ reset_timer_compare:
     #endif
 
     ret
+
+/////////////////////////////////
+// Interrupt trigger routines
+/////////////////////////////////
+
+set_msip:
+    la t0, MSIP
+    lw t1, 0(t0) 
+    ori t1, t1, 1 # set lowest bit for hart 0
+    sw t1, 0(t0)
+    nop
+
+    ret
+
+cause_external_interrupt_M:
+    # set M-mode interrupt threshold to 0
+    la t0, THRESHOLD_0
+    sw zero, 0(t0)
+    
+    # set S-mode interrupt threshold to 7
+    la t0, THRESHOLD_1
+    li t1, 7
+    sw t1, 0(t0)
+
+    # give GPIO sufficient priority to trigger interrupt
+    la t0, INT_PRIORITY_3
+    li t1, 1
+    sw t1, 0(t0)
+
+    # enable interrupts from source 3 (GPIO) in M-mode
+    la t0, INT_EN_00
+    li t1, 0b1000
+    sw t1, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
+    sw t1, 0x08(t0) # enable output on pin 1
+    sw t1, 0x04(t0) # enable input on pin 1
+
+    sw zero, 0x18(t0) # clear rise enable
+    sw zero, 0x20(t0) # clear fall enable
+    sw zero, 0x28(t0) # clear high enable
+    sw zero, 0x30(t0) # clear low enable
+
+    # enable interrupts from high output
+    sw t1, 0x28(t0) # enable high interrupt for pin 1
+    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
+    nop
+
+    ret
+
+cause_external_interrupt_S:
+    # set M-mode interrupt threshold to 7
+    la t0, THRESHOLD_0
+    li t1, 7
+    sw t1, 0(t0)
+    
+    # set S-mode interrupt threshold to 0
+    la t0, THRESHOLD_1
+    sw zero, 0(t0)
+
+    # give GPIO sufficient priority to trigger interrupt
+    la t0, INT_PRIORITY_3
+    li t1, 1
+    sw t1, 0(t0)
+
+    # enable interrupts from source 3 (GPIO) in S-mode
+    la t0, INT_EN_10
+    li t1, 0b1000
+    sw t1, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
+    sw t1, 0x08(t0) # enable output on pin 1
+    sw t1, 0x04(t0) # enable input on pin 1
+
+    sw zero, 0x18(t0) # clear rise enable
+    sw zero, 0x20(t0) # clear fall enable
+    sw zero, 0x28(t0) # clear high enable
+    sw zero, 0x30(t0) # clear low enable
+
+    # enable interrupts from high output
+    sw t1, 0x28(t0) # enable high interrupt for pin 1
+    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
+    nop
+
+    ret
+
+cause_timer_interrupt_now:
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+                la t0, MTIME
+                ld t0, 0(t0)                    # read MTIME
+                la t1, MTIMECMP
+                sw t0, 0(t1)  # set MTIMECMP = MTIME to cause timer interrupt
+        #elif __riscv_xlen == 32
+                la t0, MTIME
+                lw t1, 0(t0)                    # low word of MTIME
+                lw t2, 4(t0)                    # high word of MTIME
+                la t3, MTIMECMP
+                la t4, MTIMECMPH
+                sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
+                sw t2, 0(t4)         # MTIMECMP high word = MTIME high word
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    nop
+    ret
+
 
 // utility routines
 

@@ -165,7 +165,8 @@ cp_trigger_sei_sie:
 
 /////////////////////////////////
 // cp_interrupts
-/*
+/////////////////////////////////
+
 cp_interrupts:
 
     li s0, 1 # set up indices for loops
@@ -176,7 +177,7 @@ cp_interrupts:
 
     for_mstatus_interrupts:
         slli s0, s0, 3
-        csrrw t6, mstatus, t0   # either set or clear mstatus.MIE
+        csrrw t6, mstatus, s0   # either set or clear mstatus.MIE
         srli s0, s0, 3
         li s1, 3
 
@@ -218,8 +219,8 @@ cp_interrupts:
             
             bnez s1, for_mie_interrupts
         
-        srli s0, s0, 1
-        bnez s0, for_mstatus_interrupts        
+        addi s0, s0, -1
+        beqz s0, for_mstatus_interrupts        
 
 /////////////////////////////////
 // cp_vectored
@@ -227,7 +228,7 @@ cp_interrupts:
 
 cp_vectored:
 
-    csrrci t6, mtvec, 3
+    csrrci t6, mtvec, 3 
     csrrsi t6, mtvec, 1 # mtvec.MODE = 01
 
     csrrsi t6, mstatus, 8 # mstatus.MIE = 1
@@ -271,113 +272,70 @@ cp_vectored:
 
         for_mip_end_vectored:
             bnez s2, for_mip_vectored
-*/
+
+/////////////////////////////////
+// cp_priority
+/////////////////////////////////
+
+cp_priority:
+
+    csrrsi t6, mstatus, 8 # mstatus.MIE = 1
+
+    li s1, 8
+
+    for_mie_priority:
+
+        li t0, 0
+        li t1, 0
+        li s3, 0
+
+        addi s1, s1, -1
+        srli t0, s1, 2
+        andi t0, t0, 1  # mask off bit 2
+        slli t0, t0, 11 # set mie.MEIE based on bit 2 value
+        or s3, s3, t0
+
+        srli t0, s1, 1
+        andi t0, t0, 1  # mask off bit 1
+        slli t0, t0, 7  # set mie.MTIE based on bit 1 value
+        or s3, s3, t0 
+
+        andi t0, s1, 1  # mask off bit 0
+        slli t0, t0, 3  # set mie.MTIE based on bit 1 value
+        or s3, s3, t0 
+
+        li s2, 8
+
+        for_mip_priority:
+
+            addi s2, s2, -1
+            srli t0, s2, 2
+            andi t0, t0, 1  # mask off bit 2
+            beqz t0, next_case1_priority # set mie.MEIP based on s2 bit 2 value
+            jal cause_external_interrupt_M
+
+            next_case1_priority:
+            srli t0, s2, 1
+            andi t0, t0, 1  # mask off bit 1
+            beqz t0, next_case0_priority # set mie.MTIP based on s2 bit 1 value
+            jal cause_timer_interrupt_now
+
+            next_case0_priority:
+            andi t0, s2, 1  # mask off bit 0
+            beqz t0, for_mip_end_priority # set mie.MSIP based on s2 bit 0 value
+            jal set_msip
+
+            for_mip_end_priority:
+            csrrw t6, mie, s3   # once all interrupts are pending, enable all relevant interrupts at once
+            nop
+            jal reset_external_interrupts
+            jal reset_timer_compare
+            jal reset_msip
+
+            bnez s2, for_mip_priority
+
+        li t1, -1
+        csrrc t6, mie, t1 # clear all interrupt enables to start fresh
+        bnez s1, for_mie_priority
 
 j done
-
-set_msip:
-    la t0, MSIP
-    lw t1, 0(t0) 
-    ori t1, t1, 1 # set lowest bit for hart 0
-    sw t1, 0(t0)
-    nop
-
-    ret
-
-cause_external_interrupt_M:
-    # set M-mode interrupt threshold to 0
-    la t0, THRESHOLD_0
-    sw zero, 0(t0)
-    
-    # set S-mode interrupt threshold to 7
-    la t0, THRESHOLD_1
-    li t1, 7
-    sw t1, 0(t0)
-
-    # give GPIO sufficient priority to trigger interrupt
-    la t0, INT_PRIORITY_3
-    li t1, 1
-    sw t1, 0(t0)
-
-    # enable interrupts from source 3 (GPIO) in M-mode
-    la t0, INT_EN_00
-    li t1, 0b1000
-    sw t1, 0(t0)
-
-    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
-    la t0, GPIO_BASE_ADDR
-    li t1, 1
-    sw t1, 0x08(t0) # enable output on pin 1
-    sw t1, 0x04(t0) # enable input on pin 1
-
-    sw zero, 0x18(t0) # clear rise enable
-    sw zero, 0x20(t0) # clear fall enable
-    sw zero, 0x28(t0) # clear high enable
-    sw zero, 0x30(t0) # clear low enable
-
-    # enable interrupts from high output
-    sw t1, 0x28(t0) # enable high interrupt for pin 1
-    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
-    nop
-
-    ret
-
-cause_external_interrupt_S:
-    # set M-mode interrupt threshold to 7
-    la t0, THRESHOLD_0
-    li t1, 7
-    sw t1, 0(t0)
-    
-    # set S-mode interrupt threshold to 0
-    la t0, THRESHOLD_1
-    sw zero, 0(t0)
-
-    # give GPIO sufficient priority to trigger interrupt
-    la t0, INT_PRIORITY_3
-    li t1, 1
-    sw t1, 0(t0)
-
-    # enable interrupts from source 3 (GPIO) in S-mode
-    la t0, INT_EN_10
-    li t1, 0b1000
-    sw t1, 0(t0)
-
-    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
-    la t0, GPIO_BASE_ADDR
-    li t1, 1
-    sw t1, 0x08(t0) # enable output on pin 1
-    sw t1, 0x04(t0) # enable input on pin 1
-
-    sw zero, 0x18(t0) # clear rise enable
-    sw zero, 0x20(t0) # clear fall enable
-    sw zero, 0x28(t0) # clear high enable
-    sw zero, 0x30(t0) # clear low enable
-
-    # enable interrupts from high output
-    sw t1, 0x28(t0) # enable high interrupt for pin 1
-    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
-    nop
-
-    ret
-
-cause_timer_interrupt_now:
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-                la t0, MTIME
-                ld t0, 0(t0)                    # read MTIME
-                la t1, MTIMECMP
-                sw t0, 0(t1)  # set MTIMECMP = MTIME to cause timer interrupt
-        #elif __riscv_xlen == 32
-                la t0, MTIME
-                lw t1, 0(t0)                    # low word of MTIME
-                lw t2, 4(t0)                    # high word of MTIME
-                la t3, MTIMECMP
-                la t4, MTIMECMPH
-                sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
-                sw t2, 0(t4)         # MTIMECMP high word = MTIME high word
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    nop
-    ret
