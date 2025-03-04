@@ -37,6 +37,9 @@
 //  3: change to machine mode
 //  4: terminate program
 
+//Macros
+#define ACCESS_FAULT_ADDRESS 0
+
 .section .text.init
 .global rvtest_entry_point
 
@@ -145,55 +148,72 @@ interrupt:              # must be a timer interrupt
 
 exception:
     csrr t0, mcause
-    li t1, 8            # is it an ecall trap?
-    andi t0, t0, 0xFC # if CAUSE = 8, 9, or 11
-    bne t0, t1, trap_return # ignore other exceptions
+    li t1, 8                 # is it an ecall trap?
+    andi t0, t0, 0xFC        # if CAUSE = 8, 9, or 11
+    bne t0, t1, trap_return  # ignore other exceptions
 
 ecall:
     li t0, 4
-    beq a0, t0, write_tohost    # call 4: terminate program
+    beq a0, t0, write_tohost        # call 4: terminate program
     bltu a0, t0, changeprivilege    # calls 0-3: change privilege level
-    j trap_return       # ignore other ecalls
+    j trap_return                   # ignore other ecalls
 
 changeprivilege:
-    li t0, 0x00001800   # mask off mstatus.MPP in bits 11-12
+    li t0, 0x00001800    # mask off mstatus.MPP in bits 11-12
     csrc mstatus, t0
-    andi a0, a0, 0x003  # only keep bottom two bits of argument
-    slli a0, a0, 11     # move into mstatus.MPP position
-    csrs mstatus, a0    # set mstatus.MPP with desired privilege
+    andi a0, a0, 0x003   # only keep bottom two bits of argument
+    slli a0, a0, 11      # move into mstatus.MPP position
+    csrs mstatus, a0     # set mstatus.MPP with desired privilege
 
-trap_return:            # return from trap handler
-    csrr t0, mepc  # get address of instruction that caused exception
+trap_return:             # return from trap handler
+
+    # First, check if the exception was an Instruction Access Fault
+    csrr  t1, mcause              # t1 = exception cause
+    addi  t1, t1, -1              # Exception cause code 1 means Instruction Access Fault
+    bne   t1, x0, mepc_ret_addr   # If not an IAF, skip ra load
+    mv t0, ra 
+    j post_ret_mepc               #Use ra instead of mepc if IAF
+mepc_ret_addr:
+    csrr t0, mepc       # get address of instruction that caused exception if not an IAF
+post_ret_mepc:
     li t1, 0x20000
     csrs mstatus, t1    # set mprv bit to fetch instruction with permission of code that trapped
-    lh t0, 0(t0)   # get instruction that caused exception
+    lh t0, 0(t0)        # get instruction that caused exception
     csrc mstatus, t1    # clear mprv bit to restore normal operation
     li t1, 3
-    and t0, t0, t1  # mask off upper bits
-    beq t0, t1, instr32  # if lower 2 bits are 11, instruction is uncompresssed
-    li t0, 2        # increment PC by 2 for compressed instruction
+    and t0, t0, t1      # mask off upper bits
+    beq t0, t1, instr32 # if lower 2 bits are 11, instruction is uncompresssed
+    li t0, 2            # increment PC by 2 for compressed instruction
     j updateepc
 instr32:
     li t0, 4
 updateepc:
-    csrr t1, mepc   # add 2 or 4 (from t0) to MEPC to determine return Address
-    add t1, t1, t0
+    # First, check if the exception was an Instruction Access Fault
+    csrr   t1, mcause            # t1 = exception cause
+    addi   t1, t1, -1            # Exception cause code 1 means Instruction Access Fault
+    bne    t1, x0, mepc_up_addr  # If not an IAF, skip ra load
+    mv t0, ra 
+    j post_up_mepc               #Use ra instead of mepc (skips next instruction)
+mepc_up_addr:
+    csrr t1, mepc        
+post_up_mepc:
+    add t1, t1, t0               # add 2 or 4 (from t0) to MEPC to determine return Address
     csrw mepc, t1
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            ld t0, 0(tp)        # Restore t0 and t1
+            ld t0, 0(tp)         # Restore t0 and t1
             ld t1, -8(tp)
             ld ra, -16(tp)
         #elif __riscv_xlen == 32
-            lw t0, 0(tp)        # Restore t0 and t1
+            lw t0, 0(tp)         # Restore t0 and t1
             lw t1, -4(tp)
             lw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
-    csrrw tp, mscratch, tp  # restore tp
-    mret                # return from trap
+    csrrw tp, mscratch, tp   # restore tp
+    mret                     # return from trap
 
 write_tohost:
     la t1, tohost

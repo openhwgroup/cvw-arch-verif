@@ -42,7 +42,7 @@ UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 # Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
 # See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
-PRIV_HEADERS  = Zicsr-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
+PRIV_HEADERS  = ZicsrM-CSR-Tests.h ZicsrS-CSR-Tests.h ZicsrU-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
@@ -71,7 +71,11 @@ selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
 	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
-$(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+$(PRIVHEADERSDIR)/ZicsrM-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+	bin/csrtests.py
+$(PRIVHEADERSDIR)/ZicsrS-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+	bin/csrtests.py
+$(PRIVHEADERSDIR)/ZicsrU-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 
 $(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
@@ -80,7 +84,7 @@ $(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompres
 # This code is added especially for running VM SV32 tests
 # Replace --fcov with --lockstepverbose for debugging
 SV32DIR := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
-SV32OBJ = $(shell find $(SV32DIR)/*/dut -type f -name "*.$(OBJEXT)" | sort)
+SV32OBJ = $(shell find $(SV32DIR)/*/ref -type f -name "*.$(OBJEXT)" | sort)
 # "make get_vm" outputs all the available SV32 tests in cvw-arch-verif/vm_tests.sh and "make vm" runs them
 get_vm:
 	@rm -f vm_tests.sh

@@ -38,7 +38,9 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     // csr is similar to in ZicsrM, but also exercises custom/debug machine mode CSRs, which should trap from supervisor level
     csr: coverpoint ins.current.insn[31:20]  {
         bins user_std0[] = {[12'h000:12'h0FF]};
-        bins super_std0[] = {[12'h100:12'h1FF]};
+        bins super_std0[] = {[12'h100:12'h17F]};
+        bins satp = {12'h180};
+        bins super_std02[] = {[12'h181:12'h1FF]};
         bins hyper_std0[] = {[12'h200:12'h2FF]};
         bins mach_std0[] = {[12'h300:12'h3FF]};
         bins user_std1[] = {[12'h400:12'h4FF]};
@@ -66,14 +68,10 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
         bins mach_std3[] = {[12'hF00:12'hFBF]};
         bins mach_custom3[] = {[12'hFC0:12'hFFF]};
     }
-    csr_no_satp: coverpoint ins.current.insn[31:20]  {
-        bins all[] = {[0:$]};
-        ignore_bins satp = {12'h180};
-    }
-    priv_mode_s: coverpoint ins.current.mode {
+    old_priv_mode_s: coverpoint ins.prev.mode {
         bins S_mode = {2'b01};
     }
-    priv_mode_m: coverpoint ins.current.mode {
+    old_priv_mode_m: coverpoint ins.prev.mode {
         bins M_mode = {2'b11};
     }
     rs1_ones: coverpoint ins.current.rs1_val {
@@ -316,13 +314,18 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
-    cp_csrw_corners: cross csrrw,   csr_no_satp, priv_mode_s, rs1_corners;   
-    cp_csrcs:        cross csrop,   csr_no_satp, priv_mode_s, rs1_ones;    
-    cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
-    cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
-    cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
-    cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
+    cp_csrr:         cross csrr,    csr,         old_priv_mode_s, nonzerord;             
+    cp_csrw_corners: cross csrrw,   csr, old_priv_mode_s, rs1_corners {
+        ignore_bins satp = binsof(csr.satp);
+    }
+    
+    cp_csrcs:        cross csrop,   csr, old_priv_mode_s, rs1_ones {
+        ignore_bins satp = binsof(csr.satp);
+    }
+    cp_scsrwalk:     cross csrname, csrop,       old_priv_mode_s, walking_ones;
+    cp_satp:         cross csrop,   satp,        old_priv_mode_s, satp_walking;
+    cp_shadow_m:     cross csrrw,   mcsrs,       old_priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
+    cp_shadow_s:     cross csrrw,   scsrs,       old_priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
 covergroup ZicsrS_scause_cg with function sample(ins_t ins);
@@ -437,8 +440,8 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     old_priv_mode_s: coverpoint ins.prev.mode { 
        bins S_mode = {2'b01};
     }
-    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
-    }
+    // old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
+    // }
     old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
     }
     old_sstatus_spp: coverpoint ins.prev.csr[12'h100][8] {
@@ -450,7 +453,7 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     // main coverpoints
     cp_mprivinst: cross privinstrs, old_priv_mode_s;
     cp_mret:      cross mret,       old_priv_mode_s;
-    cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_mprv, old_mstatus_tsr;
+    cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);
