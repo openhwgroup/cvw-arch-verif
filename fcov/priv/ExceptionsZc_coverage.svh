@@ -74,9 +74,10 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
         `endif
     }
 
+    //Lower 3 bits of the register x2 (sp register)
     sp_LSBs: coverpoint ins.current.x_wdata[2][2:0] {
-        // autofill 000 - 111               ^   ^~~~~~~~~~~ bits 2:0
-    }   //                                  ^~~~~~~~~~~~~ register number 2
+        // autofill 000 - 111               
+    }   //                                  
 
     adr_LSBs: coverpoint {ins.current.rs1_val + ins.current.imm}[2:0]  {
         // auto fills 000 through 111

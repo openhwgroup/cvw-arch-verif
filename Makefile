@@ -84,7 +84,7 @@ $(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompres
 # This code is added especially for running VM SV32 tests
 # Replace --fcov with --lockstepverbose for debugging
 SV32DIR := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
-SV32OBJ = $(shell find $(SV32DIR)/*/dut -type f -name "*.$(OBJEXT)" | sort)
+SV32OBJ = $(shell find $(SV32DIR)/*/ref -type f -name "*.$(OBJEXT)" | sort)
 # "make get_vm" outputs all the available SV32 tests in cvw-arch-verif/vm_tests.sh and "make vm" runs them
 get_vm:
 	@rm -f vm_tests.sh
@@ -140,7 +140,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(LOCKSTEPDIR)/priv/rv64/ExceptionsZc.elf --lockstepverbose --fcov --define "+define+FCOV_VERBOSE"> lockstepverbose.log
+	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 	$(MAKE) merge
 
 # Merge coverage files and generate report
