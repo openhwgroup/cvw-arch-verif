@@ -200,3 +200,6 @@
 `ifdef INTERRUPTSU_COVERAGE
   `include "InterruptsU_coverage.svh"
 `endif
+`ifdef INTERRUPTSSSTC_COVERAGE
+  `include "InterruptsSstc_coverage.svh"
+`endif
