@@ -102,7 +102,7 @@ ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
 ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)
 ZCF_FLAG = $(if $(findstring /Zcf, $(dir $<)),_zcf,)
-ZCB_ExceptionsZc_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),_zcb,)
+ZCB_ExceptionsZc_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),_zcb_c,)
 CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)$(ZCB_ExceptionsZc_FLAG)
 
 # Set bitwidth and ABI based on XLEN for each test
@@ -120,7 +120,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_c_zihintpause -mabi=$(MABI) -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)g$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
 #    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DSIGNATURE=1 $<   # for signature generation
 	$(MAKE) $@.objdump $@.memfile
