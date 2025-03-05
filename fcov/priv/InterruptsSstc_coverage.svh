@@ -69,8 +69,8 @@ covergroup InterruptsSstc_cg with function sample(ins_t ins);
     csrr: coverpoint ins.current.insn[6:0] {
         wildcard bins csrr = {7'b1110011}; 
     }
-    write_stimecmp: coverpoint ins.current.insn[31:20] {
-        bins write_stimecmp = {12'h14D};
+    read_stimecmp: coverpoint ins.current.insn[31:20] {
+        bins read_stimecmp = {12'h14D};
     }
     priv_mode_m: coverpoint ins.current.mode {
         bins M_mode = {2'b11};
@@ -84,14 +84,14 @@ covergroup InterruptsSstc_cg with function sample(ins_t ins);
 
     // main coverpoints
     cp_machine_sti:     cross priv_mode_m, menvcfg_stce_one, mstatus_mie_one, mideleg_sti, mie_stie, stimecmp_zero;
-    cp_machine_tm:      cross priv_mode_m, csrr, write_stimecmp, mcounteren_tm;
-    cp_machine_stce:    cross priv_mode_m, csrr, write_stimecmp, menvcfg_stce;
+    cp_machine_tm:      cross priv_mode_m, csrr, read_stimecmp, mcounteren_tm;
+    cp_machine_stce:    cross priv_mode_m, csrr, read_stimecmp, menvcfg_stce;
     cp_supervisor_sti:  cross priv_mode_s, menvcfg_stce, mstatus_mie, mstatus_sie, mideleg_sti, mie_stie, stimecmp_zero;
-    cp_supervisor_tm:   cross priv_mode_s, csrr, write_stimecmp, mcounteren_tm;
-    cp_supervisor_stce: cross priv_mode_s, csrr, write_stimecmp, menvcfg_stce;
+    cp_supervisor_tm:   cross priv_mode_s, csrr, read_stimecmp, mcounteren_tm;
+    cp_supervisor_stce: cross priv_mode_s, csrr, read_stimecmp, menvcfg_stce;
     cp_user_sti:        cross priv_mode_u, menvcfg_stce, mstatus_mie, mstatus_sie, mideleg_sti, mie_stie, sip_stip_one;
-    cp_user_tm:         cross priv_mode_u, csrr, write_stimecmp, mcounteren_tm;
-    cp_user_stce:       cross priv_mode_u, csrr, write_stimecmp, menvcfg_stce;
+    cp_user_tm:         cross priv_mode_u, csrr, read_stimecmp, mcounteren_tm;
+    cp_user_stce:       cross priv_mode_u, csrr, read_stimecmp, menvcfg_stce;
 
 endgroup
 
