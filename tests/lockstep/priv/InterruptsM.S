@@ -122,7 +122,6 @@ cp_trigger_ssi_mip:
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     csrrsi t6, mip, 2       # set mip.SSIP, expect interrupt
-    nop
 
 /////////////////////////////////
 // cp_trigger_sei_plic
@@ -142,7 +141,6 @@ cp_trigger_sei_plic:
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     li a3, 0x10
     jal cause_external_interrupt_S
-    nop
 
 /////////////////////////////////
 // cp_trigger_sei_sie
@@ -161,7 +159,6 @@ cp_trigger_sei_sie:
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
     csrrs t6, mip, t0       # set mip.SEIP, expect interrupt
-    nop
 
 /////////////////////////////////
 // cp_interrupts
@@ -327,7 +324,6 @@ cp_priority:
 
             for_mip_end_priority:
             csrrw t6, mie, s3   # once all interrupts are pending, enable all relevant interrupts at once
-            nop
             jal reset_external_interrupts
             jal reset_timer_compare
             jal reset_msip
