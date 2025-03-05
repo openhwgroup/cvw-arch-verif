@@ -43,6 +43,24 @@
 .section .text.init
 .global rvtest_entry_point
 
+#define CLINT_BASE_ADDR 0x02000000
+#define PLIC_BASE_ADDR 0x0C000000
+#define GPIO_BASE_ADDR 0x10060000
+
+#define MTIME           (CLINT_BASE_ADDR + 0xBFF8)
+#define MSIP            (CLINT_BASE_ADDR)
+#define MTIMECMP        (CLINT_BASE_ADDR + 0x4000)
+#define MTIMECMPH       (CLINT_BASE_ADDR + 0x4004)
+
+#define THRESHOLD_0     (PLIC_BASE_ADDR + 0x200000)
+#define THRESHOLD_1     (PLIC_BASE_ADDR + 0x201000)
+#define INT_PRIORITY_3  (PLIC_BASE_ADDR + 0x00000C)
+#define INT_EN_00       (PLIC_BASE_ADDR + 0x002000)
+#define INT_EN_10       (PLIC_BASE_ADDR + 0x002080)
+
+#define GPIO_OUTPUT_EN  (GPIO_BASE_ADDR + 0x08)
+#define GPIO_OUTPUT_VAL (GPIO_BASE_ADDR + 0x0C)
+
 rvtest_entry_point:
     la sp, topofstack       # Initialize stack pointer (not used)
 
@@ -67,17 +85,32 @@ done:
     ecall               # system call to finish program
     j self_loop         # wait forever (not taken)
 
-.align 4                # trap handlers must be aligned to multiple of 4
+.align 8                # trap handlers aligned to multiple of 2^8
 trap_handler:
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop                 # nops to allow for vectored interrupts
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0 and t1 on the stack
+            sd t0, 0(tp)        # Save t0, t1, and ra on the stack
             sd t1, -8(tp)
+            sd ra, -16(tp)
         #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0 and t1 on the stack
+            sw t0, 0(tp)        # Save t0, t1, and ra on the stack
             sw t1, -4(tp)
+            sw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -86,7 +119,7 @@ trap_handler:
     csrr t1, mtval      # And the trap value
     bgez t0, exception  # if msb is clear, it is an exception
 
-interrupt:              # must be a timer interrupt
+interrupt:              # must be an interrupt
     li t0, -1           # set mtimecmp to biggest number so it doesnt interrupt again
     li t1, 0x02004000   # MTIMECMP in CLINT
     #ifdef __riscv_xlen
@@ -108,21 +141,28 @@ interrupt:              # must be a timer interrupt
     #else
         ERROR: __riscv_xlen not defined
     #endif
+
+    jal reset_msip
+    jal reset_external_interrupts
     li t0, 32
-    csrc sip, t0        # clears stimer interrupt
+    csrc mip, t0       # reset mip.STIP
+    csrci mip, 2       # reset mip.SSIP
+    li t0, 512              # 1 in bit 9
+    csrc mip, t0       # reset mip.SEIP
+
     j trap_return       # clean up and return
 
 exception:
     csrr t0, mcause
     li t1, 8                 # is it an ecall trap?
     andi t0, t0, 0xFC        # if CAUSE = 8, 9, or 11
-    bne t0, t1, trap_return  # ignore other exceptions
+    bne t0, t1, exception_return  # ignore other exceptions
 
 ecall:
     li t0, 4
     beq a0, t0, write_tohost        # call 4: terminate program
     bltu a0, t0, changeprivilege    # calls 0-3: change privilege level
-    j trap_return                   # ignore other ecalls
+    j exception_return                   # ignore other ecalls
 
 changeprivilege:
     li t0, 0x00001800    # mask off mstatus.MPP in bits 11-12
@@ -131,8 +171,7 @@ changeprivilege:
     slli a0, a0, 11      # move into mstatus.MPP position
     csrs mstatus, a0     # set mstatus.MPP with desired privilege
 
-trap_return:             # return from trap handler
-
+exception_return:             # add 2 or 4 to mepc for exceptions except Instruction Access Fault
     # First, check if the exception was an Instruction Access Fault
     csrr  t1, mcause              # t1 = exception cause
     addi  t1, t1, -1              # Exception cause code 1 means Instruction Access Fault
@@ -165,13 +204,16 @@ mepc_up_addr:
 post_up_mepc:
     add t1, t1, t0               # add 2 or 4 (from t0) to MEPC to determine return Address
     csrw mepc, t1
+trap_return:                     # don't need to update mepc for interrupts
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            ld t0, 0(tp)         # Restore t0 and t1
+            ld t0, 0(tp)         # Restore t0, t1, and ra
             ld t1, -8(tp)
+            ld ra, -16(tp)
         #elif __riscv_xlen == 32
-            lw t0, 0(tp)         # Restore t0 and t1
+            lw t0, 0(tp)         # Restore t0, t1, and ra
             lw t1, -4(tp)
+            lw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -211,9 +253,11 @@ trap_handler_fastuncompressedillegalinstr:
         #if __riscv_xlen == 64
             sd t0, 0(tp)        # Save t0 and t1 on the stack
             sd t1, -8(tp)
+            sd ra, -16(tp)
         #elif __riscv_xlen == 32
             sw t0, 0(tp)        # Save t0 and t1 on the stack
             sw t1, -4(tp)
+            sw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -238,11 +282,13 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     csrw mepc, t0
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            ld t0, 0(tp)        # Restore t0 and t1
+            ld t0, 0(tp)        # Restore t0, t1, and ra
             ld t1, -8(tp)
+            ld ra, -16(tp)
         #elif __riscv_xlen == 32
-            lw t0, 0(tp)        # Restore t0 and t1
+            lw t0, 0(tp)        # Restore t0, t1, and ra
             lw t1, -4(tp)
+            lw ra, -8(tp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -277,6 +323,169 @@ trap_handler_returnplus2:
     addi t0, t0, 2
     csrw mepc, t0
     mret
+
+/////////////////////////////////
+// Interrupt reset routines
+/////////////////////////////////
+
+reset_msip:
+    la t0, MSIP
+    lw t1, 0(t0) 
+    andi t1, t1, -2 # clear lowest bit for hart 0 while preserving all other bits
+    sw t1, 0(t0)
+
+    ret
+
+reset_external_interrupts:
+    # set M-mode interrupt threshold to 7
+    la t0, THRESHOLD_0
+    li t1, 7
+    sw t1, 0(t0)
+    
+    # set S-mode interrupt threshold to 7
+    la t0, THRESHOLD_1
+    li t1, 7
+    sw t1, 0(t0)
+
+    # disable GPIO's sufficient priority to trigger interrupt
+    la t0, INT_PRIORITY_3
+    sw zero, 0(t0)
+
+    # disable interrupts from source 3 (GPIO) in M-mode
+    la t0, INT_EN_00
+    sw zero, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    sw zero, 0x18(t0) # clear rise
+    sw zero, 0x20(t0) # clear fall
+    sw zero, 0x28(t0) # clear high
+    sw zero, 0x30(t0) # clear low
+
+    ret
+
+reset_timer_compare:
+    li t0, -1               # all 1s
+    la t1, MTIMECMP
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            sw t0, 0(t1)
+            sw t0, 4(t1)         # ignore if it doesn't exist
+        #elif __riscv_xlen == 64
+            sd t0, 0(t1)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
+
+/////////////////////////////////
+// Interrupt trigger routines
+/////////////////////////////////
+
+set_msip:
+    la t0, MSIP
+    lw t1, 0(t0) 
+    ori t1, t1, 1 # set lowest bit for hart 0
+    sw t1, 0(t0)
+
+    ret
+
+cause_external_interrupt_M:
+    # set M-mode interrupt threshold to 0
+    la t0, THRESHOLD_0
+    sw zero, 0(t0)
+    
+    # set S-mode interrupt threshold to 7
+    la t0, THRESHOLD_1
+    li t1, 7
+    sw t1, 0(t0)
+
+    # give GPIO sufficient priority to trigger interrupt
+    la t0, INT_PRIORITY_3
+    li t1, 1
+    sw t1, 0(t0)
+
+    # enable interrupts from source 3 (GPIO) in M-mode
+    la t0, INT_EN_00
+    li t1, 0b1000
+    sw t1, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
+    sw t1, 0x08(t0) # enable output on pin 1
+    sw t1, 0x04(t0) # enable input on pin 1
+
+    sw zero, 0x18(t0) # clear rise enable
+    sw zero, 0x20(t0) # clear fall enable
+    sw zero, 0x28(t0) # clear high enable
+    sw zero, 0x30(t0) # clear low enable
+
+    # enable interrupts from high output
+    sw t1, 0x28(t0) # enable high interrupt for pin 1
+    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
+
+    ret
+
+cause_external_interrupt_S:
+    # set M-mode interrupt threshold to 7
+    la t0, THRESHOLD_0
+    li t1, 7
+    sw t1, 0(t0)
+    
+    # set S-mode interrupt threshold to 0
+    la t0, THRESHOLD_1
+    sw zero, 0(t0)
+
+    # give GPIO sufficient priority to trigger interrupt
+    la t0, INT_PRIORITY_3
+    li t1, 1
+    sw t1, 0(t0)
+
+    # enable interrupts from source 3 (GPIO) in S-mode
+    la t0, INT_EN_10
+    li t1, 0b1000
+    sw t1, 0(t0)
+
+    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
+    sw t1, 0x08(t0) # enable output on pin 1
+    sw t1, 0x04(t0) # enable input on pin 1
+
+    sw zero, 0x18(t0) # clear rise enable
+    sw zero, 0x20(t0) # clear fall enable
+    sw zero, 0x28(t0) # clear high enable
+    sw zero, 0x30(t0) # clear low enable
+
+    # enable interrupts from high output
+    sw t1, 0x28(t0) # enable high interrupt for pin 1
+    sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
+
+    ret
+
+cause_timer_interrupt_now:
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 64
+                la t0, MTIME
+                ld t0, 0(t0)                    # read MTIME
+                la t1, MTIMECMP
+                sd t0, 0(t1)  # set MTIMECMP = MTIME to cause timer interrupt
+        #elif __riscv_xlen == 32
+                la t0, MTIME
+                lw t1, 0(t0)                    # low word of MTIME
+                lw t2, 4(t0)                    # high word of MTIME
+                la t3, MTIMECMP
+                sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
+                sw t2, 4(t3)         # MTIMECMP high word = MTIME high word
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    ret
+
 
 // utility routines
 
