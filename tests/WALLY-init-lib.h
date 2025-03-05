@@ -478,9 +478,8 @@ cause_timer_interrupt_now:
                 lw t1, 0(t0)                    # low word of MTIME
                 lw t2, 4(t0)                    # high word of MTIME
                 la t3, MTIMECMP
-                la t4, MTIMECMPH
                 sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
-                sw t2, 0(t4)         # MTIMECMP high word = MTIME high word
+                sw t2, 4(t3)         # MTIMECMP high word = MTIME high word
         #endif
     #else
         ERROR: __riscv_xlen not defined
