@@ -61,13 +61,14 @@ def csrtests(pathname, skipCsrs):
     outfile.close
 # setup
 seed(0) # make tests reproducible
+
 # generate repetitive assembly language tests
+
 # writable registers to test with walking 1s and 0s
 
 def mcounterenwalku(pathname, regs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
-    
     # Write walking 1s and 0s to mcounteren
     print("\n// Testing walking zeros and ones for CSR mcounteren")
     print("\tcsrr s0, mcounteren\t# save mcounteren")
@@ -83,12 +84,10 @@ def mcounterenwalku(pathname, regs):
     print("\tslli t0, t0, 1      # walk the 1")
     print("\tbnez t0, 1b         # repeat until all bits are walked")
     print("\tcsrrw t6, mcounteren, s0    # restore mcounteren")
-    
     # Switch to U-mode for testing
     print("\n// Switching to U-mode for counter accessibility test")
     print("\tli a0, 0")
     print("\tecall    # Ensure U-mode is set")
-    
     # Test accessibility of counters based on mcounteren in U-mode
     for reg in regs:
         if reg == "satp":  # Special case to avoid accidentally turning on vmem
@@ -116,7 +115,6 @@ def mcounterenwalku(pathname, regs):
 def mcounterenwalk(pathname, regs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
-    
     # Write walking 1s and 0s to mcounteren
     print("\n// Testing walking zeros and ones for CSR mcounteren")
     print("\tcsrr s0, mcounteren\t# save mcounteren")
@@ -132,7 +130,7 @@ def mcounterenwalk(pathname, regs):
     print("\tslli t0, t0, 1      # walk the 1")
     print("\tbnez t0, 1b         # repeat until all bits are walked")
     print("\tcsrrw t6, mcounteren, s0    # restore mcounteren")
-
+    # Test accessibility of counters based on mcounteren in U-mode
     for reg in regs:
         if reg == "satp":  # Special case to avoid accidentally turning on vmem
             continue
