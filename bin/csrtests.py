@@ -22,13 +22,13 @@ def csrwalk(pathname, regs):
         print("\tcsrr s0, "+reg+"\t# save CSR")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
-        print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
-        print("\tcsrrs t6, "+reg+", t0    # set walking 1")
+        print("\t1: csrrc t6, " + reg + ", t1    # clear all bits")
+        print("\tcsrrs t6, " + reg + ", t0    # set walking 1")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tli t0, 1            # 1 in lsb")
-        print("1:  csrrs t6, "+reg+", t1    # set all bits")
-        print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
+        print("1:  csrrs t6, " + reg + ", t1    # set all bits")
+        print("\tcsrrc t6, " + reg + ", t0    # clear walking 1")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
@@ -194,7 +194,7 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs + ["satp"])
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs);
+csrwalk(pathname, csrsregs + csruregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs)
