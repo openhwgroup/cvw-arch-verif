@@ -37,6 +37,7 @@ main:
 
 /////////////////////////////////
 // cp_trigger_mti
+// With mstatus.MIE = {0/1}, and mie = 1s, use MTIMECMP to cause mip.MTIP to rise
 /////////////////////////////////
 
 cp_trigger_mti:
@@ -54,6 +55,7 @@ cp_trigger_mti:
 
 /////////////////////////////////
 // cp_trigger_msi
+// With mstatus.MIE = {0/1}, and mie = 1s, use CLINT.MSIP to cause mip.MSIP to rise
 /////////////////////////////////
 
 cp_trigger_msi:
@@ -71,6 +73,7 @@ cp_trigger_msi:
 
 /////////////////////////////////
 // cp_trigger_mei
+// With mstatus.MIE = {0/1}, and mie = 1s, use PLIC or other EIC to cause mip.MEIP to rise
 /////////////////////////////////
 
 cp_trigger_mei:
@@ -90,6 +93,7 @@ cp_trigger_mei:
 
 /////////////////////////////////
 // cp_trigger_sti
+// With mstatus.MIE = {0/1}, and mie = 1s, write mip.STIP 
 /////////////////////////////////
 
 cp_trigger_sti:
@@ -108,6 +112,7 @@ cp_trigger_sti:
 
 /////////////////////////////////
 // cp_trigger_ssi_mip
+// With mstatus.MIE = {0/1}, and mie = 1s, write mip.SSIP
 /////////////////////////////////
 
 cp_trigger_ssi_mip:
@@ -125,6 +130,7 @@ cp_trigger_ssi_mip:
 
 /////////////////////////////////
 // cp_trigger_sei_plic
+// With mstatus.MIE = {0/1}, and mie = 1s, use PLIC or other EIC to cause mip.SEIP to rise
 /////////////////////////////////
 
 cp_trigger_sei_plic:
@@ -144,6 +150,7 @@ cp_trigger_sei_plic:
 
 /////////////////////////////////
 // cp_trigger_sei_sie
+// With mstatus.MIE = {0/1}, and mie = 1s, write mip.SEIP
 /////////////////////////////////
 
 cp_trigger_sei_sie:
@@ -162,176 +169,153 @@ cp_trigger_sei_sie:
 
 /////////////////////////////////
 // cp_interrupts
+// Cross of mstatus.MIE = {0/1}, mtvec.MODE = 00, 3 walking 1s in mip.MTIP/MSIP/MEIP, 
+// 3 walking 1s in mie.MTIE/MSIE/MEIE (2 x 3 x 3 bins)
 /////////////////////////////////
 
 cp_interrupts:
 
-    li s0, 1 # set up indices for loops
-    li s1, 3
-    li s2, 3
+    li s0, 1 # iterate through mstatus.MIE values 0-1
 
     csrrci t6, mtvec, 3 # mtvec.MODE = 00
 
-    for_mstatus_interrupts:
-        slli s0, s0, 3
-        csrrw t6, mstatus, s0   # either set or clear mstatus.MIE
-        srli s0, s0, 3
-        li s1, 3
+    for_mstatus:
 
-        for_mie_interrupts:
-    
-            addi s1, s1, -1     # setting mie.MEIE, MSIE, or MTIE
-            li t4, 4
-            mul t3, s1, t4
-            li t4, 8
-            sll t4, t4, t3
-            csrrw t6, mie, t4   # csrrw to clear all bits other than the target
-            li s2, 3
+        bnez s0, set_mstatus
+        csrrci t6, mstatus, 8   # if s0 == 0, clear mstatus.MIE
+        j cross_interrupts
 
-            for_mip_interrupts:
-
-                addi s2, s2, -1
-                
-                # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
-                
-                li t3, 2
-                bne s2, t3, next_case1_interrupts
-                jal cause_timer_interrupt_now
-                jal reset_timer_compare
-
-                next_case1_interrupts:
-                li t3, 1
-                bne s2, t3, next_case0_interrupts
-                jal cause_external_interrupt_M
-                jal reset_external_interrupts
-
-                next_case0_interrupts:
-                li t3, 0
-                bne s2, t3, for_mip_end_interrupts
-                jal set_msip
-                jal reset_msip
-
-                for_mip_end_interrupts:
-                    bnez s2, for_mip_interrupts
-            
-            bnez s1, for_mie_interrupts
+        set_mstatus:
+            csrrsi t6, mstatus, 8 # if s0 == 1, set mstatus.MIE
+        
+        cross_interrupts:
+        jal cross_interrupts_m_EP
         
         addi s0, s0, -1
-        beqz s0, for_mstatus_interrupts        
+        beqz s0, for_mstatus # iterate through mstatus.MIE values (1-0)
 
 /////////////////////////////////
 // cp_vectored
+// Cross of mtvec.MODE = 01, mstatus.MIE=1, all 3 of mie.MTIE/MSIE/MEIE,
+// 3 walking 1s in mip.MTIP/MSIP/MEIP (3 bins)
 /////////////////////////////////
 
 cp_vectored:
 
-    csrrci t6, mtvec, 3 
+    li t1, -1
+
+    csrrci t6, mtvec, 3
     csrrsi t6, mtvec, 1 # mtvec.MODE = 01
 
     csrrsi t6, mstatus, 8 # mstatus.MIE = 1
+    csrrc t6, mie, t1     # clear all interrupt enables
 
-    li s1, 3
+    li s1, 2
 
-    for_mie_vectored:
+    set_mie_m:
     
-        addi s1, s1, -1     # setting mie.MEIE, MSIE, or MTIE
-        li t4, 4
-        mul t3, s1, t4
+        # setting mie.MEIE, MSIE, or MTIE based on s1 value
+        slli t3, s1, 2
         li t4, 8
         sll t4, t4, t3
-        csrrs t6, mie, t4   # csrrs to preserve bits other than the target
-        bnez s1, for_mie_vectored
+        csrrs t6, mie, t4   # csrrs to keep other enables high
+        addi s1, s1, -1
+        ble zero, s1, set_mie_m
 
-    li s2, 3
+    li s2, 2
 
-    for_mip_vectored:
-
-        addi s2, s2, -1
+    raise_interrupts_m:
         
         # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
+        # includes resets in case interrupt is not triggered
         
-        li t3, 2
-        bne s2, t3, next_case1_vectored
-        jal cause_timer_interrupt_now
-        jal reset_timer_compare
+        case2_vectored:
+            li t3, 2
+            bne s2, t3, case1_vectored      # if s2 == 2, trigger timer interrupt
+            jal cause_timer_interrupt_now
+            jal reset_timer_compare
 
-        next_case1_vectored:
-        li t3, 1
-        bne s2, t3, next_case0_vectored
-        jal cause_external_interrupt_M
-        jal reset_external_interrupts
+        case1_vectored:
+            li t3, 1
+            bne s2, t3, case0_vectored      # if s2 == 1, trigger external interrupt
+            jal cause_external_interrupt_M
+            jal reset_external_interrupts
 
-        next_case0_vectored:
-        bne s2, t3, for_mip_end_vectored
-        li t3, 0
-        jal set_msip
-        jal reset_msip
+        case0_vectored:
+            bne s2, t3, case_end_vectored   # if s2 = 0, trigger software interrupt
+            li t3, 0
+            jal set_msip
+            jal reset_msip
 
-        for_mip_end_vectored:
-            bnez s2, for_mip_vectored
+        case_end_vectored:
+            addi s2, s2, -1
+            ble zero, s2, raise_interrupts_m
 
 /////////////////////////////////
 // cp_priority
+// With mstatus.MIE = 1, write cross product of 8 values of mie.{MSIE/MTIE/MEIE}
+// with hardware events giving the 8 values of mip.{MSIP/MTIP/MEIP} and check that
+// the proper interrupt occurs (8 x 8 bins)
 /////////////////////////////////
 
 cp_priority:
 
     csrrsi t6, mstatus, 8 # mstatus.MIE = 1
 
-    li s1, 8
+    li s1, 7
+    li t1, -1
 
     for_mie_priority:
 
-        li t0, 0
-        li t1, 0
-        li s3, 0
+        csrrc t6, mie, t1 # clear all interrupt enables to start fresh
 
-        addi s1, s1, -1
-        srli t0, s1, 2
-        andi t0, t0, 1  # mask off bit 2
-        slli t0, t0, 11 # set mie.MEIE based on bit 2 value
-        or s3, s3, t0
+        andi t0, s1, 4 # mask off bit 2
+        slli t0, t0, 9 # set mie.MEIE based on bit 2 value
+        mv s3, t0
 
-        srli t0, s1, 1
-        andi t0, t0, 1  # mask off bit 1
-        slli t0, t0, 7  # set mie.MTIE based on bit 1 value
+        andi t0, s1, 2  # mask off bit 1
+        slli t0, t0, 6  # set mie.MTIE based on bit 1 value
         or s3, s3, t0 
 
         andi t0, s1, 1  # mask off bit 0
         slli t0, t0, 3  # set mie.MTIE based on bit 1 value
         or s3, s3, t0 
 
-        li s2, 8
+        li s2, 7
 
         for_mip_priority:
 
-            addi s2, s2, -1
-            srli t0, s2, 2
-            andi t0, t0, 1  # mask off bit 2
-            beqz t0, next_case1_priority # set mie.MEIP based on s2 bit 2 value
-            jal cause_external_interrupt_M
+            case2_priority:
+                srli t0, s2, 2
+                andi t0, t0, 1  # mask off bit 2
+                beqz t0, case1_priority # set mie.MEIP based on s2 bit 2 value
+                jal cause_external_interrupt_M
 
-            next_case1_priority:
-            srli t0, s2, 1
-            andi t0, t0, 1  # mask off bit 1
-            beqz t0, next_case0_priority # set mie.MTIP based on s2 bit 1 value
-            jal cause_timer_interrupt_now
+            case1_priority:
+                srli t0, s2, 1
+                andi t0, t0, 1  # mask off bit 1
+                beqz t0, case0_priority # set mie.MTIP based on s2 bit 1 value
+                jal cause_timer_interrupt_now
 
-            next_case0_priority:
-            andi t0, s2, 1  # mask off bit 0
-            beqz t0, for_mip_end_priority # set mie.MSIP based on s2 bit 0 value
-            jal set_msip
+            case0_priority:
+                andi t0, s2, 1  # mask off bit 0
+                beqz t0, case_end_priority # set mie.MSIP based on s2 bit 0 value
+                jal set_msip
 
-            for_mip_end_priority:
-            csrrw t6, mie, s3   # once all interrupts are pending, enable all relevant interrupts at once
-            jal reset_external_interrupts
-            jal reset_timer_compare
-            jal reset_msip
+            case_end_priority:
+                
+                csrrs t6, mie, s3   # write to enable all machine interrupts, should trigger pending interrupts
+                csrrc t6, mie, s3   # write to disable all machine interrupts before next test case
+                
+                # add in resets in case s1 == 0
+                jal reset_external_interrupts
+                jal reset_timer_compare
+                jal reset_msip
+                
+                addi s2, s2, -1
+                ble zero, s2, for_mip_priority
 
-            bnez s2, for_mip_priority
-
-        li t1, -1
-        csrrc t6, mie, t1 # clear all interrupt enables to start fresh
-        bnez s1, for_mie_priority
+        addi s1, s1, -1
+        ble zero, s1, for_mie_priority
 
 j done

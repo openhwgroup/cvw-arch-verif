@@ -347,15 +347,15 @@ reset_external_interrupts:
     li t1, 7
     sw t1, 0(t0)
 
-    # disable GPIO's sufficient priority to trigger interrupt
+    // disable GPIO's sufficient priority to trigger interrupt
     la t0, INT_PRIORITY_3
     sw zero, 0(t0)
 
-    # disable interrupts from source 3 (GPIO) in M-mode
+    // disable interrupts from source 3 (GPIO) in M-mode
     la t0, INT_EN_00
     sw zero, 0(t0)
 
-    # clear all interrupt enables to make sure interrupt doesn't go off prematurely
+    // clear all interrupt enables to make sure interrupt doesn't go off prematurely
     la t0, GPIO_BASE_ADDR
     sw zero, 0x18(t0) # clear rise
     sw zero, 0x20(t0) # clear fall
@@ -370,7 +370,7 @@ reset_timer_compare:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
             sw t0, 0(t1)
-            sw t0, 4(t1)         # ignore if it doesn't exist
+            sw t0, 4(t1)
         #elif __riscv_xlen == 64
             sd t0, 0(t1)
         #endif
@@ -486,6 +486,72 @@ cause_timer_interrupt_now:
     #endif
     ret
 
+cross_interrupts_m_EP:
+
+    li s1, 2                # iterate through setting mie.MEIE, MSIE, or MTIE (2-0)
+    li t1, -1
+
+    la t0, scratch          # store return address in scratch
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            sw ra, 0(t0)
+        #elif __riscv_xlen == 64
+            sd ra, 0(t0)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    for_mie:
+    
+        slli t3, s1, 2      # setting mie.MEIE, MSIE, or MTIE based on s1 value
+        li t4, 8
+        sll t4, t4, t3
+        csrrw t6, mie, t4   # set enable for interrupt type of interest, clear all others
+        li s2, 2            # iterate through raising MEIP, MSIP, or MTIP (2-0)
+
+    for_mip:
+        
+        # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
+        # including resets in case interrupt is not triggered
+        
+        case2:
+            li t3, 2
+            bne s2, t3, case1  # if s2 == 2, raise a timer interrupt
+            jal cause_timer_interrupt_now
+            jal reset_timer_compare
+
+        case1:
+            li t3, 1
+            bne s2, t3, case0  # if s2 == 1, raise an external interrupt
+            jal cause_external_interrupt_M
+            jal reset_external_interrupts
+
+        case0:
+            li t3, 0
+            bne s2, t3, case_end # if s2 == 0, raise a software interrupt
+            jal set_msip
+            jal reset_msip
+
+        case_end:
+            addi s2, s2, -1
+            ble zero, s2, for_mip     # iterate until each type of interrupt has been raised
+    
+    addi s1, s1, -1     
+    ble zero, s1, for_mie # iterate through interrupt types to be enabled
+
+    la t0, scratch              # restore return address from scratch
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            lw ra, 0(t0)
+        #elif __riscv_xlen == 64
+            ld ra, 0(t0)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
 
 // utility routines
 

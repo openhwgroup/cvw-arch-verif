@@ -109,7 +109,7 @@ covergroup InterruptsM_cg with function sample(ins_t ins);
     cp_trigger_msi:      cross priv_mode_m, mstatus_mie, mie_ones, mip_msip_one;
     cp_trigger_mei:      cross priv_mode_m, mstatus_mie, mie_ones, mip_meip_one;
     cp_interrupts:       cross priv_mode_m, mstatus_mie, mtvec_direct, mip_walking, mie_walking;
-    cp_vectored:         cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mip_walking, mie_walking;
+    cp_vectored:         cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mip_walking, mie_ones;
     cp_priority:         cross priv_mode_m, mstatus_mie_one, mie_meie_mtie_msie, mip_meip_mtip_msip;
     cp_wfi:              cross priv_mode_m, wfi, mstatus_mie, mstatus_tw, mie_mtie_one, mie_mtip_one;
 endgroup
