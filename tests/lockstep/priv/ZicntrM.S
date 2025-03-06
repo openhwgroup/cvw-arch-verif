@@ -8,10 +8,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 
-// General notes:
-// Use csrrw/csrrs/csrrc t6, csr, rs1    when modifying a CSR to also check the old value.
-
 #include "WALLY-init-lib.h"
+
+main:
 
     # set up fast trap handler for uncompressed illegal instructions
     # because Zicntr tests will throw a lot of illegal instruction traps while attempting to access CSRs
