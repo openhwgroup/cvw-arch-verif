@@ -14,9 +14,7 @@ from random import seed
 import os, sys
 from os import environ
 
-def csrwalk(pathname, regs):
-    outfile = open(pathname, 'w')
-    sys.stdout = outfile
+def printwalk(regs):
     for reg in regs:
         if reg == "satp": # satp requires a special case to avoid accidentally turning on vmem
             continue
@@ -34,6 +32,15 @@ def csrwalk(pathname, regs):
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
+
+def csrwalk(pathname, regs, hregs):
+    outfile = open(pathname, 'w')
+    sys.stdout = outfile
+    printwalk(regs)
+    if hregs:
+        print("\n#if __riscv_xlen == 32")
+        printwalk(hregs)
+        print("#endif")
     outfile.close
 
 def csrtests(pathname, skipCsrs):
@@ -70,7 +77,8 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mstatush", "mseccfg", "mseccfgh", "menvcfgh", "0x312"] # 0x312 is medelegeh; RV64 compiler isn't accepting the name
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"] 
+mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
 uregs = ["fflags", "frm", "fcsr"]
 mcntrs = ["mcycle", "mcountinhibit", # "minstret" commented out because of https://github.com/openhwgroup/cvw/issues/1304
@@ -106,13 +114,10 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-CSR-Tests.h"
 csrtests(pathname, uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
-csrwalk(pathname, mregs + sregs + uregs + ["satp"])
+csrwalk(pathname, mregs + sregs + uregs + ["satp"], mregsh)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs);
+csrwalk(pathname, sregs + uregs, []);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
-csrwalk(pathname, mcntrs)
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrhM-Walk.h"
-csrwalk(pathname, mcntrsh)
+csrwalk(pathname, mcntrs, mcntrsh)

@@ -41,6 +41,19 @@
 #define ACCESS_FAULT_ADDRESS 0
 #define CLINT_MTIME_ADDRESS 0x0200BFF8
 
+// define load and store instruction
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        #define LOAD lw
+        #define STORE sw
+    #else
+        #define LOAD ld
+        #define STORE sd
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
 .section .text.init
 .global rvtest_entry_point
 
@@ -225,16 +238,7 @@ trap_return:                     # don't need to update mepc for interrupts
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(t1)        # send success code
-        #elif __riscv_xlen == 32
-            sw t0, 0(t1)        # send success code
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-   
+    STORE t0, 0(t1)     # write success code to tohost   
 
 self_loop:
     j self_loop         # wait

@@ -13,21 +13,8 @@
 
 #include "WALLY-init-lib.h"
 
-// define store instruction
-#ifdef __riscv_xlen
-    #if __riscv_xlen == 32
-       #define STORE sw
-    #else
-       #define STORE sd
-    #endif
-#else
-    ERROR: __riscv_xlen not defined
-#endif
-
-main:
-
     # set up fast trap handler for uncompressed illegal instructions
-    # because Zicsr tests will throw a lot of illegal instruction traps while attempting to access CSRs
+    # because Zicntr tests will throw a lot of illegal instruction traps while attempting to access CSRs
     # This cuts the instruction count and runtime by nearly 2x
     # However, don't blindly use this handler in other privileged tests
     la t0, trap_handler_fastuncompressedillegalinstr
@@ -41,7 +28,7 @@ main:
     csrci mstatus, 0x8   # Turn off mstatus.MIE global interrupt enable
 
 // Testing walking zeros and ones for mtime in CLINT
-    la a0, CLINT_MTIME_ADDRESS  # address if mtime register
+    la a0, CLINT_MTIME_ADDRESS  # address of mtime register
     jal walk
 
 #ifdef __riscv_xlen
@@ -56,21 +43,10 @@ main:
 
 /////////////////////////////////
 // cp_cntr_write
-/////////////////////////////////
-
-#include "ZicntrM-Walk.h"
-
-/////////////////////////////////
 // cp_cntrh_write
 /////////////////////////////////
 
-#ifdef __riscv_xlen
-    #if __riscv_xlen == 32
-        #include "ZicntrhM-Walk.h"
-    #endif
-#else
-    ERROR: __riscv_xlen not defined
-#endif
+#include "ZicntrM-Walk.h"
 
 finished:
     j done
