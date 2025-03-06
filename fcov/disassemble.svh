@@ -52,6 +52,10 @@ function string disassemble (logic [31:0] instrRaw);
   automatic string cfs2 = get_fpr_name(instr[6:2]);
   automatic string fs1p = get_c_fpr_name(instr[9:7]);
   automatic string fs2p = get_c_fpr_name(instr[4:2]);
+  automatic string vs1  = get_vpr_name(rs1Bits);
+  automatic string vs2  = get_vpr_name(rs2Bits);
+  automatic string vs3  = get_vpr_name(rdBits);
+  automatic string vd   = get_vpr_name(rdBits);
 
   // Immediates
   automatic bit signed [11:0] immIType = (instr[31:20]);
@@ -61,6 +65,8 @@ function string disassemble (logic [31:0] instrRaw);
   automatic bit signed [20:0] immJType = ({instr[31], instr[19:12], instr[20], instr[30:21], 1'b0});
   automatic bit        [5:0]  uimm     = instr[25:20];
   automatic bit        [1:0]  bs       = instr[31:30];
+  automatic bit        [5:0]  uimm5    = instr[19:15];
+  automatic bit signed [5:0]  imm5     = instr[19:15];
 
   // Compressed immediates
   automatic bit signed [5:0]  immCIType     = {instr[12], instr[6:2]};
@@ -80,8 +86,16 @@ function string disassemble (logic [31:0] instrRaw);
   automatic bit        [8:0]  immCSSType    = {instr[8:7], instr[12:9], 2'b0};
 
   // Other fields
-  automatic bit [2:0]  frm = instr[14:12];
-  automatic string csr = get_csr_name(instr[31:20]);
+  automatic bit     [2:0] frm  = instr[14:12];
+  automatic string        csr  = get_csr_name(instr[31:20]);
+
+  // Vector fields
+  automatic string  vm    = instr[25] ? "" : ", v0.t";
+  automatic string  eSEW  = get_vtype_eSEW(instr[25:23]);
+  automatic string  mLMUL = get_vtype_mLMUL(instr[22:20]);
+  automatic string  ta    = get_vtype_ta(instr[27]);
+  automatic string  ma    = get_vtype_ma(instr[26]);
+
 
   casez (instr)
     // Base Instructions
@@ -688,7 +702,7 @@ function string disassemble (logic [31:0] instrRaw);
 
     VMUL_VV:      $sformat(decoded, "vmul.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
     VMUL_VX:      $sformat(decoded, "vmul.vv %s, %s, %s%s",       vd, vs2, rs1, vm);
-    VMULH_VV      $sformat(decoded, "vmulh.vv %s, %s, %s%s",      vd, vs2, vs1, vm);
+    VMULH_VV:     $sformat(decoded, "vmulh.vv %s, %s, %s%s",      vd, vs2, vs1, vm);
     VMULH_VX:     $sformat(decoded, "vmulh.vx %s, %s, %s%s",      vd, vs2, rs1, vm);
     VMULHU_VV:    $sformat(decoded, "vmulhu.vv %s, %s, %s%s",     vd, vs2, vs1, vm);
     VMULHU_VX:    $sformat(decoded, "vmulhu.vx %s, %s, %s%s",     vd, vs2, rs1, vm);
@@ -777,7 +791,7 @@ function string disassemble (logic [31:0] instrRaw);
     VREDOR_VS:    $sformat(decoded, "vredor.vs %s, %s, %s%s",     vd, vs2, vs1, vm);
     VREDXOR_VS:   $sformat(decoded, "vredxor.vs %s, %s, %s%s",    vd, vs2, vs1, vm);
 
-    VMAND_MM      $sformat(decoded, "vmand.mm %s, %s, %s",        vd, vs2, vs1);
+    VMAND_MM:     $sformat(decoded, "vmand.mm %s, %s, %s",        vd, vs2, vs1);
     VMNAND_MM:    $sformat(decoded, "vmnand.mm %s, %s, %s",       vd, vs2, vs1);
     VMANDN_MM:    $sformat(decoded, "vmandn.mm %s, %s, %s",       vd, vs2, vs1);
     VMOR_MM:      $sformat(decoded, "vmor.mm %s, %s, %s",         vd, vs2, vs1);
@@ -790,7 +804,7 @@ function string disassemble (logic [31:0] instrRaw);
     VFIRST_M:     $sformat(decoded, "vfirst.m %s, %s%s",          rd, vs2, vm);
     VMSBF_M:      $sformat(decoded, "vmsbf.m %s, %s%s",           vd, vs2, vm);
     VMSIF_M:      $sformat(decoded, "vmsif.m %s, %s%s",           vd, vs2, vm);
-    VMSOF_M       $sformat(decoded, "vmsof.m %s, %s%s",           vd, vs2, vm);
+    VMSOF_M:      $sformat(decoded, "vmsof.m %s, %s%s",           vd, vs2, vm);
     VIOTA_M:      $sformat(decoded, "viota.m %s, %s%s",           vd, vs2, vm);
     VID_V:        $sformat(decoded, "vid.v %s%s",                 vd, vm);
 
@@ -805,7 +819,7 @@ function string disassemble (logic [31:0] instrRaw);
     VSLIDE1DOWN_VX: $sformat(decoded, "vslide1down.vx %s, %s, %s%s",  vd, vs2, rs1, vm);
     VRGATHER_VV:  $sformat(decoded, "vrgather.vv %s, %s, %s%s",   vd, vs2, vs1, vm);
     VRGATHER_VX:  $sformat(decoded, "vrgather.vx %s, %s, %s%s",   vd, vs2, rs1, vm);
-    VRGATHER_VI   $sformat(decoded, "vrgather.vi %s, %s, %s%s",   vd, vs2, uimm5, vm);
+    VRGATHER_VI:  $sformat(decoded, "vrgather.vi %s, %s, %s%s",   vd, vs2, uimm5, vm);
     VCOMPRESS_VM: $sformat(decoded, "vcompress.vm %s, %s, %s",    vd, vs2, vs1);
 
     VMV1R_V:      $sformat(decoded, "vmv1r.v %s, %s",             vd, vs2);
@@ -1171,7 +1185,7 @@ function string disassemble (logic [31:0] instrRaw);
     VGMUL_VV:    $sformat(decoded, "vgmul.vv %s, %s", vd, vs2);
 
     VAESDM_VV:   $sformat(decoded, "vaesdm.vv %s, %s", vd, vs2);
-    VAESDM_VS    $sformat(decoded, "vaesdm.vs %s, %s", vd, vs2);
+    VAESDM_VS:   $sformat(decoded, "vaesdm.vs %s, %s", vd, vs2);
     VAESDF_VV:   $sformat(decoded, "vaesdf.vv %s, %s", vd, vs2);
     VAESDF_VS:   $sformat(decoded, "vaesdf.vs %s, %s", vd, vs2);
     VAESEM_VV:   $sformat(decoded, "vaesem.vv %s, %s", vd, vs2);
