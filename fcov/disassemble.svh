@@ -64,6 +64,7 @@ function string disassemble (logic [31:0] instrRaw);
 
   // Compressed immediates
   automatic bit signed [5:0]  immCIType     = {instr[12], instr[6:2]};
+  automatic bit        [5:0]  immUCIType    = {instr[12], instr[6:2]};
   automatic bit        [7:0]  immCILSPType  = {instr[3:2], instr[12], instr[6:4], 2'b00};
   automatic bit        [8:0]  immCILSPDType = {instr[4:2], instr[12], instr[6:5], 3'b000};
   automatic bit signed [9:0]  immCIASPType  = {instr[12], instr[4:3], instr[5], instr[2], instr[6], 4'b0000};
@@ -409,7 +410,7 @@ function string disassemble (logic [31:0] instrRaw);
     SH1ADD_UW: $sformat(decoded, "sh1add.uw %s, %s, %s", rd, rs1, rs2);
     SH2ADD_UW: $sformat(decoded, "sh2add.uw %s, %s, %s", rd, rs1, rs2);
     SH3ADD_UW: $sformat(decoded, "sh3add.uw %s, %s, %s", rd, rs1, rs2);
-    SLLI_UW:   $sformat(decoded, "slli.uw %s, %s, %0d", rd, rs1, uimm[4:0]);
+    SLLI_UW:   $sformat(decoded, "slli.uw %s, %s, %0d", rd, rs1, uimm);
   `endif
     // Zbb Extension
     ANDN:   $sformat(decoded, "andn %s, %s, %s", rd, rs1, rs2);
@@ -534,7 +535,7 @@ function string disassemble (logic [31:0] instrRaw);
     C_J:    $sformat(decoded, "c.j %0d", immCJType);
     C_BEQZ: $sformat(decoded, "c.beqz %s, %0d", rs1p, immCBType);
     C_BNEZ: $sformat(decoded, "c.bnez %s, %0d", rs1p, immCBType);
-    C_SLLI: if(rdBits != '0) $sformat(decoded, "c.slli %s, %0d", rd, immCIType);
+    C_SLLI: if(rdBits != '0) $sformat(decoded, "c.slli %s, %0d", rd, immUCIType);
     C_LWSP: if(rdBits != '0) $sformat(decoded, "c.lwsp %s, %0d", rd, immCILSPType);
     C_JR:   if(rdBits != '0 & crs2Bits == '0) $sformat(decoded, "c.jr %s", rd);
     C_MV:   if(rdBits != '0 & crs2Bits != '0) $sformat(decoded, "c.mv %s, %s", rd, crs2);

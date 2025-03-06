@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_EXCEPTIONSU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_exceptionsu_t;
-
-covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins);
+covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
@@ -38,24 +36,25 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                 ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
-                                ins.current.rs1_val < ins.current.rs2_val} {                 // A < B (unsigned)
-        wildcard bins beq_taken  = {3'b000, 1'b1, 1'b?, 1'b?};
-        wildcard bins bne_taken  = {3'b001, 1'b0, 1'b?, 1'b?};
-        wildcard bins blt_taken  = {3'b100, 1'b?, 1'b1, 1'b?};
-        wildcard bins bge_taken  = {3'b101, 1'b?, 1'b0, 1'b?};
-        wildcard bins bltu_taken = {3'b110, 1'b?, 1'b?, 1'b1};
-        wildcard bins bgeu_taken = {3'b111, 1'b?, 1'b?, 1'b0};
+                                $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
+        //wildcard bins beq_taken  = {3'b000, 1'b1, 1'b?, 1'b?};
+        wildcard bins beq_taken  = {6'b000_1_?_?};
+        wildcard bins bne_taken  = {6'b001_0_?_?};
+        wildcard bins blt_taken  = {6'b100_?_1_?};
+        wildcard bins bge_taken  = {6'b101_?_0_?};
+        wildcard bins bltu_taken = {6'b110_?_?_1};
+        wildcard bins bgeu_taken = {6'b111_?_?_0};
     }
     branches_nottaken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                    ins.current.rs1_val == ins.current.rs2_val,                  // A == B  
                                    $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
-                                   ins.current.rs1_val < ins.current.rs2_val} {                 // A < B (unsigned)
-        wildcard bins beq_nottaken  = {3'b000, 1'b0, 1'b?, 1'b?};
-        wildcard bins bne_nottaken  = {3'b001, 1'b1, 1'b?, 1'b?};
-        wildcard bins blt_nottaken  = {3'b100, 1'b?, 1'b0, 1'b?};
-        wildcard bins bge_nottaken  = {3'b101, 1'b?, 1'b1, 1'b?};
-        wildcard bins bltu_nottaken = {3'b110, 1'b?, 1'b?, 1'b0};
-        wildcard bins bgeu_nottaken = {3'b111, 1'b?, 1'b?, 1'b1};
+                                   $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
+        wildcard bins beq_nottaken  = {6'b000_0_?_?};
+        wildcard bins bne_nottaken  = {6'b001_1_?_?};
+        wildcard bins blt_nottaken  = {6'b100_?_0_?};
+        wildcard bins bge_nottaken  = {6'b101_?_1_?};
+        wildcard bins bltu_nottaken = {6'b110_?_?_0};
+        wildcard bins bgeu_nottaken = {6'b111_?_?_1};
     }
     jal: coverpoint ins.current.insn {
         wildcard bins jal = {32'b????????????????????_?????_1101111};
@@ -124,6 +123,8 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
     imm_bit_1: coverpoint ins.current.imm[1] {
         bins one = {'1};
     }
+    offset: coverpoint ins.current.imm[1:0] {
+    }
     rs1_1_0: coverpoint ins.current.rs1_val[1:0] {
     }
     illegal_address: coverpoint ins.current.imm + ins.current.rs1_val {
@@ -136,7 +137,7 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
     
     // main coverpoints
     cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_u; 
-    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_u;  
+    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, offset, priv_mode_u;  
     cp_instr_adr_misaligned_jal:             cross jal, pc_bit_1, imm_bit_1, priv_mode_u;
     cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, imm_bit_1, priv_mode_u;
     cp_instr_access_fault:                   cross jalr, illegal_address, priv_mode_u;
@@ -155,16 +156,6 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_exceptionsu_t ins)
 
 endgroup
 
-function void exceptionsu_sample(int hart, int issue);
-    ins_exceptionsu_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-
-    // $display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    
+function void exceptionsu_sample(int hart, int issue, ins_t ins);
     ExceptionsU_exceptions_cg.sample(ins);
-    
 endfunction
