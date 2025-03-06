@@ -1,0 +1,5 @@
+cmp_vs1_vs2_eqval : coverpoint ins.current.vs1_val == ins.current.vs2_val  iff (ins.trap == 0 )  {
+        //Compare VS1 and VS2 register values
+        bins vs1_eqval_vs2  = {1};
+        bins vs1_neval_vs2  = {0};
+    }

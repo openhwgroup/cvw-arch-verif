@@ -1,0 +1,3 @@
+   cmp_vd_vs1_nv0 : coverpoint ins.current.insn[11:7]  iff (ins.current.vd == ins.current.vs1 & ins.trap == 0 )  {
+        ignore_bins vd = {5'b00000};
+    }
