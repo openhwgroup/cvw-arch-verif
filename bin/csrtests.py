@@ -92,23 +92,20 @@ def mcounterenwalku(pathname, regs):
     for reg in regs:
         if reg == "satp":  # Special case to avoid accidentally turning on vmem
             continue
-        print(f"\n// Testing accessibility of {reg} based on mcounteren in U-mode")
-        print(f"\tcsrr s1, {reg}\t# save {reg}")
+        print(f"\n// Testing accessibility of reg based on mcounteren in M-mode")
+        print(f"\tcsrr s1, "+reg+"\t# save csr")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
         print("\t1: csrrc t6, mcounteren, t1    # clear all bits in mcounteren")
-        print(f"\tcsrrs t6, {reg}, t0    # attempt to set walking 1 in {reg}")
+        print(f"\tcsrrs t6, "+reg+", t0    # attempt to set walking 1 in csr")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tli t0, 1            # 1 in lsb")
         print("1:  csrrs t6, mcounteren, t1    # set all bits in mcounteren")
-        print(f"\tcsrrc t6, {reg}, t0    # attempt to clear walking 1 in {reg}")
+        print(f"\tcsrrc t6, "+reg+", t0    # attempt to clear walking 1 in csr")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print(f"\tcsrrw t6, {reg}, s1    # restore {reg}")
-        print("\n// Restoring M-mode")
-        print("\tli a0, 3")
-        print("\tecall")
+        print(f"\tcsrrw t6, "+reg+", s1    # restore csr")
 
     outfile.close()
 
@@ -134,20 +131,20 @@ def mcounterenwalk(pathname, regs):
     for reg in regs:
         if reg == "satp":  # Special case to avoid accidentally turning on vmem
             continue
-        print(f"\n// Testing accessibility of {reg} based on mcounteren in M-mode")
-        print(f"\tcsrr s1, {reg}\t# save {reg}")
+        print(f"\n// Testing accessibility of reg based on mcounteren in M-mode")
+        print(f"\tcsrr s1, "+reg+"\t# save csr")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
         print("\t1: csrrc t6, mcounteren, t1    # clear all bits in mcounteren")
-        print(f"\tcsrrs t6, {reg}, t0    # attempt to set walking 1 in {reg}")
+        print(f"\tcsrrs t6, "+reg+", t0    # attempt to set walking 1 in csr")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tli t0, 1            # 1 in lsb")
         print("1:  csrrs t6, mcounteren, t1    # set all bits in mcounteren")
-        print(f"\tcsrrc t6, {reg}, t0    # attempt to clear walking 1 in {reg}")
+        print(f"\tcsrrc t6, "+reg+", t0    # attempt to clear walking 1 in csr")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
-        print(f"\tcsrrw t6, {reg}, s1    # restore {reg}")
+        print(f"\tcsrrw t6, "+reg+", s1    # restore csr")
 
     outfile.close()
 
