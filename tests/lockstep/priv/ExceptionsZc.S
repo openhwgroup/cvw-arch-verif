@@ -31,8 +31,11 @@
     li      t0, 0         # loop index (offset 0..7)
     li      t5, 8         # loop limit
 
+    li      a2, 0         # initialize a2
+
 misaligned_loop:
-    
+
+    add     a2, a4, t0    # a2 = sctach + offset
 
     // Test compressed integer load instructions:
     c.lw    a3, 0(a2)     # compressed load word
@@ -105,7 +108,6 @@ misaligned_loop:
 
     //update loop
     addi sp, sp, 1     #increment the sp offset
-    add     a2, a4, t0    # a2 = effective address
     addi    t0, t0, 1  #increment the loop index
     blt     t0, t5, misaligned_loop
 

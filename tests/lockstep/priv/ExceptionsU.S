@@ -2,7 +2,7 @@
 ///////////////////////////////////////////
 // ExceptionsM.S
 //
-// Written: Roman De Santos rdesantos@hmc.edu 6 February 2025
+// Written: Roman De Santos rdesantos@hmc.edu 24 February 2025
 //
 // Purpose: Functional coverage test for Exceptions in M mode
 //
@@ -11,7 +11,15 @@
 
 #include "WALLY-init-lib.h"
 
+//Move to  WALLY-init-lib.h eventually
+#define ACCESS_FAULT_ADDRESS 0
+
 main:
+
+    //change to user mode
+    li a0, 0
+    ecall
+
     // Set up the trap handler
     la t0, trap_handler
     csrw mtvec, t0
@@ -83,9 +91,10 @@ main:
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_jalr
-    /////////////////////////////////
+    /////////////////////////////////   
+    //note all the auipc instructions  //////////add on next line (//Ensure jumps start aligned)
 
-    .align 2 //Ensure jumps start aligned
+        .align 2 //Ensure jumps start aligned
 
     // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 00
     auipc   t0, 0           
@@ -199,6 +208,7 @@ main:
     li    t1, ACCESS_FAULT_ADDRESS       // Load the fault address into t0
     jalr  ra, t1, 0                      // Jump to the fault address (return address must be in t2)
     nop
+
     /////////////////////////////////
     //cp_illegal_instruction
     /////////////////////////////////
@@ -208,6 +218,7 @@ main:
     // Attempt to execute illegal instructions
     .word 0x00000000 
     .word 0xFFFFFFFF
+
  
     /////////////////////////////////
     //cp_illegal_instruction_seed
@@ -341,6 +352,10 @@ store_loop:
     //cp_store_access_fault
     /////////////////////////////////
 
+    //change to user mode (REMOVE AFTER TESTING)
+    li a0, 0
+    ecall
+
     # Load the illegal address into a register
     la t0, ACCESS_FAULT_ADDRESS 
 
@@ -365,11 +380,11 @@ store_loop:
     #endif
 
     /////////////////////////////////
-    //cp_ecall_m
+    //cp_ecall_u
     /////////////////////////////////
 
-    //switch from machine mode to machine mode
-    li a0, 3
+    //switch from user to user mode
+    li a0, 0
     ecall     
 
     /////////////////////////////////
@@ -378,7 +393,7 @@ store_loop:
 
     //Test misaligned priority for load instructions
 
-  # Get a pointer to an access fault address
+  # Get a pointer to an access fault address and deliberately misalign it by adding 1
     la      t4, ACCESS_FAULT_ADDRESS
 
     # Initialize loop counter (offset) from 0 to 7
@@ -411,6 +426,8 @@ load_loop_priority:
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
     blt     t0, t5, load_loop_priority 
+
+    //store priority misaligned test
 
     # Initialize loop counter (offset) from 0 to 7
     li      t0, 0         # t0 = loop index (offset)
@@ -462,13 +479,13 @@ store_loop_priority:
     # Clear the MIE bit in mstatus so that on exception entry MPIE becomes 0.
     csrrc   x0, mstatus, t1
 
-    li     a0, 3
+    li     a0, 0
     ecall                     # Execute ecall with MIE = 0; trap entry will set MPIE = 0.
 
     # Set the MIE bit in mstatus so that on exception entry MPIE becomes 1.
     csrrs   x0, mstatus, t1
 
-    li     a0, 3
+    li     a0, 0
     ecall                     # Execute ecall with MIE = 1; trap entry will set MPIE = 1.
 
     # Restore the original mstatus.
