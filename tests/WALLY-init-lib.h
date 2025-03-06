@@ -41,6 +41,19 @@
 #define ACCESS_FAULT_ADDRESS 0
 #define CLINT_MTIME_ADDRESS 0x0200BFF8
 
+// define load and store instruction
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        #define LOAD lw
+        #define STORE sw
+    #else
+        #define LOAD ld
+        #define STORE sd
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
 .section .text.init
 .global rvtest_entry_point
 
@@ -72,17 +85,8 @@ done:
 trap_handler:
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0 and t1 on the stack
-            sd t1, -8(tp)
-        #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0 and t1 on the stack
-            sw t1, -4(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    STORE t0, 0(tp)    # Save t0 and t1 on the stack
+    STORE t1, -8(tp)
     csrr t0, mcause     # Check the cause
     csrr t1, mtval      # And the trap value
     bgez t0, exception  # if msb is clear, it is an exception
@@ -166,33 +170,15 @@ mepc_up_addr:
 post_up_mepc:
     add t1, t1, t0               # add 2 or 4 (from t0) to MEPC to determine return Address
     csrw mepc, t1
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t0, 0(tp)         # Restore t0 and t1
-            ld t1, -8(tp)
-        #elif __riscv_xlen == 32
-            lw t0, 0(tp)         # Restore t0 and t1
-            lw t1, -4(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    LOAD t0, 0(tp)         # Restore t0 and t1
+    LOAD t1, -8(tp)
     csrrw tp, mscratch, tp   # restore tp
     mret                     # return from trap
 
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(t1)        # send success code
-        #elif __riscv_xlen == 32
-            sw t0, 0(t1)        # send success code
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-   
+    STORE t0, 0(t1)     # write success code to tohost   
 
 self_loop:
     j self_loop         # wait
@@ -208,17 +194,8 @@ self_loop:
 trap_handler_fastuncompressedillegalinstr:
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0 and t1 on the stack
-            sd t1, -8(tp)
-        #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0 and t1 on the stack
-            sw t1, -4(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    STORE t0, 0(tp)    # Save t0 and t1 on the stack
+    STORE t1, -8(tp)
     csrr t0, mcause     # Check the cause
     li t1, 2            # Illegal Instruction cause
     beq t0, t1, illegalinstruction # check if this is an uncompressed illegal instruction, then return fast
@@ -237,17 +214,8 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     csrr t0, mepc  # get address of instruction that caused exception
     addi t0, t0, 4
     csrw mepc, t0
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t0, 0(tp)        # Restore t0 and t1
-            ld t1, -8(tp)
-        #elif __riscv_xlen == 32
-            lw t0, 0(tp)        # Restore t0 and t1
-            lw t1, -4(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    LOAD t0, 0(tp)         # Restore t0 and t1
+    LOAD t1, -8(tp)
     csrrw tp, mscratch, tp  # restore tp
     mret                # return from trap
 

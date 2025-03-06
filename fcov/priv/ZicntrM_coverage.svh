@@ -178,7 +178,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
     `endif
 
     `ifdef XLEN64
-        walking_ones: coverpoint ins.current.rs1_val[63:0] {
+        walking_ones_rs1: coverpoint ins.current.rs1_val[63:0] {
             bins b_1_0  = {64'b0000000000000000000000000000000000000000000000000000000000000001};
             bins b_1_1  = {64'b0000000000000000000000000000000000000000000000000000000000000010};
             bins b_1_2  = {64'b0000000000000000000000000000000000000000000000000000000000000100};
@@ -245,7 +245,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
             bins b_1_63 = {64'b1000000000000000000000000000000000000000000000000000000000000000};
         }
     `else
-        walking_ones: coverpoint ins.current.rs1_val[31:0] {
+        walking_ones_rs1: coverpoint ins.current.rs1_val[31:0] {
             bins b_1_0  = {32'b00000000000000000000000000000001};
             bins b_1_1  = {32'b00000000000000000000000000000010};
             bins b_1_2  = {32'b00000000000000000000000000000100};
@@ -282,7 +282,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
     `endif
 
     `ifdef XLEN64
-        walking_ones_zeros: coverpoint ins.current.rs2_val[63:0] {
+        walking_ones_zeros_rs2: coverpoint ins.current.rs2_val[63:0] {
             bins b_1_0  = {64'b0000000000000000000000000000000000000000000000000000000000000001};
             bins b_1_1  = {64'b0000000000000000000000000000000000000000000000000000000000000010};
             bins b_1_2  = {64'b0000000000000000000000000000000000000000000000000000000000000100};
@@ -413,7 +413,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
             bins b_0_63 = {64'b0111111111111111111111111111111111111111111111111111111111111111};
         }
     `else
-        walking_ones_zeros: coverpoint ins.current.rs2_val[31:0] {
+        walking_ones_zeros_rs2: coverpoint ins.current.rs2_val[31:0] {
             bins b_1_0  = {32'b00000000000000000000000000000001};
             bins b_1_1  = {32'b00000000000000000000000000000010};
             bins b_1_2  = {32'b00000000000000000000000000000100};
@@ -482,10 +482,10 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
     `endif
 
     // main coverpoints
-    cp_cntr_write:      cross csrop,    walking_ones, counters,    priv_mode_m;
-    cp_mtime_write:     cross storeop,  walking_ones_zeros, clint_mtime, priv_mode_m;
+    cp_cntr_write:      cross csrop,    walking_ones_rs1, counters,    priv_mode_m;
+    cp_mtime_write:     cross storeop,  walking_ones_zeros_rs2, clint_mtime, priv_mode_m;
     `ifdef XLEN32
-        cp_cntrh_write: cross csrop,    walking_ones, countersh,   priv_mode_m;
+        cp_cntrh_write: cross csrop,    walking_ones_rs1, countersh,   priv_mode_m;
     `endif
 
 endgroup
