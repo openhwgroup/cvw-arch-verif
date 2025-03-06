@@ -222,34 +222,7 @@ cp_vectored:
         addi s1, s1, -1
         ble zero, s1, set_mie_m
 
-    li s2, 2
-
-    raise_interrupts_m:
-        
-        # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
-        # includes resets in case interrupt is not triggered
-        
-        case2_vectored:
-            li t3, 2
-            bne s2, t3, case1_vectored      # if s2 == 2, trigger timer interrupt
-            jal cause_timer_interrupt_now
-            jal reset_timer_compare
-
-        case1_vectored:
-            li t3, 1
-            bne s2, t3, case0_vectored      # if s2 == 1, trigger external interrupt
-            jal cause_external_interrupt_M
-            jal reset_external_interrupts
-
-        case0_vectored:
-            bne s2, t3, case_end_vectored   # if s2 = 0, trigger software interrupt
-            li t3, 0
-            jal set_msip
-            jal reset_msip
-
-        case_end_vectored:
-            addi s2, s2, -1
-            ble zero, s2, raise_interrupts_m
+    jal raise_interrupts_m
 
 /////////////////////////////////
 // cp_priority

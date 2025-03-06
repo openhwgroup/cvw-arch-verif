@@ -491,12 +491,14 @@ cross_interrupts_m_EP:
     li s1, 2                # iterate through setting mie.MEIE, MSIE, or MTIE (2-0)
     li t1, -1
 
-    la t0, scratch          # store return address in scratch
+    la sp, scratch          # store return address in scratch
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
-            sw ra, 0(t0)
+            addi sp, sp, -4
+            sw ra, 0(sp)
         #elif __riscv_xlen == 64
-            sd ra, 0(t0)
+            addi sp, sp, -8
+            sd ra, 0(sp)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -508,44 +510,77 @@ cross_interrupts_m_EP:
         li t4, 8
         sll t4, t4, t3
         csrrw t6, mie, t4   # set enable for interrupt type of interest, clear all others
-        li s2, 2            # iterate through raising MEIP, MSIP, or MTIP (2-0)
-
-    for_mip:
-        
-        # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
-        # including resets in case interrupt is not triggered
-        
-        case2:
-            li t3, 2
-            bne s2, t3, case1  # if s2 == 2, raise a timer interrupt
-            jal cause_timer_interrupt_now
-            jal reset_timer_compare
-
-        case1:
-            li t3, 1
-            bne s2, t3, case0  # if s2 == 1, raise an external interrupt
-            jal cause_external_interrupt_M
-            jal reset_external_interrupts
-
-        case0:
-            li t3, 0
-            bne s2, t3, case_end # if s2 == 0, raise a software interrupt
-            jal set_msip
-            jal reset_msip
-
-        case_end:
-            addi s2, s2, -1
-            ble zero, s2, for_mip     # iterate until each type of interrupt has been raised
     
-    addi s1, s1, -1     
-    ble zero, s1, for_mie # iterate through interrupt types to be enabled
+        jal raise_interrupts_m
+    
+        addi s1, s1, -1     
+        ble zero, s1, for_mie # iterate through interrupt types to be enabled
 
     la t0, scratch              # restore return address from scratch
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
-            lw ra, 0(t0)
+            lw ra, 0(sp)
+            addi sp, sp, 4
         #elif __riscv_xlen == 64
-            ld ra, 0(t0)
+            ld ra, 0(sp)
+            addi sp, sp, 8
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+    
+    ret
+
+raise_interrupts_m:
+
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            addi sp, sp, -4
+            sw ra, 0(sp)
+        #elif __riscv_xlen == 64
+            addi sp, sp, -8
+            sd ra, 0(sp)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    li s2, 2
+
+    for_mip:
+        
+        # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
+        # includes resets in case interrupt is not triggered
+        
+        case2_vectored:
+            li t3, 2
+            bne s2, t3, case1_vectored      # if s2 == 2, trigger timer interrupt
+            jal cause_timer_interrupt_now
+            jal reset_timer_compare
+
+        case1_vectored:
+            li t3, 1
+            bne s2, t3, case0_vectored      # if s2 == 1, trigger external interrupt
+            jal cause_external_interrupt_M
+            jal reset_external_interrupts
+
+        case0_vectored:
+            li t3, 0
+            bne s2, t3, case_end_vectored   # if s2 = 0, trigger software interrupt
+            jal set_msip
+            jal reset_msip
+
+        case_end_vectored:
+            addi s2, s2, -1
+            ble zero, s2, for_mip
+
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            lw ra, 0(sp)
+            addi sp, sp, 4
+        #elif __riscv_xlen == 64
+            ld ra, 0(sp)
+            addi sp, sp, 8
         #endif
     #else
         ERROR: __riscv_xlen not defined
