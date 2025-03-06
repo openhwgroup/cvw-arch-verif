@@ -138,8 +138,6 @@ function int get_csr_val_addr(int hart, int issue, int prev, int addr, string na
     case(field)
       "fflags" : val = val & 'h1f;
       "frm" : val = (val >> 5) & 'h7;
-      "vxrm" : val = (val >> 9) & 'h3;
-      "vxsat" : val = (val >> 8) & 'h1;
       default: val = 0; // Todo: error
     endcase
   end
