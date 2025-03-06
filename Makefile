@@ -42,7 +42,7 @@ UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 # Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
 # See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
-PRIV_HEADERS  = ZicsrM-CSR-Tests.h ZicsrS-CSR-Tests.h ZicsrU-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h ZicntrS-Walk.h ZicntrhS-Walk.h Zicntr-MWalk.h Zicntrh-MWalk.h 
+PRIV_HEADERS  = ZicsrM-CSR-Tests.h ZicsrS-CSR-Tests.h ZicsrU-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h Zicntr-MWalk.h Zicntrh-MWalkU.h 
 
 .PHONY: all clean sim merge covergroupgen testgen unpriv priv
 
@@ -88,7 +88,7 @@ $(PRIVHEADERSDIR)/Zicntrh-MWalkU.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 
 $(PRIVHEADERSDIR)/Zicntr-MWalk.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
-$(PRIVHEADERSDIR)/Zicntrh-MWalk.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+$(PRIVHEADERSDIR)/Zicntrh-MWalkU.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 
 # This code is added especially for running VM SV32 tests

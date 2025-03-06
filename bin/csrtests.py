@@ -194,7 +194,7 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs + ["satp"])
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, csrsregs + csruregs);
+csrwalk(pathname, sregs + uregs);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs)
@@ -211,5 +211,5 @@ mcounterenwalku(pathname, scntrsh)
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalk.h"
 mcounterenwalk(pathname, scntrs)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntrh-MWalk.h"
-mcounterenwalk(pathname, scntrsh)
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntrh-MWalkU.h"
+mcounterenwalku(pathname, scntrsh)
