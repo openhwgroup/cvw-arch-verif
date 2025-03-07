@@ -241,7 +241,8 @@ covergroup RV32VM_mstatus_mprv_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.pte_i[7:0] { //pte.2
         wildcard bins leaflvl_u = {8'b???11??0};

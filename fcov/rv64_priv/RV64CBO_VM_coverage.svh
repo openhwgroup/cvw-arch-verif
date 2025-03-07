@@ -19,7 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64CBO_VM
 covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //exp.1
         wildcard bins leaflvl_u_w = {8'b???1?110};

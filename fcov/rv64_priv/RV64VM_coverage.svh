@@ -21,7 +21,8 @@
 `define COVER_RV64VM
 `define sv39
 covergroup RV64VM_satp_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     mode_supported: coverpoint ins.current.csr[12'h180][63:60] { //sat.2
         `ifdef sv48
@@ -157,7 +158,8 @@ covergroup RV64VM_sfence_cg with function sample(ins_t ins); //sf.1
 endgroup
 
 covergroup RV64VM_mstatus_mprv_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     tvm_mstatus: coverpoint ins.current.csr[12'h300][20] {
         bins set = {1};
     }
@@ -298,7 +300,8 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     //pte permission for leaf PTEs
     PTE_i_inv: coverpoint ins.current.pte_i[7:0] { //pte.2
         wildcard bins leaflvl_u = {8'b???11??0};
