@@ -279,4 +279,50 @@ cp_priority:
         addi s1, s1, -1
         ble zero, s1, for_mie_priority
 
+/////////////////////////////////
+// cp_wfi
+// Cross Product of mstatus.MIE = {0/1}, mstatus.SIE = {0/1}, mstatus.TW = {0/1}, mie.MTIE = 1
+// Set MTIMECMP = TIME + 0x100 to interrupt in the future
+// WFI instruction
+/////////////////////////////////
+
+cp_wfi:
+
+    li t0, 0x080
+    csrrw t6, mie, t0 # mie.MTIE = 1
+
+    li s2, 7
+
+    for_wfi:
+
+        
+        csrrci t6, mstatus, 8 # clear mstatus.MIE
+        csrrci t6, mstatus, 2 # clear mstatus.SIE
+        li t0, 0x200000
+        csrrc t6, mstatus, t0 # clear mstatus.TW
+
+        case_MIE:
+            srli t0, s2, 2
+            andi t0, t0, 1  # mask off bit 2
+            beqz t0, case_SIE # set mie.MEIP based on s2 bit 2 value
+            csrrsi t6, mstatus, 8 # set mstatus.MIE
+
+        case_SIE:
+            srli t0, s2, 1
+            andi t0, t0, 1  # mask off bit 1
+            beqz t0, case_TW # set mie.MTIP based on s2 bit 1 value
+            csrrsi t6, mstatus, 2 # set mstatus.SIE
+
+        case_TW:
+            andi t0, s2, 1  # mask off bit 0
+            beqz t0, case_end_wfi # set mie.MSIP based on s2 bit 0 value
+            li t0, 0x200000
+            csrrs t6, mstatus, t0 # set mstatus.TW
+
+        case_end_wfi:
+            jal cause_timer_interrupt_soon
+            wfi
+            addi s2, s2, -1
+            ble zero, s2, for_wfi
+
 j done
