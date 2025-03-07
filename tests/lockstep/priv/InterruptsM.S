@@ -186,7 +186,7 @@ cp_interrupts:
         j cross_interrupts
 
         set_mstatus:
-            csrrsi t6, mstatus, 8 # if s0 == 1, set mstatus.MIE
+        csrrsi t6, mstatus, 8 # if s0 == 1, set mstatus.MIE
         
         cross_interrupts:
         jal cross_interrupts_m_EP
@@ -202,25 +202,14 @@ cp_interrupts:
 
 cp_vectored:
 
-    li t1, -1
-
     csrrci t6, mtvec, 3
     csrrsi t6, mtvec, 1 # mtvec.MODE = 01
 
     csrrsi t6, mstatus, 8 # mstatus.MIE = 1
-    csrrc t6, mie, t1     # clear all interrupt enables
+    csrrw t6, mie, zero     # clear all interrupt enables
 
-    li s1, 2
-
-    set_mie_m:
-    
-        # setting mie.MEIE, MSIE, or MTIE based on s1 value
-        slli t3, s1, 2
-        li t4, 8
-        sll t4, t4, t3
-        csrrs t6, mie, t4   # csrrs to keep other enables high
-        addi s1, s1, -1
-        ble zero, s1, set_mie_m
+    li s1, 0x0888
+    csrrs t6, mie, s1       # set mie.MEIE/MTIE/MSIE
 
     jal raise_interrupts_m
 
@@ -236,11 +225,10 @@ cp_priority:
     csrrsi t6, mstatus, 8 # mstatus.MIE = 1
 
     li s1, 7
-    li t1, -1
 
     for_mie_priority:
 
-        csrrc t6, mie, t1 # clear all interrupt enables to start fresh
+        csrrw t6, mie, zero # clear all interrupt enables to start fresh
 
         andi t0, s1, 4 # mask off bit 2
         slli t0, t0, 9 # set mie.MEIE based on bit 2 value
@@ -251,7 +239,7 @@ cp_priority:
         or s3, s3, t0 
 
         andi t0, s1, 1  # mask off bit 0
-        slli t0, t0, 3  # set mie.MTIE based on bit 1 value
+        slli t0, t0, 3  # set mie.MSIE based on bit 1 value
         or s3, s3, t0 
 
         li s2, 7
@@ -277,8 +265,8 @@ cp_priority:
 
             case_end_priority:
                 
-                csrrs t6, mie, s3   # write to enable all machine interrupts, should trigger pending interrupts
-                csrrc t6, mie, s3   # write to disable all machine interrupts before next test case
+                csrrs t6, mie, s3   # write to enable certain machine interrupts, should trigger highest-priority pending interrupt
+                csrrc t6, mie, s3   # write to disable those machine interrupts before next test case
                 
                 # add in resets in case s1 == 0
                 jal reset_external_interrupts
