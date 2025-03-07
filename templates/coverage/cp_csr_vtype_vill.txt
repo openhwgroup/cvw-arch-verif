@@ -1,0 +1,5 @@
+    cp_csr_vtype_vill : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vtype", "vill")  iff (ins.trap == 0)  {
+        // Value of VTYPE.vill (vector type illegal)
+        bins zero = {0};
+        bins one  = {1};
+    }
