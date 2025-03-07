@@ -35,6 +35,16 @@
     type_option.weight = 0;
     bins U_mode = {2'b00};
   }
+  priv_mode_ms: coverpoint ins.prev.mode {
+    type_option.weight = 0;
+    bins M_mode = {2'b11};
+    bins S_mode = {2'b01};
+  }
+  priv_mode_mu: coverpoint ins.prev.mode {
+    type_option.weight = 0;
+    bins M_mode = {2'b11};
+    bins U_mode = {2'b00};
+  }
   priv_mode_su: coverpoint ins.prev.mode {
     type_option.weight = 0;
     bins S_mode = {2'b01};
@@ -44,10 +54,5 @@
     type_option.weight = 0;
     bins M_mode = {2'b11};
     bins S_mode = {2'b01};
-    bins U_mode = {2'b00};
-  }
-  priv_mode_mu: coverpoint ins.prev.mode {
-    type_option.weight = 0;
-    bins M_mode = {2'b11};
     bins U_mode = {2'b00};
   }
