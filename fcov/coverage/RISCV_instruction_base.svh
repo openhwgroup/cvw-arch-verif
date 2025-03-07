@@ -339,18 +339,11 @@ class RISCV_instruction
     current.rd_val_pre = prev.x_wdata[get_gpr_num(ops[offset].key)];
   endfunction
 
-  virtual function void add_rd_0();
+  virtual function void add_rd_ra();
     current.has_rd = 1;
-    current.rd = "x0";
-    current.rd_val = 0;
-    current.rd_val_pre = 0;
-  endfunction
-
-  virtual function void add_rd_1();
-    current.has_rd = 1;
-    current.rd = "x1";
-    current.rd_val = current.x_wdata[get_gpr_num("x1")];
-    current.rd_val_pre = prev.x_wdata[get_gpr_num("x1")];
+    current.rd = "ra";
+    current.rd_val = current.x_wdata[get_gpr_num("ra")];
+    current.rd_val_pre = prev.x_wdata[get_gpr_num("ra")];
   endfunction
 
   virtual function void add_rs1(int offset);
@@ -359,28 +352,16 @@ class RISCV_instruction
     current.rs1_val = prev.x_wdata[get_gpr_num(ops[offset].key)];
   endfunction
 
-  virtual function void add_rs1_0(int offset);
+  virtual function void add_rs1_sp();
     current.has_rs1 = 1;
-    current.rs1 = "x0";
-    current.rs1_val = 0;
-  endfunction
-
-  virtual function void add_rs1_2();
-    current.has_rs1 = 1;
-    current.rs1 = "x2";
-    current.rs1_val = prev.x_wdata[get_gpr_num("x2")];
+    current.rs1 = "sp";
+    current.rs1_val = prev.x_wdata[get_gpr_num("sp")];
   endfunction
 
   virtual function void add_rs2(int offset);
     current.has_rs2 = 1;
     current.rs2 = ops[offset].key;
     current.rs2_val = prev.x_wdata[get_gpr_num(ops[offset].key)];
-  endfunction
-
-  virtual function void add_rs2_0();
-    current.has_rs2 = 1;
-    current.rs2 = "x0";
-    current.rs2_val = 0;
   endfunction
 
   virtual function void add_rs3(int offset);
