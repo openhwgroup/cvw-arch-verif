@@ -22,7 +22,8 @@
 
 `define COVER_ZICSRU
 covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // "ZicsrU ucsr"
 
     // building blocks for the main coverpoints
@@ -68,9 +69,6 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
         bins mach_std3[] = {[12'hF00:12'hFBF]};
         bins mach_custom3[] = {[12'hFC0:12'hFFF]};
     }
-    old_priv_mode_u: coverpoint ins.prev.mode {
-        bins U_mode = {2'b00};
-    }
     rs1_ones: coverpoint ins.current.rs1_val {
         bins ones = {'1};
     }
@@ -84,13 +82,14 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
     }
     
     // main coverpoints
-    cp_csrr:         cross csrr,  csr, old_priv_mode_u, nonzerord;
-    cp_csrw_corners: cross csrrw, csr, old_priv_mode_u, rs1_corners;
-    cp_csrcs:        cross csrop, csr, old_priv_mode_u, rs1_ones;
+    cp_csrr:         cross csrr,  csr, priv_mode_u, nonzerord;
+    cp_csrw_corners: cross csrrw, csr, priv_mode_u, rs1_corners;
+    cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
 endgroup
 
 covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // "ZicsrU uprivinst"
 
     // building blocks for the main coverpoints
@@ -109,16 +108,10 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
-    }
-    old_priv_mode_u: coverpoint ins.prev.mode {
-        bins U_mode = {2'b00};
-    }
     // main coverpoints
-    cp_uprivinst:  cross privinstrs, old_priv_mode_u;
-    cp_mret:       cross mret, old_priv_mode_u; // should trap 
-    cp_sret:       cross sret, old_priv_mode_u; // should trap 
+    cp_uprivinst:  cross privinstrs, priv_mode_u;
+    cp_mret:       cross mret, priv_mode_u; // should trap 
+    cp_sret:       cross sret, priv_mode_u; // should trap 
 endgroup
 
 function void zicsru_sample(int hart, int issue, ins_t ins);
