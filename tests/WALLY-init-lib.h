@@ -44,29 +44,16 @@
 // define load and store instruction
 #ifdef __riscv_xlen
     #if __riscv_xlen == 32
-        #define LOAD lw
-        #define STORE sw
+        #define LREG lw
+        #define SREG sw
     #else
-        #define LOAD ld
-        #define STORE sd
+        #define LREG ld
+        #define SREG sd
     #endif
 #else
     ERROR: __riscv_xlen not defined
 #endif
 #define CLINT_MTIME_ADDRESS 0x0200BFF8
-
-// define load and store instruction
-#ifdef __riscv_xlen
-    #if __riscv_xlen == 32
-        #define LOAD lw
-        #define STORE sw
-    #else
-        #define LOAD ld
-        #define STORE sd
-    #endif
-#else
-    ERROR: __riscv_xlen not defined
-#endif
 
 .section .text.init
 .global rvtest_entry_point
@@ -130,19 +117,9 @@ trap_handler:
     nop                 # nops to allow for vectored interrupts
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0, t1, and ra on the stack
-            sd t1, -8(tp)
-            sd ra, -16(tp)
-        #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0, t1, and ra on the stack
-            sw t1, -4(tp)
-            sw ra, -8(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    SREG t0, 0(tp)        # Save t0, t1, and ra on the stack
+    SREG t1, -8(tp)
+    SREG ra, -16(tp)
     csrr t0, mcause     # Check the cause
     csrr t1, mtval      # And the trap value
     bgez t0, exception  # if msb is clear, it is an exception
@@ -233,27 +210,17 @@ post_up_mepc:
     add t1, t1, t0               # add 2 or 4 (from t0) to MEPC to determine return Address
     csrw mepc, t1
 trap_return:                     # don't need to update mepc for interrupts
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t0, 0(tp)         # Restore t0, t1, and ra
-            ld t1, -8(tp)
-            ld ra, -16(tp)
-        #elif __riscv_xlen == 32
-            lw t0, 0(tp)         # Restore t0, t1, and ra
-            lw t1, -4(tp)
-            lw ra, -8(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    LREG t0, 0(tp)         # Restore t0, t1, and ra
+    LREG t1, -8(tp)
+    LREG ra, -16(tp)
     csrrw tp, mscratch, tp   # restore tp
     mret                     # return from trap
 
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    STORE t0, 0(t1)     # write success code to tohost   
-    STORE t0, 0(t1)     # write success code to tohost   
+    SREG t0, 0(t1)     # write success code to tohost   
+    SREG t0, 0(t1)     # write success code to tohost   
 
 self_loop:
     j self_loop         # wait
@@ -269,19 +236,9 @@ self_loop:
 trap_handler_fastuncompressedillegalinstr:
     # Load trap handler stack pointer tp
     csrrw tp, mscratch, tp  # swap MSCRATCH and tp
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(tp)        # Save t0 and t1 on the stack
-            sd t1, -8(tp)
-            sd ra, -16(tp)
-        #elif __riscv_xlen == 32
-            sw t0, 0(tp)        # Save t0 and t1 on the stack
-            sw t1, -4(tp)
-            sw ra, -8(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    SREG t0, 0(tp)        # Save t0, t1, and ra on the stack
+    SREG t1, -8(tp)
+    SREG ra, -16(tp)
     csrr t0, mcause     # Check the cause
     li t1, 2            # Illegal Instruction cause
     beq t0, t1, illegalinstruction # check if this is an uncompressed illegal instruction, then return fast
@@ -300,19 +257,9 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     csrr t0, mepc  # get address of instruction that caused exception
     addi t0, t0, 4
     csrw mepc, t0
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            ld t0, 0(tp)        # Restore t0, t1, and ra
-            ld t1, -8(tp)
-            ld ra, -16(tp)
-        #elif __riscv_xlen == 32
-            lw t0, 0(tp)        # Restore t0, t1, and ra
-            lw t1, -4(tp)
-            lw ra, -8(tp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    LREG t0, 0(tp)        # Restore t0, t1, and ra
+    LREG t1, -8(tp)
+    LREG ra, -16(tp)
     csrrw tp, mscratch, tp  # restore tp
     mret                # return from trap
 
@@ -511,18 +458,8 @@ cross_interrupts_m_EP:
     li s1, 2                # iterate through setting mie.MEIE, MSIE, or MTIE (2-0)
     li t1, -1
 
-    la sp, scratch          # store return address in scratch
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            addi sp, sp, -4
-            sw ra, 0(sp)
-        #elif __riscv_xlen == 64
-            addi sp, sp, -8
-            sd ra, 0(sp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    addi sp, sp, -8
+    SREG ra, 0(sp)
 
     for_mie:
     
@@ -536,34 +473,15 @@ cross_interrupts_m_EP:
         addi s1, s1, -1     
         ble zero, s1, for_mie # iterate through interrupt types to be enabled
 
-    la t0, scratch              # restore return address from scratch
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            lw ra, 0(sp)
-            addi sp, sp, 4
-        #elif __riscv_xlen == 64
-            ld ra, 0(sp)
-            addi sp, sp, 8
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    
+    LREG ra, 0(sp)
+    addi sp, sp, 8
+        
     ret
 
 raise_interrupts_m:
 
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            addi sp, sp, -4
-            sw ra, 0(sp)
-        #elif __riscv_xlen == 64
-            addi sp, sp, -8
-            sd ra, 0(sp)
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    addi sp, sp, -8
+    SREG ra, 0(sp)
 
     li s2, 2
 
@@ -594,17 +512,8 @@ raise_interrupts_m:
             addi s2, s2, -1
             ble zero, s2, for_mip
 
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            lw ra, 0(sp)
-            addi sp, sp, 4
-        #elif __riscv_xlen == 64
-            ld ra, 0(sp)
-            addi sp, sp, 8
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    LREG ra, 0(sp)
+    addi sp, sp, 8
 
     ret
 
