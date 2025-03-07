@@ -21,9 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endianu_t;
-
-covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
+covergroup EndianU_endian_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     // "Endianness tests in user mode"
 
@@ -52,17 +50,23 @@ covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
     cp_lbu: coverpoint ins.current.insn {
         wildcard bins lbu = {32'b????????????_?????_100_?????_0000011}; 
     }
-    cp_byteoffset: coverpoint ins.current.imm[2:0] iff (ins.current.rs1_val[2:0] == 3'b000) {
+    cp_byteoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
         // all byte offsets
     }
-    cp_halfoffset: coverpoint ins.current.imm[2:1] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[0] == 1'b0)  {
+    cp_halfoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
+        wildcard ignore_bins lsb = {3'b??1};
         // all halfword offsets
     }    
-    cp_wordoffset: coverpoint ins.current.imm[2] iff (ins.current.rs1_val[2:0] == 3'b000 & ins.current.imm[1:0] == 2'b00)  {
+    cp_wordoffset: coverpoint {ins.current.imm + ins.current.rs1_val}[2:0] {
+        wildcard ignore_bins b0 = {3'b??1}; 
+        wildcard ignore_bins b2 = {3'b?1?}; 
         // all word offsets
-    }    
+    }     
     priv_mode_u: coverpoint ins.current.mode {
-       bins U_mode = {2'b00};
+        bins U_mode = {2'b00};
+    }
+    priv_mode_m: coverpoint ins.current.mode {
+        bins M_mode = {2'b11};
     }
     mstatus_ube: coverpoint ins.current.csr[12'h300][6] { // ube is mstatus[6]
     }
@@ -89,14 +93,14 @@ covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
     cp_mstatus_ube_endianness_lb:  cross priv_mode_u, mstatus_ube, cp_lb,  cp_byteoffset;
     cp_mstatus_ube_endianness_lhu: cross priv_mode_u, mstatus_ube, cp_lhu, cp_halfoffset;
     cp_mstatus_ube_endianness_lbu: cross priv_mode_u, mstatus_ube, cp_lbu, cp_byteoffset;
-    cp_mstatus_mprv_ube_endianness_sw:  cross priv_mode_u, mstatus_ube, cp_sw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_sh:  cross priv_mode_u, mstatus_ube, cp_sh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_sb:  cross priv_mode_u, mstatus_ube, cp_sb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_lw:  cross priv_mode_u, mstatus_ube, cp_lw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_lh:  cross priv_mode_u, mstatus_ube, cp_lh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_lb:  cross priv_mode_u, mstatus_ube, cp_lb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_lhu: cross priv_mode_u, mstatus_ube, cp_lhu, cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-    cp_mstatus_mprv_ube_endianness_lbu: cross priv_mode_u, mstatus_ube, cp_lbu, cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_sw:  cross priv_mode_m, mstatus_ube, cp_sw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_sh:  cross priv_mode_m, mstatus_ube, cp_sh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_sb:  cross priv_mode_m, mstatus_ube, cp_sb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_lw:  cross priv_mode_m, mstatus_ube, cp_lw,  cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_lh:  cross priv_mode_m, mstatus_ube, cp_lh,  cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_lb:  cross priv_mode_m, mstatus_ube, cp_lb,  cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_lhu: cross priv_mode_m, mstatus_ube, cp_lhu, cp_halfoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+    cp_mstatus_mprv_ube_endianness_lbu: cross priv_mode_m, mstatus_ube, cp_lbu, cp_byteoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
 
     `ifdef XLEN64
         cp_sd: coverpoint ins.current.insn {
@@ -114,20 +118,12 @@ covergroup EndianU_endian_cg with function sample(ins_endianu_t ins);
         cp_mstatus_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, cp_doubleoffset;
         cp_mstatus_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, cp_doubleoffset;
         cp_mstatus_ube_endianness_lwu: cross priv_mode_u, mstatus_ube, cp_lwu, cp_wordoffset;
-        cp_mstatus_mpr_ube_endianness_sd:  cross priv_mode_u, mstatus_ube, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_ld:  cross priv_mode_u, mstatus_ube, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
-        cp_mstatus_mpr_ube_endianness_lwu: cross priv_mode_u, mstatus_ube, cp_lwu, cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_sd:  cross priv_mode_m, mstatus_ube, cp_sd, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_ld:  cross priv_mode_m, mstatus_ube, cp_ld, cp_doubleoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
+        cp_mstatus_mprv_ube_endianness_lwu: cross priv_mode_m, mstatus_ube, cp_lwu, cp_wordoffset, mstatus_mprv, mstatus_mbe, mstatus_mpp;
     `endif
 endgroup
 
-function void endianu_sample(int hart, int issue);
-    ins_endianu_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void endianu_sample(int hart, int issue, ins_t ins);
     EndianU_endian_cg.sample(ins);
-    
 endfunction

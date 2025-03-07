@@ -58,19 +58,19 @@ def gen(comment, template, len = 32, exclusion = []):
 # setup
 seed(0) # make tests reproducible
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ExceptionInstr-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
-gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011")
+#gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011") # custom-0
 gen("Illegal op7",  "RRRRRRRRRRRRRRRRRRRRRRRRR0011111")
-gen("Illegal op10", "RRRRRRRRRRRRRRRRRRRRRRRRR0101011")
+#gen("Illegal op10", "RRRRRRRRRRRRRRRRRRRRRRRRR0101011") # custom-1
 gen("Illegal op15", "RRRRRRRRRRRRRRRRRRRRRRRRR0111111")
 gen("Illegal op21", "RRRRRRRRRRRRRRRRRRRRRRRRR1010111")
-gen("Illegal op22", "RRRRRRRRRRRRRRRRRRRRRRRRR1011011")
+#gen("Illegal op22", "RRRRRRRRRRRRRRRRRRRRRRRRR1011011") # custom-2 / rv128
 gen("Illegal op23", "RRRRRRRRRRRRRRRRRRRRRRRRR1011111")
 gen("Illegal op26", "RRRRRRRRRRRRRRRRRRRRRRRRR1101011")
 gen("Illegal op29", "RRRRRRRRRRRRRRRRRRRRRRRRR1110111")
-gen("Illegal op30", "RRRRRRRRRRRRRRRRRRRRRRRRR1111011")
+#gen("Illegal op30", "RRRRRRRRRRRRRRRRRRRRRRRRR1111011") # custom-3 / rv128
 gen("Illegal op31", "RRRRRRRRRRRRRRRRRRRRRRRRR1111111")
 gen("cp_load",      "RRRRRRRRRRRRRRRRREEERRRRR0000011")
 gen("cp_fload",     "RRRRRRRRRRRRRRRRREEERRRRR0000111")
@@ -121,15 +121,16 @@ gen("cp_jalr1",         "RRRRRRRRRRRRRRRRR010RRRRR1100111")
 gen("cp_jalr2",         "RRRRRRRRRRRRRRRRR100RRRRR1100111")
 gen("cp_jalr3",         "RRRRRRRRRRRRRRRRR110RRRRR1100111")
 gen("cp_privileged_f3", "00000000000100000EEE000001110011")
-gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,
-    ["00X10000001000000000000001110011", # exclude mret and sret because there is no trap to return from
+gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,    
+    ["1XXX11XXXXXX00000000000001110011", # exclude custom system instructions
+    "00X10000001000000000000001110011", # exclude mret and sret because there is no trap to return from
      "00010000010100000000000001110011"]) # exclude wfi because it may not wake up
 gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
 gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
 outfile.close
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/ExceptionInstrCompressed-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)

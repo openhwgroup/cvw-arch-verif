@@ -11,7 +11,7 @@
 // General notes:
 // Use csrrw/csrrs/csrrc t6, csr, rs1    when modifying a CSR to also check the old value.
 
-#include "../WALLY-init-lib.h"
+#include "WALLY-init-lib.h"
 
 main:
 
@@ -460,7 +460,7 @@ postsrettest:
 // put these tests at the end of this file so they don't clutter up the human generated ones.
 /////////////////////////////////
 
-#include "Zicsr-CSR-Tests.h"
+#include "ZicsrM-CSR-Tests.h"
 
 finished:
     j done
