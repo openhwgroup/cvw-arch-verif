@@ -22,13 +22,11 @@
 
 `define COVER_ZICNTRM
 covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // Counter access in machine mode
 
     // building blocks for the main coverpoints
-    priv_mode_m: coverpoint ins.current.mode {
-       bins M_mode = {2'b11};
-    }
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }

@@ -22,7 +22,8 @@
 
 `define COVER_ENDIANU
 covergroup EndianU_endian_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // "Endianness tests in user mode"
 
     // building blocks for the main coverpoints
@@ -62,12 +63,6 @@ covergroup EndianU_endian_cg with function sample(ins_t ins);
         wildcard ignore_bins b2 = {3'b?1?}; 
         // all word offsets
     }     
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
-    }
-    priv_mode_m: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
-    }
     mstatus_ube: coverpoint ins.current.csr[12'h300][6] { // ube is mstatus[6]
     }
     mstatus_mprv: coverpoint ins.current.csr[12'h300][17] { // mprv is mstatus[17]
