@@ -22,7 +22,8 @@
 
 `define COVER_ZICSRS
 covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
     nonzerord: coverpoint ins.current.insn[11:7] {
@@ -67,12 +68,6 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
         ignore_bins hyper_custom3[] = {[12'hEC0:12'hEFF]};
         bins mach_std3[] = {[12'hF00:12'hFBF]};
         bins mach_custom3[] = {[12'hFC0:12'hFFF]};
-    }
-    old_priv_mode_s: coverpoint ins.prev.mode {
-        bins S_mode = {2'b01};
-    }
-    old_priv_mode_m: coverpoint ins.prev.mode {
-        bins M_mode = {2'b11};
     }
     rs1_ones: coverpoint ins.current.rs1_val {
         bins ones = {'1};
@@ -126,28 +121,26 @@ covergroup ZicsrS_scsr_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_csrr:         cross csrr,    csr,         old_priv_mode_s, nonzerord;             
-    cp_csrw_corners: cross csrrw,   csr, old_priv_mode_s, rs1_corners {
+    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
+    cp_csrw_corners: cross csrrw,   csr, priv_mode_s, rs1_corners {
         ignore_bins satp = binsof(csr.satp);
     }
     
-    cp_csrcs:        cross csrop,   csr, old_priv_mode_s, rs1_ones {
+    cp_csrcs:        cross csrop,   csr, priv_mode_s, rs1_ones {
         ignore_bins satp = binsof(csr.satp);
     }
-    cp_scsrwalk:     cross csrname, csrop,       old_priv_mode_s, walking_ones;
-    cp_satp:         cross csrop,   satp,        old_priv_mode_s, satp_walking;
-    cp_shadow_m:     cross csrrw,   mcsrs,       old_priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
-    cp_shadow_s:     cross csrrw,   scsrs,       old_priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
+    cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
+    cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
+    cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
+    cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
 
 covergroup ZicsrS_scause_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
  
     csrrw_scause: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b000101000010_?????_001_?????_1110011};
-    }
-    priv_mode_s: coverpoint ins.current.mode {
-       bins S_mode = {2'b01};
     }
     scause_interrupt : coverpoint ins.current.rs1_val[XLEN-1] {
         bins interrupt = {1};
@@ -206,7 +199,8 @@ endgroup
 
 
 covergroup ZicsrS_sstatus_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
     }
@@ -219,16 +213,14 @@ covergroup ZicsrS_sstatus_cg with function sample(ins_t ins);
     csrrw_sstatus: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b000100000000_?????_001_?????_1110011};  // csrrw to sstatus
     }
-    priv_mode_s: coverpoint ins.current.mode {
-       bins S_mode = {2'b01};
-    }
     // main coverpoints
     cp_mstatus_sd_write: cross priv_mode_s, csrrw_sstatus, cp_sstatus_sd, cp_sstatus_fs, cp_sstatus_vs, cp_sstatus_xs;
 
- endgroup
+endgroup
 
 covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
@@ -244,14 +236,7 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     }
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
-    }
-    priv_mode_s: coverpoint ins.current.mode { 
-       bins S_mode = {2'b01};
-    }    
-    // mret and sret change the privilege mode, so check the old mode it was coming from for these coverpoints used in sret/mret cross products
-    old_priv_mode_s: coverpoint ins.prev.mode { 
-       bins S_mode = {2'b01};
-    }
+    }   
     // old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
     // }
     old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
@@ -263,9 +248,9 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     old_sstatus_sie: coverpoint ins.prev.csr[12'h100][1] {
     }
     // main coverpoints
-    cp_mprivinst: cross privinstrs, old_priv_mode_s;
-    cp_mret:      cross mret,       old_priv_mode_s;
-    cp_sret:      cross sret,       old_priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
+    cp_mprivinst: cross privinstrs, priv_mode_s;
+    cp_mret:      cross mret,       priv_mode_s;
+    cp_sret:      cross sret,       priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);

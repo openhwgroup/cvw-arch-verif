@@ -22,7 +22,8 @@
 
 `define COVER_EXCEPTIONSZICBOS
 covergroup ExceptionsZicboS_exceptions_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
     cbo_inval: coverpoint ins.current.insn {
@@ -49,16 +50,11 @@ covergroup ExceptionsZicboS_exceptions_cg with function sample(ins_t ins);
     }
     senvcfg_cbze: coverpoint ins.current.csr[12'h10A][7] {
     }
-    priv_modes: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
-        bins S_mode = {2'b01};
-        bins M_mode = {2'b11};
-    }
 
     // main coverpoints
-    cp_cbie:  cross cbo_inval,      menvcfg_cbie,  senvcfg_cbie,  priv_modes;
-    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, senvcfg_cbcfe, priv_modes;
-    cp_cbze:  cross cbo_zero,       menvcfg_cbze,  senvcfg_cbze,  priv_modes;
+    cp_cbie:  cross cbo_inval,      menvcfg_cbie,  senvcfg_cbie,  priv_mode_sum;
+    cp_cbcfe: cross cbo_flushclean, menvcfg_cbcfe, senvcfg_cbcfe, priv_mode_sum;
+    cp_cbze:  cross cbo_zero,       menvcfg_cbze,  senvcfg_cbze,  priv_mode_sum;
 
 endgroup
 

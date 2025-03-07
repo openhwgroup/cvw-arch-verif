@@ -23,7 +23,8 @@
 `define COVER_INTERRUPTSM
 
 covergroup InterruptsM_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
     
@@ -89,9 +90,6 @@ covergroup InterruptsM_cg with function sample(ins_t ins);
     }
     wfi: coverpoint ins.current.insn {
         bins wfi = {32'b0001000_00101_00000_000_00000_1110011};
-    }
-    priv_mode_m: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
     }
     // m_ext_intr: coverpoint ins.current.m_ext_intr {
     //     bins mei = {1};
