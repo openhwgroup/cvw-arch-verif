@@ -51,14 +51,14 @@ finished:
     j done
 
 walk:
-    STORE zero, 0(a0)   # clear mtime
+    SREG zero, 0(a0)   # clear mtime
 	li t1, -1           # all 1s
-    STORE t1, 0(a0)     # set mtime
+    SREG t1, 0(a0)     # set mtime
 	li t0, 1            # 1 in lsb
 1:
-    STORE t0, 0(a0)     # walking 1s
+    SREG t0, 0(a0)     # walking 1s
     not t1, t0          # walking zeros
-    STORE t1, 0(a0)     # write walking 0
+    SREG t1, 0(a0)     # write walking 0
 	slli t0, t0, 1      # move the 1
 	bnez t0, 1b         # repeat until all bits are walked
     ret
