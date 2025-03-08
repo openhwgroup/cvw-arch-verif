@@ -11,14 +11,24 @@
 
 #include "WALLY-init-lib.h"
 
-//Move to  WALLY-init-lib.h eventually
-#define ACCESS_FAULT_ADDRESS 0
+//s mode trap handler to handle medleg=1 for cp_mstatus_ie
+//This is a simple trap handler that will increment the PC by 4 to skip the instruction that caused the exception
+s_trap_handler_plus4_mmode_nocompressed:
+    csrr a1, sepc    #store exception address
+    addi a1, a1, 4   #Increment to next instruction (assuming no compressed instructions)
+    ecall
 
+    jr a1
+
+//program start
 main:
 
     # set mstatus.FS to 01 to enable fp
     li t0,0x4000
     csrs mstatus, t0
+
+    la t0, s_trap_handler_plus4_mmode_nocompressed
+    csrw stvec, t0 
 
     //change to user mode
     li a0, 0
@@ -463,13 +473,13 @@ store_loop_priority:
     ecall
 
     //prepare masks
-    li   t0, 128      # (1 << 7) bit 8 in medeleg enables lower privledge level traps
-    li   t1, 8        # (1 << 3) bit 4 in mstatus is the MIE bit
-    li   t3, 2        # (1 << 2) bit 3 in mstatus is the MIE bit SIE bit
+    li   t0, 256      # (1 << 8) bit 8 in medeleg enables lower privledge level traps
+    li   t1, 8        # (1 << 3) bit 3 in mstatus is the MIE bit
+    li   t3, 2        # (1 << 2) bit 2 in mstatus is the MIE bit SIE bit
 
 
-    //set medeleg (bit 8) in mstatus to 1 to lower trap mode privledge level
-    csrs medeleg, t0   
+    //clear medeleg (bit 8) in mstatus to 0 to lower trap mode privledge level
+    csrc medeleg, t0   
     
     //mstatus_MIE = 0, mstatus_SIE = 0
     #update MIE and SIE (already in machine mode)
@@ -528,11 +538,11 @@ store_loop_priority:
     li a0, 0
     ecall
 
-    //clear medeleg (bit 8) in mstatus to 0 to disable lower privledge level traps
+    //set medeleg (bit 8) in mstatus to 1 to disable lower privledge level traps
     #load back into machine mode
     li a0, 3
     ecall
-    csrc medeleg, t0  
+    csrs medeleg, t0  
 
     //mstatus_MIE = 0, mstatus_SIE = 0 
     #update MIE and SIE (In machine mode already)
@@ -593,4 +603,7 @@ store_loop_priority:
 
 //done
 finished:
+    // return to machine mode
+    li a0, 3
+    ecall
     j done
