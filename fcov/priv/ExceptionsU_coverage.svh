@@ -110,7 +110,8 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     mstatus_SIE: coverpoint ins.prev.csr[12'h300][1] {
         // auto fills 1 and 0
     }
-    medelegb8: coverpoint ins.current.csr[12'h302][8]{
+
+    medelegb8: coverpoint ins.current.csr[12'h302][7]{
     }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
         bins zero = {0};
@@ -154,11 +155,11 @@ function void exceptionsu_sample(int hart, int issue, ins_t ins);
     ExceptionsU_exceptions_cg.sample(ins);
 
     //$display("Instruction is: PC %h: %h = %s (rd = %h rs1 = %h rs2 = %h) trap = %b mode = %b (old mode %b) mstatus %h (old mstatus %h).  Retired: %d",ins.current.pc_rdata, ins.current.insn, ins.current.disass, ins.current.rd_val, ins.current.rs1_val, ins.current.rs2_val, ins.current.trap, ins.current.mode, ins.prev.mode, ins.current.csr[12'h300], ins.prev.csr[12'h300], ins.current.csr[12'hB02]);
-    $display(" ecall: %b, func3: %b, adr_LSB: %b, illegal: %b, CurPriv: %b, PrevPriv: %b",
+    $display(" ecall: %b, MIEPrev: %b, SIEPrev: %b, medelegb8, CurPriv: %b, PrevPriv: %b",
     ins.current.insn[6:0] == 8'b0000011,
-    ins.current.insn[14:12],
-    {ins.current.rs1_val + ins.current.imm}[2:0],
-    {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000},
+    ins.prev.csr[12'h300][3],
+    ins.prev.csr[12'h300][1],
+    ins.current.csr[12'h302][8],
     ins.current.mode,
     ins.prev.mode);
 endfunction

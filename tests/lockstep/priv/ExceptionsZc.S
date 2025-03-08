@@ -26,12 +26,14 @@
     la      a4, scratch
     la      sp, scratch
 
+    //Store a value to the scratch memory
+    li     t1, 0xDEADBEEFDEADBEEF
+    sw     t1, 0(a4)
+
     //Loop over all 3-bit offsets (0..7)
     # These instructions use a base register (a2) plus a register offset.
     li      t0, 0         # loop index (offset 0..7)
     li      t5, 8         # loop limit
-
-    li      a2, 0         # initialize a2
 
 misaligned_loop:
 
@@ -74,6 +76,8 @@ misaligned_loop:
 /////////////////////////////////
 //cp_store_address_misaligned
 /////////////////////////////////
+
+    li a3,  0xDEADBEEFDEADBEEF
 
     // Test compressed integer store instructions:
     c.sw    a3, 0(a2)     # compressed store word
@@ -140,11 +144,12 @@ misaligned_loop:
     //Stack pointer variants:
     c.lwsp  a3, 0(sp)       // Compressed load word using stack-pointer offset
 
+    c.fldsp f8, 0(sp)       // Compressed floating-point load doubleword from sp
+
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             c.ldsp  a3, 0(sp)       // Compressed load doubleword using stack-pointer offset
             c.fld   f8, 0(a2)       // Compressed floating-point load doubleword
-            c.fldsp f8, 0(sp)       // Compressed floating-point load doubleword from sp
         #elif __riscv_xlen == 32
             c.flw   f8, 0(a2)       // Compressed floating-point load word
             c.flwsp f8, 0(sp)       // Compressed floating-point load word from sp
@@ -178,8 +183,6 @@ misaligned_loop:
 
     #------------------------
     # Now test the _sp forms.
-
-    add     sp, sp, t0    # sp = target address
 
     c.swsp  a3, 0(sp)
     c.fsdsp f8, 0(sp)
