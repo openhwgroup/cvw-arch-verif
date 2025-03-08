@@ -22,7 +22,8 @@
 
 `define COVER_EXCEPTIONSS
 covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
     ecall: coverpoint ins.current.insn {
@@ -116,21 +117,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     }
     sstatus_SIE: coverpoint ins.prev.csr[12'h100][1] {
         // auto fills 1 and 0
-    }
-    priv_mode_s: coverpoint ins.current.mode {
-        bins S_mode = {2'b01};
-    }
-    priv_mode_m: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
-    }
-    priv_mode_su: coverpoint ins.current.mode {
-        bins S_mode = {2'b01};
-        bins U_mode = {2'b00};
-    }
-    priv_mode_sum: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
-        bins S_mode = {2'b01};
-        bins U_mode = {2'b00};
     }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
         bins zero = {0};

@@ -22,7 +22,8 @@
 
 `define COVER_INTERRUPTSU
 covergroup InterruptsU_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
     mstatus_sie: coverpoint ins.current.csr[12'h300][1]  {
@@ -74,9 +75,6 @@ covergroup InterruptsU_cg with function sample(ins_t ins);
     }
     m_soft_intr: coverpoint ins.current.m_soft_intr {
         bins msi = {1};
-    }
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
     }
 
     // main coverpoints

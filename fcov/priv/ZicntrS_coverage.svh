@@ -22,7 +22,8 @@
 
 `define COVER_ZICNTRS
 covergroup ZicntrS_scounters_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // counter access in supervisor mode
 
     // building blocks for the main coverpoints
@@ -370,15 +371,6 @@ covergroup ZicntrS_scounters_cg with function sample(ins_t ins);
         bins b_29_0 = {32'b11011111111111111111111111111111};
         bins b_30_0 = {32'b10111111111111111111111111111111};
         bins b_31_0 = {32'b01111111111111111111111111111111};
-    }
-    priv_mode_u: coverpoint ins.current.mode { 
-       bins U_mode = {2'b00};  
-    }
-    priv_mode_s: coverpoint ins.current.mode { 
-       bins S_mode = {2'b01};  
-    }
-    priv_mode_m: coverpoint ins.current.mode { 
-       bins M_mode = {2'b11};  
     }
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
