@@ -454,30 +454,30 @@ cause_timer_interrupt_now:
     ret
 
 cause_timer_interrupt_soon:
+
+    la t0, MTIME
+    la t4, MTIMECMP
+
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-                la t0, MTIME
                 ld t0, 0(t0)                    # read MTIME
                 
                 addi t0, t0, 0x100              # create a delay
                 
-                la t1, MTIMECMP
-                sd t0, 0(t1)         # set MTIMECMP = MTIME + 0x100 to cause timer interrupt later
+                sd t0, 0(t4)         # set MTIMECMP = MTIME + 0x100 to cause timer interrupt later
 
         #elif __riscv_xlen == 32
-                la t0, MTIME
                 lw t1, 0(t0)                    # low word of MTIME
                 lw t2, 4(t0)                    # high word of MTIME
                 
                 addi t3, t1, 0x100              # add 0x100 to MTIME value
-                bgt t1, t3, MTIME_overflow      # if overflow occurred, carry the 1 to MTIME high word
+                bgtu t1, t3, MTIME_overflow      # if overflow occurred, carry the 1 to MTIME high word
                 j write_MTIMECMP                # otherwise, leave MTIME high word untouched
                 
                 MTIME_overflow:
                 addi t2, t2, 1
                 
                 write_MTIMECMP:
-                la t4, MTIMECMP
                 sw t3, 0(t4)          # MTIMECMP = MTIME + 0x100
                 sw t2, 4(t4)          
         #endif
@@ -504,7 +504,7 @@ cross_interrupts_m_EP:
         jal raise_interrupts_m
     
         addi s1, s1, -1     
-        ble zero, s1, for_mie # iterate through interrupt types to be enabled
+        bge s1, zero, for_mie # iterate through interrupt types to be enabled
 
     LREG ra, 0(sp)
     addi sp, sp, 8
@@ -543,7 +543,7 @@ raise_interrupts_m:
 
         case_end_vectored:
             addi s2, s2, -1
-            ble zero, s2, for_mip
+            bge s2, zero, for_mip
 
     LREG ra, 0(sp)
     addi sp, sp, 8

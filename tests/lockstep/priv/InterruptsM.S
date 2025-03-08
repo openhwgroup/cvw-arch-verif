@@ -274,10 +274,10 @@ cp_priority:
                 jal reset_msip
                 
                 addi s2, s2, -1
-                ble zero, s2, for_mip_priority
+                bge s2, zero, for_mip_priority
 
         addi s1, s1, -1
-        ble zero, s1, for_mie_priority
+        bge s1, zero, for_mie_priority
 
 /////////////////////////////////
 // cp_wfi
@@ -295,27 +295,22 @@ cp_wfi:
 
     for_wfi:
 
-        
-        csrrci t6, mstatus, 8 # clear mstatus.MIE
-        csrrci t6, mstatus, 2 # clear mstatus.SIE
-        li t0, 0x200000
-        csrrc t6, mstatus, t0 # clear mstatus.TW
+        li t0, 0x20000A
+        csrrc t6, mstatus, t0 # clear mstatus.TW, MIE, SIE
 
         case_MIE:
-            srli t0, s2, 2
-            andi t0, t0, 1  # mask off bit 2
-            beqz t0, case_SIE # set mie.MEIP based on s2 bit 2 value
+            andi t0, s2, 4  # mask off bit 2
+            beqz t0, case_SIE # set mstatus.MIE based on s2 bit 2 value
             csrrsi t6, mstatus, 8 # set mstatus.MIE
 
         case_SIE:
-            srli t0, s2, 1
-            andi t0, t0, 1  # mask off bit 1
-            beqz t0, case_TW # set mie.MTIP based on s2 bit 1 value
+            andi t0, s2, 2  # mask off bit 1
+            beqz t0, case_TW # set mstatus.SIE based on s2 bit 1 value
             csrrsi t6, mstatus, 2 # set mstatus.SIE
 
         case_TW:
             andi t0, s2, 1  # mask off bit 0
-            beqz t0, case_end_wfi # set mie.MSIP based on s2 bit 0 value
+            beqz t0, case_end_wfi # set mstatus.TW based on s2 bit 0 value
             li t0, 0x200000
             csrrs t6, mstatus, t0 # set mstatus.TW
 
@@ -323,6 +318,6 @@ cp_wfi:
             jal cause_timer_interrupt_soon
             wfi
             addi s2, s2, -1
-            ble zero, s2, for_wfi
+            bge s2, zero, for_wfi
 
 j done
