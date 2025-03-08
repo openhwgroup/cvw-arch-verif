@@ -23,7 +23,8 @@
 `define COVER_INTERRUPTSSSTC
 
 covergroup InterruptsSstc_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
 
@@ -71,15 +72,6 @@ covergroup InterruptsSstc_cg with function sample(ins_t ins);
     }
     read_stimecmp: coverpoint ins.current.insn[31:20] {
         bins read_stimecmp = {12'h14D};
-    }
-    priv_mode_m: coverpoint ins.current.mode {
-        bins M_mode = {2'b11};
-    }
-    priv_mode_s: coverpoint ins.current.mode {
-        bins S_Mode = {2'b01};
-    }
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_Mode = {2'b00};
     }
 
     // main coverpoints

@@ -35,8 +35,10 @@
 // Set register type length
 `ifdef XLEN32
   `define XLEN_INT int
+  `define XLEN 32
 `else
   `define XLEN_INT longint
+  `define XLEN 64
 `endif
 
 // Instruction operand data structure
