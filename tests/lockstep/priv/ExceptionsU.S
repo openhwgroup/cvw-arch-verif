@@ -2,7 +2,7 @@
 ///////////////////////////////////////////
 // ExceptionsM.S
 //
-// Written: Roman De Santos rdesantos@hmc.edu 6 February 2025
+// Written: Roman De Santos rdesantos@hmc.edu 24 February 2025
 //
 // Purpose: Functional coverage test for Exceptions in M mode
 //
@@ -11,14 +11,28 @@
 
 #include "WALLY-init-lib.h"
 
+//s mode trap handler to handle medleg=1 for cp_mstatus_ie
+//This is a simple trap handler that will increment the PC by 4 to skip the instruction that caused the exception
+s_trap_handler_plus4_mmode_nocompressed:
+    csrr a1, sepc    #store exception address
+    addi a1, a1, 4   #Increment to next instruction (assuming no compressed instructions)
+    ecall
+
+    jr a1
+
+//program start
 main:
-    // Set up the trap handler
-    la t0, trap_handler
-    csrw mtvec, t0
 
     # set mstatus.FS to 01 to enable fp
     li t0,0x4000
     csrs mstatus, t0
+
+    la t0, s_trap_handler_plus4_mmode_nocompressed
+    csrw stvec, t0 
+
+    //change to user mode
+    li a0, 0
+    ecall
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_branch
@@ -199,6 +213,7 @@ main:
     li    t1, ACCESS_FAULT_ADDRESS       // Load the fault address into t0
     jalr  ra, t1, 0                      // Jump to the fault address (return address must be in t2)
     nop
+
     /////////////////////////////////
     //cp_illegal_instruction
     /////////////////////////////////
@@ -208,6 +223,7 @@ main:
     // Attempt to execute illegal instructions
     .word 0x00000000 
     .word 0xFFFFFFFF
+
  
     /////////////////////////////////
     //cp_illegal_instruction_seed
@@ -225,13 +241,10 @@ main:
 
     // Attempt to read from CSR 0x000, which is an invalid CSR address
     lui t2, 1
-    csrrw t1, 0, t2 //check if needed
     csrrs t1, 0, t2  
     csrrc t1, 0, t2
-    csrrwi t1, 0, 1 //check if needed
     csrrsi t1, 0, 1
     csrrci t1, 0, 1
-
 
     /////////////////////////////////
     //cp_breakpoint
@@ -365,11 +378,11 @@ store_loop:
     #endif
 
     /////////////////////////////////
-    //cp_ecall_m
+    //cp_ecall_u
     /////////////////////////////////
 
-    //switch from machine mode to machine mode
-    li a0, 3
+    //switch from user to user mode
+    li a0, 0
     ecall     
 
     /////////////////////////////////
@@ -378,7 +391,7 @@ store_loop:
 
     //Test misaligned priority for load instructions
 
-  # Get a pointer to an access fault address
+  # Get a pointer to an access fault address and deliberately misalign it by adding 1
     la      t4, ACCESS_FAULT_ADDRESS
 
     # Initialize loop counter (offset) from 0 to 7
@@ -411,6 +424,8 @@ load_loop_priority:
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
     blt     t0, t5, load_loop_priority 
+
+    //store priority misaligned test
 
     # Initialize loop counter (offset) from 0 to 7
     li      t0, 0         # t0 = loop index (offset)
@@ -453,26 +468,142 @@ store_loop_priority:
     //cp_mstatus_ie
     /////////////////////////////////
 
-    # Save the original mstatus in t0.
-    csrr    t0, mstatus
+    //Machine mode setup since user mode cannot modify CSRs
+    li a0, 3
+    ecall
 
-    # Prepare the mask for the MIE bit (bit 3).
-    li      t1, 0x8         # 0x8 == (1 << 3)
+    //prepare masks
+    li   t0, 256      # (1 << 8) bit 8 in medeleg enables lower privledge level traps
+    li   t1, 8        # (1 << 3) bit 3 in mstatus is the MIE bit
+    li   t3, 2        # (1 << 2) bit 2 in mstatus is the MIE bit SIE bit
 
-    # Clear the MIE bit in mstatus so that on exception entry MPIE becomes 0.
-    csrrc   x0, mstatus, t1
 
-    li     a0, 3
-    ecall                     # Execute ecall with MIE = 0; trap entry will set MPIE = 0.
+    //clear medeleg (bit 8) in mstatus to 0 to lower trap mode privledge level
+    csrc medeleg, t0   
+    
+    //mstatus_MIE = 0, mstatus_SIE = 0
+    #update MIE and SIE (already in machine mode)
+    csrc mstatus, t1
+    csrc mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
 
-    # Set the MIE bit in mstatus so that on exception entry MPIE becomes 1.
-    csrrs   x0, mstatus, t1
+    #test ecall
+    li a0, 0
+    ecall
 
-    li     a0, 3
-    ecall                     # Execute ecall with MIE = 1; trap entry will set MPIE = 1.
+    //mstatus_MIE = 0, mstatus_SIE = 1
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrc mstatus, t1
+    csrs mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
 
-    # Restore the original mstatus.
-    csrw    mstatus, t0
+    #test ecall
+    li a0, 0
+    ecall
 
+    //mstatus_MIE = 1, mstatus_SIE = 0
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrs mstatus, t1
+    csrc mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+    //mstatus_MIE = 1, mstatus_SIE = 1
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrs mstatus, t1
+    csrs mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+    //set medeleg (bit 8) in mstatus to 1 to disable lower privledge level traps
+    #load back into machine mode
+    li a0, 3
+    ecall
+    csrs medeleg, t0  
+
+    //mstatus_MIE = 0, mstatus_SIE = 0 
+    #update MIE and SIE (In machine mode already)
+    csrc mstatus, t1
+    csrc mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+    //mstatus_MIE = 0, mstatus_SIE = 1
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrc mstatus, t1
+    csrs mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+    //mstatus_MIE = 1, mstatus_SIE = 0
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrs mstatus, t1
+    csrc mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+    //mstatus_MIE = 1, mstatus_SIE = 1
+    #load back into machine mode
+    li a0, 3
+    ecall
+    #update MIE and SIE
+    csrs mstatus, t1
+    csrs mstatus, t3
+    #load into user mode
+    li a0, 0
+    ecall
+
+    #test ecall
+    li a0, 0
+    ecall
+
+//done
 finished:
+    // return to machine mode
+    li a0, 3
+    ecall
     j done
