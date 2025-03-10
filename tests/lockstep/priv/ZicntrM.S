@@ -27,7 +27,7 @@ main:
     csrci mstatus, 0x8   # Turn off mstatus.MIE global interrupt enable
 
 // Testing walking zeros and ones for mtime in CLINT
-    la a0, CLINT_MTIME_ADDRESS  # address of mtime register
+    la a0, MTIME  # address of mtime register
     jal walk
 
 #ifdef __riscv_xlen

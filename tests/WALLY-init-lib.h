@@ -39,25 +39,6 @@
 
 //Macros
 #define ACCESS_FAULT_ADDRESS 0
-#define CLINT_MTIME_ADDRESS 0x0200BFF8
-
-// define load and store instruction
-#ifdef __riscv_xlen
-    #if __riscv_xlen == 32
-        #define LREG lw
-        #define SREG sw
-    #else
-        #define LREG ld
-        #define SREG sd
-    #endif
-#else
-    ERROR: __riscv_xlen not defined
-#endif
-#define CLINT_MTIME_ADDRESS 0x0200BFF8
-
-.section .text.init
-.global rvtest_entry_point
-
 #define CLINT_BASE_ADDR 0x02000000
 #define PLIC_BASE_ADDR 0x0C000000
 #define GPIO_BASE_ADDR 0x10060000
@@ -75,6 +56,22 @@
 
 #define GPIO_OUTPUT_EN  (GPIO_BASE_ADDR + 0x08)
 #define GPIO_OUTPUT_VAL (GPIO_BASE_ADDR + 0x0C)
+
+// define load and store instruction
+#ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        #define LREG lw
+        #define SREG sw
+    #else
+        #define LREG ld
+        #define SREG sd
+    #endif
+#else
+    ERROR: __riscv_xlen not defined
+#endif
+
+.section .text.init
+.global rvtest_entry_point
 
 rvtest_entry_point:
     la sp, topofstack       # Initialize stack pointer (not used)
@@ -125,35 +122,15 @@ trap_handler:
     bgez t0, exception  # if msb is clear, it is an exception
 
 interrupt:              # must be an interrupt
-    li t0, -1           # set mtimecmp to biggest number so it doesnt interrupt again
-    li t1, 0x02004000   # MTIMECMP in CLINT
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            sd t0, 0(t1) # set mtimecmp to biggest number so it doesnt interrupt again
-        #elif __riscv_xlen == 32
-            sw t0, 0(t1) # set mtimecmp to biggest number so it doesnt interrupt again
-            sw t0, 4(t1) # set mtimecmph to biggest number so it doesnt interrupt again
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-    # *** following line assumes Sstc is supported
-    csrw stimecmp, t0   # sets stimecmp to big number so it doesnt interrupt
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 32
-            csrw stimecmph, t0   # for RV32 sets upper word (stimecmph) to big number so it doesnt interrupt
-        #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
+    jal reset_mtimecmp
+    # *** following function assumes Sstc is supported
+    jal reset_stimecmp
 
     jal reset_msip
     jal reset_external_interrupts
-    li t0, 32
-    csrc mip, t0       # reset mip.STIP
-    csrci mip, 2       # reset mip.SSIP
-    li t0, 512              # 1 in bit 9
-    csrc mip, t0       # reset mip.SEIP
+    
+    li t0, 546          # 1 in bits 1, 4, and 9
+    csrc mip, t0        # reset mip.STIP, SSIP, and SEIP
 
     j trap_return       # clean up and return
 
@@ -219,7 +196,6 @@ trap_return:                     # don't need to update mepc for interrupts
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    SREG t0, 0(t1)     # write success code to tohost   
     SREG t0, 0(t1)     # write success code to tohost   
 
 self_loop:
@@ -331,15 +307,28 @@ reset_external_interrupts:
 
     ret
 
-reset_timer_compare:
-    li t0, -1               # all 1s
+reset_mtimecmp:
+    // resets M-mode timer compare register to prevent further M-mode timer interrupts
+    li t0, -1               # set mtimecmp to biggest number so it doesnt interrupt again
     la t1, MTIMECMP
+    SREG t0, 0(t1)
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
-            sw t0, 0(t1)
             sw t0, 4(t1)
-        #elif __riscv_xlen == 64
-            sd t0, 0(t1)
+        #endif
+    #else
+        ERROR: __riscv_xlen not defined
+    #endif
+
+    ret
+
+reset_stimecmp:
+    // resets S-mode timer compare register to prevent further S-mode timer interrupts
+    li t0, -1
+    csrw stimecmp, t0   # sets stimecmp to big number so it doesnt interrupt
+    #ifdef __riscv_xlen
+        #if __riscv_xlen == 32
+            csrw stimecmph, t0   # for RV32 sets upper word (stimecmph) to big number so it doesnt interrupt
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -352,6 +341,7 @@ reset_timer_compare:
 /////////////////////////////////
 
 set_msip:
+    // sets the M-mode software interrupt bit in CLINT
     la t0, MSIP
     lw t1, 0(t0) 
     ori t1, t1, 1 # set lowest bit for hart 0
@@ -360,6 +350,7 @@ set_msip:
     ret
 
 cause_external_interrupt_M:
+    // raises an external M-mode interrupt using GPIO
     # set M-mode interrupt threshold to 0
     la t0, THRESHOLD_0
     sw zero, 0(t0)
@@ -374,11 +365,6 @@ cause_external_interrupt_M:
     li t1, 1
     sw t1, 0(t0)
 
-    # enable interrupts from source 3 (GPIO) in M-mode
-    la t0, INT_EN_00
-    li t1, 0b1000
-    sw t1, 0(t0)
-
     # clear all interrupt enables to make sure interrupt doesn't go off prematurely
     la t0, GPIO_BASE_ADDR
     li t1, 1
@@ -390,13 +376,21 @@ cause_external_interrupt_M:
     sw zero, 0x28(t0) # clear high enable
     sw zero, 0x30(t0) # clear low enable
 
+    # enable interrupts from source 3 (GPIO) in M-mode
+    la t0, INT_EN_00
+    li t1, 0b1000
+    sw t1, 0(t0)
+
     # enable interrupts from high output
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
     sw t1, 0x28(t0) # enable high interrupt for pin 1
     sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
 
     ret
 
 cause_external_interrupt_S:
+    // raises an external S-mode interrupt using GPIO
     # set M-mode interrupt threshold to 7
     la t0, THRESHOLD_0
     li t1, 7
@@ -411,11 +405,6 @@ cause_external_interrupt_S:
     li t1, 1
     sw t1, 0(t0)
 
-    # enable interrupts from source 3 (GPIO) in S-mode
-    la t0, INT_EN_10
-    li t1, 0b1000
-    sw t1, 0(t0)
-
     # clear all interrupt enables to make sure interrupt doesn't go off prematurely
     la t0, GPIO_BASE_ADDR
     li t1, 1
@@ -427,34 +416,40 @@ cause_external_interrupt_S:
     sw zero, 0x28(t0) # clear high enable
     sw zero, 0x30(t0) # clear low enable
 
+    # enable interrupts from source 3 (GPIO) in S-mode
+    la t0, INT_EN_10
+    li t1, 0b1000
+    sw t1, 0(t0)
+
     # enable interrupts from high output
+    la t0, GPIO_BASE_ADDR
+    li t1, 1
     sw t1, 0x28(t0) # enable high interrupt for pin 1
     sw t1, 0x0C(t0) # write 1 to pin 1, this should cause interrupt
 
     ret
 
-cause_timer_interrupt_now:
+cause_mtimer_interrupt_now:
+    // raises an M-mode timer interrupt using CLINT, interrupt is raised as soon as the function writes to MTIMECMP(H)
+
+    la t0, MTIME
+    la t1, MTIMECMP
+    LREG t2, 0(t0) # read MTIME
+    SREG t2, 0(t1) # set MTIMECMP = MTIME to cause timer interrupt
+
     #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-                la t0, MTIME
-                ld t0, 0(t0)                    # read MTIME
-                la t1, MTIMECMP
-                sd t0, 0(t1)  # set MTIMECMP = MTIME to cause timer interrupt
-        #elif __riscv_xlen == 32
-                la t0, MTIME
-                lw t1, 0(t0)                    # low word of MTIME
-                lw t2, 4(t0)                    # high word of MTIME
-                la t3, MTIMECMP
-                sw t1, 0(t3)          # MTIMECMP low word = MTIME low word
-                sw t2, 4(t3)         # MTIMECMP high word = MTIME high word
+        #if __riscv_xlen == 32
+                lw t2, 4(t0) # high word of MTIME
+                sw t2, 4(t1) # MTIMECMP high word = MTIME high word
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
+
     ret
 
-cause_timer_interrupt_soon:
-
+cause_mtimer_interrupt_soon:
+    // raises an M-mode timer interrupt using CLINT, interrupt is raised 256 (255) cycles after write to MTIMECMP(H)
     la t0, MTIME
     la t4, MTIMECMP
 
@@ -487,7 +482,7 @@ cause_timer_interrupt_soon:
     ret
 
 cross_interrupts_m_EP:
-
+    // helper function for crossing mie.MEIE/MSIE/MTIE with mip.MEIP/MSIP/MTIP in Interrupts tests (enables and pending)
     li s1, 2                # iterate through setting mie.MEIE, MSIE, or MTIE (2-0)
     li t1, -1
 
@@ -512,6 +507,7 @@ cross_interrupts_m_EP:
     ret
 
 raise_interrupts_m:
+    // raises each of mip.MEIP/MSIP/MTIP once in sequence
 
     addi sp, sp, -8
     SREG ra, 0(sp)
@@ -526,8 +522,8 @@ raise_interrupts_m:
         case2_vectored:
             li t3, 2
             bne s2, t3, case1_vectored      # if s2 == 2, trigger timer interrupt
-            jal cause_timer_interrupt_now
-            jal reset_timer_compare
+            jal cause_mtimer_interrupt_now
+            jal reset_mtimecmp
 
         case1_vectored:
             li t3, 1

@@ -14,26 +14,8 @@
 
 #include "WALLY-init-lib.h"
 
-#define CLINT_BASE_ADDR 0x02000000
-#define PLIC_BASE_ADDR 0x0C000000
-#define GPIO_BASE_ADDR 0x10060000
-
-#define MTIME           (CLINT_BASE_ADDR + 0xBFF8)
-#define MSIP            (CLINT_BASE_ADDR)
-#define MTIMECMP        (CLINT_BASE_ADDR + 0x4000)
-#define MTIMECMPH       (CLINT_BASE_ADDR + 0x4004)
-
-#define THRESHOLD_0     (PLIC_BASE_ADDR + 0x200000)
-#define THRESHOLD_1     (PLIC_BASE_ADDR + 0x201000)
-#define INT_PRIORITY_3  (PLIC_BASE_ADDR + 0x00000C)
-#define INT_EN_00       (PLIC_BASE_ADDR + 0x002000)
-#define INT_EN_10       (PLIC_BASE_ADDR + 0x002080)
-
-#define GPIO_OUTPUT_EN  (GPIO_BASE_ADDR + 0x08)
-#define GPIO_OUTPUT_VAL (GPIO_BASE_ADDR + 0x0C)
-
 main:
-    jal reset_timer_compare
+    jal reset_mtimecmp
 
 /////////////////////////////////
 // cp_trigger_mti
@@ -46,12 +28,12 @@ cp_trigger_mti:
 
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
-    jal cause_timer_interrupt_now
-    jal reset_timer_compare # reset mtimecmp to avoid premature interrupt in next test
+    jal cause_mtimer_interrupt_now
+    jal reset_mtimecmp # reset mtimecmp to avoid premature interrupt in next test
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
-    jal cause_timer_interrupt_now # expecting timer interrupt, so interrupt handler will reset mtimecmp
+    jal cause_mtimer_interrupt_now # expecting timer interrupt, so interrupt handler will reset mtimecmp
 
 /////////////////////////////////
 // cp_trigger_msi
@@ -65,7 +47,7 @@ cp_trigger_msi:
     # mstatus.MIE = 0 should not take interrupt
     csrrci t6, mstatus, 8   # mstatus.MIE = 0
     jal set_msip
-    jal reset_msip          # reset mip.SSIP since the trap handler will not reset it if no interrupt occurs
+    jal reset_msip          # reset mip.MSIP since the trap handler will not reset it if no interrupt occurs
 
     # mstatus.MIE = 1 should take interrupt
     csrrsi t6, mstatus, 8   # mstatus.MIE = 1
@@ -256,7 +238,7 @@ cp_priority:
                 srli t0, s2, 1
                 andi t0, t0, 1  # mask off bit 1
                 beqz t0, case0_priority # set mie.MTIP based on s2 bit 1 value
-                jal cause_timer_interrupt_now
+                jal cause_mtimer_interrupt_now
 
             case0_priority:
                 andi t0, s2, 1  # mask off bit 0
@@ -270,7 +252,7 @@ cp_priority:
                 
                 # add in resets in case s1 == 0
                 jal reset_external_interrupts
-                jal reset_timer_compare
+                jal reset_mtimecmp
                 jal reset_msip
                 
                 addi s2, s2, -1
@@ -315,7 +297,7 @@ cp_wfi:
             csrrs t6, mstatus, t0 # set mstatus.TW
 
         case_end_wfi:
-            jal cause_timer_interrupt_soon
+            jal cause_mtimer_interrupt_soon
             wfi
             addi s2, s2, -1
             bge s2, zero, for_wfi
