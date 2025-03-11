@@ -1,24 +1,15 @@
 
 ///////////////////////////////////////////
-// ExceptionsM.S
+// ExceptionsU.S
 //
 // Written: Roman De Santos rdesantos@hmc.edu 24 February 2025
 //
-// Purpose: Functional coverage test for Exceptions in M mode
+// Purpose: Functional coverage test for Exceptions in U mode
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 
 #include "WALLY-init-lib.h"
-
-//s mode trap handler to handle medleg=1 for cp_mstatus_ie
-//This is a simple trap handler that will increment the PC by 4 to skip the instruction that caused the exception
-s_trap_handler_plus4_mmode_nocompressed:
-    csrr a1, sepc    #store exception address
-    addi a1, a1, 4   #Increment to next instruction (assuming no compressed instructions)
-    ecall
-
-    jr a1
 
 //program start
 main:
@@ -26,9 +17,6 @@ main:
     # set mstatus.FS to 01 to enable fp
     li t0,0x4000
     csrs mstatus, t0
-
-    la t0, s_trap_handler_plus4_mmode_nocompressed
-    csrw stvec, t0 
 
     //change to user mode
     li a0, 0
@@ -473,131 +461,26 @@ store_loop_priority:
     ecall
 
     //prepare masks
-    li   t0, 256      # (1 << 8) bit 8 in medeleg enables lower privledge level traps
     li   t1, 8        # (1 << 3) bit 3 in mstatus is the MIE bit
-    li   t3, 2        # (1 << 2) bit 2 in mstatus is the MIE bit SIE bit
-
-
-    //clear medeleg (bit 8) in mstatus to 0 to lower trap mode privledge level
-    csrc medeleg, t0   
     
-    //mstatus_MIE = 0, mstatus_SIE = 0
-    #update MIE and SIE (already in machine mode)
+    //mstatus_MIE = 0
     csrc mstatus, t1
-    csrc mstatus, t3
     #load into user mode
     li a0, 0
     ecall
 
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 0, mstatus_SIE = 1
-    #load back into machine mode
+    #test ecall (load into machine mode)
     li a0, 3
     ecall
-    #update MIE and SIE
+
+    //mstatus_MIE = 1
+    #update MIE 
     csrc mstatus, t1
-    csrs mstatus, t3
     #load into user mode
     li a0, 0
     ecall
 
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 1, mstatus_SIE = 0
-    #load back into machine mode
-    li a0, 3
-    ecall
-    #update MIE and SIE
-    csrs mstatus, t1
-    csrc mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 1, mstatus_SIE = 1
-    #load back into machine mode
-    li a0, 3
-    ecall
-    #update MIE and SIE
-    csrs mstatus, t1
-    csrs mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
-    li a0, 0
-    ecall
-
-    //set medeleg (bit 8) in mstatus to 1 to disable lower privledge level traps
-    #load back into machine mode
-    li a0, 3
-    ecall
-    csrs medeleg, t0  
-
-    //mstatus_MIE = 0, mstatus_SIE = 0 
-    #update MIE and SIE (In machine mode already)
-    csrc mstatus, t1
-    csrc mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 0, mstatus_SIE = 1
-    #load back into machine mode
-    li a0, 3
-    ecall
-    #update MIE and SIE
-    csrc mstatus, t1
-    csrs mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 1, mstatus_SIE = 0
-    #load back into machine mode
-    li a0, 3
-    ecall
-    #update MIE and SIE
-    csrs mstatus, t1
-    csrc mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
-    li a0, 0
-    ecall
-
-    //mstatus_MIE = 1, mstatus_SIE = 1
-    #load back into machine mode
-    li a0, 3
-    ecall
-    #update MIE and SIE
-    csrs mstatus, t1
-    csrs mstatus, t3
-    #load into user mode
-    li a0, 0
-    ecall
-
-    #test ecall
+    #test ecall (load into machine mode)
     li a0, 0
     ecall
 

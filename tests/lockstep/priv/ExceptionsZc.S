@@ -27,8 +27,12 @@
     la      sp, scratch
 
     //Store a value to the scratch memory
-    li     t1, 0xDEADBEEFDEADBEEF
+    li     t1, 0xDEADBEEF
     sw     t1, 0(a4)
+    sw     t1, 4(a4)
+    sw     t1, 8(a4)
+    sw     t1, 12(a4)
+
 
     //Loop over all 3-bit offsets (0..7)
     # These instructions use a base register (a2) plus a register offset.
@@ -46,14 +50,14 @@ misaligned_loop:
     c.lbu   a3, 0(a2)     # compressed load byte unsigned
 
     //Test shared compressed load floating instruction
-    c.fld   f8, 0(a2)    # compressed load floating-point doubleword
+    c.fld   f9, 0(a2)    # compressed load floating-point doubleword
     
     //Test hardware specific compressed load instructions
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             c.ld    a3, 0(a2)     # compressed load doubleword (RV64 only)
         #elif __riscv_xlen == 32
-            c.flw   f8, 0(a2)    # compressed load floating-point word
+            c.flw   f9, 0(a2)    # compressed load floating-point word
         #endif
     #endif
 
@@ -61,7 +65,7 @@ misaligned_loop:
     # Now test the _sp forms.
 
 
-    c.fldsp f8, 0(sp) # Compressed load floating-point doubleword from sp 
+    c.fldsp f9, 0(sp) # Compressed load floating-point doubleword from sp 
     c.lwsp  a3, 0(sp)
 
     #ifdef __riscv_xlen
@@ -69,7 +73,7 @@ misaligned_loop:
             c.ldsp  a3, 0(sp)  
         #elif __riscv_xlen == 32
             # Compressed load floating-point word from sp:
-            c.flwsp f8, 0(sp)
+            c.flwsp f9, 0(sp)
         #endif
     #endif
 
@@ -77,7 +81,11 @@ misaligned_loop:
 //cp_store_address_misaligned
 /////////////////////////////////
 
-    li a3,  0xDEADBEEFDEADBEEF
+    //load a test value into f8
+    la      t1, scratch
+    flw    f8, 0(t1)
+
+    li a3,  0xDEADBEEF
 
     // Test compressed integer store instructions:
     c.sw    a3, 0(a2)     # compressed store word
@@ -130,7 +138,7 @@ misaligned_loop:
     c.lw  a3, 0(a2)
 
     //Test shared compressed floating instruction
-    c.fld   f8, 0(a2)    # compressed load floating-point doubleword
+    c.fld   f9, 0(a2)    # compressed load floating-point doubleword
 
     #platform dependent load instructions
     #ifdef __riscv_xlen
@@ -144,15 +152,15 @@ misaligned_loop:
     //Stack pointer variants:
     c.lwsp  a3, 0(sp)       // Compressed load word using stack-pointer offset
 
-    c.fldsp f8, 0(sp)       // Compressed floating-point load doubleword from sp
+    c.fldsp f9, 0(sp)       // Compressed floating-point load doubleword from sp
 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             c.ldsp  a3, 0(sp)       // Compressed load doubleword using stack-pointer offset
-            c.fld   f8, 0(a2)       // Compressed floating-point load doubleword
+            c.fld   f9, 0(a2)       // Compressed floating-point load doubleword
         #elif __riscv_xlen == 32
-            c.flw   f8, 0(a2)       // Compressed floating-point load word
-            c.flwsp f8, 0(sp)       // Compressed floating-point load word from sp
+            c.flw   f9, 0(a2)       // Compressed floating-point load word
+            c.flwsp f9, 0(sp)       // Compressed floating-point load word from sp
         #endif
     #endif
 

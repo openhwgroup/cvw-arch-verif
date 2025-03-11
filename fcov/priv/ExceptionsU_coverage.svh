@@ -107,11 +107,6 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     mstatus_MIE: coverpoint ins.prev.csr[12'h300][3] {
         // auto fills 1 and 0
     }
-    mstatus_SIE: coverpoint ins.prev.csr[12'h300][1] {
-        // auto fills 1 and 0
-    }
-    medelegb8: coverpoint ins.current.csr[12'h302][8]{
-    }
     pc_bit_1: coverpoint ins.current.pc_rdata[1] {
         bins zero = {0};
     }
@@ -146,7 +141,7 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     cp_ecall_m:                              cross ecall, priv_mode_u;
     cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_u;
     cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_u;
-    cp_mstatus_ie:                           cross ecall, mstatus_MIE, mstatus_SIE, priv_mode_u, medelegb8;
+    cp_mstatus_ie:                           cross ecall, mstatus_MIE, priv_mode_u;
 
 endgroup
 
