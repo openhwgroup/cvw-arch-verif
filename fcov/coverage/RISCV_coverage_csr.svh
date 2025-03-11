@@ -69,14 +69,19 @@ typedef enum {
   textra32,
   textra64,
   tinfo,
+  vcsr,
+  vl,
+  vlenb,
   vsatp,
   vscause,
   vsie,
   vsip,
   vsstatus,
+  vstart,
   vstvec,
   vtype,
-  vxrm
+  vxrm,
+  vxsat
 } csr_name_t;
 
 function int get_csr_val(int hart, int issue, int prev, string name, string field); // maybe should be `XLEN_INT
@@ -485,7 +490,7 @@ function int get_csr_val_addr(int hart, int issue, int prev, int addr, string na
 `ifdef XLEN64
       "uxl" : val = (val >> 32) & 64'h3;
 `endif
-      "vs" : val = (val >> 23) & 'h3;
+      "vs" : val = (val >> 9) & 'h3;
       "xs" : val = (val >> 15) & 'h3;
       default: val = 0; // Todo: error
     endcase
@@ -840,6 +845,25 @@ function int get_csr_val_addr(int hart, int issue, int prev, int addr, string na
       default: val = 0; // Todo: error
     endcase
   end
+  if (name == "vcsr") begin
+    case(field)
+      "vxsat" : val = val & 'h1;
+      "vxrm"  : val = (val >> 1) & 'h3;
+      default: val = 0; // Todo: error
+    endcase
+  end
+  if (name == "vl") begin
+    case(field)
+      "vl" : val = val & 'hffff;
+      default: val = 0; // Todo: error
+    endcase
+  end
+  if (name == "vlenb") begin
+    case(field)
+      "vlenb" : val = val & 'h1fff;
+      default: val = 0; // Todo: error
+    endcase
+  end
   if (name == "vsatp") begin
     case(field)
 `ifdef XLEN32
@@ -896,7 +920,14 @@ function int get_csr_val_addr(int hart, int issue, int prev, int addr, string na
 `ifdef XLEN64
       "uxl" : val = (val >> 32) & 64'h3;
 `endif
+      "vs" : val = (val >> 9) & 'h3;
       "xs" : val = (val >> 15) & 'h3;
+      default: val = 0; // Todo: error
+    endcase
+  end
+  if (name == "vstart") begin
+    case(field)
+      "vstart" : val = val & 'hffff;
       default: val = 0; // Todo: error
     endcase
   end
@@ -924,6 +955,12 @@ function int get_csr_val_addr(int hart, int issue, int prev, int addr, string na
   if (name == "vxrm") begin
     case(field)
       "vxrm" : val = val & 'h3;
+      default: val = 0; // Todo: error
+    endcase
+  end
+  if (name == "vxsat") begin
+    case(field)
+      "vxsat" : val = val & 'h1;
       default: val = 0; // Todo: error
     endcase
   end
