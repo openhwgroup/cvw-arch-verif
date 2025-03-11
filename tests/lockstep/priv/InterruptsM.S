@@ -212,15 +212,15 @@ cp_priority:
 
         csrrw t6, mie, zero # clear all interrupt enables to start fresh
 
-        andi t0, s1, 4 # mask off bit 2
+        andi t0, s1, 4 # check bit 2
         slli t0, t0, 9 # set mie.MEIE based on bit 2 value
         mv s3, t0
 
-        andi t0, s1, 2  # mask off bit 1
+        andi t0, s1, 2  # check bit 1
         slli t0, t0, 6  # set mie.MTIE based on bit 1 value
         or s3, s3, t0 
 
-        andi t0, s1, 1  # mask off bit 0
+        andi t0, s1, 1  # check bit 0
         slli t0, t0, 3  # set mie.MSIE based on bit 1 value
         or s3, s3, t0 
 
@@ -229,19 +229,17 @@ cp_priority:
         for_mip_priority:
 
             case2_priority:
-                srli t0, s2, 2
-                andi t0, t0, 1  # mask off bit 2
+                andi t0, s2, 4  # check bit 2
                 beqz t0, case1_priority # set mie.MEIP based on s2 bit 2 value
                 jal cause_external_interrupt_M
 
             case1_priority:
-                srli t0, s2, 1
-                andi t0, t0, 1  # mask off bit 1
+                andi t0, s2, 2  # check bit 1
                 beqz t0, case0_priority # set mie.MTIP based on s2 bit 1 value
                 jal cause_mtimer_interrupt_now
 
             case0_priority:
-                andi t0, s2, 1  # mask off bit 0
+                andi t0, s2, 1  # check bit 0
                 beqz t0, case_end_priority # set mie.MSIP based on s2 bit 0 value
                 jal set_msip
 
@@ -281,17 +279,17 @@ cp_wfi:
         csrrc t6, mstatus, t0 # clear mstatus.TW, MIE, SIE
 
         case_MIE:
-            andi t0, s2, 4  # mask off bit 2
+            andi t0, s2, 4  # check bit 2
             beqz t0, case_SIE # set mstatus.MIE based on s2 bit 2 value
             csrrsi t6, mstatus, 8 # set mstatus.MIE
 
         case_SIE:
-            andi t0, s2, 2  # mask off bit 1
+            andi t0, s2, 2  # check bit 1
             beqz t0, case_TW # set mstatus.SIE based on s2 bit 1 value
             csrrsi t6, mstatus, 2 # set mstatus.SIE
 
         case_TW:
-            andi t0, s2, 1  # mask off bit 0
+            andi t0, s2, 1  # check bit 0
             beqz t0, case_end_wfi # set mstatus.TW based on s2 bit 0 value
             li t0, 0x200000
             csrrs t6, mstatus, t0 # set mstatus.TW

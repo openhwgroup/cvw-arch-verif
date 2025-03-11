@@ -466,7 +466,7 @@ cause_mtimer_interrupt_soon:
                 lw t2, 4(t0)                    # high word of MTIME
                 
                 addi t3, t1, 0x100              # add 0x100 to MTIME value
-                bgtu t1, t3, MTIME_overflow      # if overflow occurred, carry the 1 to MTIME high word
+                bgtu t1, t3, MTIME_overflow     # if overflow occurred, carry the 1 to MTIME high word
                 j write_MTIMECMP                # otherwise, leave MTIME high word untouched
                 
                 MTIME_overflow:
