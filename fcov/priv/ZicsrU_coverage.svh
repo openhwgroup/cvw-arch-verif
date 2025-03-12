@@ -53,7 +53,7 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
         bins mach_debug[] = {[12'h7A0:12'h7AF]}; // toggling debug registers could do weird stuff
         bins debug_only[] = {[12'h7B0:12'h7BF]}; // access to debug mode registers raises illegal instruction even in machine mode
         bins mach_custom1[] = {[12'h7C0:12'h7FF]};
-        ignore_bins user_custom2[] = {[12'h800:12'h8FF]};
+        ignore_bins user_custom2 = {[12'h800:12'h8FF]};
         bins super_std2[] = {[12'h900:12'h9BF]};
         bins super_custom22[] = {[12'h9C0:12'h9FF]};
         bins hyper_std2[] = {[12'hA00:12'hABF]};
@@ -61,7 +61,7 @@ covergroup ZicsrU_ucsr_cg with function sample(ins_t ins);
         bins mach_std2[] = {[12'hB00:12'hBBF]};
         bins mach_custom2[] = {[12'hBC0:12'hBFF]};
         bins user_std3[] = {[12'hC00:12'hCBF]};
-        ignore_bins user_custom3[] = {[12'hCC0:12'hCFF]};
+        ignore_bins user_custom3 = {[12'hCC0:12'hCFF]};
         bins super_std3[] = {[12'hD00:12'hDBF]};
         bins super_custom3[] = {[12'hDC0:12'hDFF]};
         bins hyper_std3[] = {[12'hE00:12'hEBF]};
