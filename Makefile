@@ -102,7 +102,8 @@ ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
 ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)
 ZCF_FLAG = $(if $(findstring /Zcf, $(dir $<)),_zcf,)
-CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
+ZCB_ExceptionsZc_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),_zcb_c,)
+CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)$(ZCB_ExceptionsZc_FLAG)
 
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
@@ -156,4 +157,6 @@ clean:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf $(SELFCHECKDIR)/*
 	rm -rf $(SIGDIR)/*
+
+
 
