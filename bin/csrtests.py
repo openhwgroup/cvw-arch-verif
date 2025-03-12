@@ -7,13 +7,11 @@
 #
 # Emit tests of all 4096 CSRs for Zicsr functional coverage tests
 ##################################
-
 import random
 from random import randint
 from random import seed
 import os, sys
 from os import environ
-
 def printwalk(regs):
     for reg in regs:
         if reg == "satp": # satp requires a special case to avoid accidentally turning on vmem
@@ -71,82 +69,6 @@ def csrtests(pathname, skipCsrs):
         print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")
     outfile.close
 
-def mwalk(csr, regs, mode='M'):
-    print("\n// Save the original value of csr") # save the original value of csr
-    print("\tcsrr s0, "+csr+" \t# save csr")
-    print("\tli t1, -1           # all 1s")# initialize registers for walking 1s and 0s
-    print("\tli t0, 1            # 1 in lsb")
-    print("\n// Walk a single 1 in M-mode") 
-    print("\t1: csrrc t6, "+csr+", t1    # clear all bits in csr")
-    print("\tcsrrs t6, "+csr+", t0    # set walking 1 in csr")
-    if mode == "U":
-        print("\tli a0, 0")  # switch to U-mode and read from counter/counterh
-        print("\tecall                  # Switch to U-mode")
-        for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in U-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
-    elif mode == "S":
-        print("\tli a0, 0")  # switch to S-mode and read from counter/counterh
-        print("\tecall                  # Switch to S-mode")
-        for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in S-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
-    else: 
-        for reg in regs: # Read directly in M-mode
-            if reg == "satp":  # Skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in M-mode")
-    print("\tslli t0, t0, 1      # walk the 1 to the next bit")
-    print("\tbnez t0, 1b         # repeat until all bits are walked")
-    print(f"\n// Walk a single 0 in M mode and read from counter/counterh in {mode}-mode")
-    print("\tli t0, 1            # reset t0 to 1")
-    print("\t2: csrrs t6, "+csr+", t1    # set all bits in csr")
-    print("\tcsrrc t6, "+csr+", t0    # clear walking 0 in csr")
-    if mode == 'U':
-        print("\tli a0, 0")
-        print("\tecall                  # Switch to U-mode")
-        for reg in regs:
-            if reg == "satp":  # Skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in U-mode")
-        print("\tli a0, 3")
-        print("\tecall                  # Switch back to M-mode")
-    elif mode == "S":
-        print("\tli a0, 0")  # switch to S-mode and read from counter/counterh
-        print("\tecall                  # Switch to S-mode")
-        for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in S-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
-    else: 
-        for reg in regs:
-            if reg == "satp":  # Skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in M-mode")
-    print("\tslli t0, t0, 1      # walk the 0 to the next bit")
-    print("\tbnez t0, 2b         # repeat until all bits are walked")
-
-    print("\n// Restore the original value of csr")
-    print("\tcsrrw t6, "+csr+", s0    # restore csr")
-
-def counterenwalk(pathname, csr, regs, hregs, mode):
-    with open(pathname, 'w') as outfile:
-        sys.stdout = outfile
-        mwalk(csr, regs, mode)
-        if hregs:
-            print("\n#if __riscv_xlen == 32")
-            mwalk(csr, hregs, mode)
-            print("#endif")
-    outfile.close
-
 # setup
 seed(0) # make tests reproducible
 
@@ -157,27 +79,6 @@ mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mco
 mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
 uregs = ["fflags", "frm", "fcsr"]
-mcntrs = ["mcycle", "mcountinhibit", # "minstret" commented out because of https://github.com/openhwgroup/cvw/issues/1304
-          "mhpmcounter3", "mhpmcounter4", "mhpmcounter5", "mhpmcounter6", "mhpmcounter7", "mhpmcounter8", "mhpmcounter9", "mhpmcounter10", "mhpmcounter11", "mhpmcounter12", "mhpmcounter13", "mhpmcounter14", "mhpmcounter15",
-          "mhpmcounter16", "mhpmcounter17", "mhpmcounter18", "mhpmcounter19", "mhpmcounter20", "mhpmcounter21", "mhpmcounter22", "mhpmcounter23", "mhpmcounter24", "mhpmcounter25", "mhpmcounter26", "mhpmcounter27", "mhpmcounter28", "mhpmcounter29", "mhpmcounter30", "mhpmcounter31",
-          "mhpmevent3", "mhpmevent4", "mhpmevent5", "mhpmevent6", "mhpmevent7", "mhpmevent8", "mhpmevent9", "mhpmevent10", "mhpmevent11", "mhpmevent12", "mhpmevent13", "mhpmevent14", "mhpmevent15",
-          "mhpmevent16", "mhpmevent17", "mhpmevent18", "mhpmevent19", "mhpmevent20", "mhpmevent21", "mhpmevent22", "mhpmevent23", "mhpmevent24", "mhpmevent25", "mhpmevent26", "mhpmevent27", "mhpmevent28", "mhpmevent29", "mhpmevent30", "mhpmevent31"
-          ] 
-mcntrsh = ["mcycleh", "minstreth",
-          "mhpmcounter3h", "mhpmcounter4h", "mhpmcounter5h", "mhpmcounter6h", "mhpmcounter7h", "mhpmcounter8h", "mhpmcounter9h", "mhpmcounter10h", "mhpmcounter11h", "mhpmcounter12h", "mhpmcounter13h", "mhpmcounter14h", "mhpmcounter15h",
-          "mhpmcounter16h", "mhpmcounter17h", "mhpmcounter18h", "mhpmcounter19h", "mhpmcounter20h", "mhpmcounter21h", "mhpmcounter22h", "mhpmcounter23h", "mhpmcounter24h", "mhpmcounter25h", "mhpmcounter26h", "mhpmcounter27h", "mhpmcounter28h", "mhpmcounter29h", "mhpmcounter30h", "mhpmcounter31h",
-          "mhpmevent3h", "mhpmevent4h", "mhpmevent5h", "mhpmevent6h", "mhpmevent7h", "mhpmevent8h", "mhpmevent9h", "mhpmevent10h", "mhpmevent11h", "mhpmevent12h", "mhpmevent13h", "mhpmevent14h", "mhpmevent15h",
-          "mhpmevent16h", "mhpmevent17h", "mhpmevent18h", "mhpmevent19h", "mhpmevent20h", "mhpmevent21h", "mhpmevent22h", "mhpmevent23h", "mhpmevent24h", "mhpmevent25h", "mhpmevent26h", "mhpmevent27h", "mhpmevent28h", "mhpmevent29h", "mhpmevent30h", "mhpmevent31h"
-          ] 
-cntrs = ["cycle", "time", "instret", 
-          "hpmcounter3", "hpmcounter4", "hpmcounter5", "hpmcounter6", "hpmcounter7", "hpmcounter8", "hpmcounter9", "hpmcounter10", "hpmcounter11", "hpmcounter12", "hpmcounter13", "hpmcounter14", "hpmcounter15",
-          "hpmcounter16", "hpmcounter17", "hpmcounter18", "hpmcounter19", "hpmcounter20", "hpmcounter21", "hpmcounter22", "hpmcounter23", "hpmcounter24", "hpmcounter25", "hpmcounter26", "hpmcounter27", "hpmcounter28", "hpmcounter29", "hpmcounter30", "hpmcounter31",
-          ] 
-cntrsh = ["cycleh", "timeh", "instreth",
-          "hpmcounter3h", "hpmcounter4h", "hpmcounter5h", "hpmcounter6h", "hpmcounter7h", "hpmcounter8h", "hpmcounter9h", "hpmcounter10h", "hpmcounter11h", "hpmcounter12h", "hpmcounter13h", "hpmcounter14h", "hpmcounter15h",
-          "hpmcounter16h", "hpmcounter17h", "hpmcounter18h", "hpmcounter19h", "hpmcounter20h", "hpmcounter21h", "hpmcounter22h", "hpmcounter23h", "hpmcounter24h", "hpmcounter25h", "hpmcounter26h", "hpmcounter27h", "hpmcounter28h", "hpmcounter29h", "hpmcounter30h", "hpmcounter31h",
-          ] 
-
 
 uCsrSkip = list(range(0x800, 0x900)) + list(range(0xCC0, 0xD00))
 sCsrSkip = list(range(0x5C0, 0x600)) + list(range(0x6C0, 0x700)) + \
@@ -201,26 +102,4 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs + ["satp"], mregsh)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs, []);
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
-csrwalk(pathname, mcntrs, mcntrsh)
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkU.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='U')
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkM.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='M')
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkS.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='S')
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkU.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode ='U')
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkM.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode ='M')
-
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkS.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode='S')
-
+csrwalk(pathname, sregs + uregs);
