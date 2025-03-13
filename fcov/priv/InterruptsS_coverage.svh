@@ -301,7 +301,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mie_ones, csrrs, write_sstatus_sie;
     cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mideleg_mie_eq, csrrs, write_sstatus_sie;
     cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_meip_one; // could cause funky coverage since WFI often doesn't retire. Revisit later
-    cp_wfi_timeout:             cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
+    cp_wfi_timeout_m:           cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
     
     cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_ones_zeros, mip_walking, mie_walking; 
     cp_vectored_m:            cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mideleg_zeros, mip_s_walking, mie_s_ones;
@@ -320,16 +320,16 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_sei3:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr_high;
     cp_sei4:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_low,  csrrc, write_mip_seip;
     cp_sei5:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_high, csrrc, write_mip_seip;
-    cp_sei6_7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
+    cp_sei6_7:                cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
     // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,  
     cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq; 
 
 
-    cp_user_mti: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip;
-    cp_user_msi: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi, mie_msie, mip_msip;
-    cp_user_mei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei, mie_meie, mip_meip;
-    cp_user_sei: cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_sei, mie_seie, mip_seip;
-
+    cp_user_mti:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip;
+    cp_user_msi:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi, mie_msie, mip_msip;
+    cp_user_mei:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei, mie_meie, mip_meip;
+    cp_user_sei:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_sei, mie_seie, mip_seip;
+    cp_wfi_timeout_u:         cross priv_mode_u, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw_one, mie_mtie, timeout;
 endgroup
 
 function void interruptss_sample(int hart, int issue, ins_t ins);
