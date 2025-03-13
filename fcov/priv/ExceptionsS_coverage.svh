@@ -140,7 +140,9 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     }
     medeleg_walk: coverpoint ins.current.csr[12'h302] {
         bins zeros                    = {16'b0000_0000_0000_0000};
-        bins instrmisaligned_enabled  = {16'b0000_0000_0000_0001};
+        `ifndef COVER_ZCA
+            bins instrmisaligned_enabled  = {16'b0000_0000_0000_0001};
+        `endif
         bins instraccessfault_enabled = {16'b0000_0000_0000_0010};
         bins illegalinstr_enabled     = {16'b0000_0000_0000_0100};
         bins breakpoint_enabled       = {16'b0000_0000_0000_1000};
@@ -149,14 +151,15 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
         bins storemisaligned_enabled  = {16'b0000_0000_0100_0000};
         bins storeaccessfault_enabled = {16'b0000_0000_1000_0000};
         bins ecallu_enabled           = {16'b0000_0001_0000_0000};
-        bins ecalls_enabled           = {16'b0000_0010_0000_0000};
+        // Delegating ecall to S mode makes it impossible to escape S mode
+        // bins ecalls_enabled           = {16'b0000_0010_0000_0000};
         // bit 10 reserved 
         // bit 11 is read only zero
         bins instrpagefault_enabled   = {16'b0001_0000_0000_0000};
         bins loadpagefault_enabled    = {16'b0010_0000_0000_0000};
         // bit 14 reserved
         bins storepagefault_enabled   = {16'b1000_0000_0000_0000};
-        bins ones                     = {16'b1011_0011_1111_1111};
+        wildcard bins ones            = {16'b1011_00?1_1111_111?};
     }
     mtvec_stvec_ne: coverpoint {ins.current.csr[12'h305] != ins.current.csr[12'h105]} {
         bins notequal = {1};
