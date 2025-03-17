@@ -42,7 +42,8 @@ module testbench;
   localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
 
   // Temporary signals for filling RVVI trace interface
-  integer traceFile, num;
+  string traceFile;
+  integer traceFileHandler, num;
   string line;
   string key, val;
   string words[$];
@@ -85,8 +86,12 @@ module testbench;
 
   // Load pre-formatted trace file
   initial begin
-    traceFile = $fopen("trace.txt", "r");
-    if (traceFile == 0) begin
+    if (!$value$plusargs("traceFile=%s", traceFile)) begin
+      $display("Error: tracefile not provided");
+      $finish;
+    end
+    traceFileHandler = $fopen(traceFile, "r");
+    if (traceFileHandler == 0) begin
       $display("Error: Could not open trace file");
       $finish;
     end
@@ -108,14 +113,14 @@ module testbench;
     x_wb, f_wb, v_wb, csr_wb, x_wdata, f_wdata, v_wdata} = 0;
 
     // End simulation if end of trace file reached
-    if ($feof(traceFile)) begin
+    if ($feof(traceFileHandler)) begin
       $display("Trace file finished");
-      $fclose(traceFile);
+      $fclose(traceFileHandler);
       $finish;
     end
 
     // Get next line from trace file
-    num = $fgets(line, traceFile);
+    num = $fgets(line, traceFileHandler);
 
     // Parse line and set signals
     if (line != "" & line != "\n") begin // Skip empty lines
@@ -125,56 +130,56 @@ module testbench;
         val = words.pop_front();
         case(key)
           // Standard signals
-          "INSN": $sscanf(val, "%h", insn);
-          "TRAP": $sscanf(val, "%b", trap);
-          "DEBUG_MODE": $sscanf(val, "%b", debug_mode);
-          "PC": $sscanf(val, "%h", pc_rdata);
-          "MODE": $sscanf(val, "%b", mode);
+          "INSN": num = $sscanf(val, "%h", insn);
+          "TRAP": num = $sscanf(val, "%b", trap);
+          "DEBUG_MODE": num = $sscanf(val, "%b", debug_mode);
+          "PC": num = $sscanf(val, "%h", pc_rdata);
+          "MODE": num = $sscanf(val, "%b", mode);
           // Interrupts
-          "M_EXT_INTR": $sscanf(val, "%b", m_ext_intr);
-          "S_EXT_INTR": $sscanf(val, "%b", s_ext_intr);
-          "M_TIMER_INTR": $sscanf(val, "%b", m_timer_intr);
-          "M_SOFT_INTR": $sscanf(val, "%b", m_soft_intr);
+          "M_EXT_INTR": num = $sscanf(val, "%b", m_ext_intr);
+          "S_EXT_INTR": num = $sscanf(val, "%b", s_ext_intr);
+          "M_TIMER_INTR": num = $sscanf(val, "%b", m_timer_intr);
+          "M_SOFT_INTR": num = $sscanf(val, "%b", m_soft_intr);
           // Virtual Memory
-          "VIRT_ADR_I": $sscanf(val, "%h", virt_adr_i);
-          "VIRT_ADR_D": $sscanf(val, "%h", virt_adr_d);
-          "PHYS_ADR_I": $sscanf(val, "%h", phys_adr_i);
-          "PHYS_ADR_D": $sscanf(val, "%h", phys_adr_d);
-          "PTE_I": $sscanf(val, "%h", pte_i);
-          "PTE_D": $sscanf(val, "%h", pte_d);
-          "PPN_I": $sscanf(val, "%h", ppn_i);
-          "PPN_D": $sscanf(val, "%h", ppn_d);
-          "PAGE_TYPE_I": $sscanf(val, "%b", page_type_i);
-          "PAGE_TYPE_D": $sscanf(val, "%b", page_type_d);
-          "READ_ACCESS": $sscanf(val, "%b", read_access);
-          "WRITE_ACCESS": $sscanf(val, "%b", write_access);
-          "EXECUTE_ACCESS": $sscanf(val, "%b", execute_access);
+          "VIRT_ADR_I": num = $sscanf(val, "%h", virt_adr_i);
+          "VIRT_ADR_D": num = $sscanf(val, "%h", virt_adr_d);
+          "PHYS_ADR_I": num = $sscanf(val, "%h", phys_adr_i);
+          "PHYS_ADR_D": num = $sscanf(val, "%h", phys_adr_d);
+          "PTE_I": num = $sscanf(val, "%h", pte_i);
+          "PTE_D": num = $sscanf(val, "%h", pte_d);
+          "PPN_I": num = $sscanf(val, "%h", ppn_i);
+          "PPN_D": num = $sscanf(val, "%h", ppn_d);
+          "PAGE_TYPE_I": num = $sscanf(val, "%b", page_type_i);
+          "PAGE_TYPE_D": num = $sscanf(val, "%b", page_type_d);
+          "READ_ACCESS": num = $sscanf(val, "%b", read_access);
+          "WRITE_ACCESS": num = $sscanf(val, "%b", write_access);
+          "EXECUTE_ACCESS": num = $sscanf(val, "%b", execute_access);
           // Registers
           "X": begin
-            $sscanf(val, "%d", regNum);
+            num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            $sscanf(val, "%h", regVal);
+            num = $sscanf(val, "%h", regVal);
             x_wdata[regNum] = regVal;
             x_wb |= (1 << regNum);
           end
           "F": begin
-            $sscanf(val, "%d", regNum);
+            num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            $sscanf(val, "%h", regVal);
+            num = $sscanf(val, "%h", regVal);
             f_wdata[regNum] = regVal;
             f_wb |= (1 << regNum);
           end
           "V": begin
-            $sscanf(val, "%d", regNum);
+            num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            $sscanf(val, "%h", regVal);
+            num = $sscanf(val, "%h", regVal);
             v_wdata[regNum] = regVal;
             v_wb |= (1 << regNum);
           end
           "CSR": begin
-            $sscanf(val, "%d", regNum);
+            num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            $sscanf(val, "%h", regVal);
+            num = $sscanf(val, "%h", regVal);
             csr[regNum] = regVal;
             csr_wb |= (1 << regNum);
           end
