@@ -20,6 +20,7 @@
 
 `define COVER_RV64VM
 `define sv39
+
 covergroup RV64VM_satp_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
@@ -97,7 +98,7 @@ covergroup RV64VM_satp_cg with function sample(ins_t ins);
             ignore_bins ig1 = binsof(mode_supported.sv39);
         `endif
         `ifdef sv48
-            ignore_bins ig1 = binsof(mode_supported.sv48);
+            ignore_bins ig2 = binsof(mode_supported.sv48);
         `endif
     }
 
@@ -409,6 +410,17 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
+    PTE_DAU_i: coverpoint ins.current.pte_i[7:0] {
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
+        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
+        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+    }
+    PTE_DAU_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
+        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
+        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+    }
+
     //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
 
     PageType_i: coverpoint ins.current.page_type_i {
@@ -429,19 +441,20 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
         bins kilo = {2'd0};
     }
 
-    misaligned_PPN_i: coverpoint ins.current.ppn_i[26:0] {
+    // Using a function to perform logical operations
+    misaligned_PPN_i: coverpoint check_misalignment(ins.current.ppn_i[26:0], ins.current.page_type_i) {
         `ifdef sv48
-            bins tera_not_zero = {[27'd1:27'd134217727]};
+            wildcard bins tera_not_zero = {3'b1??};
         `endif
-        bins giga_not_zero = {[18'd1:18'd262143]};
-        bins mega_not_zero = {[9'd1:9'd511]};
+        wildcard bins giga_not_zero = {3'b?1?};
+        wildcard bins mega_not_zero = {3'b??1};
     }
-    misaligned_PPN_d: coverpoint ins.current.ppn_d[26:0] {
+    misaligned_PPN_d: coverpoint check_misalignment(ins.current.ppn_d[26:0], ins.current.page_type_d) {
         `ifdef sv48
-            bins tera_not_zero = {[27'd1:27'd134217727]};
+            wildcard bins tera_not_zero = {3'b1??};
         `endif
-        bins giga_not_zero = {[18'd1:18'd262143]};
-        bins mega_not_zero = {[9'd1:9'd511]};
+        wildcard bins giga_not_zero = {3'b?1?};
+        wildcard bins mega_not_zero = {3'b??1};
     }
 
     //satp.mode for coverage of both sv39 and sv48
@@ -805,6 +818,25 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
         ignore_bins ig3 = binsof(PTE_Dbit_set_W_d.leaflvl_s);
     }
 
+    PTE_DAU_nleaf_read_write_s: cross PTE_DAU_d, PageType_d, mode, priv_mode_s, Mcause {
+        ignore_bins ig1 = binsof(PageType_d.kilo);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+    }
+    PTE_DAU_nleaf_exec_s: cross PTE_DAU_i, PageType_i, mode, priv_mode_s, Mcause {
+        ignore_bins ig1 = binsof(PageType_i.kilo);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    }
+    PTE_DAU_nleaf_read_write_u: cross PTE_DAU_d, PageType_d, mode, priv_mode_u, Mcause {
+        ignore_bins ig1 = binsof(PageType_d.kilo);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+    }
+    PTE_DAU_nleaf_exec_u: cross PTE_DAU_i, PageType_i, mode, priv_mode_u, Mcause {
+        ignore_bins ig1 = binsof(PageType_i.kilo);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    }
+
     misaligned_exec_s: cross PTE_RWX_i, misaligned_PPN_i, mode, Mcause, exec_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
@@ -878,38 +910,41 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
     `endif
 
     `ifdef sv39
-        VA_sv39: coverpoint ins.current.virt_adr_i[63:39] { //va.1
+        VA_sv39_i: coverpoint ins.current.virt_adr_i[63:39] { //va.1
             bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
         }
-        sv39_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, read_acc { //va.1
+        VA_sv39_d: coverpoint ins.current.virt_adr_d[63:39] { //va.1
+            bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};       
+        }
+        sv39_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv39_d, mode, Mcause, read_acc { //va.1
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
         }
-        sv39_canonical_read_u: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, read_acc { //va.1
+        sv39_canonical_read_u: cross PTE_canonical_d, PageType_d, VA_sv39_d, mode, Mcause, read_acc { //va.1
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
         }
 
-        sv39_canonical_write_s: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, write_acc { //va.1
+        sv39_canonical_write_s: cross PTE_canonical_d, PageType_d, VA_sv39_d, mode, Mcause, write_acc { //va.1
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_u);
         }
-        sv39_canonical_write_u: cross PTE_canonical_d, PageType_d, VA_sv39, mode, Mcause, write_acc { //va.1
+        sv39_canonical_write_u: cross PTE_canonical_d, PageType_d, VA_sv39_d, mode, Mcause, write_acc { //va.1
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
             ignore_bins ig2 = binsof(Mcause.load_page_fault);
             ignore_bins ig3 = binsof(PTE_canonical_d.leaflvl_s);
         }
 
-        sv39_canonical_exec_s: cross PTE_canonical_i, PageType_i, VA_sv39, mode, Mcause, exec_acc { //va.1
+        sv39_canonical_exec_s: cross PTE_canonical_i, PageType_i, VA_sv39_i, mode, Mcause, exec_acc { //va.1
             ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_u);
             ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig3 = binsof(Mcause.load_page_fault);
         }
 
-        sv39_canonical_exec_u: cross PTE_canonical_i, PageType_i, VA_sv39, mode, Mcause, exec_acc { //va.1
+        sv39_canonical_exec_u: cross PTE_canonical_i, PageType_i, VA_sv39_i, mode, Mcause, exec_acc { //va.1
             ignore_bins ig1 = binsof(PTE_canonical_i.leaflvl_s);
             ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig3 = binsof(Mcause.load_page_fault);
@@ -1098,7 +1133,17 @@ covergroup RV64VM_add_feature_cg with function sample(ins_t ins);
     svadu_not_supported: cross menvcfg, mode;
 endgroup
 
+function logic [2:0] check_misalignment (logic [26:0] PPN, Page);
+    logic [2:0] misaligned_page = 3'b000;
+    if (PPN[8:0] != 0 && Page == 2'b01) misaligned_page |= 3'b001; // Misaligned megapage
+    if (PPN[17:0] != 0 && Page == 2'b10) misaligned_page |= 3'b010; // Misaligned gigapage
+    if (PPN[26:0] != 0 && Page == 2'b11) misaligned_page |= 3'b100; // Misaligned terapage
+    return misaligned_page;
+endfunction
+
+
 function void rv64vm_sample(int hart, int issue, ins_t ins);
+        //$display("--> %p",ins.current);
         RV64VM_PA_VA_cg.sample(ins);
         RV64VM_satp_cg.sample(ins);
         RV64VM_sfence_cg.sample(ins);
