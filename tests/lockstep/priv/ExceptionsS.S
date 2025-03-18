@@ -12,7 +12,7 @@
 
 s_traphandler:
     csrr t6, sepc
-    bne t6, x0, post_scheck//instruction access fault (assuming access to address 0)
+    bne t6, x0, post_scheck //instruction access fault (assuming access fault address is 0)
     mv t6, ra
 post_scheck:
     # andi s1, t6, 2 //check if compressed
@@ -51,7 +51,7 @@ cp_medeleg:
     //   Iteration 0: medeleg = all zeros (upper 32 bits are 0)
     //   Iterations 1-17: a walking 1 in the upper 32 bits
     li   a1, 0                // Loop counter
-    li   a2, 19               // Total iterations (0's + 1's+ 17 walking ones)
+    li   a2, 20               // Total iterations (0's + 1's+ 17 walking ones)
     li   a4, 0                // Initialize test value to 0 (all zeros)
 
 cp_medeleg_loop:
@@ -524,9 +524,9 @@ update_done:
     addi a1, a1, 1         // Increment loop counter
     j    cp_medeleg_loop    // Loop back
 
-update_9: //skip over reserved bit 9
-    slli a4, a4, 2
-    addi a1, a1, 2
+update_9: //skip over bit 9 (ecalls) and reserved bit
+    slli a4, a4, 3
+    addi a1, a1, 3
     j    cp_medeleg_loop    // Loop back
 
 ones_update:

@@ -32,8 +32,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     branch: coverpoint ins.current.insn {
         wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
-    // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
-    //       we aught to test this for a sanity check to both of these assumptions
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                 ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
@@ -181,15 +179,15 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_s;
     cp_ecall_s:                              cross ecall, priv_mode_s;
     cp_misaligned_priority:                  cross sw_lw_jalr, illegal_address_misaligned, priv_mode_s;
-    cp_medeleg_sum_instrmisaligned:          cross jalr,     rs1_1_0, imm_bit_1, priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_instraccessfault:         cross jalr,       illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_loadaccessfault:          cross loadops,    illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_storeaccessfault:         cross storeops,   illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_illegalinstruction:       cross illegalops,                   priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_ecall:                    cross ecall,                        priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_ebreak:                   cross ebreak,                       priv_mode_sum, medeleg_walk;
+    cp_medeleg_msu_instrmisaligned:          cross jalr,     rs1_1_0, imm_bit_1, priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_instraccessfault:         cross jalr,       illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_loadaccessfault:          cross loadops,    illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_storeaccessfault:         cross storeops,   illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_illegalinstruction:       cross illegalops,                   priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_ecall:                    cross ecall,                        priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_ebreak:                   cross ebreak,                       priv_mode_msu, medeleg_walk;
     cp_stvec:                                cross jalr, illegal_address, priv_mode_su, medeleg_instraccessfault_enabled, mtvec_stvec_ne; // Testplan was not specific, I chose instr access fault for the delegated exception
     cp_xstatus_ie:                           cross ecall, priv_mode_su, mstatus_MIE, sstatus_SIE, medeleg_b9_8;
 
