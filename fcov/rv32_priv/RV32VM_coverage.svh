@@ -170,12 +170,10 @@ covergroup RV32VM_mstatus_mprv_cg with function sample(ins_t ins);
     PageType_i: coverpoint ins.current.page_type_i {
         bins mega = {2'b01};
         bins kilo = {2'd0};
-        bins giga = {2'b10};
     }
     PageType_d: coverpoint ins.current.page_type_d {
         bins mega = {2'b01};
         bins kilo = {2'd0};
-        bins giga = {2'b10};
     }
     Mcause_sum: coverpoint  ins.current.csr[12'h342] {
         bins load_page_fault = {64'd13};
@@ -359,13 +357,11 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     PageType_i: coverpoint ins.current.page_type_i {
         bins mega = {2'b01};
         bins kilo = {2'd0};
-        bins giga = {2'b10};
     }
 
     PageType_d: coverpoint ins.current.page_type_d {
         bins mega = {2'b01};
         bins kilo = {2'd0};
-        bins giga = {2'b10};
     }
 
     misaligned_PPN_i: coverpoint ins.current.ppn_i[9:0] {
@@ -708,25 +704,21 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     
     PTE_DAU_nleaf_read_write_s: cross PTE_DAU_d, PageType_d, mode, priv_mode_s, Mcause {
         ignore_bins ig1 = binsof(PageType_d.kilo);
-        ignore_bins ig2 = binsof(PageType_d.giga);
-        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
     }
     PTE_DAU_nleaf_exec_s: cross PTE_DAU_i, PageType_i, mode, priv_mode_s, Mcause {
         ignore_bins ig1 = binsof(PageType_i.kilo);
-        ignore_bins ig2 = binsof(PageType_i.giga);
-        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
     }
     PTE_DAU_nleaf_read_write_u: cross PTE_DAU_d, PageType_d, mode, priv_mode_u, Mcause {
         ignore_bins ig1 = binsof(PageType_d.kilo);
-        ignore_bins ig2 = binsof(PageType_d.giga);
-        ignore_bins ig3 = binsof(Mcause.ins_page_fault);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
     }
     PTE_DAU_nleaf_exec_u: cross PTE_DAU_i, PageType_i, mode, priv_mode_u, Mcause {
         ignore_bins ig1 = binsof(PageType_i.kilo);
-        ignore_bins ig2 = binsof(PageType_i.giga);
-        ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig4 = binsof(Mcause.load_page_fault);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
     }
 
     misaligned_exec_s: cross PTE_RWX_i, misaligned_PPN_i, PageType_i, mode, Mcause, exec_acc  { //pte.16
