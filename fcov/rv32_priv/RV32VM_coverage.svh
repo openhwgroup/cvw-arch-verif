@@ -704,23 +704,19 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     
     PTE_DAU_nleaf_read_write_s: cross PTE_DAU_d, PageType_d, mode, priv_mode_s, Mcause {
         ignore_bins ig1 = binsof(PageType_d.kilo);
-        ignore_bins ig1 = binsof(PageType_d.giga);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
     }
     PTE_DAU_nleaf_exec_s: cross PTE_DAU_i, PageType_i, mode, priv_mode_s, Mcause {
         ignore_bins ig1 = binsof(PageType_i.kilo);
-        ignore_bins ig1 = binsof(PageType_d.giga);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(Mcause.load_page_fault);
     }
     PTE_DAU_nleaf_read_write_u: cross PTE_DAU_d, PageType_d, mode, priv_mode_u, Mcause {
         ignore_bins ig1 = binsof(PageType_d.kilo);
-        ignore_bins ig1 = binsof(PageType_d.giga);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
     }
     PTE_DAU_nleaf_exec_u: cross PTE_DAU_i, PageType_i, mode, priv_mode_u, Mcause {
         ignore_bins ig1 = binsof(PageType_i.kilo);
-        ignore_bins ig1 = binsof(PageType_d.giga);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(Mcause.load_page_fault);
     }
