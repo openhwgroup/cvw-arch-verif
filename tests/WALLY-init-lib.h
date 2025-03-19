@@ -79,12 +79,12 @@ rvtest_entry_point:
     # Set up interrupts
     la t0, trap_handler
     csrw mtvec, t0      # Initialize MTVEC to trap_handler
+    la t0, topoftrapstack
+    csrw mscratch, t0   # MSCRATCH holds trap stack pointer
     csrw mideleg, zero  # Don't delegate interrupts
     csrw medeleg, zero  # Don't delegate exceptions
     li t0, 0x80
     csrw mie, t0        # Enable machine timer interrupt
-    la t0, topoftrapstack
-    csrw mscratch, t0   # MSCRATCH holds trap stack pointer
     csrsi mstatus, 0x8  # Turn on mstatus.MIE global interrupt enable
     # set up PMP so user and supervisor mode can access full address space
     csrw pmpcfg0, 0xF   # configure PMP0 to TOR RWX
