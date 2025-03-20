@@ -15,17 +15,12 @@ s_traphandler:
     bne t6, x0, post_scheck //instruction access fault (assuming access fault address is 0)
     mv t6, ra
 post_scheck:
-    # andi s1, t6, 2 //check if compressed
-    # beq s1, x0, compressed
 
     addi t6,t6,4 //return to next instruction
-    # j post_compressed
-# compressed:
-#     addi t6,t6,2 //return to next instruction
-# post_compressed:
-    bne s3, x0, skipecall //skip ecall when bit 9 of mdeleg is 1
+
+    mv a0, a3 //move stored return priveledge mode to a0
     ecall
-skipecall:
+
     jr t6
 
 //program start
@@ -57,15 +52,16 @@ cp_medeleg:
 cp_medeleg_loop:
     bge  a1, a2, cp_medeleg_end   // Exit loop when a1 >= 19
 
-    li   a0, 3              // Enter machine mode
-    li s3, 0                //do not skip privledge raise (s_trap)
-    ecall
+    mv t0, a3                //save the test mode privledge to a temp variable
+    li a3, 3              // Force strap handler to return to machine mode
+    li a0, 3              //If using m mode trap handler, set a0 to 3 to enter machine mode
+    ecall                   // Change privledge                     
+    mv a3, t0               //restore the test mode privledge to a3
         
     csrw medeleg, a4   // write walking 1 to medeleg
     
     
     mv   a0, a3             // load into test privilege mode
-    li s3, 0                //do not skip privledge raise (s_trap)
     ecall   
 
     li s3, 1  //skip over s_trap handler ecall
@@ -132,7 +128,7 @@ cp_medeleg_loop:
     .word 0x00010013
 
     /////////////////////////////////
-    //cp_instr_adr_misaligned_jalr
+    //cp_instr_adr_misaligned_jalr AND cp_stvec
     /////////////////////////////////
 
     .align 2 //Ensure jumps start aligned
@@ -286,6 +282,7 @@ cp_medeleg_loop:
     //cp_breakpoint
     /////////////////////////////////
 
+    mv a0, a3 //move stored return priveledge mode to a0
     ebreak
 
     /////////////////////////////////
@@ -417,9 +414,8 @@ store_loop:
     //cp_ecall_s
     /////////////////////////////////
 
-    //skip privledge raise (don't want to change mode)
-    //properly executes when bit 9 of medeleg is 1
-    li s3, 1 
+    //test an ecall
+    mv a0, a3 //move stored return priveledge mode to a0
     ecall     
 
     /////////////////////////////////
@@ -524,13 +520,13 @@ update_done:
     addi a1, a1, 1         // Increment loop counter
     j    cp_medeleg_loop    // Loop back
 
-update_9: //skip over bit 9 (ecalls) and reserved bit
-    slli a4, a4, 3
-    addi a1, a1, 3
+update_9: //skip over bit 9, 10, 11
+    slli a4, a4, 4
+    addi a1, a1, 4
     j    cp_medeleg_loop    // Loop back
 
 ones_update:
-    li  a4, 0xb3ff
+    li  a4, 0b1011000111111110
     addi a1, a1, 1
     j  cp_medeleg_loop
 

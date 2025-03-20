@@ -86,10 +86,9 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
             wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
         `endif
     }
-    sw_lw_jalr: coverpoint ins.current.insn {
+    sw_lw: coverpoint ins.current.insn {
         wildcard bins sw   = {32'b????????????_?????_010_?????_0100011}; 
         wildcard bins lw   = {32'b????????????_?????_010_?????_0000011}; 
-        wildcard bins jalr = {32'b????????????_?????_000_?????_1100111};
     }
     illegalops: coverpoint ins.current.insn {
         bins zeros = {'0}; 
@@ -120,6 +119,7 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
         bins zero = {0};
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
+        bins zero = {1};
     }
     offset: coverpoint ins.current.imm[1:0] {
     }
@@ -178,8 +178,8 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_s;
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_s;
     cp_ecall_s:                              cross ecall, priv_mode_s;
-    cp_misaligned_priority:                  cross sw_lw_jalr, illegal_address_misaligned, priv_mode_s;
-    cp_medeleg_msu_instrmisaligned:          cross jalr,     rs1_1_0, imm_bit_1, priv_mode_msu, medeleg_walk;
+    cp_misaligned_priority:                  cross sw_lw, illegal_address_misaligned, priv_mode_s;
+    cp_medeleg_msu_instrmisaligned:          cross jalr,     rs1_1_0, offset, priv_mode_msu, medeleg_walk;
     cp_medeleg_msu_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_msu, medeleg_walk;
     cp_medeleg_msu_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_msu, medeleg_walk;
     cp_medeleg_msu_instraccessfault:         cross jalr,       illegal_address,  priv_mode_msu, medeleg_walk;
@@ -195,4 +195,12 @@ endgroup
 
 function void exceptionss_sample(int hart, int issue, ins_t ins);
     ExceptionsS_exceptions_cg.sample(ins);
+
+$display("mode: %b, med: %b, funct3: %b, rs1_1_0: %b, pc_1: %b, offset: %b ",
+    ins.current.mode,
+    ins.current.csr[12'h302],
+    ins.current.insn[14:12],
+    ins.current.rs1_val[1:0],
+    ins.current.pc_rdata[1],
+    ins.current.imm[1:0]);
 endfunction
