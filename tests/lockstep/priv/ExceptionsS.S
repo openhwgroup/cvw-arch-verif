@@ -536,19 +536,289 @@ cp_medeleg_end:
 
 cp_medeleg_done:
 
-    // Call cp_medeleg in the three modes
+    // Call the cp_medeleg function in the three modes
 
-    // supervisor mode test
+    // supervisor mode test (covers the other coverpoints   
+    # cp_instr_adr_misaligned_branch
+    # cp_instr_adr_misaligned_branch_nottaken
+    # cp_instr_adr_misaligned_jal
+    # cp_instr_adr_misaligned_jalr
+    # cp_instr_access_fault
+    # cp_illegal_instruction
+    # cp_illegal_instruction_seed
+    # cp_illegal_instruction_csr
+    # cp_breakpoint
+    # cp_load_address_misaligned
+    # cp_load_access_fault
+    # cp_store_address_misaligned
+    # cp_store_access_fault
+    # cp_ecall_s
+    # cp_misaligned_priority)
+    //Covers part of cp_stvec
     li a3, 1 //cp_medeleg function expects  desired mode in a3
     jal ra, cp_medeleg
 
-    //user mode test
+    //user mode test (part of cp_medeleg_sum and cp_stvec)
     li a3, 0 //cp_medeleg function expects  desired mode in a3
     jal ra, cp_medeleg
 
-    //machine mode test
+    //machine mode test (part of cp_medeleg_sum and cp_stvec)
     li a3, 3 //cp_medeleg function expects  desired mode in a3
     jal ra, cp_medeleg
+
+    //restore medeleg to all zeros
+    li a3, 3              // Force strap handler to return to machine mode
+    li a0, 3              //If using m mode trap handler, set a0 to 3 to enter machine mode
+    ecall                 // Change privledge 
+
+    li a4, 0                             
+    csrw medeleg, a4   // write zeros to medeleg
+
+    /////////////////////////////////
+    //cp_xstatus_ie
+    /////////////////////////////////
+
+    //prepare masks
+    li   t0, 8        # (1 << 3) bit 3 in mstatus is the MIE bit
+    li   t1, 2        # (1 << 1) bit 1 in mstatus is the SIE bit
+    
+    //supervisor_mode:
+
+    #Machine mode setup since other modes cannot modify CSRs
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+
+    //mstatus_MIE = {0}, sstatus_SIE = {0}, medeleg_b8 = {0}
+    csrc mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {0}, medeleg_b8 = {0}
+    csrs mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {1}, medeleg_b8 = {0}
+    csrc mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {1}, medeleg_b8 = {0}
+    csrs mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {0}, medeleg_b8 = {1}
+    #change medeleg bit 8 (for this and the next supervisor tests)
+    li a4, 256        // (1<<8) bit 8 in medeleg is the ecallu delegation bit                    
+    csrs medeleg, a4  // set bit 8 in medeleg
+
+    #update mie and sie bits
+    csrc mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {0}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrs mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {1}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrc mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {1}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrs mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 1  //mtrap
+    li a3, 1  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //User_mode:
+
+    #change medeleg bit 8 (for this and the next user tests)
+    li a4, 256        // (1<<8) bit 8 in medeleg is the ecallu delegation bit                    
+    csrc medeleg, a4  // set bit 8 in medeleg
+
+    //mstatus_MIE = {0}, sstatus_SIE = {0}, medeleg_b8 = {0}
+    csrc mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {0}, medeleg_b8 = {0}
+    csrs mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {1}, medeleg_b8 = {0}
+    csrc mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {1}, medeleg_b8 = {0}
+    csrs mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {0}, medeleg_b8 = {1}
+    #change medeleg bit 8 (for this and the next user tests)
+    li a4, 256        // (1<<8) bit 8 in medeleg is the ecallu delegation bit                    
+    csrs medeleg, a4  // set bit 8 in medeleg
+
+    #update mie and sie bits
+    csrc mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {0}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrs mstatus, t0
+    csrc mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {0}, sstatus_SIE = {1}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrc mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
+
+    //mstatus_MIE = {1}, sstatus_SIE = {1}, medeleg_b8 = {1}
+    #update mie and sie bits
+    csrs mstatus, t0
+    csrs mstatus, t1
+    #load into test mode
+    li a0, 0  //mtrap
+    li a3, 0  //strap
+    ecall
+
+    #test ecall (load into machine mode)
+    li a0, 3  //mtrap
+    li a3, 3  //strap
+    ecall
 
 finished:
     j done
