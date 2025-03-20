@@ -196,11 +196,11 @@ endgroup
 function void exceptionss_sample(int hart, int issue, ins_t ins);
     ExceptionsS_exceptions_cg.sample(ins);
 
-$display("mode: %b, med: %b, funct3: %b, rs1_1_0: %b, pc_1: %b, offset: %b ",
-    ins.current.mode,
-    ins.current.csr[12'h302],
-    ins.current.insn[14:12],
-    ins.current.rs1_val[1:0],
-    ins.current.pc_rdata[1],
-    ins.current.imm[1:0]);
+// $display("mode: %b, medel: %b, funct3: %b, rs1_1_0: %b, pc_1: %b, offset: %b ",
+//     ins.current.mode,
+//     ins.current.csr[12'h302],
+//     ins.current.insn[14:12],
+//     ins.current.rs1_val[1:0],
+//     ins.current.pc_rdata[1],
+//     ins.current.imm[1:0]);
 endfunction
