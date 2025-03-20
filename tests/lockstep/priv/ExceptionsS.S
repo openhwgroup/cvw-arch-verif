@@ -37,7 +37,8 @@ csrs mstatus, t0
 j cp_medeleg_done           // Skip function until called
 
 // Function: cp_medeleg
-// a0 must be preset with the privilege mode you are testing (M/S/U) before calling.
+// a3 must be preset with the privilege mode you are testing (M/S/U) before calling.
+// Covers cp_medeleg_sum
 cp_medeleg:
     mv a5, ra                  // Save return address
 
@@ -63,69 +64,6 @@ cp_medeleg_loop:
     
     mv   a0, a3             // load into test privilege mode
     ecall   
-
-    li s3, 1  //skip over s_trap handler ecall
-
-    /////////////////////////////////
-    //cp_instr_adr_misaligned_branch
-    /////////////////////////////////
-
-    li t1,1        #load a test value
-    .align 2       #align the next instruction to a 4 byte boundary 
-
-    //test all six types of taken branches to a misaligned address
-
-    beq x0, x0, .+6  #use .+6 to change PC counter to 6 bytes ahead.
-
-    //ensure a processor that has the compressed extension will execute a c.nop instruction preventing an illegal instruction exception
-    //If a processor does not have the compressed extension, there will be a misaligned access exception
-    .word 0x00010013 #c.nop when 2 byte accessed, addi x0, x2, 0 when 4 byte accessed
-
-    //follow the template above for all the branches
-    bne x0, t1, .+6
-    .word 0x00010013
-
-    //blt test
-    blt x0, t1, .+6
-    .word 0x00010013
-
-    //bge test
-    bge t1, x0, .+6
-    .word 0x00010013
-
-    //bltu test 
-    bltu x0, t1, .+6
-    .word 0x00010013
-
-    //bgeu test
-    bgeu x0, x0, .+6
-    .word 0x00010013
-
-    /////////////////////////////////
-    //cp_instr_adr_misaligned_branch_nottaken
-    /////////////////////////////////
-
-    //these branches are not taken so there should be no exception
-
-    beq x0, t1, .+6 #t1 = 1
-
-    bne x0, x0, .+6
-
-    blt t1, x0, .+6
-
-    bge x0, t1, .+6
-
-    bltu t1, x0, .+6
-
-    bgeu x0, t1, .+6
-
-    /////////////////////////////////
-    //cp_instr_adr_misaligned_jal
-    ///////////////////////////////// 
-    .align 2 //Ensure jumps start aligned
-
-    jal   x0,  .+6
-    .word 0x00010013
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_jalr AND cp_stvec
@@ -538,10 +476,8 @@ cp_medeleg_done:
 
     // Call the cp_medeleg function in the three modes
 
-    // supervisor mode test (covers the other coverpoints   
-    # cp_instr_adr_misaligned_branch
-    # cp_instr_adr_misaligned_branch_nottaken
-    # cp_instr_adr_misaligned_jal
+    // supervisor mode test
+    //covers the following coverpoints:   
     # cp_instr_adr_misaligned_jalr
     # cp_instr_access_fault
     # cp_illegal_instruction
@@ -554,7 +490,7 @@ cp_medeleg_done:
     # cp_store_access_fault
     # cp_ecall_s
     # cp_misaligned_priority)
-    //Covers part of cp_stvec
+    //Covers part of cp_stvec and cp_medeleg_sum
     li a3, 1 //cp_medeleg function expects  desired mode in a3
     jal ra, cp_medeleg
 
@@ -566,6 +502,10 @@ cp_medeleg_done:
     li a3, 3 //cp_medeleg function expects  desired mode in a3
     jal ra, cp_medeleg
 
+    ///////
+    //Reset
+    //////
+
     //restore medeleg to all zeros
     li a3, 3              // Force strap handler to return to machine mode
     li a0, 3              //If using m mode trap handler, set a0 to 3 to enter machine mode
@@ -573,6 +513,72 @@ cp_medeleg_done:
 
     li a4, 0                             
     csrw medeleg, a4   // write zeros to medeleg
+
+    //load into supervisor mode
+    li a3, 1              // Force strap handler to return to machine mode
+    li a0, 1              //If using m mode trap handler, set a0 to 3 to enter machine mode
+    ecall                 // Change privledge
+
+    /////////////////////////////////
+    //cp_instr_adr_misaligned_branch
+    /////////////////////////////////
+
+    li t1,1        #load a test value
+    .align 2       #align the next instruction to a 4 byte boundary 
+
+    //test all six types of taken branches to a misaligned address
+
+    beq x0, x0, .+6  #use .+6 to change PC counter to 6 bytes ahead.
+
+    //ensure a processor that has the compressed extension will execute a c.nop instruction preventing an illegal instruction exception
+    //If a processor does not have the compressed extension, there will be a misaligned access exception
+    .word 0x00010013 #c.nop when 2 byte accessed, addi x0, x2, 0 when 4 byte accessed
+
+    //follow the template above for all the branches
+    bne x0, t1, .+6
+    .word 0x00010013
+
+    //blt test
+    blt x0, t1, .+6
+    .word 0x00010013
+
+    //bge test
+    bge t1, x0, .+6
+    .word 0x00010013
+
+    //bltu test 
+    bltu x0, t1, .+6
+    .word 0x00010013
+
+    //bgeu test
+    bgeu x0, x0, .+6
+    .word 0x00010013
+
+    /////////////////////////////////
+    //cp_instr_adr_misaligned_branch_nottaken
+    /////////////////////////////////
+
+    //these branches are not taken so there should be no exception
+
+    beq x0, t1, .+6 #t1 = 1
+
+    bne x0, x0, .+6
+
+    blt t1, x0, .+6
+
+    bge x0, t1, .+6
+
+    bltu t1, x0, .+6
+
+    bgeu x0, t1, .+6
+
+    /////////////////////////////////
+    //cp_instr_adr_misaligned_jal
+    ///////////////////////////////// 
+    .align 2 //Ensure jumps start aligned
+
+    jal   x0,  .+6
+    .word 0x00010013
 
     /////////////////////////////////
     //cp_xstatus_ie
