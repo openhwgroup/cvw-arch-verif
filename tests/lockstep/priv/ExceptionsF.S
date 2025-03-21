@@ -23,12 +23,11 @@ fp_instr:
     fdiv.s f5, f0, f1        
 
     # --- Floating‑Point Conversions ---
-    # Convert float to integer: x2 = int(f0).
-    # (Using fcvt.w.s here; some assemblers support fcvt.x.f as an alias.)
+    # Convert float to integer: t2 = int(f0).
     fcvt.w.s t2, f0          
-    # Convert integer back to float: f6 = float(x2).
+    # Convert integer back to float: f6 = float(t2)
     fcvt.s.w f6, t2          
-    # Convert float to float (no‑op conversion): f7 = f0 converted (using a pseudo instruction).
+    # Convert: f7 = f0 converted
     fcvt.s.d f7, f0          
 
     # --- Fused Multiply-Add and Other Ops ---
@@ -90,17 +89,17 @@ main:
     # Execute floating point extructions from function
     jal ra, fp_instr
 
-    # feq: set integer x3 = 1 if f0 equals f1, else 0.
+    # feq: set integer t3 = 1 if f0 equals f1, else 0.
     feq.s  t3, f0, f1       
 
     # --- Move Bit Representations ---
     # fmv.x.f: move the bit‐pattern from f0 to integer register x4.
     fmv.x.w t4, f0          
-    # fmv.f.x: move the bit‐pattern from x4 to floating‑point register f11.
+    # fmv.f.x: move the bit‐pattern from t4 to floating‑point register f11.
     fmv.w.x f11, t4         
 
     # --- Floating‑Point Classification and Minimum ---
-    # fclass: classify the floating‑point value in f0, result in x5.
+    # fclass: classify the floating‑point value in f0, result in t5.
     fclass.s t5, f0         
     # fmin: f12 = minimum(f0, f1)
     fmin.s f12, f0, f1      
@@ -128,13 +127,13 @@ main:
 
     #ifdef __riscv_xlen
     #if __riscv_xlen == 32
-        # Extract the lower 32 bits (bits 31:0) into x1.
+        # Extract the lower 32 bits (bits 31:0) into t1.
         fmv.x.w t1, f0
         
-        # Extract the upper 32 bits (bits 63:32) into x2.
+        # Extract the upper 32 bits (bits 63:32) into t2.
         fmvh.x.d t2, f0
 
-        # Later, reassemble the double from x1 and x2 back into a floating-point register (say f1).
+        #Reassemble the double from t1 and t2 back into a floating-point register (f1).
         fmvp.d.x f1, t1, t2
     #endif
     #endif 
