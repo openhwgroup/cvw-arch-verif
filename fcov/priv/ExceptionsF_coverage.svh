@@ -25,13 +25,13 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
-    mstatus_FS_zero: coverpoint ins.current.csr[12'h300][14:13] {
+    mstatus_FS_zero: coverpoint ins.prev.csr[12'h300][14:13] {
         bins disabled = {2'b00};
     }
-    mstatus_FS_nonzero: coverpoint ins.current.csr[12'h300][14:13] {
-        bins enabled = {2'b11};
+    mstatus_FS_nonzero: coverpoint ins.prev.csr[12'h300][14:13] {
+        bins enabled = {2'b01, 2'b10, 2'b11};
     }
-    frm_illegal: coverpoint ins.current.csr[12'h003][7:5] {
+    frm_illegal: coverpoint ins.prev.csr[12'h003][7:5] {
         bins reserved_5 = {3'b101};
         bins reserved_6 = {3'b110};
         bins reserved_7 = {3'b111};
@@ -54,8 +54,6 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
         wildcard bins fmv_f_x      = {32'b11110_??_00000_?????_000_?????_1010011};
         wildcard bins fclass       = {32'b11100_??_00000_?????_001_?????_1010011};
         wildcard bins fmin         = {32'b00101_??_?????_?????_000_?????_1010011};
-        wildcard bins fli          = {32'b11110_??_00001_?????_000_?????_1010011};
-        wildcard bins fround       = {32'b01000_??_00100_?????_???_?????_1010011};
         wildcard bins add          = {32'b0000000_?????_?????_000_?????_0110011};
         wildcard bins csrrw_fcsr   = {32'b000000000011_?????_001_?????_1110011};
         wildcard bins csrrw_frm    = {32'b000000000010_?????_001_?????_1110011};
@@ -80,7 +78,6 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
         wildcard bins fcvt_f_f_dyn = {32'b01000_??_?????_?????_111_?????_1010011};
         wildcard bins fmadd_dyn    = {32'b?????_??_?????_?????_111_?????_1000011};
         wildcard bins fsqrt_dyn    = {32'b01011_??_00000_?????_111_?????_1010011};
-        wildcard bins fround_dyn   = {32'b01000_??_00100_?????_111_?????_1010011};
     }
 
     // main coverpoints
