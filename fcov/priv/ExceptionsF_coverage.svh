@@ -25,25 +25,17 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0; 
 
     // building blocks for the main coverpoints
-    mstatus_FS_zero: coverpoint ins.prev.csr[12'h300][14:13] {
+    mstatus_FS_zero: coverpoint ins.current.csr[12'h300][14:13] {
         bins disabled = {2'b00};
     }
-    mstatus_FS_nonzero: coverpoint ins.prev.csr[12'h300][14:13] {
-        bins enabled = {!2'b00};
+    mstatus_FS_nonzero: coverpoint ins.current.csr[12'h300][14:13] {
+        bins enabled = {2'b11};
     }
-    frm_illegal: coverpoint ins.prev.csr[12'h003][7:5] {
+    frm_illegal: coverpoint ins.current.csr[12'h003][7:5] {
         bins reserved_5 = {3'b101};
         bins reserved_6 = {3'b110};
         bins reserved_7 = {3'b111};
     }
-    // csrrw: coverpoint ins.current.insn {
-    //     wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
-    // }
-    // fp_csrs: coverpoint ins.current.insn[31:20] {
-    //     bins fcsr   = {12'h003};
-    //     bins frm    = {12'h002};
-    //     bins fflags = {12'h001};
-    // }
     instrs: coverpoint ins.current.insn {
         wildcard bins fsw          = {32'b????????????_?????_010_?????_0100111};
         wildcard bins flw          = {32'b????????????_?????_010_?????_0000111};
@@ -90,6 +82,7 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
         wildcard bins fsqrt_dyn    = {32'b01011_??_00000_?????_111_?????_1010011};
         wildcard bins fround_dyn   = {32'b01000_??_00100_?????_111_?????_1010011};
     }
+
     // main coverpoints
     cp_mstatus_fs_illegal_instr: cross instrs, mstatus_FS_zero;
     // cp_mstatus_fs_csr_write:  redundant, covered by cp_mstatus_fs_illegal_instr
@@ -97,5 +90,8 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
 endgroup
 
 function void exceptionsf_sample(int hart, int issue, ins_t ins);
+    $display("Mstatus FS: %b, frmIllegal: %b, op: %b, fmrBits: %b, imm: %b", ins.current.csr[12'h300][14:13], ins.current.csr[12'h003][7:5],  ins.current.insn[6:0], ins.current.insn[14:12], ins.current.insn[31:27]);
     ExceptionsF_exceptions_cg.sample(ins);
+
+    
 endfunction

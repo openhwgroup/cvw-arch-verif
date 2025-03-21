@@ -10,10 +10,44 @@
 
 #include "WALLY-init-lib.h"
 
+//Function that executes the floating point arithmetic and conversions instructions
+fp_instr:
+    # --- Floating‑Point Arithmetic ---
+    # fadd: f2 = f0 + f1
+    fadd.s f2, f0, f1        
+    # fsub: f3 = f0 - f1
+    fsub.s f3, f0, f1        
+    # fmul: f4 = f0 * f1
+    fmul.s f4, f0, f1        
+    # fdiv: f5 = f0 / f1
+    fdiv.s f5, f0, f1        
+
+    # --- Floating‑Point Conversions ---
+    # Convert float to integer: x2 = int(f0).
+    # (Using fcvt.w.s here; some assemblers support fcvt.x.f as an alias.)
+    fcvt.w.s t2, f0          
+    # Convert integer back to float: f6 = float(x2).
+    fcvt.s.w f6, t2          
+    # Convert float to float (no‑op conversion): f7 = f0 converted (using a pseudo instruction).
+    fcvt.s.d f7, f0          
+
+    # --- Fused Multiply-Add and Other Ops ---
+    # fmadd: f8 = (f0 * f1) + f2
+    fmadd.s f8, f0, f1, f2    
+    # fsqrt: f9 = sqrt(f0)
+    fsqrt.s f9, f0          
+    # fsgnj: f10 gets f0’s magnitude with f1’s sign.
+    fsgnj.s f10, f0, f1 
+    # fround: round f0 and place result in f14 (pseudo‑instruction; actual support may vary).
+    fround.s f14, f0      
+
+    //return
+    ret
+
 main:
-/////////////////////////////////
-//cp_mstatus_fs_illegal_instr
-/////////////////////////////////
+///////////////////////////////////////////////////////////
+//cp_mstatus_fs_illegal_instr AND cp_mstatus_fs_csr_write
+///////////////////////////////////////////////////////////
     # set mstatus.FS to 00 to disable fp
     li t0, 0
     csrs mstatus, t0
@@ -28,66 +62,52 @@ main:
     sw     t1, 8(a4)
     sw     t1, 12(a4)
 
+    //initialize floating point registers used
+    fli.s    f0,  1.0            # fli: load immediate float (1.0) into f0
+    fli.s    f1,  1.0               
+    fli.s    f2,  1.0              
+    fli.s    f3,  1.0              
+    fli.s    f4,  1.0            
+    fli.s    f5,  1.0            
+    fli.s    f6,  1.0            
+    fli.s    f7,  1.0            
+    fli.s    f8,  1.0            
+    fli.s    f9,  1.0            
+    fli.s    f10, 1.0
+    fli.s    f11, 1.0
+    fli.s    f12, 1.0
+    fli.s    f13, 1.0
+    fli.s    f14, 1.0               
 
-    # --- Floating-Point Memory Operations ---
-    # Load immediate floating‑point value 1.0 into f0 using pseudo‑instruction.
-    fli.s    f0, 1.0            # fli: load immediate float (1.0) into f0        
-    # Store f0 into memory at mydata.
+
+    # --- Floating-Point Memory Operations ---   
+    # Store f0 into memory at scratch.
     fsw    f0, 0(a4)          # fsw: store word from f0 into address a4+0
 
     # Load a floating‑point value from memory into f1.
     flw    f1, 0(a4)          # flw: load word from address x1+0 into f1
 
-    # --- Floating‑Point Arithmetic ---
-    # fadd: f2 = f0 + f1
-    fadd.s f2, f0, f1        
-    # fsub: f3 = f0 - f1
-    fsub.s f3, f0, f1        
-    # fmul: f4 = f0 * f1
-    fmul.s f4, f0, f1        
-    # fdiv: f5 = f0 / f1
-    fdiv.s f5, f0, f1        
+    # Execute floating point extructions from function
+    jal ra, fp_instr
 
-    # --- Floating‑Point Conversions ---
-    # Convert float to integer: x2 = int(f0).
-    # (Using fcvt.w.s here; some assemblers support fcvt.x.f as an alias.)
-    fcvt.w.s x2, f0          
-    # Convert integer back to float: f6 = float(x2).
-    fcvt.s.w f6, x2          
-    # Convert float to float (no‑op conversion): f7 = f0 converted (using a pseudo instruction).
-    fcvt.s.d f7, f0          
-
-    # --- Fused Multiply-Add and Other Ops ---
-    # fmadd: f8 = (f0 * f1) + f2
-    fmadd.s f8, f0, f1, f2    
-    # fsqrt: f9 = sqrt(f0)
-    fsqrt.s f9, f0          
-    # fsgnj: f10 gets f0’s magnitude with f1’s sign.
-    fsgnj.s f10, f0, f1      
     # feq: set integer x3 = 1 if f0 equals f1, else 0.
-    feq.s  x3, f0, f1       
+    feq.s  t3, f0, f1       
 
     # --- Move Bit Representations ---
     # fmv.x.f: move the bit‐pattern from f0 to integer register x4.
-    fmv.x.w x4, f0          
+    fmv.x.w t4, f0          
     # fmv.f.x: move the bit‐pattern from x4 to floating‑point register f11.
-    fmv.w.x f11, x4         
+    fmv.w.x f11, t4         
 
     # --- Floating‑Point Classification and Minimum ---
     # fclass: classify the floating‑point value in f0, result in x5.
-    fclass.s x5, f0         
+    fclass.s t5, f0         
     # fmin: f12 = minimum(f0, f1)
     fmin.s f12, f0, f1      
 
     # --- Additional Floating‑Point Instructions ---
     # fli: load immediate float 2.5 into f13.
-    fli.s    f13, 2.5         
-    # fround: round f0 and place result in f14 (pseudo‑instruction; actual support may vary).
-    fround.s f14, f0        
-
-    # --- Integer Arithmetic ---
-    # add: x6 = x1 + x2
-    add    x6, x1, x2       
+    fli.s    f13, 2.5              
 
     # --- CSR Operations on Floating‑Point Status Registers ---
     # Use csrrw to read and write the FCSR.
@@ -106,20 +126,43 @@ main:
     csrrc  x8, frm, x0      # csrrc_frm
     csrrc  x9, fflags, x0   # csrrc_fflags
 
+    #ifdef __riscv_xlen
+    #if __riscv_xlen == 32
+        # Extract the lower 32 bits (bits 31:0) into x1.
+        fmv.x.w t1, f0
+        
+        # Extract the upper 32 bits (bits 63:32) into x2.
+        fmvh.x.d t2, f0
 
-    #ifdef __riscv_xlen == 32
-        fmvh.s.d f0, x1   # move x1 to f0
-        fmvp f1, x2   # move x2 to f1
+        # Later, reassemble the double from x1 and x2 back into a floating-point register (say f1).
+        fmvp.d.x f1, t1, t2
     #endif
+    #endif 
 
 /////////////////////////////////
-//cp_mstatus_fs_csr_write
+//cp_badfrm
 /////////////////////////////////
-    #fp is still diabled from last test
-    li t1, 8        # (1<<3) part of frm and fcsr and fflags
-    csrs fcsr, t1    #should cause an illegal instruction exception when mstatus.FS=00
+    # set mstatus.FS to 01 to enable fp
+    li t0,0x4000
+    csrs mstatus, t0
 
+    //frm = 5
+    li t0, 5         # 3'b = 101
+    csrw frm, t0     #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_instr
 
+    //frm = 6
+    li t0, 6         #3'b = 110
+    csrw frm, t0     #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_instr
+
+    //frm = 7
+    li t0, 7          #3'b = 111 
+    csrw frm, t0      #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_instr
 
 finished:
     j done
