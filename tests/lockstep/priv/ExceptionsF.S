@@ -26,7 +26,9 @@ fp_instr:
     # --- Fused Multiply-Add and Other Ops ---
     fmadd.s f8, f0, f1, f2    
     fsqrt.s f9, f0          
-    fsgnj.s f10, f0, f1     
+    fsgnj.s f10, f0, f1   
+
+    fround.s f14, f0  
 
     //function return
     ret
@@ -99,13 +101,15 @@ main:
     li t0, 0x6000      #(1's in bit 13 and 14 of mstatus)
     csrc mstatus, t0           
 
-
     # --- Floating-Point Memory Operations ---   
     # Store f0 into memory at scratch.
     fsw    f0, 0(a4)          
 
     # Load a floating‑point value from memory into f1.
-    flw    f1, 0(a4)          
+    flw    f1, 0(a4) 
+
+    //Immediate fp load
+    fli.s  f2, 2.5         
 
     # --- Floating-Point Arithmetic Operations ---
     jal ra, fp_instr     # Execute floating point instructions from function
