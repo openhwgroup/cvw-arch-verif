@@ -10,8 +10,56 @@
 
 #include "WALLY-init-lib.h"
 
+main:
+///////////////////////////////////////////////////////////
+//cp_mstatus_fs_illegal_instr AND cp_mstatus_fs_csr_write
+///////////////////////////////////////////////////////////
+    //Call Function to execute illegal instructions
+    //load a1 with 0 to disable mstatus.FS
+    li a1, 0
+    jal ra, fp_instructions
+
+/////////////////////////////////
+//cp_badfrm
+/////////////////////////////////
+    # set mstatus.FS to 01 to enable fp
+    li t0,0x4000
+    csrs mstatus, t0
+
+    //frm = 5
+    li t0, 5         # 3'b = 101
+    csrw frm, t0     #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_arith_instr
+
+    //frm = 6
+    li t0, 6         #3'b = 110
+    csrw frm, t0     #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_arith_instr
+
+    //frm = 7
+    li t0, 7          #3'b = 111 
+    csrw frm, t0      #update frm
+    #call floating point arithmetic and conversion function
+    jal ra, fp_arith_instr
+
+/////////////////////////////////
+//cp_mstatus_fs_legal
+/////////////////////////////////
+    //Call Function to execute illegal instructions
+    //load a1 with 1 to disable mstatus.FS
+    li a1, 1
+    jal ra, fp_instructions
+
+/////////////////////////////////
+/////////////////////////////////
+//HELPER FUNCTIONS BELOW
+/////////////////////////////////
+/////////////////////////////////
+
 //Function that executes the floating point arithmetic and conversions instructions
-fp_instr:
+fp_arith_instr:
     # --- Floating‑Point Arithmetic ---
     fadd.s f2, f0, f1        
     fsub.s f3, f0, f1        
@@ -33,11 +81,10 @@ fp_instr:
     //function return
     ret
 
-main:
-///////////////////////////////////////////////////////////
-//cp_mstatus_fs_illegal_instr AND cp_mstatus_fs_csr_write
-///////////////////////////////////////////////////////////
-    # set mstatus.FS to 10 to enable fp
+//Function that executes all the floating point instructions in the F extension
+//a1: 0 if mstatus is disabled, else mstatus is enabled 
+fp_instructions:
+     # set mstatus.FS to 10 to enable fp
     li t0,0x4000
     csrs mstatus, t0
 
@@ -97,9 +144,13 @@ main:
     li t0, 15
     fcvt.s.w f14, t0
 
+    //check a1 to see if mstatus is enabled or disabled
+    bne a1, x0, mstatus_enabled
     # set mstatus.FS to 00 to disable fp
     li t0, 0x6000      #(1's in bit 13 and 14 of mstatus)
     csrc mstatus, t0           
+
+  mstatus_enabled:
 
     # --- Floating-Point Memory Operations ---   
     # Store f0 into memory at scratch.
@@ -112,7 +163,10 @@ main:
     fli.s  f2, 2.5         
 
     # --- Floating-Point Arithmetic Operations ---
-    jal ra, fp_instr     # Execute floating point instructions from function
+    //call function to execute arithmetic instructions
+    mv s1, ra                #save return address of current function
+    jal ra, fp_arith_instr     
+    mv ra, s1                #restore return address
 
     feq.s  t3, f0, f1       
 
@@ -151,30 +205,7 @@ main:
     #endif
     #endif 
 
-/////////////////////////////////
-//cp_badfrm
-/////////////////////////////////
-    # set mstatus.FS to 01 to enable fp
-    li t0,0x4000
-    csrs mstatus, t0
-
-    //frm = 5
-    li t0, 5         # 3'b = 101
-    csrw frm, t0     #update frm
-    #call floating point arithmetic and conversion function
-    jal ra, fp_instr
-
-    //frm = 6
-    li t0, 6         #3'b = 110
-    csrw frm, t0     #update frm
-    #call floating point arithmetic and conversion function
-    jal ra, fp_instr
-
-    //frm = 7
-    li t0, 7          #3'b = 111 
-    csrw frm, t0      #update frm
-    #call floating point arithmetic and conversion function
-    jal ra, fp_instr
+    ret
 
 finished:
     j done

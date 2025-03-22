@@ -87,6 +87,7 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
     cp_mstatus_fs_illegal_instr: cross instrs, mstatus_FS_zero;
     // cp_mstatus_fs_csr_write:  redundant, covered by cp_mstatus_fs_illegal_instr
     cp_badfrm: cross dyn_instrs, mstatus_FS_nonzero, frm_illegal;
+    cp_mstatus_fs_legal: cross instrs, mstatus_FS_nonzero;
 endgroup
 
 function void exceptionsf_sample(int hart, int issue, ins_t ins);
