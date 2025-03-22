@@ -21,9 +21,10 @@
 
 module testbench;
 
-  // Check variable lengths
+  // Load configuration
   `include "coverage.svh"
 
+  // Set up varialbe lengths
 `ifdef XLEN32
   localparam XLEN = 32;
 `else
@@ -36,47 +37,48 @@ module testbench;
   localparam FLEN = 32;
 `endif
 
-  localparam VLEN = 256;
+  localparam VLEN = 256; // TODO: Make configurable (maybe just use the macro directly)
 
   localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
   localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
 
-  // Temporary signals for filling RVVI trace interface
-  string traceFile;
+  // Temporary signals for filling RVVI trace interface (file handling, string parsing, etc)
+  string  traceFile;
   integer traceFileHandler, num;
-  string line;
-  string key, val;
-  string words[$];
-  int order;
-  int regNum;
+  string  line;
+  string  key, val;
+  string  words[$];
+  int     order;
+  int     regNum;
   logic [(XLEN-1):0] regVal;
 
   // RVVI Trace interface signals
-  logic clk;
-  logic [31:0] insn;
-  logic trap;
-  logic valid;
-  logic debug_mode;
+  // Basic signals
+  logic              clk;
+  logic [31:0]       insn;
+  logic              trap;
+  logic              valid;
+  logic              debug_mode;
   logic [(XLEN-1):0] pc_rdata;
-  logic [1:0] mode;
+  logic [1:0]        mode;
   // Interrupts
   logic m_ext_intr, s_ext_intr, m_timer_intr, m_soft_intr;
   // Virtual Memory
-  logic [(XLEN-1):0] virt_adr_i, virt_adr_d;
-  logic [(PA_BITS-1):0] phys_adr_i, phys_adr_d;
-  logic [(XLEN-1):0] pte_i, pte_d;
+  logic [(XLEN-1):0]     virt_adr_i, virt_adr_d;
+  logic [(PA_BITS-1):0]  phys_adr_i, phys_adr_d;
+  logic [(XLEN-1):0]     pte_i, pte_d;
   logic [(PPN_BITS-1):0] ppn_i, ppn_d;
-  logic [1:0] page_type_i, page_type_d;
+  logic [1:0]            page_type_i, page_type_d;
   logic read_access, write_access, execute_access;
   // Registers
-  logic [31:0][(XLEN-1):0] x_wdata;
-  logic [31:0] x_wb;
-  logic [31:0][(FLEN-1):0] f_wdata;
-  logic [31:0] f_wb;
-  logic [31:0][(VLEN-1):0] v_wdata;
-  logic [31:0] v_wb;
+  logic [31:0][(XLEN-1):0]   x_wdata;
+  logic [31:0]               x_wb;
+  logic [31:0][(FLEN-1):0]   f_wdata;
+  logic [31:0]               f_wb;
+  logic [31:0][(VLEN-1):0]   v_wdata;
+  logic [31:0]               v_wb;
   logic [4095:0][(XLEN-1):0] csr;
-  logic [4095:0] csr_wb;
+  logic [4095:0]             csr_wb;
 
   // Generate clock
   initial begin
@@ -84,10 +86,10 @@ module testbench;
     forever #5 clk = ~clk;
   end
 
-  // Load pre-formatted trace file
+  // Load pre-formatted trace file from traceFile plusarg
   initial begin
     if (!$value$plusargs("traceFile=%s", traceFile)) begin
-      $display("Error: tracefile not provided");
+      $display("Error: trace file not provided");
       $finish;
     end
     traceFileHandler = $fopen(traceFile, "r");
@@ -102,7 +104,7 @@ module testbench;
   rvviTrace #(.XLEN(XLEN), .FLEN(FLEN), .VLEN(VLEN)) rvvi();
   cvw_arch_verif cvw_arch_verif(rvvi);
 
-  // Sample instruction from trace file on each clock edge
+  // Sample an instruction from the trace file on each clock edge
   always_ff @(posedge clk) begin
     // Reset all signals at the beginning of each iteration
     {valid, insn, trap, debug_mode, pc_rdata, mode,
@@ -112,7 +114,7 @@ module testbench;
     read_access, write_access, execute_access,
     x_wb, f_wb, v_wb, csr_wb, x_wdata, f_wdata, v_wdata} = 0;
 
-    // End simulation if end of trace file reached
+    // End simulation if end of trace file is reached
     if ($feof(traceFileHandler)) begin
       $display("Trace file finished");
       $fclose(traceFileHandler);
@@ -124,35 +126,37 @@ module testbench;
 
     // Parse line and set signals
     if (line != "" & line != "\n") begin // Skip empty lines
-      splitLine(line, words);
+      splitLine(line, words); // Split line into queue of individual words
       while (words.size > 0) begin
         key = words.pop_front();
         val = words.pop_front();
+        // Need to parse values using $sscanf because standard ascii to int conversion
+        // doesn't work for number larger than 32 bits
         case(key)
           // Standard signals
-          "INSN": num = $sscanf(val, "%h", insn);
-          "TRAP": num = $sscanf(val, "%b", trap);
-          "DEBUG_MODE": num = $sscanf(val, "%b", debug_mode);
-          "PC": num = $sscanf(val, "%h", pc_rdata);
-          "MODE": num = $sscanf(val, "%b", mode);
+          "INSN":           num = $sscanf(val, "%h", insn);
+          "TRAP":           num = $sscanf(val, "%b", trap);
+          "DEBUG_MODE":     num = $sscanf(val, "%b", debug_mode);
+          "PC":             num = $sscanf(val, "%h", pc_rdata);
+          "MODE":           num = $sscanf(val, "%b", mode);
           // Interrupts
-          "M_EXT_INTR": num = $sscanf(val, "%b", m_ext_intr);
-          "S_EXT_INTR": num = $sscanf(val, "%b", s_ext_intr);
-          "M_TIMER_INTR": num = $sscanf(val, "%b", m_timer_intr);
-          "M_SOFT_INTR": num = $sscanf(val, "%b", m_soft_intr);
+          "M_EXT_INTR":     num = $sscanf(val, "%b", m_ext_intr);
+          "S_EXT_INTR":     num = $sscanf(val, "%b", s_ext_intr);
+          "M_TIMER_INTR":   num = $sscanf(val, "%b", m_timer_intr);
+          "M_SOFT_INTR":    num = $sscanf(val, "%b", m_soft_intr);
           // Virtual Memory
-          "VIRT_ADR_I": num = $sscanf(val, "%h", virt_adr_i);
-          "VIRT_ADR_D": num = $sscanf(val, "%h", virt_adr_d);
-          "PHYS_ADR_I": num = $sscanf(val, "%h", phys_adr_i);
-          "PHYS_ADR_D": num = $sscanf(val, "%h", phys_adr_d);
-          "PTE_I": num = $sscanf(val, "%h", pte_i);
-          "PTE_D": num = $sscanf(val, "%h", pte_d);
-          "PPN_I": num = $sscanf(val, "%h", ppn_i);
-          "PPN_D": num = $sscanf(val, "%h", ppn_d);
-          "PAGE_TYPE_I": num = $sscanf(val, "%b", page_type_i);
-          "PAGE_TYPE_D": num = $sscanf(val, "%b", page_type_d);
-          "READ_ACCESS": num = $sscanf(val, "%b", read_access);
-          "WRITE_ACCESS": num = $sscanf(val, "%b", write_access);
+          "VIRT_ADR_I":     num = $sscanf(val, "%h", virt_adr_i);
+          "VIRT_ADR_D":     num = $sscanf(val, "%h", virt_adr_d);
+          "PHYS_ADR_I":     num = $sscanf(val, "%h", phys_adr_i);
+          "PHYS_ADR_D":     num = $sscanf(val, "%h", phys_adr_d);
+          "PTE_I":          num = $sscanf(val, "%h", pte_i);
+          "PTE_D":          num = $sscanf(val, "%h", pte_d);
+          "PPN_I":          num = $sscanf(val, "%h", ppn_i);
+          "PPN_D":          num = $sscanf(val, "%h", ppn_d);
+          "PAGE_TYPE_I":    num = $sscanf(val, "%b", page_type_i);
+          "PAGE_TYPE_D":    num = $sscanf(val, "%b", page_type_d);
+          "READ_ACCESS":    num = $sscanf(val, "%b", read_access);
+          "WRITE_ACCESS":   num = $sscanf(val, "%b", write_access);
           "EXECUTE_ACCESS": num = $sscanf(val, "%b", execute_access);
           // Registers
           "X": begin
@@ -186,7 +190,7 @@ module testbench;
           end
           default: begin
             $display("Unknown key: %s", key);
-            $finish(-1);
+            $finish();
           end
         endcase
       end
@@ -198,7 +202,7 @@ module testbench;
   end
 
   // Connect testbench signals to RVVI trace interface
-  // Standard signals
+  // Basic signals
   assign rvvi.clk = clk;
   assign rvvi.valid[0][0] = valid;
   assign rvvi.order[0][0] = order;
