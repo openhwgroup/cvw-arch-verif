@@ -341,6 +341,17 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
         wildcard bins leaflvl_s = {8'b???01111};
     }
 
+    PTE_DAU_i: coverpoint ins.current.pte_i[7:0] {
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
+        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
+        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+    }
+    PTE_DAU_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
+        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
+        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+    }
+
     //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
 
     PageType_i: coverpoint ins.current.page_type_i {
@@ -690,38 +701,63 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_Dbit_set_W_d.leaflvl_s);
     }
+    
+    PTE_DAU_nleaf_read_write_s: cross PTE_DAU_d, PageType_d, mode, priv_mode_s, Mcause {
+        ignore_bins ig1 = binsof(PageType_d.kilo);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+    }
+    PTE_DAU_nleaf_exec_s: cross PTE_DAU_i, PageType_i, mode, priv_mode_s, Mcause {
+        ignore_bins ig1 = binsof(PageType_i.kilo);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    }
+    PTE_DAU_nleaf_read_write_u: cross PTE_DAU_d, PageType_d, mode, priv_mode_u, Mcause {
+        ignore_bins ig1 = binsof(PageType_d.kilo);
+        ignore_bins ig2 = binsof(Mcause.ins_page_fault);
+    }
+    PTE_DAU_nleaf_exec_u: cross PTE_DAU_i, PageType_i, mode, priv_mode_u, Mcause {
+        ignore_bins ig1 = binsof(PageType_i.kilo);
+        ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
+        ignore_bins ig3 = binsof(Mcause.load_page_fault);
+    }
 
-    misaligned_exec_s: cross PTE_RWX_i, misaligned_PPN_i, mode, Mcause, exec_acc  { //pte.16
+    misaligned_exec_s: cross PTE_RWX_i, misaligned_PPN_i, PageType_i, mode, Mcause, exec_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_i.leaflvl_u);
+        ignore_bins ig4 = binsof(PageType_i.kilo);
     }
-    misaligned_exec_u: cross PTE_RWX_i, misaligned_PPN_i, mode, Mcause, exec_acc  { //pte.16
+    misaligned_exec_u: cross PTE_RWX_i, misaligned_PPN_i, PageType_i, mode, Mcause, exec_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_i.leaflvl_s);
+        ignore_bins ig4 = binsof(PageType_i.kilo);
     }
 
-    misaligned_read_s: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, read_acc { //pte.16
+    misaligned_read_s: cross PTE_RWX_d, misaligned_PPN_d, PageType_d, mode, Mcause, read_acc { //pte.16
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_u);
+        ignore_bins ig4 = binsof(PageType_d.kilo);
     }
-    misaligned_read_u: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, read_acc  { //pte.16
+    misaligned_read_u: cross PTE_RWX_d, misaligned_PPN_d, PageType_d, mode, Mcause, read_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_s);
+        ignore_bins ig4 = binsof(PageType_d.kilo);
     }
 
-    misaligned_write_s: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, write_acc  { //pte.16
+    misaligned_write_s: cross PTE_RWX_d, misaligned_PPN_d, PageType_d, mode, Mcause, write_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_u);
+        ignore_bins ig4 = binsof(PageType_d.kilo);
     }
-    misaligned_write_u: cross PTE_RWX_d, misaligned_PPN_d, mode, Mcause, write_acc  { //pte.16
+    misaligned_write_u: cross PTE_RWX_d, misaligned_PPN_d, PageType_d, mode, Mcause, write_acc  { //pte.16
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_RWX_d.leaflvl_s);
+        ignore_bins ig4 = binsof(PageType_d.kilo);
     }
 
 endgroup
