@@ -55,46 +55,46 @@ main:
     li t0, 1
     fcvt.s.w f0, t0
 
-    addi t0,t0,1
+    li t0, 2
     fcvt.s.w f1, t0
 
-    addi t0,t0,1
+    li t0, 3
     fcvt.s.w f2, t0
 
-    addi t0,t0,1
+    li t0, 4
     fcvt.s.w f3, t0
 
-    addi t0,t0,1
+    li t0, 5
     fcvt.s.w f4, t0
 
-    addi t0,t0,1
+    li t0, 6
     fcvt.s.w f5, t0
 
-    addi t0,t0,1
+    li t0, 7
     fcvt.s.w f6, t0
 
-    addi t0,t0,1
+    li t0, 8
     fcvt.s.w f7, t0
 
-    addi t0,t0,1
+    li t0, 9
     fcvt.s.w f8, t0
 
-    addi t0,t0,1
+    li t0, 10
     fcvt.s.w f9, t0
 
-    addi t0,t0,1
+    li t0, 11
     fcvt.s.w f10, t0
 
-    addi t0,t0,1
+    li t0, 12
     fcvt.s.w f11, t0
 
-    addi t0,t0,1
+    li t0, 13
     fcvt.s.w f12, t0
 
-    addi t0,t0,1
+    li t0, 14
     fcvt.s.w f13, t0
 
-    addi t0,t0,1
+    li t0, 15
     fcvt.s.w f14, t0
 
     # set mstatus.FS to 00 to disable fp
