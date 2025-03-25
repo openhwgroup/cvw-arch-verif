@@ -41,6 +41,9 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
         bins reserved_6 = {3'b110};
         bins reserved_7 = {3'b111};
     }
+    frm_legal: coverpoint ins.prev.csr[12'h003][7:5] {
+        bins reserved_5 = {3'b000};
+    }
     instrs: coverpoint ins.current.insn {
         wildcard bins fsw          = {32'b????????????_?????_010_?????_0100111};
         wildcard bins flw          = {32'b????????????_?????_010_?????_0000111};
@@ -75,27 +78,16 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
             wildcard bins fmvp         = {32'b1011001_?????_?????_000_?????_1010011};
         `endif
     }
-    dyn_instrs: coverpoint ins.current.insn {
-        wildcard bins fadd_dyn     = {32'b00000_??_?????_?????_111_?????_1010011};
-        wildcard bins fsub_dyn     = {32'b00001_??_?????_?????_111_?????_1010011};
-        wildcard bins fmul_dyn     = {32'b00010_??_?????_?????_111_?????_1010011};
-        wildcard bins fdiv_dyn     = {32'b00011_??_?????_?????_111_?????_1010011};
-        wildcard bins fcvt_x_f_dyn = {32'b11000_??_?????_?????_111_?????_1010011};
-        wildcard bins fcvt_f_f_dyn = {32'b01000_??_?????_?????_111_?????_1010011};
-        wildcard bins fmadd_dyn    = {32'b?????_??_?????_?????_111_?????_1000011};
-        wildcard bins fsqrt_dyn    = {32'b01011_??_00000_?????_111_?????_1010011};
-        wildcard bins fround_dyn   = {32'b01000_??_00100_?????_111_?????_1010011};
-    }
 
     // main coverpoints
     cp_mstatus_fs_illegal_instr: cross instrs, mstatus_FS_zero;
     // cp_mstatus_fs_csr_write:  redundant, covered by cp_mstatus_fs_illegal_instr
-    cp_badfrm: cross dyn_instrs, mstatus_FS_nonzero, frm_illegal;
-    cp_mstatus_fs_legal: cross instrs, mstatus_FS_status;
+    cp_badfrm: cross instrs, mstatus_FS_nonzero, frm_illegal;
+    cp_mstatus_fs_legal: cross instrs, mstatus_FS_status, frm_legal;
 endgroup
 
 function void exceptionsf_sample(int hart, int issue, ins_t ins);
-    $display("Mstatus FS: %b, frmIllegal: %b, op: %b, fmrBits: %b, imm: %b", ins.current.csr[12'h300][14:13], ins.current.csr[12'h003][7:5],  ins.current.insn[6:0], ins.current.insn[14:12], ins.current.insn[31:27]);
+    //$display("Mstatus FS: %b, frmIllegal: %b, op: %b, fmrBits: %b, imm: %b", ins.current.csr[12'h300][14:13], ins.current.csr[12'h003][7:5],  ins.current.insn[6:0], ins.current.insn[14:12], ins.current.insn[31:27]);
     ExceptionsF_exceptions_cg.sample(ins);
 
     
