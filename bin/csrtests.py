@@ -79,24 +79,15 @@ def mwalk(csr, regs, mode='M'):
     print("\n// Walk a single 1 in M-mode") 
     print("\t1: csrrc t6, "+csr+", t1    # clear all bits in csr")
     print("\tcsrrs t6, "+csr+", t0    # set walking 1 in csr")
-    if mode == "U":
-        print("\tli a0, 0")  # switch to U-mode and read from counter/counterh
-        print("\tecall                  # Switch to U-mode")
+    if mode in ["U", "S"]:
+        print("\tli a0, 0     # switch to " + mode + "-mode")
+        print("\tecall        # Switch to " + mode + "-mode")
         for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
+            if reg == "satp":  # Skip satp to avoid enabling virtual memory
                 continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in U-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
-    elif mode == "S":
-        print("\tli a0, 0")  # switch to S-mode and read from counter/counterh
-        print("\tecall                  # Switch to S-mode")
-        for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in S-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
+            print(f"\tcsrr t2, {reg} \t\t# read from {reg} in {mode}-mode")
+        print("\tli a0, 3")
+        print("\tecall        # Switch back to M-mode")
     else: 
         for reg in regs: # Read directly in M-mode
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
@@ -108,24 +99,15 @@ def mwalk(csr, regs, mode='M'):
     print("\tli t0, 1            # reset t0 to 1")
     print("\t2: csrrs t6, "+csr+", t1    # set all bits in csr")
     print("\tcsrrc t6, "+csr+", t0    # clear walking 0 in csr")
-    if mode == 'U':
-        print("\tli a0, 0")
-        print("\tecall                  # Switch to U-mode")
+    if mode in ["U", "S"]:
+        print("\tli a0, 0    # switch to " + mode + "-mode")
+        print("\tecall       # Switch to " + mode + "-mode")
         for reg in regs:
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
                 continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in U-mode")
-        print("\tli a0, 3")
-        print("\tecall                  # Switch back to M-mode")
-    elif mode == "S":
-        print("\tli a0, 0")  # switch to S-mode and read from counter/counterh
-        print("\tecall                  # Switch to S-mode")
-        for reg in regs:
-            if reg == "satp":  # skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in S-mode")
-        print("\tli a0, 3") # switch back to M-mode
-        print("\tecall                  # Switch back to M-mode")
+            print(f"\tcsrr t2, {reg} # read from {reg} in {mode}-mode")
+        print("\tli a0, 3      # switch back to M-mode")
+        print("\tecall         # Switch back to M-mode")
     else: 
         for reg in regs:
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
