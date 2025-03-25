@@ -42,7 +42,7 @@ covergroup ExceptionsF_exceptions_cg with function sample(ins_t ins);
         bins reserved_7 = {3'b111};
     }
     frm_legal: coverpoint ins.prev.csr[12'h003][7:5] {
-        bins reserved_5 = {3'b000};
+        bins legal_frm = {3'b000, 3'b001, 3'b010, 3'b011, 3'b100};
     }
     instrs: coverpoint ins.current.insn {
         wildcard bins fsw          = {32'b????????????_?????_010_?????_0100111};
