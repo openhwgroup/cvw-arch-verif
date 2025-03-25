@@ -121,3 +121,6 @@ csrwalk(pathname, sregs + uregs, []);
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrF-Walk.h"
+csrwalk(pathname, mcntrs, mcntrsh)
