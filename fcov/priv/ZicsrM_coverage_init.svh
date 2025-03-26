@@ -8,7 +8,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZicsrM_mcsr_cg = new();        ZicsrM_mcsr_cg.set_inst_name("obj_ZicsrM_mcsr");
     ZicsrM_mcause_cg = new();      ZicsrM_mcause_cg.set_inst_name("obj_ZicsrM_mcause");
     ZicsrM_mstatus_cg = new();     ZicsrM_mstatus_cg.set_inst_name("obj_ZicsrM_mstatus");
     ZicsrM_mprivinst_cg = new();   ZicsrM_mprivinst_cg.set_inst_name("obj_ZicsrM_mprivinst");

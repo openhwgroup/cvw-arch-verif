@@ -206,6 +206,6 @@
 `ifdef INTERRUPTSSSTC_COVERAGE
   `include "InterruptsSstc_coverage.svh"
 `endif
-`ifdef SSSTRICTM_COVERAGE
-  `include "SsstrictM_coverage.svh"
+`ifdef SSSTRICT_COVERAGE
+  `include "Ssstrict_coverage.svh"
 `endif
