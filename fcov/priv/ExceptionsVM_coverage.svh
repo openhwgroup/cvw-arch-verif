@@ -43,7 +43,6 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     store_page_fault: coverpoint (ins.current.csr[12'h342][31:0] == 32'd15) {
         // auto fill 0/1 
     } 
-
     i_virt_adr_misaligned: coverpoint ins.current.virt_adr_i[2:0] {
         bins aligned    = {2'b00};
         bins misaligned = {2'b10};
@@ -51,30 +50,33 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     i_page_table_entry_invalid: coverpoint ins.current.pte_i[0] {
         // auto fill valid bit 0/1
     }
-    // TODO: should this be more rigorous and explicitly require a valid physical address 
-    // for the 0 bin? For example, addresses 0x0 and 0x1 are both nonexistent but his this CP
-    i_phys_address_nonexistant: coverpoint (ins.current.phys_adr_i == `ACCESS_FAULT_ADDRESS) {
-        // auto fill 1/0 for the physical address being valid
-    }
-
-    d_virt_adr_misaligned: coverpoint ins.current.virt_adr_d[2:0] {
+    d_virt_adr_misaligned: coverpoint ins.current.virt_adr_d[1:0] {
         bins aligned    = {2'b00};
         bins misaligned = {2'b10};
     }
     d_page_table_entry_invalid: coverpoint ins.current.pte_d[0] {
         // auto fill valid bit 0/1
     }
-    // TODO: should this be more rigorous and explicitly require a valid physical address 
-    // for the 0 bin? For example, addresses 0x0 and 0x1 are both nonexistent but his this CP
-    d_phys_address_nonexistant: coverpoint (ins.current.phys_adr_d == `ACCESS_FAULT_ADDRESS) {
-        // auto fill 1/0 for the physical address being valid
+    `ifdef XLEN64 // Number of physical address bits is different by XLEN, either 34 or 56
+        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+    `else
+        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+    `endif
+    sw: coverpoint ins.current.insn {
+        wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
     }
-
-    storeop: coverpoint ins.current.insn[6:0] {
-        bins store = {7'b0100011};
-    }
-    loadop: coverpoint ins.current.insn[6:0] {
-        bins load = {7'b0000011};
+    lw: coverpoint ins.current.insn {
+        wildcard bins lw = {32'b????????????_?????_010_?????_0000011}; 
     }
     medeleg_walk: coverpoint ins.current.csr[12'h302] {
         bins zeros                    = {16'b0000_0000_0000_0000};
@@ -97,7 +99,7 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         bins loadpagefault_enabled    = {16'b0010_0000_0000_0000};
         // bit 14 reserved
         bins storepagefault_enabled   = {16'b1000_0000_0000_0000};
-        wildcard bins ones            = {16'b1011_00?1_1111_111?};
+        wildcard bins ones            = {16'b1011_0001_1111_111?};
     }
 
 
@@ -106,29 +108,29 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     cp_load_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, load_page_fault;
     cp_store_page_fault_m:          cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, store_page_fault;
     cp_misaligned_priority_fetch_m: cross priv_mode_m, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_m:  cross priv_mode_m, loadop,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_m: cross priv_mode_m, storeop, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_load_m:  cross priv_mode_m, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_store_m: cross priv_mode_m, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_medeleg_fetch_m:             cross priv_mode_m, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_m:              cross priv_mode_m, loadop,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_m:             cross priv_mode_m, storeop, d_page_table_entry_invalid, medeleg_walk;
-    cp_instr_page_fault_s:          cross priv_mode_s, mstatus_mprv_one, mstatus_mpp, instr_page_fault;
-    cp_load_page_fault_s:           cross priv_mode_s, mstatus_mprv_one, mstatus_mpp, load_page_fault;
-    cp_store_page_fault_s:          cross priv_mode_s, mstatus_mprv_one, mstatus_mpp, store_page_fault;
+    cp_medeleg_load_m:              cross priv_mode_m, lw,  d_page_table_entry_invalid, medeleg_walk;
+    cp_medeleg_store_m:             cross priv_mode_m, sw, d_page_table_entry_invalid, medeleg_walk;
+    cp_instr_page_fault_s:          cross priv_mode_s, instr_page_fault;
+    cp_load_page_fault_s:           cross priv_mode_s, load_page_fault;
+    cp_store_page_fault_s:          cross priv_mode_s, store_page_fault;
     cp_misaligned_priority_fetch_s: cross priv_mode_s, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_s:  cross priv_mode_s, loadop,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_s: cross priv_mode_s, storeop, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_load_s:  cross priv_mode_s, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_store_s: cross priv_mode_s, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_medeleg_fetch_s:             cross priv_mode_s, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_s:              cross priv_mode_s, loadop,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_s:             cross priv_mode_s, storeop, d_page_table_entry_invalid, medeleg_walk;
-    cp_instr_page_fault_u:          cross priv_mode_u, mstatus_mprv_one, mstatus_mpp, instr_page_fault;
-    cp_load_page_fault_u:           cross priv_mode_u, mstatus_mprv_one, mstatus_mpp, load_page_fault;
-    cp_store_page_fault_u:          cross priv_mode_u, mstatus_mprv_one, mstatus_mpp, store_page_fault;
+    cp_medeleg_load_s:              cross priv_mode_s, lw,  d_page_table_entry_invalid, medeleg_walk;
+    cp_medeleg_store_s:             cross priv_mode_s, sw, d_page_table_entry_invalid, medeleg_walk;
+    cp_instr_page_fault_u:          cross priv_mode_u, instr_page_fault;
+    cp_load_page_fault_u:           cross priv_mode_u, load_page_fault;
+    cp_store_page_fault_u:          cross priv_mode_u, store_page_fault;
     cp_misaligned_priority_fetch_u: cross priv_mode_u, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_u:  cross priv_mode_u, loadop,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_u: cross priv_mode_u, storeop, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_load_u:  cross priv_mode_u, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_store_u: cross priv_mode_u, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_medeleg_fetch_u:             cross priv_mode_u, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_u:              cross priv_mode_u, loadop,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_u:             cross priv_mode_u, storeop, d_page_table_entry_invalid, medeleg_walk;
+    cp_medeleg_load_u:              cross priv_mode_u, lw,  d_page_table_entry_invalid, medeleg_walk;
+    cp_medeleg_store_u:             cross priv_mode_u, sw, d_page_table_entry_invalid, medeleg_walk;
 
 endgroup
 
