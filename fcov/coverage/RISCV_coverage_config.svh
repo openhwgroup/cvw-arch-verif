@@ -182,6 +182,9 @@
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
 `endif
+`ifdef EXCEPTIONSF_COVERAGE
+  `include "ExceptionsF_coverage.svh"
+`endif
 `ifdef ZICNTRU_COVERAGE
   `include "ZicntrU_coverage.svh"
 `endif
