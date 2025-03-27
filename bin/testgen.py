@@ -847,9 +847,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     if insMap[instype].get('loadstore', 0) != 0:
       lines += "la " + regconfig[1] + str(rs1b) + ", scratch\n"
       lines += "addi " + 2*(regconfig[1] + str(rs1b) + ", ") + str(signedImm12(-immvalb)) + "\n"
-      if haz_type != "war":
-        rs1a = rda
-        rs2a = 0
+      if haz_type == "raw":
+        if insMap[instype].get('loadstore', 0) == 'store':
+          rs1a = rda
+          rs2a = 0
+        elif insMap[instype].get('loadstore', 0) == 'load':
+          rda = rs1b
+          rs1a = rs1b
+          rs2a = 0
 
     if 'a' in regconfig:
       rsblist = [rdb, rs1b, rs2b, rs3b]
