@@ -112,10 +112,9 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         wildcard bins fmin         = {32'b00101_??_?????_?????_000_?????_1010011};
         wildcard bins fli          = {32'b11110_??_00001_?????_000_?????_1010011};
         wildcard bins fround       = {32'b01000_??_00100_?????_???_?????_1010011};
-        wildcard bins add          = {32'b0000000_?????_?????_000_?????_0110011};
-        wildcard bins csrr_fcsr    = {32'b000000000011_00000_001_?????_1110011};
-        wildcard bins csrr_frm     = {32'b000000000010_00000_001_?????_1110011};
-        wildcard bins csrr_fflags  = {32'b000000000001_00000_001_?????_1110011};
+        wildcard bins csrr_fcsr    = {32'b000000000011_00000_010_?????_1110011};
+        wildcard bins csrr_frm     = {32'b000000000010_00000_010_?????_1110011};
+        wildcard bins csrr_fflags  = {32'b000000000001_00000_010_?????_1110011};
         wildcard bins csrrw_fcsr   = {32'b000000000011_?????_001_?????_1110011};
         wildcard bins csrrw_frm    = {32'b000000000010_?????_001_?????_1110011};
         wildcard bins csrrw_fflags = {32'b000000000001_?????_001_?????_1110011};
@@ -156,4 +155,6 @@ endgroup
 
 function void zicsrf_sample(int hart, int issue, ins_t ins);
     ZicsrF_fcsr_cg.sample(ins);
+
+    $display("instr:%b, mstatus:%b",ins.current.insn, ins.prev.csr[12'h300][14:13]);
 endfunction
