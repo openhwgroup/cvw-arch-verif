@@ -212,3 +212,6 @@
 `ifdef SSSTRICTS_COVERAGE
   `include "SsstrictS_coverage.svh"
 `endif
+`ifdef SSSTRICTM_COVERAGE
+  `include "SsstrictM_coverage.svh"
+`endif
