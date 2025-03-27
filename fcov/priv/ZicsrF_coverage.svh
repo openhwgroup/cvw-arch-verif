@@ -49,7 +49,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         // auto fills 0 through 15
     }
     walking_ones : coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
-        bins b_1[] = { [0:`XLEN-1] };
+        bins b_1[] = { [0:31] };
     }
 
     fadd: coverpoint ins.current.insn {
@@ -155,6 +155,4 @@ endgroup
 
 function void zicsrf_sample(int hart, int issue, ins_t ins);
     ZicsrF_fcsr_cg.sample(ins);
-
-    $display("instr:%b, mstatus:%b",ins.current.insn, ins.prev.csr[12'h300][14:13]);
 endfunction
