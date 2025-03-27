@@ -49,7 +49,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         // auto fills 0 through 15
     }
     walking_ones : coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
-        bins b_1[] = { [0:31] };
+        bins b_1[] = { [0:`XLEN-1] };
     }
 
     fadd: coverpoint ins.current.insn {
@@ -112,6 +112,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         wildcard bins fmin         = {32'b00101_??_?????_?????_000_?????_1010011};
         wildcard bins fli          = {32'b11110_??_00001_?????_000_?????_1010011};
         wildcard bins fround       = {32'b01000_??_00100_?????_???_?????_1010011};
+        wildcard bins add          = {32'b0000000_?????_?????_000_?????_0110011};
         wildcard bins csrr_fcsr    = {32'b000000000011_00000_010_?????_1110011};
         wildcard bins csrr_frm     = {32'b000000000010_00000_010_?????_1110011};
         wildcard bins csrr_fflags  = {32'b000000000001_00000_010_?????_1110011};
