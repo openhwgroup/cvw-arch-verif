@@ -71,9 +71,11 @@ def csrtests(pathname, skipCsrs):
         print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")
     outfile.close
 
-def modeswitch(regs, mode): # helper function to switch modes when reading csr
-    if mode in (0, 1):
-        print(f"\tli a0, {mode}     # switch to {mode}-mode")
+def readandswitchmode(regs, mode):
+    # helper function to switch modes when reading csr
+    if mode in ('U', 'S'):
+        mode_num = 0 if mode == 'U' else 1  # convert 'U' to 0, 'S' to 1
+        print(f"\tli a0, {mode_num}     # switch to {mode}-mode")
         print(f"\tecall             # switch to {mode}-mode")
         for reg in regs:
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
@@ -98,14 +100,14 @@ def mwalk(csr, regs, mode):
     print("\n// Walk a single 1 in M-mode") # walk 1
     print(f"\t1: csrrc t6, {csr}, t1  # clear all bits")
     print(f"\tcsrrs t6, {csr}, t0  # set current bit")
-    modeswitch(regs, mode)
+    readandswitchmode(regs, mode)
     print("\tslli t0, t0, 1   # shift to next bit")
     print("\tbnez t0, 1b      # loop until all bits walked")
     print(f"\n// Walk a single 0 in M-mode and read from registers in {mode}-mode") #walk 0
     print("\tli t0, 1         # reset bit position")
     print(f"\t2: csrrs t6, {csr}, t1  # set all bits")
     print(f"\tcsrrc t6, {csr}, t0  # clear current bit")
-    modeswitch(regs, mode)
+    readandswitchmode(regs, mode)
     print("\tslli t0, t0, 1   # shift to next bit")
     print("\tbnez t0, 2b      # loop until all bits walked")
     print("\n// Restore the original value of csr")
@@ -132,7 +134,7 @@ def mwalkdouble(csr1, csr2, regs, mode):
     print(f"\tcsrrc t6, {csr2}, t1    # clear all bits in second csr")
     print(f"\tcsrrs t6, {csr1}, t0    # set walking 1 in first csr")
     print(f"\tcsrrs t6, {csr2}, t0    # set walking 1 in second csr")
-    modeswitch(regs, mode)
+    readandswitchmode(regs, mode)
     print("\tslli t0, t0, 1      # walk the 1 to the next bit")
     print("\tbnez t0, 1b         # repeat until all bits are walked")
     print(f"\n// Walk a single 0 in both CSRs and read from counter/counterh in {mode}-mode")
@@ -141,7 +143,7 @@ def mwalkdouble(csr1, csr2, regs, mode):
     print(f"\tcsrrs t6, {csr2}, t1    # set all bits in second csr")
     print(f"\tcsrrc t6, {csr1}, t0    # clear walking 0 in first csr")
     print(f"\tcsrrc t6, {csr2}, t0    # clear walking 0 in second csr")
-    modeswitch(regs, mode)
+    readandswitchmode(regs, mode)
     print("\tslli t0, t0, 1      # walk the 0 to the next bit")
     print("\tbnez t0, 2b         # repeat until all bits are walked")
     print("\n// Restore the original values of csrs")
@@ -217,24 +219,24 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkU.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, 0)
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "U")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkM.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, 3)
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "M")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkS.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, 1)
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "S")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MSWalkU.h"
-counterenwalkdouble(pathname, "scounteren", "mcounteren", cntrs, cntrsh, 0)
+counterenwalkdouble(pathname, "scounteren", "mcounteren", cntrs, cntrsh, "U")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkM.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, 3)
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "M")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkS.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, 1)
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "S")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkU.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, 0)
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "U")
 
 
