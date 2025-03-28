@@ -163,7 +163,7 @@ covergroup ZicntrS_scounters_cg with function sample(ins_t ins);
         bins hpmcounter30h_disabled  = {44'b110010011110_10111111111111111111111111111111};
         bins hpmcounter31h_disabled  = {44'b110010011111_01111111111111111111111111111111};
     `endif
-    }
+}
     counters_mcounteren: coverpoint {ins.current.insn[31:20], ins.current.csr[12'h306][31:0] } {
         bins cycle_enabled         = {44'b110000000000_00000000000000000000000000000001};
         bins time_enabled          = {44'b110000000001_00000000000000000000000000000010};
