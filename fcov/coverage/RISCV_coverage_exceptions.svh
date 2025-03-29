@@ -20,23 +20,23 @@
 //
 //
 
-function int is_load_fault(int hart, int issue);
-  int cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
+function bit is_load_fault(int hart, int issue);
+  `XLEN_BITS cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
   if (cause == 5 || cause == 13) begin
     return 1;
   end
   return 0;
 endfunction
 
-function int is_store_fault(int hart, int issue);
-  int cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
+function bit is_store_fault(int hart, int issue);
+  `XLEN_BITS cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
   if (cause == 7 || cause == 15) begin
     return 1;
   end
   return 0;
 endfunction
 
-function int get_fault(int hart, int issue);
-  int cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
+function `XLEN_BITS get_fault(int hart, int issue);
+  `XLEN_BITS cause = get_csr_val(hart, issue, `SAMPLE_AFTER, "mcause", "");
   return cause;
 endfunction

@@ -1,4 +1,4 @@
-    cp_offset : coverpoint `XLEN_INT'(ins.current.rs1_val)+`XLEN_INT'(ins.current.imm) - ins.get_pc()  iff (ins.trap == 0 )  {
+    cp_offset : coverpoint signed'(ins.current.rs1_val) + signed'(ins.current.imm) - ins.get_pc()  iff (ins.trap == 0 )  {
         // jalr destination in rs1+imm is forward/backward
         bins neg  = {[$:-1]};
         bins pos  = {[1:$]};
