@@ -84,14 +84,14 @@ typedef enum {
   vxsat
 } csr_name_t;
 
-function int get_csr_val(int hart, int issue, int prev, string name, string field); // maybe should be `XLEN_INT
+function `XLEN_BITS get_csr_val(int hart, int issue, int prev, string name, string field);
   int addr = get_csr_addr(hart, name);
   return get_csr_val_addr(hart, issue, prev, addr, name, field);
 endfunction
 
-function int get_csr_val_addr(int hart, int issue, int prev, int addr, string name, string field); // maybe should be `XLEN_INT
+function `XLEN_BITS get_csr_val_addr(int hart, int issue, int prev, int addr, string name, string field);
 
-  int val;
+  `XLEN_BITS val;
   val = traceDataQ[hart][issue][prev].csr[addr];
 
   // If the field is defined/found, shift and mask the value to be returned
