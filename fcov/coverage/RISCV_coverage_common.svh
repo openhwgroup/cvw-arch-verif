@@ -32,14 +32,25 @@
 `define SAMPLE_PREV 1
 `define NUM_RVVI_DATA 5
 
-// Set register type length
+// XLEN/FLEN as usable numbers
 `ifdef XLEN32
-  `define XLEN_INT int
   `define XLEN 32
 `else
-  `define XLEN_INT longint
   `define XLEN 64
 `endif
+`ifdef Q_COVERAGE
+  `define FLEN 128
+`elsif D_COVERAGE
+  `define FLEN 64
+`else
+  `define FLEN 32
+`endif
+
+// Set register type length
+`define XLEN_BITS         bit        [`XLEN-1:0]
+`define SIGNED_XLEN_BITS  bit signed [`XLEN-1:0]
+`define FLEN_BITS         bit        [`FLEN-1:0]
+`define SIGNED_FLEN_BITS  bit signed [`FLEN-1:0]
 
 // Instruction operand data structure
 typedef struct {
