@@ -58,17 +58,17 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         // auto fill valid bit 0/1
     }
     `ifdef XLEN64 // Number of physical address bits is different by XLEN, either 34 or 56
-        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            // auto fill 1/0 for the physical address being valid
-        }
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            // auto fill 1/0 for the physical address being valid
-        }
-    `else
         i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
         d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+    `else
+        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `endif
