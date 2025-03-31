@@ -134,7 +134,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup integer register value
-  virtual function `XLEN_INT get_gpr_val(int hart, int issue, string key, int prev);
+  virtual function `SIGNED_XLEN_BITS get_gpr_val(int hart, int issue, string key, int prev);
     int idx = get_gpr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].x_wdata[idx];
@@ -143,7 +143,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup floating point register value
-  function `XLEN_INT get_fpr_val(int hart, int issue, string key, int prev);
+  function `SIGNED_FLEN_BITS get_fpr_val(int hart, int issue, string key, int prev);
     int idx = get_fpr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].f_wdata[idx];
@@ -151,7 +151,7 @@ class RISCV_instruction
     return 0;
   endfunction
 
-  function `XLEN_INT get_pc();
+  function `SIGNED_XLEN_BITS get_pc();
     return current.pc_rdata;
   endfunction
 
@@ -259,11 +259,12 @@ class RISCV_instruction
 
   // Convert immediate string to integer
   // Works for hex and decimal (positive or negative) values
+  // NOTE: This function only works for immediate values that fit in a 32-bit integer.
   function int get_imm(string s);
     int val;
     if (s[1] == "x") begin
       s = s.substr(2,s.len()-1);
-      val = s.atohex ();
+      val = s.atohex();
     end else if (s[0] == "-") begin
       s = s.substr(1,s.len()-1);
       val = 0 - s.atoi();
