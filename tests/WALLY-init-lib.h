@@ -36,6 +36,8 @@
 //  1: change to supervisor mode
 //  3: change to machine mode
 //  4: terminate program
+//
+//  Note a0: 5-9 is reserved for the S_trap hander used in ExceptionsS test
 
 //Macros
 #define ACCESS_FAULT_ADDRESS 0
@@ -96,6 +98,7 @@ done:
     li a0, 4            # argument to finish program
     ecall               # system call to finish program
     j self_loop         # wait forever (not taken)
+    
 
 .align 8                # trap handlers aligned to multiple of 2^8
 trap_handler:
@@ -141,17 +144,35 @@ exception:
     bne t0, t1, exception_return  # ignore other exceptions
 
 ecall:
+//temporary code for supervisor traphendler
+//////////////////////////////
+    li t0, 5
+    bge a0, t0, scallM
+///////////////////////////////
     li t0, 4
     beq a0, t0, write_tohost        # call 4: terminate program
     bltu a0, t0, changeprivilege    # calls 0-3: change privilege level
     j exception_return                   # ignore other ecalls
 
+//temporary code for supervisor traphandler
+/////////////////////////////////
+scallM:
+    csrr   t0, sepc           # Load faulting instruction address from sepc
+
+    # address was already validated by strap handler
+    # move correct address to mepc
+    csrw mepc, t0
+
+    addi a0, a0, -5            #convert a0 to priv mode
+
+/////////////////////////////////
+
 changeprivilege:
     li t0, 0x00001800    # mask off mstatus.MPP in bits 11-12
     csrc mstatus, t0
-    andi a0, a0, 0x003   # only keep bottom two bits of argument
-    slli a0, a0, 11      # move into mstatus.MPP position
-    csrs mstatus, a0     # set mstatus.MPP with desired privilege
+    andi a0, a0, 0x00f   # only keep bottom 4 bits of argument
+    slli t0, a0, 11      # move into mstatus.MPP position
+    csrs mstatus, t0     # set mstatus.MPP with desired privilege
 
 exception_return:             # add 2 or 4 to mepc for exceptions except Instruction Access Fault
     # First, check if the exception was an Instruction Access Fault
@@ -159,6 +180,7 @@ exception_return:             # add 2 or 4 to mepc for exceptions except Instruc
     addi  t1, t1, -1              # Exception cause code 1 means Instruction Access Fault
     bne   t1, x0, mepc_ret_addr   # If not an IAF, skip ra load
     mv t0, ra 
+    addi t0, t0, -4               # remove 4 from ra to get address of instruction that caused exception (updated in next section)
     j post_ret_mepc               #Use ra instead of mepc if IAF
 mepc_ret_addr:
     csrr t0, mepc       # get address of instruction that caused exception if not an IAF
