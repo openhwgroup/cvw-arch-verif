@@ -215,3 +215,6 @@
 `ifdef SSSTRICTM_COVERAGE
   `include "SsstrictM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSZAAMO_COVERAGE
+  `include "ExceptionsZaamo_coverage.svh"
+`endif
