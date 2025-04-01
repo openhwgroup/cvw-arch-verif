@@ -115,7 +115,20 @@ endgroup
 covergroup SsstrictM_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    `include "RISCV_coverage_instr.svh"
+    `include "priv/RISCV_coverage_instr.svh"
+
+atomic_funct7_samp : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}) iff (ins.current.insn[6:0] == 7'b0101111 && ins.current.insn[14:13] == 2'b01) {
+    
+    ignore_wildcard_bins ignore_amoswap  = { 6'b?00001 };
+    ignore_wildcard_bins ignore_amoadd   = { 6'b?00000 };
+    ignore_wildcard_bins ignore_amoxor   = { 6'b?00100 };
+    ignore_wildcard_bins ignore_amoand   = { 6'b?01100 };
+    ignore_wildcard_bins ignore_amoor    = { 6'b?01000 };
+    ignore_wildcard_bins ignore_amomin   = { 6'b?10000 };
+    ignore_wildcard_bins ignore_amomax   = { 6'b?10100 };
+    ignore_wildcard_bins ignore_amoinu   = { 6'b?11000 };
+    ignore_wildcard_bins ignore_amomaxu  = { 6'b?11100 };
+}
 
     // main coverpoints
     cp_illegal:           cross priv_mode_m, illegal;
@@ -131,7 +144,7 @@ covergroup SsstrictM_instr_cg with function sample(ins_t ins);
     cp_store:             cross priv_mode_m, store;
     cp_fstore:            cross priv_mode_m, fstore;
     cp_atomic_funct3:     cross priv_mode_m, atomic_funct3;
-    cp_atomic_funct7:     cross priv_mode_m, atomic_funct7;
+    cp_atomic_funct7:     cross priv_mode_m, atomic_funct7_samp;
     cl_lrsc:              cross priv_mode_m, lrsc;
     cp_Rtype:             cross priv_mode_m, Rtype;
     cp_RWtype:            cross priv_mode_m, RWtype;
@@ -162,7 +175,7 @@ endgroup
 covergroup SsstrictM_comp_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    `include "RISCV_coverage_comp_instr.svh"
+    `include "priv/RISCV_coverage_comp_instr.svh"
 
     // main coverpoints
     cp_compressed00: cross priv_mode_m, compressed00;
