@@ -61,5 +61,5 @@ endgroup
 
 function void exceptionszaamo_sample(int hart, int issue, ins_t ins);
     ExceptionsZaamo_exceptions_cg.sample(ins);
-    $display("rs1: %b, op[6:0]: %b, op:%b", ins.current.rs1_val[2:0], ins.current.insn[6:0], ins.current.insn);
+    // $display("rs1: %b, op[6:0]: %b, op:%b", ins.current.rs1_val[2:0], ins.current.insn[6:0], ins.current.insn);
 endfunction
