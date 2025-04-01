@@ -3,7 +3,7 @@
 //
 // Written: Roman De Santos rdesantos@hmc.edu 31 March 2025
 //
-// Purpose: Functional coverage test for Exceptions in U mode
+// Purpose: Functional coverage test for Exceptions from the Zaamo Extension
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
@@ -95,26 +95,25 @@ Zaamo_Instructions:
 
     // Test Rv64 AMO instructions
     #ifdef __riscv_xlen
-    #if __riscv_xlen == 64
-    
-    amoswap.d t2, t1, (t0)
+        #if __riscv_xlen == 64
+            amoswap.d t2, t1, (t0)
 
-    amoadd.d t3, t2, (t0)
+            amoadd.d t3, t2, (t0)
 
-    amoxor.d t4, t3, (t0)
+            amoxor.d t4, t3, (t0)
 
-    amoand.d t5, t4, (t0)
+            amoand.d t5, t4, (t0)
 
-    amoor.d t6, t5, (t0)
+            amoor.d t6, t5, (t0)
 
-    amomin.d t1, t6, (t0)
+            amomin.d t1, t6, (t0)
 
-    amomax.d t2, t1, (t0)
+            amomax.d t2, t1, (t0)
 
-    amominu.d t3, t2, (t0)
+            amominu.d t3, t2, (t0)
 
-    amomaxu.d t4, t3, (t0)
-    #endif
+            amomaxu.d t4, t3, (t0)
+        #endif
     #endif
 
     ret
