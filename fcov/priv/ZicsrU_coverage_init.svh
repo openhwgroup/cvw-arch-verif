@@ -8,5 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ZicsrU_ucsr_cg = new();         ZicsrU_ucsr_cg.set_inst_name("obj_ZicsrU_ucsr");
     ZicsrU_uprivinst_cg = new();    ZicsrU_uprivinst_cg.set_inst_name("obj_ZicsrU_uprivinst");
