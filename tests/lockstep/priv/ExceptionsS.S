@@ -362,6 +362,8 @@ finished:
 // Please note this is a temporary trap handler and is specific to this program.
 // This should be replaced with a more generic trap handler in the future.
 //
+// Currently s7 is reserved for this traphandler
+//
 // Provides a simple trap handler that allows for privilege mode changes
 // Place argument in a0 and issue ecall:
 //  0: change to user mode
@@ -369,6 +371,17 @@ finished:
 //  3: change to machine mode
 //  4: terminate program
 // 
+// Notes on s_traphandler:
+// When medeleg bit 8 is set (medeleg[8] = 1), user-level ecalls are delegated
+// to the supervisor trap handler. However, if the user program requests a mode change
+// to machine mode via ecall, the supervisor trap handler (using sret)
+// cannot directly return to machine mode due to insufficient privileges.
+// 
+// To resolve this, s_traphandler invokes an additional ecall, encoding (a0 + 5) in a0,
+// which escalates the trap to the machine-level trap handler. The machine-level handler
+// recognizes the (a0 + 5) signal as indicating that it should use sepc
+// rather than mepc upon return. The machine-level handler then completes
+// the privilege escalation and returns using mret, resuming execution in the desired privilege mode.
 s_traphandler:
     csrr   s7, sepc         // Load faulting instruction address from sepc
 
