@@ -83,8 +83,30 @@
     atomic_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0101111) { 
         // Check all 8 types of atomic funct3; only funct3 = 2 is legal, and only when A supported
     }
-    atomic_funct7 : coverpoint {ins.current.insn[12], ins.current.insn[31:27]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 2'b01) { 
-        // Check all 2 flavors (w/d) * 32 flavors of atomics
+    atomic_funct7 : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}) 
+    iff ( (ins.current.insn[6:0] == 7'b0101111) && (ins.current.insn[14:13] == 2'b01) ) {
+    // Ignore amo instructions that modify memory 
+    // otherwise random places in memory would be modifed 
+
+    ignore_bins ignore_amoswap_w = { 6'b000001 };
+    ignore_bins ignore_amoadd_w  = { 6'b000000 };
+    ignore_bins ignore_amoxor_w  = { 6'b000100 };
+    ignore_bins ignore_amoand_w  = { 6'b001100 };
+    ignore_bins ignore_amoor_w   = { 6'b001000 };
+    ignore_bins ignore_amomin_w  = { 6'b010000 };
+    ignore_bins ignore_amomax_w  = { 6'b010100 };
+    ignore_bins ignore_amoinu_w  = { 6'b011000 };
+    ignore_bins ignore_amomaxu_w = { 6'b011100 };
+
+    ignore_bins ignore_amoswap_d = { 6'b100001 };
+    ignore_bins ignore_amoadd_d  = { 6'b100000 };
+    ignore_bins ignore_amoxor_d  = { 6'b100100 };
+    ignore_bins ignore_amoand_d  = { 6'b101100 };
+    ignore_bins ignore_amoor_d   = { 6'b101000 };
+    ignore_bins ignore_amomin_d  = { 6'b110000 };
+    ignore_bins ignore_amomax_d  = { 6'b110100 };
+    ignore_bins ignore_amoinu_d  = { 6'b111000 };
+    ignore_bins ignore_amomaxu_d = { 6'b111100 };
     }
     lrsc : coverpoint {ins.current.insn[12], ins.current.insn[24:20]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 2'b01 & ins.current.insn[31:27] == 5'b00010) { 
         // Check all 2 flavors (w/d) * 2^5 rd values; only rs2 = 0 should be legal

@@ -78,7 +78,7 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
     walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
         bins b_1[] = { [0:`XLEN-1] };
     }
-
+            // mie, mtvec, mscratch, mepc, mtval, mip, menvcfg, mstatush, medelegh, menvcfgh, mseccfgh
     mcsrname : coverpoint ins.current.insn[31:20] {
         bins mstatus  = {12'h300};
         bins misa     = {12'h301};
@@ -104,7 +104,7 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
         bins csrrs = {3'b010};
         bins csrrc = {3'b011};
     }
-    
+
     // main coverpoints
     cp_csrr:         cross priv_mode_m, csrr,     csr,   nonzerord;   // CSR read of all 4096 registers
     cp_csrw_corners: cross priv_mode_m, csrrw,    csr,   rs1_corners; // CSR write of all 0s / all 1s to all 4096 registers
@@ -116,19 +116,6 @@ covergroup SsstrictM_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "priv/RISCV_coverage_instr.svh"
-
-atomic_funct7_samp : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}) iff (ins.current.insn[6:0] == 7'b0101111 && ins.current.insn[14:13] == 2'b01) {
-    
-    ignore_wildcard_bins ignore_amoswap  = { 6'b?00001 };
-    ignore_wildcard_bins ignore_amoadd   = { 6'b?00000 };
-    ignore_wildcard_bins ignore_amoxor   = { 6'b?00100 };
-    ignore_wildcard_bins ignore_amoand   = { 6'b?01100 };
-    ignore_wildcard_bins ignore_amoor    = { 6'b?01000 };
-    ignore_wildcard_bins ignore_amomin   = { 6'b?10000 };
-    ignore_wildcard_bins ignore_amomax   = { 6'b?10100 };
-    ignore_wildcard_bins ignore_amoinu   = { 6'b?11000 };
-    ignore_wildcard_bins ignore_amomaxu  = { 6'b?11100 };
-}
 
     // main coverpoints
     cp_illegal:           cross priv_mode_m, illegal;
@@ -144,7 +131,7 @@ atomic_funct7_samp : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}
     cp_store:             cross priv_mode_m, store;
     cp_fstore:            cross priv_mode_m, fstore;
     cp_atomic_funct3:     cross priv_mode_m, atomic_funct3;
-    cp_atomic_funct7:     cross priv_mode_m, atomic_funct7_samp;
+    cp_atomic_funct7:     cross priv_mode_m, atomic_funct7;
     cl_lrsc:              cross priv_mode_m, lrsc;
     cp_Rtype:             cross priv_mode_m, Rtype;
     cp_RWtype:            cross priv_mode_m, RWtype;
@@ -170,6 +157,7 @@ atomic_funct7_samp : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}
     cp_privileged_rd:     cross priv_mode_m, privileged_rd;
     cp_privileged_rs2:    cross priv_mode_m, privileged_rs2;
     cp_reserved:          cross priv_mode_m, reserved;
+
 endgroup
 
 covergroup SsstrictM_comp_instr_cg with function sample(ins_t ins);
@@ -187,4 +175,12 @@ function void ssstrictm_sample(int hart, int issue, ins_t ins);
     SsstrictM_mcsr_cg.sample(ins);
     SsstrictM_instr_cg.sample(ins);
     SsstrictM_comp_instr_cg.sample(ins);
+
+// $display("mode: %b, csr: %h, csrrs: %b, csrrc: %b, walking: %b", 
+//          ins.current.mode,
+//          ins.current.insn[31:20],
+//          ((ins.current.insn[14:12] == 3'b010) && (ins.current.insn[6:0] == 7'b1110011)),
+//          ((ins.current.insn[14:12] == 3'b011) && (ins.current.insn[6:0] == 7'b1110011)),
+//          ins.prev.csr[12'h747]);
+
 endfunction
