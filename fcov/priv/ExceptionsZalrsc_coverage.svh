@@ -26,15 +26,15 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
 
     // building blocks for the main coverpoints
     lr: coverpoint ins.current.insn {
-        bins lr_w = {32'b00010_??_00000_?????_010_?????_0101111};
+        wildcard bins lr_w = {32'b00010_??_00000_?????_010_?????_0101111};
         `ifdef XLEN64
-            bins lr_d = {32'b00010_??_00000_?????_011_?????_0101111};
+            wildcard bins lr_d = {32'b00010_??_00000_?????_011_?????_0101111};
         `endif
     }
     sc: coverpoint ins.current.insn {
-        bins sc_w = {32'b00011_??_?????_?????_010_?????_0101111};
+        wildcard bins sc_w = {32'b00011_??_?????_?????_010_?????_0101111};
         `ifdef XLEN64
-            bins sc_d = {32'b00011_??_?????_?????_011_?????_0101111};
+            wildcard bins sc_d = {32'b00011_??_?????_?????_011_?????_0101111};
         `endif
     }
     illegal_address: coverpoint ins.current.rs1_val {
@@ -44,7 +44,7 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
         // auto fills 000 through 111
     }
     rd_boolean: coverpoint ins.current.rd_val {
-        bins one  = {1};
+        
         bins zero = {0};
     }
     // main coverpoints
