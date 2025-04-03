@@ -504,33 +504,33 @@ class RISCV_instruction
   endfunction
 
   // Vector
-
   virtual function void add_vd(int offset);
+    current.has_vd = 1;
     current.vd = ops[offset].key;
-    current.vd_val = prev.v_wdata[get_vpr_num(ops[offset].key)];
+    current.vd_val = current.v_wdata[get_vr_num(ops[offset].key)];
+    current.vd_val = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
   virtual function void add_vs1(int offset);
+    current.has_vs1 = 1;
     current.vs1 = ops[offset].key;
-    current.vs1_val = prev.v_wdata[get_vpr_num(ops[offset].key)];
+    current.vs1_val = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
   virtual function void add_vs2(int offset);
+    current.has_vs2 = 1;
     current.vs2 = ops[offset].key;
-    current.vs2_val = prev.v_wdata[get_vpr_num(ops[offset].key)];
+    current.vs2_val = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
   virtual function void add_vs3(int offset);
+    current.has_vs3 = 1;
     current.vs3 = ops[offset].key;
-    current.vs3_val = prev.v_wdata[get_vpr_num(ops[offset].key)];
+    current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
   virtual function void add_vm(int offset);
     current.vm = get_vm(ops[offset].key);
-  endfunction
-
-  virtual function void add_vlmax();
-    current.vlmax = prev.v_wdata
   endfunction
 
 endclass
