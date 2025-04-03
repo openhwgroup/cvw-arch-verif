@@ -170,11 +170,14 @@
     }
     // Branches: op = 1100011
     branch : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100011) { 
-        // Check all 8 types of branches: 2 & 3 illegal
+        // only check when funct3 are illegal values to prevent accidental branching
+        bins branch2 = {3'b010};
+        bins branch3 = {3'b011};
     }
     // JALRs: op = 1100111
     jalr : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100111) { 
-        // test all 8 funct3 codes; only 000 should be legal
+        // test all 7 illegal funct3 codes; only 000 should be legal
+        ignore_bins ignore_jalr0 = { 3'b000 };
     }
     // privileged: op = 1110011
     privileged_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[19:15] == 5'b00000 & ins.current.insn[11:7] == 5'b00000) {

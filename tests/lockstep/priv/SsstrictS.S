@@ -38,6 +38,10 @@ ecall
 // cp_cntrh_write
 /////////////////////////////////
 
+//load into supervisor mode
+li a0, 1
+ecall
+
 #include "ZicsrS-Walk.h"
 
 /////////////////////////////////
@@ -48,7 +52,40 @@ ecall
 // cp_csrs                  Set all 4096 CSRs in M mode
 /////////////////////////////////
 
+//load into supervisor mode
+li a0, 1
+ecall
+
 #include "ZicsrS-CSR-Tests.h"
+
+/////////////////////////////////
+// cp_shadow_m
+/////////////////////////////////
+
+    //load into machine privelege mode
+    li a0, 3
+    ecall
+
+    li t0, -1            # Load -1 into t0 (rs1 corner: all ones)
+    csrrw x0, mstatus, t0 # Write ones to mstatus
+
+    # Write to mstatus (CSR 0x300)
+    li t0, 0             # Load 0 into t0 (rs1 corner: zero)
+    csrrw x0, mstatus, t0 # Write zero to mstatus
+
+    li t0, -1            # Load -1 into t0 (rs1 corner: all ones)
+    csrrw x0, mie, t0     # Write ones to mie
+
+    # Write to mie (CSR 0x304)
+    li t0, 0             # Load 0 into t0 (rs1 corner: zero)
+    csrrw x0, mie, t0     # Write zero to mie
+
+    li t0, -1            # Load -1 into t0 (rs1 corner: all ones)
+    csrrw x0, mip, t0     # Write ones to mip
+
+    # Write to mip (CSR 0x344)
+    li t0, 0             # Load 0 into t0 (rs1 corner: zero)
+    csrrw x0, mip, t0     # Write zero to mip
 
 finish:
     j done
