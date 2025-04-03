@@ -174,7 +174,7 @@ function string get_vr_name(int key);
     30: return "v30";
     31: return "v31";
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_vpr_name(%0s) not found vpr", key);
+          $display("ERROR: SystemVerilog Functional Coverage: get_vr_name(%0s) not found vr", key);
           $finish(-1); 
       end
   endcase

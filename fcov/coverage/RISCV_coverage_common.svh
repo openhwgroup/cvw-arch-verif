@@ -176,7 +176,7 @@ typedef enum {
   v29,
   v30,
   v31
-} vpr_name_t;
+} vr_name_t;
 
 typedef enum {
   c_f8,

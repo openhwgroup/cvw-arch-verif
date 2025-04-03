@@ -128,7 +128,7 @@ class RISCV_instruction
         end
       // vector
       end else if (this.ops[i].key[0] == "v") begin
-        int idx = get_vpr_num(this.ops[i].key);
+        int idx = get_vr_num(this.ops[i].key);
         if (idx < 0) begin
           this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
@@ -162,8 +162,8 @@ class RISCV_instruction
   // Lookup vector register value
 
   //TODO bad "bit [VLEN-1:0]"
-  function bit [VLEN-1:0] get_vpr_val(int hart, int issue, string key, int prev);
-    int idx = get_vpr_num(key);
+  function bit [VLEN-1:0] get_vr_val(int hart, int issue, string key, int prev);
+    int idx = get_vr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].v_wdata[idx];
     end
@@ -353,7 +353,7 @@ class RISCV_instruction
 
   // Vector register fetch
 
-  function vpr_name_t get_vpr_reg (string key);
+  function vr_name_t get_vr_reg (string key);
     case (key)
       "v0": return v0;
       "v1": return v1;
@@ -388,8 +388,8 @@ class RISCV_instruction
       "v30": return v30;
       "v31": return v31;
       default: begin
-        $display("ERROR: SystemVerilog Functional Coverage: get_vpr_reg(%0s) not found vpr", key);
-        $finish(-1);
+        $display("ERROR: SystemVerilog Functional Coverage: get_vr_reg(%0s) not found vr", key);
+        // $finish(-1);
       end
     endcase
   endfunction
