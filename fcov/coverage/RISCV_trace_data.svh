@@ -107,14 +107,20 @@ class riscvTraceData
   bit                       has_fs2;
   bit                       has_fs3;
 
-  string                      rd;
-  string                      rs1;
-  string                      rs2;
-  string                      rs3;
-  string                      fd;
-  string                      fs1;
-  string                      fs2;
-  string                      fs3;
+  string                    rd;
+  string                    rs1;
+  string                    rs2;
+  string                    rs3;
+
+  string                    fd;
+  string                    fs1;
+  string                    fs2;
+  string                    fs3;
+
+  string                    vd;
+  string                    vs1;
+  string                    vs2;
+  string                    vs3;
 
   bit [(XLEN-1):0]          rd_val;
   bit [(XLEN-1):0]          rd_val_pre;
@@ -127,6 +133,16 @@ class riscvTraceData
   bit [(FLEN-1):0]          fs1_val;
   bit [(FLEN-1):0]          fs2_val;
   bit [(FLEN-1):0]          fs3_val;
+
+  bit [(VLEN-1):0]          vd_val;
+  bit [(VLEN-1):0]          vs1_val;
+  bit [(VLEN-1):0]          vs2_val;
+  bit [(VLEN-1):0]          vs3_val;
+  bit                       vm;
+
+  int                       vlmax;
+
+  //TODO: add vector vstvli and mask info?
 
   bit [(XLEN-1):0]          imm;
   bit [(XLEN-1):0]          imm2;

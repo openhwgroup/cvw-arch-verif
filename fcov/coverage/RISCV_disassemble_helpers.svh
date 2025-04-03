@@ -740,5 +740,9 @@ function string get_vpr_name(int key);
     29: return "v29";
     30: return "v30";
     31: return "v31";
+    default: begin
+          $display("ERROR: SystemVerilog Functional Coverage: get_vpr_name(%0s) not found vpr", key);
+          //$finish(-1); //may not want to end as could be run on non vector instructions
+      end
   endcase
 endfunction

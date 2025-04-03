@@ -33,6 +33,7 @@ class coverage #(
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 ) extends RISCV_coverage #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE);
 
+  //TODO delete? 
   function new(virtual rvviTrace #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) rvvi);
     super.new(rvvi);
   endfunction
