@@ -158,8 +158,8 @@ class RISCV_instruction
     end
     return 0;
   endfunction
-  
-   // Lookup vector register value
+
+  // Lookup vector register value
 
   //TODO bad "bit [VLEN-1:0]"
   function bit [VLEN-1:0] get_vpr_val(int hart, int issue, string key, int prev);
