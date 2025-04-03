@@ -68,10 +68,13 @@ atomic_add:
 atomic_add_word_loop:
     lr.w   t0, (a0)        // Load the current 32-bit value from the memory address in a0,
 
-    add    t0, t0, a1      // Add the value in a1 to the loaded value in t0.
+    add    t0, t0, a1      // 
     sc.w   t2, t0, (a0)    // Attempt to store the new value back to the memory address in a0.
 
-    bnez   t2, atomic_add_word_loop  // If sc.w failed (t2 is not zero), retry the atomic add.
+    # bnez   t2, atomic_add_word_loop  // If sc.w failed (t2 is not zero), retry the atomic add.
+
+    addi t0, t0, 4
+    sc.w   t2, t0, (a0)    // Attempt to do an sc.w unpaired with an lr.w
 
     // Test Rv64 AMO instructions
     #ifdef __riscv_xlen
@@ -81,8 +84,11 @@ atomic_add_word_loop:
 
                 add    t0, t0, a1      // Add the value in a1 to the loaded value in t0.
                 sc.d   t2, t0, (a0)    // Attempt to store the new value back to the memory address in a0.
-                
+
                 bnez   t2, atomic_add_double_loop  // If sc.w failed (t2 is not zero), retry the atomic add.
+
+                addi t0, t0, 4
+                sc.d   t2, t0, (a0)    // Attempt to do an sc.w unpaired with an lr.w
         #endif
     #endif
 

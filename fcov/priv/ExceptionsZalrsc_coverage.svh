@@ -44,7 +44,7 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
         // auto fills 000 through 111
     }
     rd_boolean: coverpoint ins.current.rd_val {
-        
+        bins one = {1};
         bins zero = {0};
     }
     // main coverpoints
