@@ -204,7 +204,7 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-CSR-Tests.h"
 csrtests(pathname, mCsrSkip + sCsrSkip + uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-CSR-Tests.h"
-csrtests(pathname, sCsrSkip + uCsrSkip + ["satp"]) # 0x180 is satp, turns on virtual memory
+csrtests(pathname, sCsrSkip + uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-CSR-Tests.h"
 csrtests(pathname, uCsrSkip)
