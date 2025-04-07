@@ -363,7 +363,6 @@ function bit get_vm(string s);
   case (s)
     "v0.t": return 1'b0;
     "": return 1'b1;
-    default: return -1;
   endcase
 endfunction
 
