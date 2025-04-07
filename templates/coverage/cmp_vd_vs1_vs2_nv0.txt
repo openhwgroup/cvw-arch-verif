@@ -2,3 +2,4 @@
         //Compare assignments of all 32 registers, vd not v0
         ignore_bins vd = {v0}; 
     }
+    
