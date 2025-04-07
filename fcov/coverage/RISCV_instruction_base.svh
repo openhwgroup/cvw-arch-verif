@@ -389,7 +389,7 @@ class RISCV_instruction
       "v31": return v31;
       default: begin
         $display("ERROR: SystemVerilog Functional Coverage: get_vr_reg(%0s) not found vr", key);
-        // $finish(-1);
+        $finish(-1);
       end
     endcase
   endfunction
@@ -508,7 +508,7 @@ class RISCV_instruction
     current.has_vd = 1;
     current.vd = ops[offset].key;
     current.vd_val = current.v_wdata[get_vr_num(ops[offset].key)];
-    current.vd_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+    current.vd_val_pre = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
   virtual function void add_vs1(int offset);

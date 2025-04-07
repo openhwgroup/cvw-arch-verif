@@ -359,7 +359,7 @@ function frm_name_t get_frm(string s);
   endcase
 endfunction
 
-function logic get_vm(string s);
+function bit get_vm(string s);
   case (s)
     "v0.t": return 1'b0;
     "": return 1'b1;
