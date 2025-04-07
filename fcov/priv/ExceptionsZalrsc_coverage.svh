@@ -57,4 +57,5 @@ endgroup
 
 function void exceptionszalrsc_sample(int hart, int issue, ins_t ins);
     ExceptionsZalrsc_exceptions_cg.sample(ins);
+    $display("adr_LSBs: %b, op[6:0]: %b, rd_boolean: %b, op:%b", ins.current.rs1_val[2:0], ins.current.insn[6:0], ins.current.rd_val, ins.current.insn);
 endfunction

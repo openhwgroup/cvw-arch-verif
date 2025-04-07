@@ -26,10 +26,10 @@ loop:
     // a2 = misalignment value, No instruction access fault (a1 = 0)
     mv  a0, a2         
     li  a1, 0         
-    jal atomic_add
+    jal atomic_instr
     
     addi a2, a2, 1      // Increment loop counter by 1
-    blt  a2, a3, loop   // If a2 is less than 8, branch back to 'loop'
+    blt  a2, a3, atomic_instr   // If a2 is less than 8, branch back to 'loop'
 
 finished:
     j done
@@ -42,7 +42,7 @@ finished:
 // The function takes two arguments:
 // a0: The misalignment value of rs1.
 // a1: A flag indicating whether to load the Access Fault address.
-atomic_add:
+atomic_instr:
 
     //initialize scratch memory
     la      t0, scratch
@@ -57,7 +57,6 @@ atomic_add:
     // Update scratch address to be misaligned based a0 argument
     add t0, a0, t0
 
-    // If testing for an instruction
     // load the Access Fault address to the base address
     li t1, 1
     bne a1, t1, skipIAF
@@ -65,30 +64,30 @@ atomic_add:
 
  skipIAF: 
 
-atomic_add_word_loop:
-    lr.w   t0, (a0)        // Load the current 32-bit value from the memory address in a0,
+    lr.w   t4, (t0)        // Load the current 32-bit value from the memory address in a0,
 
-    add    t0, t0, a1      // 
-    sc.w   t2, t0, (a0)    // Attempt to store the new value back to the memory address in a0.
+    addi    t4, t4, 2     // update loaded value
 
-    # bnez   t2, atomic_add_word_loop  // If sc.w failed (t2 is not zero), retry the atomic add.
+    // attempt a failing store word
+    li t3, 4000
+    add t1, t0, t3
+    sc.w   t2, t4, (t1)    // Attempt to do an sc.w unpaired with an lr.w
 
-    addi t0, t0, 4
-    sc.w   t2, t0, (a0)    // Attempt to do an sc.w unpaired with an lr.w
+    sc.w   t2, t4, (t0)    // Attempt to store the new value back to the memory address in a0.
 
     // Test Rv64 AMO instructions
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            atomic_add_double_loop:
-                lr.d   t0, (a0)        // Load the current 32-bit value from the memory address in a0,
+            lr.d   t4, (t0)        // Load the current 32-bit value from the memory address in a0,
 
-                add    t0, t0, a1      // Add the value in a1 to the loaded value in t0.
-                sc.d   t2, t0, (a0)    // Attempt to store the new value back to the memory address in a0.
+            addi    t4, t4, 2     // update loaded value
 
-                bnez   t2, atomic_add_double_loop  // If sc.w failed (t2 is not zero), retry the atomic add.
+            // attempt a failing store word
+            li t3, 4000
+            add t1, t0, t3
+            sc.d   t2, t4, (t1)    // Attempt to do an sc.w unpaired with an lr.w
 
-                addi t0, t0, 4
-                sc.d   t2, t0, (a0)    // Attempt to do an sc.w unpaired with an lr.w
+            sc.d   t2, t4, (t0)    // Attempt to store the new value back to the memory address in a0.
         #endif
     #endif
 
