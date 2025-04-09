@@ -209,11 +209,17 @@
 `ifdef EXCEPTIONSVM_COVERAGE
   `include "ExceptionsVM_coverage.svh"
 `endif
-`ifdef SSSTRICTS_COVERAGE
-  `include "SsstrictS_coverage.svh"
+`ifdef SSSTRICTCSRS_COVERAGE
+  `include "SsstrictCsrS_coverage.svh"
 `endif
-`ifdef SSSTRICTM_COVERAGE
-  `include "SsstrictM_coverage.svh"
+`ifdef SSSTRICTCSRM_COVERAGE
+  `include "SsstrictCsrM_coverage.svh"
+`endif
+`ifdef SSSTRICTINSTRS_COVERAGE
+  `include "SsstrictInstrS_coverage.svh"
+`endif
+`ifdef SSSTRICTINSTRM_COVERAGE
+  `include "SsstrictInstrM_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"

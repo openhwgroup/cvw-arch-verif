@@ -8,7 +8,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    SsstrictS_scsr_cg = new();         SsstrictS_scsr_cg.set_inst_name("obj_SsstrictS_scsr");
-    SsstrictS_instr_cg = new();        SsstrictS_instr_cg.set_inst_name("obj_SsstrictS_instr");
-    SsstrictS_comp_instr_cg = new();   SsstrictS_comp_instr_cg.set_inst_name("obj_SsstrictS_comp_instr");
+    SsstrictM_instr_cg = new();        SsstrictM_instr_cg.set_inst_name("obj_SsstrictM_instr");
+    SsstrictM_comp_instr_cg = new();   SsstrictM_comp_instr_cg.set_inst_name("obj_SsstrictM_comp_instr");
      
