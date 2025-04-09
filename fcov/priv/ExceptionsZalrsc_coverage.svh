@@ -43,19 +43,41 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     adr_LSBs: coverpoint ins.current.rs1_val[2:0]  {
         // auto fills 000 through 111
     }
-    rd_boolean: coverpoint ins.current.rd_val {
-        bins one = {1};
+    adr_LSBs_illegal: coverpoint ins.current.rs1_val[2:0]  {
+        // auto fills 000 through 111
+        ignore_bins zero = {0};
+        
+        `ifdef XLEN32
+            ignore_bins four = {3'b100};
+        `endif
+    }
+    adr_LSBs_legal: coverpoint ins.current.rs1_val[2:0]  {
+        bins zero = {0};
+        
+        `ifdef XLEN32
+            bins four = {3'b100};
+        `endif
+    }
+    rd_boolean_zero: coverpoint ins.current.rd_val {
         bins zero = {0};
     }
+    rd_boolean_one: coverpoint ins.current.rd_val {
+        bins one = {[1:$]};
+    }
+
     // main coverpoints
     cp_load_address_misaligned:  cross lr, adr_LSBs;
     cp_load_access_fault:        cross lr, illegal_address;
-    cp_store_address_misaligned: cross sc, adr_LSBs, rd_boolean;
-    cp_store_access_fault:       cross sc, illegal_address, rd_boolean;
+    cp_store_address_misaligned_legal: cross sc, adr_LSBs_legal, rd_boolean_zero;
+    cp_store_address_misaligned_illegal: cross sc, adr_LSBs_illegal, rd_boolean_one;
+    cp_store_access_fault:       cross sc, illegal_address, rd_boolean_one;
     
 endgroup
 
 function void exceptionszalrsc_sample(int hart, int issue, ins_t ins);
     ExceptionsZalrsc_exceptions_cg.sample(ins);
-    $display("adr_LSBs: %b, op[6:0]: %b, rd_boolean: %b, op:%b", ins.current.rs1_val[2:0], ins.current.insn[6:0], ins.current.rd_val, ins.current.insn);
+    //  $display("adr_LSBs: %b, op[6:0]: %b, rd_boolean: %b",
+    //   ins.current.rs1_val[2:0], 
+    //   ins.current.insn[6:0], 
+    //   ins.current.rd_val);
 endfunction
