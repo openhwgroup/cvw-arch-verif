@@ -84,29 +84,7 @@
         // Check all 8 types of atomic funct3; only funct3 = 2 is legal, and only when A supported
     }
     atomic_funct7 : coverpoint ({ins.current.insn[12], ins.current.insn[31:27]}) 
-    iff ( (ins.current.insn[6:0] == 7'b0101111) && (ins.current.insn[14:13] == 2'b01) ) {
-    // Ignore amo instructions that modify memory 
-    // otherwise random places in memory would be modifed 
-
-    ignore_bins ignore_amoswap_w = { 6'b000001 };
-    ignore_bins ignore_amoadd_w  = { 6'b000000 };
-    ignore_bins ignore_amoxor_w  = { 6'b000100 };
-    ignore_bins ignore_amoand_w  = { 6'b001100 };
-    ignore_bins ignore_amoor_w   = { 6'b001000 };
-    ignore_bins ignore_amomin_w  = { 6'b010000 };
-    ignore_bins ignore_amomax_w  = { 6'b010100 };
-    ignore_bins ignore_amoinu_w  = { 6'b011000 };
-    ignore_bins ignore_amomaxu_w = { 6'b011100 };
-
-    ignore_bins ignore_amoswap_d = { 6'b100001 };
-    ignore_bins ignore_amoadd_d  = { 6'b100000 };
-    ignore_bins ignore_amoxor_d  = { 6'b100100 };
-    ignore_bins ignore_amoand_d  = { 6'b101100 };
-    ignore_bins ignore_amoor_d   = { 6'b101000 };
-    ignore_bins ignore_amomin_d  = { 6'b110000 };
-    ignore_bins ignore_amomax_d  = { 6'b110100 };
-    ignore_bins ignore_amoinu_d  = { 6'b111000 };
-    ignore_bins ignore_amomaxu_d = { 6'b111100 };
+    iff ( (ins.current.insn[6:0] == 7'b0101111) && (ins.current.insn[14:13] == 2'b01) ) { 
     }
     lrsc : coverpoint {ins.current.insn[12], ins.current.insn[24:20]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 2'b01 & ins.current.insn[31:27] == 5'b00010) { 
         // Check all 2 flavors (w/d) * 2^5 rd values; only rs2 = 0 should be legal
@@ -170,14 +148,11 @@
     }
     // Branches: op = 1100011
     branch : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100011) { 
-        // only check when funct3 are illegal values to prevent accidental branching
-        bins branch2 = {3'b010};
-        bins branch3 = {3'b011};
+        // Check all 8 types of branches: 2 & 3 illegal
     }
     // JALRs: op = 1100111
     jalr : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100111) { 
-        // test all 7 illegal funct3 codes; only 000 should be legal
-        ignore_bins ignore_jalr0 = { 3'b000 };
+        // test all 8 funct3 codes; only 000 should be legal
     }
     // privileged: op = 1110011
     privileged_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011 & ins.current.insn[19:15] == 5'b00000 & ins.current.insn[11:7] == 5'b00000) {
