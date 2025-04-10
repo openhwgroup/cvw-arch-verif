@@ -37,6 +37,27 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
             wildcard bins sc_d = {32'b00011_??_?????_?????_011_?????_0101111};
         `endif
     }
+    lr_w: coverpoint ins.current.insn {
+    wildcard bins lr_w = {32'b00010_??_00000_?????_010_?????_0101111};
+    }
+    sc_w: coverpoint ins.current.insn {
+        wildcard bins sc_w = {32'b00011_??_?????_?????_010_?????_0101111};
+    }
+    `ifdef XLEN64
+        lr_d: coverpoint ins.current.insn {
+            wildcard bins lr_d = {32'b00010_??_00000_?????_011_?????_0101111};
+        }
+        sc_d: coverpoint ins.current.insn {
+                wildcard bins sc_d = {32'b00011_??_?????_?????_011_?????_0101111};
+        }
+        adr_LSBs_illegal_d: coverpoint ins.current.rs1_val[2:0]  {
+        ignore_bins zero = {0};
+        }
+        adr_LSBs_legal_d: coverpoint ins.current.rs1_val[2:0]  {
+            bins zero = {0};
+        }
+    `endif
+
     illegal_address: coverpoint ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
@@ -46,22 +67,14 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     adr_LSBs: coverpoint ins.current.rs1_val[2:0]  {
         // auto fills 000 through 111
     }
-    adr_LSBs_illegal: coverpoint ins.current.rs1_val[2:0]  {
-        // auto fills 000 through 111
+    adr_LSBs_illegal_w: coverpoint ins.current.rs1_val[2:0]  {
         ignore_bins zero = {0};
-        
-        `ifdef XLEN32
-            ignore_bins four = {3'b100};
-        `endif
+        ignore_bins four = {3'b100};
     }
-    adr_LSBs_legal: coverpoint ins.current.rs1_val[2:0]  {
+    adr_LSBs_legal_w: coverpoint ins.current.rs1_val[2:0]  {
         bins zero = {0};
-        
-        `ifdef XLEN32
-            bins four = {3'b100};
-        `endif
+        bins four = {3'b100};
     }
-    //checks if rd is greater than 1
     rd_gt_one_prev: coverpoint ins.prev.rd_val {
         bins nonzero = {[2:$]};
     }
@@ -69,16 +82,21 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
         bins nonzero = {[2:$]};
     }
     rd_zero_cur: coverpoint ins.current.rd_val {
-        bins nonzero = {0};
+        bins zero = {0};
     }
 
     // main coverpoints
     cp_load_address_misaligned:  cross lr, adr_LSBs;
     cp_load_access_fault:        cross lr, illegal_address;
-    cp_store_address_misaligned_legal: cross sc, adr_LSBs_legal,rd_gt_one_prev, rd_zero_cur;
-    cp_store_address_misaligned_illegal: cross sc, adr_LSBs_illegal, rd_gt_one_prev, rd_gt_one_cur;
+    cp_store_address_misaligned_legal_w: cross sc_w, adr_LSBs_legal_w,rd_gt_one_prev, rd_zero_cur;
+    cp_store_address_misaligned_illegal_w: cross sc_w, adr_LSBs_illegal_w, rd_gt_one_prev, rd_gt_one_cur;
+    `ifdef XLEN64
+        cp_store_address_misaligned_legal_d: cross sc_d, adr_LSBs_legal_d,rd_gt_one_prev, rd_zero_cur;
+        cp_store_address_misaligned_illegal_d: cross sc_d, adr_LSBs_illegal_d, rd_gt_one_prev, rd_gt_one_cur;
+    `endif
     cp_store_access_fault:       cross sc, illegal_address, rd_gt_one_prev, rd_gt_one_cur;
     cp_misaligned_priority:      cross sc, illegal_address_misaligned, rd_gt_one_prev, rd_gt_one_cur;
+    
     
 endgroup
 

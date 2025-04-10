@@ -62,6 +62,7 @@ finished:
 // The function takes two arguments:
 // a0: The misalignment value of rs1.
 // a1: A flag indicating whether to load the Access Fault address.
+//     If this flag is enabled the address tested will be (Access Fault Address + a0).
 atomic_instr:
 
     // Initialize scratch memory
@@ -97,14 +98,30 @@ atomic_instr:
 
     sc.w   t2, t4, (t0)    // Attempt to store the value back to the memory address in a0.
 
+    // Attempt a sc.w out of reservation range
+    addi    t4, t4, 2     // update value to distinguish from previous sc.w
+
+    // Increment address to be outside of reserved range 
+    li t3, 4000
+    add t1, t0, t3
+
+    lr.w   t4, (t0)
+
 
     // Test Rv64 AMO instructions
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            // Attempt an sc.d in reservation range 
-            lr.d   t4, (t0)  
+
+            // Attempt an sc.d with the same address as lr.d
+            lr.d   t4, (t0)        // Load the current 32-bit value from the memory address in a0,
 
             addi   t4, t4, 2       // Update loaded value
+
+            // Load rd with a value > 1.
+            // Faulting instructions should not modify this value
+            // Succesful instructions modify rd to be 0
+
+            li t2, 2
 
             sc.d   t2, t4, (t0)    // Attempt to store the value back to the memory address in a0.
 
