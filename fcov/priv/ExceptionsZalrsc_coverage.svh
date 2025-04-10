@@ -85,6 +85,17 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
         bins zero = {0};
     }
 
+    // Ideally this coverpoint would check the rs1 of the paired lr.x and sc.x
+    // to match the test plan. With our current toolflow
+    // Testing that the rs1 value of the previous lr.x matches the rs1 of the sc.x
+    // is not possible.
+    // As a proxy we can check that the rd value changes as expected for rd when an
+    // sc.x instruction is executed. Load rd with a value > 1.
+    // Faulting instructions should not modify the rd value while
+    // Succesful instructions should write 0 to rd.
+    // sc.w and sc.d have a different set of legal LSB offset 
+    // (4 byte aligned vs ) so they are handled differently in the coverpoints.
+
     // main coverpoints
     cp_load_address_misaligned:                cross lr, adr_LSBs;
     cp_load_access_fault:                      cross lr, illegal_address;

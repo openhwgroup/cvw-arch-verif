@@ -90,7 +90,11 @@ atomic_instr:
 
     addi   t4, t4, 2       // Update loaded value
 
-    // Load rd with a value > 1.
+    // Note the test is better than the cover point. With our current toolflow
+    // Testing that the rs1 value of the previous lr.x matches the rs1 of the sc.x
+    // is not possible.
+    // As a proxy we can check that the rd value changes as expected for rd when an
+    // sc.x instruction is executed. Load rd with a value > 1.
     // Faulting instructions should not modify this value
     // Succesful instructions modify rd to be 0
 
