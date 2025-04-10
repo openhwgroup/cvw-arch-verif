@@ -454,8 +454,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      # Store the value at (scratch + immval) directly
-      if (xlen == 32):
+      if (xlen == 32):  # store the value at (scratch + immval) directly
         storeop = "sw"
       else:
         storeop = "sd"
@@ -549,7 +548,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cutype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + " # perform operation\n")
-  elif (test in stype): #["sb", "sh", "sw", "sd"]
+  elif (test in stype):#["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
         if (rs2 == rs1): # make sure registers are different so they don't conflict
             rs2 = (rs1 + 1) % (maxreg+1)
@@ -1798,17 +1797,15 @@ def write_tests(coverpoints, test, xlen):
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
-
 def getcovergroups(coverdefdir, coverfiles, xlen):
   coverpoints = {}
   curinstr = ""
   mode = "both"
   ingroup = False
   for coverfile in coverfiles:
-    coverfile = coverdefdir + "/" + coverfile + "_coverage.svh" 
+    coverfile = coverdefdir + "/" + coverfile + "_coverage.svh"
     f = open(coverfile, "r")
     for line in f:
-      #print(f"line {line}")
       if (re.search("covergroup .* with", line)):
         ingroup = True
       if (re.search("endgroup", line)):
@@ -1828,7 +1825,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
           coverpoints[curinstr] = []  
         m = re.search(r"\s*(\S+) :", line)
         if (m):
-          print(f'coverpoint: {m.group(1)}')
+          # print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
     return coverpoints
@@ -1942,7 +1939,6 @@ zcdtype = ["c.fld", "c.fsd","c.fsdsp","c.fldsp"]
 flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases
 csrtype = ["csrrw", "csrrs", "csrrc"]
 csritype = ["csrrwi", "csrrsi", "csrrci"]
-aligntype = ["lb", "lbu", "sb","lh", "lhu", "sh","lw", "sw", "lwu"]
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
 global hazardLabel
