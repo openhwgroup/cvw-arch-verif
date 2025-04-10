@@ -1288,12 +1288,13 @@ def make_imm_corners_jal(test, xlen): # update these test
   f.write(lines)
 
 def make_imm_corners_jalr(test, xlen):
+  [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
   for immval in corners_imm_12bit:
     if (immval == 0):
       continue
-    [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
     lines = "\n# Testcase cp_imm_corners jalr " + str(immval) + " bin\n"
     lines = lines + "la x"+str(rs1)+", 1f\n" #load the address of the label '1' into x21
+    lines += f"auipc x{rs2}, 0 # PC \n" 
     if (immval == -2048):
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
@@ -1301,8 +1302,9 @@ def make_imm_corners_jalr(test, xlen):
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     #.line on top maybe eliminate TODO
-    # lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+    lines = lines + "addi x" + str(rs2) + ", x" + str(rs2) + ", " "4 \n"
     lines = lines + "1:\n"
+    lines = lines +  writeSIGUPD(rs2) +"\n" 
     f.write(lines)
 
 def make_offset(test, xlen): 
@@ -1342,18 +1344,23 @@ def make_offset(test, xlen):
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   lines = "\n# Testcase cp_offset_lsbs\n"
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
+    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
     lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
-    lines = lines + "nop # something to skip over\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
     lines = lines + "jalrlsb1: \n"
+    lines = lines +  writeSIGUPD(rs1)  
     lines = lines + "la x3, jalrlsb2 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
     lines = lines + "jalr x1, x3, -2 # jump to label + 1, extra plus 1 should be discarded\n"
-    lines = lines + "nop # something to skip over\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
     lines = lines + "jalrlsb2: \n"
-  else: # c.jalr / c.jr
+    lines = lines +  writeSIGUPD(rs1)
+  else: # c.jalr / c.jr #TODO Probably the same as above but jumping by 2
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
     lines = lines + "c.nop # something to jump over\n"
