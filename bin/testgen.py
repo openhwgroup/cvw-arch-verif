@@ -1822,7 +1822,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
         if (m):
           curinstr = m.group(1).replace("_", ".")
           # print(f'instr is: {curinstr}')
-          coverpoints[curinstr] = []  
+          coverpoints[curinstr] = []
         m = re.search(r"\s*(\S+) :", line)
         if (m):
           # print(f'coverpoint: {m.group(1)}')
