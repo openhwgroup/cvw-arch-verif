@@ -40,6 +40,9 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     illegal_address: coverpoint ins.current.rs1_val {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
+    illegal_address_misaligned: coverpoint ins.current.rs1_val {
+        bins illegal = {`ACCESS_FAULT_ADDRESS + 1};
+    }
     adr_LSBs: coverpoint ins.current.rs1_val[2:0]  {
         // auto fills 000 through 111
     }
@@ -58,19 +61,24 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
             bins four = {3'b100};
         `endif
     }
-    rd_boolean_zero: coverpoint ins.current.rd_val {
-        bins zero = {0};
+    //checks if rd is greater than 1
+    rd_gt_one_prev: coverpoint ins.prev.rd_val {
+        bins nonzero = {[2:$]};
     }
-    rd_boolean_one: coverpoint ins.current.rd_val {
-        bins one = {[1:$]};
+    rd_gt_one_cur: coverpoint ins.current.rd_val {
+        bins nonzero = {[2:$]};
+    }
+    rd_zero_cur: coverpoint ins.current.rd_val {
+        bins nonzero = {0};
     }
 
     // main coverpoints
     cp_load_address_misaligned:  cross lr, adr_LSBs;
     cp_load_access_fault:        cross lr, illegal_address;
-    cp_store_address_misaligned_legal: cross sc, adr_LSBs_legal, rd_boolean_zero;
-    cp_store_address_misaligned_illegal: cross sc, adr_LSBs_illegal, rd_boolean_one;
-    cp_store_access_fault:       cross sc, illegal_address, rd_boolean_one;
+    cp_store_address_misaligned_legal: cross sc, adr_LSBs_legal,rd_gt_one_prev, rd_zero_cur;
+    cp_store_address_misaligned_illegal: cross sc, adr_LSBs_illegal, rd_gt_one_prev, rd_gt_one_cur;
+    cp_store_access_fault:       cross sc, illegal_address, rd_gt_one_prev, rd_gt_one_cur;
+    cp_misaligned_priority:      cross sc, illegal_address_misaligned, rd_gt_one_prev, rd_gt_one_cur;
     
 endgroup
 
