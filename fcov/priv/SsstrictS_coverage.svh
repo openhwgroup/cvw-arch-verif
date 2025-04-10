@@ -111,7 +111,7 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
     cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr, priv_mode_s, rs1_corners {
     }
-    
+
     cp_csrcs:        cross csrop,   csr, priv_mode_s, rs1_ones {
     }
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
@@ -123,7 +123,7 @@ covergroup SsstrictS_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "RISCV_coverage_instr.svh"
-    
+
     // main coverpoints
     cp_illegal:           cross priv_mode_s, illegal;
     cp_load:              cross priv_mode_s, load;

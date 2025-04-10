@@ -218,3 +218,6 @@
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"
 `endif
+`ifdef EXCEPTIONSZALRSC_COVERAGE
+  `include "ExceptionsZalrsc_coverage.svh"
+`endif
