@@ -15,6 +15,7 @@ from datetime import datetime
 from random import randint
 from random import seed
 from random import getrandbits
+import random
 import os
 import re
 import sys
@@ -1490,6 +1491,23 @@ def make_custom(test, xlen):
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
 
+def make_align(test, xlen):
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+    # base address (aligned, with zeroed lower bits)
+    base_addr = 0x1000 & ~0x7  # clear bottom 3 bits
+    if test in ["lb", "lbu", "sb"]:
+        for align in range(8):  # test all 8 byte alignments (imm[2:0])
+            desc = f"cp_byte_align: imm[2:0]={align:03b}"
+            writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
+    elif test in ["lh", "lhu", "sh"]:
+        for align in [0, 2]:  # aligned (00, 10 in bits[2:1])
+            desc = f"cp_hword_align: imm[2:1]={align>>1:02b} (aligned)"
+            writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
+    elif test in ["lw", "sw", "lwu"]:
+        for align in [0, 4]:  # aligned (0 in bit[2])
+            desc = f"cp_word_align: imm[2]={align>>2} (aligned)"
+            writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
+
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
 # This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1785,6 +1803,8 @@ def write_tests(coverpoints, test, xlen):
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
       make_custom(test, xlen)
+    elif (coverpoint in ["cp_byte_align", "cp_hword_align", "cp_word_align"]):
+      make_align(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
