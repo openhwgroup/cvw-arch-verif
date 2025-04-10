@@ -114,17 +114,25 @@ class RISCV_instruction
         int idx = get_gpr_num(this.ops[i].key);
         //$display("SAMPLE: %0s op[%0d]=%0s gpr(%0d)", ins_str,i, this.ops[i].key, idx);
         if (idx < 0) begin
-          this.ops[i].val = this.ops[i].key; // it is an immediate so use the existing value
+          this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
-          this.ops[i].val = string'(this.current.x_wdata[idx]);
+          this.ops[i].val = string'(this.current.x_wdata[idx]); //if reigster then value of register gets written to ops.val
         end
       // floating point registers
       end else if (this.ops[i].key[0] == "f") begin
         int idx = get_fpr_num(this.ops[i].key);
         if (idx < 0) begin
-          this.ops[i].val = this.ops[i].key; // it is an immediate so use the existing value
+          this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
-          this.ops[i].val = string'(this.current.f_wdata[idx]);
+          this.ops[i].val = string'(this.current.f_wdata[idx]); //if reigster then value of register gets written to ops.val
+        end
+      // vector
+      end else if (this.ops[i].key[0] == "v") begin
+        int idx = get_vr_num(this.ops[i].key);
+        if (idx < 0) begin
+          this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
+        end else begin
+          this.ops[i].val = string'(this.current.v_wdata[idx]); //if reigster then value of register gets written to ops.val
         end
       // immediate values
       end else begin
@@ -134,7 +142,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup integer register value
-  virtual function `XLEN_INT get_gpr_val(int hart, int issue, string key, int prev);
+  virtual function `SIGNED_XLEN_BITS get_gpr_val(int hart, int issue, string key, int prev);
     int idx = get_gpr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].x_wdata[idx];
@@ -143,7 +151,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup floating point register value
-  function `XLEN_INT get_fpr_val(int hart, int issue, string key, int prev);
+  function `SIGNED_FLEN_BITS get_fpr_val(int hart, int issue, string key, int prev);
     int idx = get_fpr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].f_wdata[idx];
@@ -151,7 +159,18 @@ class RISCV_instruction
     return 0;
   endfunction
 
-  function `XLEN_INT get_pc();
+  // Lookup vector register value
+
+  //TODO bad "bit [VLEN-1:0]"
+  function bit [VLEN-1:0] get_vr_val(int hart, int issue, string key, int prev);
+    int idx = get_vr_num(key);
+    if (idx >= 0) begin
+      return traceDataQ[hart][issue][prev].v_wdata[idx];
+    end
+    return 0;
+  endfunction
+
+  function `SIGNED_XLEN_BITS get_pc();
     return current.pc_rdata;
   endfunction
 
@@ -259,11 +278,12 @@ class RISCV_instruction
 
   // Convert immediate string to integer
   // Works for hex and decimal (positive or negative) values
+  // NOTE: This function only works for immediate values that fit in a 32-bit integer.
   function int get_imm(string s);
     int val;
     if (s[1] == "x") begin
       s = s.substr(2,s.len()-1);
-      val = s.atohex ();
+      val = s.atohex();
     end else if (s[0] == "-") begin
       s = s.substr(1,s.len()-1);
       val = 0 - s.atoi();
@@ -326,6 +346,49 @@ class RISCV_instruction
       "f15": return c_f15;
       default: begin
         $display("ERROR: SystemVerilog Functional Coverage: get_fpr_c_reg(%0s) not found fpr", key);
+        $finish(-1);
+      end
+    endcase
+  endfunction
+
+  // Vector register fetch
+
+  function vr_name_t get_vr_reg (string key);
+    case (key)
+      "v0": return v0;
+      "v1": return v1;
+      "v2": return v2;
+      "v3": return v3;
+      "v4": return v4;
+      "v5": return v5;
+      "v6": return v6;
+      "v7": return v7;
+      "v8": return v8;
+      "v9": return v9;
+      "v10": return v10;
+      "v11": return v11;
+      "v12": return v12;
+      "v13": return v13;
+      "v14": return v14;
+      "v15": return v15;
+      "v16": return v16;
+      "v17": return v17;
+      "v18": return v18;
+      "v19": return v19;
+      "v20": return v20;
+      "v21": return v21;
+      "v22": return v22;
+      "v23": return v23;
+      "v24": return v24;
+      "v25": return v25;
+      "v26": return v26;
+      "v27": return v27;
+      "v28": return v28;
+      "v29": return v29;
+      "v30": return v30;
+      "v31": return v31;
+      default: begin
+        $display("ERROR: SystemVerilog Functional Coverage: get_vr_reg(%0s) not found vr", key);
         $finish(-1);
       end
     endcase
@@ -438,6 +501,36 @@ class RISCV_instruction
     end else begin
       current.fs3_val = prev.f_wdata[get_fpr_num(ops[offset].key)];
     end
+  endfunction
+
+  // Vector
+  virtual function void add_vd(int offset);
+    current.has_vd = 1;
+    current.vd = ops[offset].key;
+    current.vd_val = current.v_wdata[get_vr_num(ops[offset].key)];
+    current.vd_val_pre = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_vs1(int offset);
+    current.has_vs1 = 1;
+    current.vs1 = ops[offset].key;
+    current.vs1_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_vs2(int offset);
+    current.has_vs2 = 1;
+    current.vs2 = ops[offset].key;
+    current.vs2_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_vs3(int offset);
+    current.has_vs3 = 1;
+    current.vs3 = ops[offset].key;
+    current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_vm(int offset);
+    current.vm = get_vm(ops[offset].key);
   endfunction
 
 endclass

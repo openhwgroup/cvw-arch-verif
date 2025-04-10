@@ -71,53 +71,47 @@ def csrtests(pathname, skipCsrs):
         print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")
     outfile.close
 
-def mwalk(csr, regs, mode='M'):
-    print("\n// Save the original value of csr") # save the original value of csr
-    print("\tcsrr s0, "+csr+" \t# save csr")
-    print("\tli t1, -1           # all 1s")# initialize registers for walking 1s and 0s
-    print("\tli t0, 1            # 1 in lsb")
-    print("\n// Walk a single 1 in M-mode") 
-    print("\t1: csrrc t6, "+csr+", t1    # clear all bits in csr")
-    print("\tcsrrs t6, "+csr+", t0    # set walking 1 in csr")
-    if mode in ["U", "S"]:
-        print("\tli a0, 0     # switch to " + mode + "-mode")
-        print("\tecall        # Switch to " + mode + "-mode")
-        for reg in regs:
-            if reg == "satp":  # Skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg} \t\t# read from {reg} in {mode}-mode")
-        print("\tli a0, 3")
-        print("\tecall        # Switch back to M-mode")
-    else: 
-        for reg in regs: # Read directly in M-mode
-            if reg == "satp":  # Skip satp to avoid enabling virtual memory
-                continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in M-mode")
-    print("\tslli t0, t0, 1      # walk the 1 to the next bit")
-    print("\tbnez t0, 1b         # repeat until all bits are walked")
-    print(f"\n// Walk a single 0 in M mode and read from counter/counterh in {mode}-mode")
-    print("\tli t0, 1            # reset t0 to 1")
-    print("\t2: csrrs t6, "+csr+", t1    # set all bits in csr")
-    print("\tcsrrc t6, "+csr+", t0    # clear walking 0 in csr")
-    if mode in ["U", "S"]:
-        print("\tli a0, 0    # switch to " + mode + "-mode")
-        print("\tecall       # Switch to " + mode + "-mode")
+def readandswitchmode(regs, mode):
+    # helper function to switch modes when reading csr
+    if mode in ('U', 'S'):
+        mode_num = 0 if mode == 'U' else 1  # convert 'U' to 0, 'S' to 1
+        print(f"\tli a0, {mode_num}     # switch to {mode}-mode")
+        print(f"\tecall             # switch to {mode}-mode")
         for reg in regs:
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
                 continue
             print(f"\tcsrr t2, {reg} # read from {reg} in {mode}-mode")
-        print("\tli a0, 3      # switch back to M-mode")
-        print("\tecall         # Switch back to M-mode")
-    else: 
+        print("\tli a0, 3")
+        print("\tecall             # switch back to M-mode")
+    else:
         for reg in regs:
             if reg == "satp":  # Skip satp to avoid enabling virtual memory
                 continue
-            print(f"\tcsrr t2, {reg}         # read from {reg} in M-mode")
-    print("\tslli t0, t0, 1      # walk the 0 to the next bit")
-    print("\tbnez t0, 2b         # repeat until all bits are walked")
+            print(f"\tcsrr t2, {reg} # read from {reg} in M-mode")
 
+def mwalk(csr, regs, mode):
+    if csr == "scounteren":
+        print("\nli t0, -1")
+        print("\tcsrw mcounteren, t0  # enable all counters in M-mode")
+    print("\n// Save the original value of csr")
+    print(f"\tcsrr s0, {csr}  # save original csr value")
+    print("\tli t1, -1        # mask of all 1s")
+    print("\tli t0, 1         # initial bit position")
+    print("\n// Walk a single 1 in M-mode") # walk 1
+    print(f"\t1: csrrc t6, {csr}, t1  # clear all bits")
+    print(f"\tcsrrs t6, {csr}, t0  # set current bit")
+    readandswitchmode(regs, mode)
+    print("\tslli t0, t0, 1   # shift to next bit")
+    print("\tbnez t0, 1b      # loop until all bits walked")
+    print(f"\n// Walk a single 0 in M-mode and read from registers in {mode}-mode") #walk 0
+    print("\tli t0, 1         # reset bit position")
+    print(f"\t2: csrrs t6, {csr}, t1  # set all bits")
+    print(f"\tcsrrc t6, {csr}, t0  # clear current bit")
+    readandswitchmode(regs, mode)
+    print("\tslli t0, t0, 1   # shift to next bit")
+    print("\tbnez t0, 2b      # loop until all bits walked")
     print("\n// Restore the original value of csr")
-    print("\tcsrrw t6, "+csr+", s0    # restore csr")
+    print(f"\tcsrrw t6, {csr}, s0  # restore original csr value")
 
 def counterenwalk(pathname, csr, regs, hregs, mode):
     with open(pathname, 'w') as outfile:
@@ -128,6 +122,43 @@ def counterenwalk(pathname, csr, regs, hregs, mode):
             mwalk(csr, hregs, mode)
             print("#endif")
     outfile.close
+
+def mwalkdouble(csr1, csr2, regs, mode):
+    print("\n// Save the original values of csrs")
+    print(f"\tcsrr s0, {csr1} \t# save {csr1}")
+    print(f"\tcsrr s1, {csr2} \t# save {csr2}")
+    print("\tli t1, -1           # all 1s")
+    print("\tli t0, 1            # 1 in lsb")
+    print("\n// Walk a single 1 in both CSRs simultaneously")
+    print(f"\t1: csrrc t6, {csr1}, t1    # clear all bits in first csr")
+    print(f"\tcsrrc t6, {csr2}, t1    # clear all bits in second csr")
+    print(f"\tcsrrs t6, {csr1}, t0    # set walking 1 in first csr")
+    print(f"\tcsrrs t6, {csr2}, t0    # set walking 1 in second csr")
+    readandswitchmode(regs, mode)
+    print("\tslli t0, t0, 1      # walk the 1 to the next bit")
+    print("\tbnez t0, 1b         # repeat until all bits are walked")
+    print(f"\n// Walk a single 0 in both CSRs and read from counter/counterh in {mode}-mode")
+    print("\tli t0, 1            # reset t0 to 1")
+    print(f"\t2: csrrs t6, {csr1}, t1    # set all bits in first csr")
+    print(f"\tcsrrs t6, {csr2}, t1    # set all bits in second csr")
+    print(f"\tcsrrc t6, {csr1}, t0    # clear walking 0 in first csr")
+    print(f"\tcsrrc t6, {csr2}, t0    # clear walking 0 in second csr")
+    readandswitchmode(regs, mode)
+    print("\tslli t0, t0, 1      # walk the 0 to the next bit")
+    print("\tbnez t0, 2b         # repeat until all bits are walked")
+    print("\n// Restore the original values of csrs")
+    print(f"\tcsrrw t6, {csr1}, s0    # restore first csr")
+    print(f"\tcsrrw t6, {csr2}, s1    # restore second csr")
+
+def counterenwalkdouble(pathname, csr1, csr2, regs, hregs, mode):
+    with open(pathname, 'w') as outfile:
+        sys.stdout = outfile
+        mwalkdouble(csr1, csr2, regs, mode)
+        if hregs:
+            print("\n#if __riscv_xlen == 32")
+            mwalkdouble(csr1, csr2, hregs, mode)
+            print("#endif")
+        sys.stdout = sys.__stdout__
 
 # setup
 seed(0) # make tests reproducible
@@ -188,19 +219,24 @@ pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkU.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='U')
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "U")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkM.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='M')
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "M")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkS.h"
-counterenwalk(pathname, "mcounteren", cntrs, cntrsh, mode ='S')
+counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "S")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkU.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode ='U')
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MSWalkU.h"
+counterenwalkdouble(pathname, "scounteren", "mcounteren", cntrs, cntrsh, "U")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkM.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode ='M')
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "M")
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkS.h"
-counterenwalk(pathname, "scounteren", cntrs, cntrsh, mode='S')
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "S")
+
+pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkU.h"
+counterenwalk(pathname, "scounteren", cntrs, cntrsh, "U")
+
+

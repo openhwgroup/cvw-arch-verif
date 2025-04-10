@@ -206,3 +206,15 @@
 `ifdef INTERRUPTSSSTC_COVERAGE
   `include "InterruptsSstc_coverage.svh"
 `endif
+`ifdef EXCEPTIONSVM_COVERAGE
+  `include "ExceptionsVM_coverage.svh"
+`endif
+`ifdef SSSTRICTS_COVERAGE
+  `include "SsstrictS_coverage.svh"
+`endif
+`ifdef SSSTRICTM_COVERAGE
+  `include "SsstrictM_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZAAMO_COVERAGE
+  `include "ExceptionsZaamo_coverage.svh"
+`endif
