@@ -254,22 +254,23 @@ def writeTest(lines, rd, xlen, floatdest, testline):
 
 def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
         # Ensure rs2 is not equal to rs1
+  #rs2 = randomNonconflictingReg(test)
   if rs2 == rs1:
     rs2 = (rs1 + 1) % 32  # pick a different register
-  l = lines + f"auipc x{rs2}, 0 # should be skipped\n"
+  l = lines + f"auipc x{rs2}, 0 \n"
   l = l + jumpline
-  l = l + f"addi x{rs2}, x{rs2}, 4 # should be skipped!!!!!!\n"
+  l = l + f"addi x{rs2}, x{rs2}, 4 \n"
   l = l + "1:\n"
   l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
   return l 
 
-def writeBranchTest(lines, rs1, rs2, xlen, branchline):
-  l = lines + f"auipc x{rs2}, 0 # should be skipped\n"
+def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
+  l = lines + f"auipc x{rd}, 0 \n"
   l = l + branchline
-  l = l + f"addi x{rs1}, x{rs1}, 4 # should be skipped\n"
+  l = l + f"addi x{rd}, x{rd}, 4 \n"
   l = l + "1:\n"
-  l = l + writeSIGUPD(rs1)
+  l = l + writeSIGUPD(rd)
   return l 
 
 def writeStoreTest(lines, test, rs2, xlen, storeline):
@@ -425,7 +426,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cbtype):
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     branchline = f"{test} x{rs1}, 1f # perform operation\n"
-    lines = writeBranchTest(lines, rs1, rs2, xlen, branchline)
+    lines = writeBranchTest(lines, rd, rs1, rs2, xlen, branchline)
   elif (test in ciwtype): # addi4spn
     lines = lines + "li sp, " + formatstr.format(rs1val) + " # initialize some value to sp \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", sp, " + str(int(unsignedImm8(immval))*4) + " # perform operation\n")
@@ -626,11 +627,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       branchline = f"{test} x{rs1}, x{rs2}, 1f # perform operation\n"
-      lines = writeBranchTest(lines, rs1, rs2, xlen, branchline)
+      lines = writeBranchTest(lines, rd, rs1, rs2, xlen, branchline)
   elif (test in jtype):#["jal"]
+    if rd == 0:
+      rd = (rd + 1) % 32  # pick a different register
     jumpline = f"{test} x{rd}, 1f # perform operation\n"
     lines = writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline)
   elif (test in jalrtype):#["jalr"]
+    if rd == 0:
+      rd = (rd + 1) % 32  # pick a different register
     lines = lines + f"la x{rs1}, 1f # jump destination address\n"
     lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # add immediate to lower part of rs1\n"
     jumpline = f"{test} x{rd}, x{rs1}, {signedImm12(immval, immOffset=True)} # perform operation\n"
@@ -743,9 +748,9 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
 
   registerArray = [rdlist, rs1list, rs2list, rs3list]
   global hazardLabel
-
+  needLabel = False
   lines = ""
-
+  
   for testindex, test in enumerate(testlist):
 
     instype = findInstype('instructions', test, insMap)
@@ -794,16 +799,15 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
           case 'l':
-            lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\nnop\n"
-            lines += "arbitraryLabel" + str(hazardLabel) + ":\nnop\n"
-            hazardLabel += 1
+            lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\n"
+            needLabel = True    
       if test == 'fcvtmod.w.d' :
         lines += ", rtz"
       lines += " # " + commentlist[testindex] + "\n"
-    # Always add the macro after the instruction
-    #lines = writeStoreTest(lines, test, registerArray, xlen, storeline)
-    #lines += writeSIGUPD(registerArray[0][testindex])
-  #lines += writeSIGUPD(registerArray[2][testindex])
+  if needLabel:
+    lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
+    hazardLabel += 1
+
   return lines
 
 def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, immvalb, regtotest, rs3a=None, rs3b=None, haz_type='waw', xlen=32):
@@ -834,6 +838,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
   ins2type = findInstype('instructions', testa, insMap)
   regconfig2 = insMap[ins2type].get('regconfig','xxx_')
+  regconfig3 = 'la'
 
   if testb in jalrtype:
     # Ensure rdb, rs3b, and rda are unique
@@ -843,7 +848,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
         rda = (max(rdb, rs2b) + 1) % 32
     if haz_type != "raw":
       lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
-      lines += f"auipc x{rs2b}, 0 # should be skipped\n"
+      lines += f"auipc x{rs2b}, 0 # PC\n"
       immvalb = 0
     lines += writeSingleInstructionSequence(desc,
                                 [testa],
@@ -857,7 +862,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
       #lines += writeSIGUPD(rda)
       #lines += writeSIGUPD(rdb)
-      lines += f"auipc x{rs2b}, 0 # should be skipped\n"
+      lines += f"auipc x{rs2b}, 0 # PC\n"
       immvalb = 0
     lines += writeSingleInstructionSequence(desc,
                                 [testb],
@@ -898,6 +903,18 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     lines += writeSIGUPD(rda)
     lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
     sigupd_count += 1
+
+  elif testb in btype: 
+    if rs2b == rda:
+        rda = (rs2b + 1) % 32
+    lines += f"auipc x{rs2b}, 0 # PC\n"
+    lines += testa + " x" +str(rda) + ", x" +str(rdb) + ", x" +str(rs2a) + " # add \n"
+    lines += testb + " x"+ str(rs1a) + ", x" + str(rs1b) +","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\n"
+    lines += f"addi x{rs2b}, x{rs2b}, 4 \n"
+    lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
+    hazardLabel += 1
+    lines += writeSIGUPD(rda)
+    lines += writeSIGUPD(rs2b)
 
   else:
     if insMap[instype].get('loadstore', 0) == 'load':
@@ -1282,39 +1299,49 @@ def make_imm_corners_jalr(test, xlen):
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
+    #.line on top maybe eliminate TODO
+    # lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "1:\n"
     f.write(lines)
 
 def make_offset(test, xlen): 
   # *** all of these test will need signature / self-checking
   lines = "\n# Testcase cp_offset negative bin\n"
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+  handleSignaturePointerConflict(lines, rs1, rs2, rd)
+    
   if (test in btype):
     lines = lines + "j 2f # jump past backward branch target\n"
-    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    lines = lines + "2: " + test + " x0, x0, 1b # backward branch\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n" 
+    lines = lines + "2: auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines +  test + " x0, x0, 1b # backward branch\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
   elif (test in jalrtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward jalr target: jump past backward jalr\n"
-    lines = lines + "2: la x1, 1b # backward jalr target\n"
-    lines = lines + test + " x1 # backward jalr\n"
-  elif (test in crtype):
-    lines = lines + "j 2f # jump past backward branch target\n"
-    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    rs1 = randomNonconflictingReg(test)
-    lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
-    lines = lines + test + " x" + str(rs1) + " # backward branch\n"
-  elif (test in cjtype):
+    lines = lines + "2: la" + " x" + str(rs2) + ", 1b # backward branch\n"
+    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines + test + " x" + str(rs2) +  ", x" + str(rs2) + ", 0 # backward jalr\n"
+    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
+    #lines = lines + "j 2f # jump past backward branch target\n"
+    #lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    #lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
+    #lines = lines + test + " x" + str(rs1) + " # backward branch\n"
+  elif (test in cjtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO:
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     lines = lines + "2: " + "nop\n"
     lines = lines + test + " 1b" + " # backward branch\n"
-  elif (test in cbtype):
+  elif (test in cbtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
     lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
     lines = lines + test + " x8,  1b # backward branch\n"
-  lines = lines + "3: nop # done with sequence\n"
+    
+  lines = lines + "3:  # done with sequence\n"
+  lines = lines +  writeSIGUPD(rs1)  
+  #lines += f"RVTEST_SIGUPD(x{sigReg}, x0)\n" 
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):

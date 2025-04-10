@@ -301,10 +301,10 @@
 
 
 #if SIGALIGN==8
-  #define CANARY;// \
+  #define CANARY  \
      // .dword 0x6F5CA309E7D4B281 -> take this so it doesn't mess up lockstep
 #else
-  #define CANARY; // \
+  #define CANARY  \
      // .word 0x6F5CA309 
 #endif
 
@@ -1883,9 +1883,9 @@ rvtest_\__MODE__\()end:
 /**** is defined, then initializes regs & defines rvtest_code_begin global label ****/
 /************************************************************************************/
 .macro RVTEST_CODE_BEGIN
- .option push
- .option rvc
- .align UNROLLSZ
+  .option push
+  .option rvc
+  .align UNROLLSZ
  .option norvc
  .section .text.init
  .globl  rvtest_init
@@ -1916,26 +1916,26 @@ rvtest_code_begin:
 /**************************************************************************************/
 
 .macro RVTEST_CODE_END          // test is ended, but in no particular mode
-  .option push
-  .option norvc
-  .global rvtest_code_end       // define the label and make it available
-  .global cleanup_epilogs       // ****ALERT: tests must populate x1 with a point to the end of regular sig area
-/**** MPRV must be clear here !!! ****/
-rvtest_code_end:                // RVMODEL_HALT should get here
-  #ifdef rvtest_gpr_save        // gpr_save area is instantiated at end of signature
-    RVTEST_SAVE_GPRS  x1        gpr_save
-  #endif
-    RVTEST_GOTO_MMODE           // if only Mmode used by tests, this has no effect
-cleanup_epilogs:                // jump here to quit, will restore state for each mode
-#ifdef RVTEST_ENAB_INSTRET_CNT
-     csrr  x15, CSR_MINSTRET
+   .option push
+   .option norvc
+   .global rvtest_code_end       // define the label and make it available
+   .global cleanup_epilogs       // ****ALERT: tests must populate x1 with a point to the end of regular sig area
+ /**** MPRV must be clear here !!! ****/
+ rvtest_code_end:                // RVMODEL_HALT should get here
+   #ifdef rvtest_gpr_save        // gpr_save area is instantiated at end of signature
+     RVTEST_SAVE_GPRS  x1        gpr_save
+   #endif
+     RVTEST_GOTO_MMODE           // if only Mmode used by tests, this has no effect
+ cleanup_epilogs:                // jump here to quit, will restore state for each mode
+ #ifdef RVTEST_ENAB_INSTRET_CNT
+      csrr  x15, CSR_MINSTRET
      csrr  x14, CSR_MSCRATCH
      LREG  x13, tramp_sz+4*8(x14)       // initial instret point stored here
      sub   x15, x15, x13                // calc instret delta
      SREG  x13, tramp_sz+4*8(x14)       //put it back in the signature
 #endif
 
-//restore xTVEC, trampoline, regs for each mode in opposite order that they were saved
+// //restore xTVEC, trampoline, regs for each mode in opposite order that they were saved
 #ifdef rvtest_mtrap_routine
     #ifdef rvtest_strap_routine
         #ifdef rvtest_vtrap_routine
@@ -1947,7 +1947,7 @@ cleanup_epilogs:                // jump here to quit, will restore state for eac
 #endif
 
 /************* test done, epilog has restored everying, jump to halt ****************/
-  j     exit_cleanup            //skip around handlers, go to RVMODEL_HALT
+   j     exit_cleanup            //skip around handlers, go to RVMODEL_HALT
 
 abort_tests:
   LREG    T4, sig_bgn_off(sp)   // calculate Mmode sig_end addr in handler's mode

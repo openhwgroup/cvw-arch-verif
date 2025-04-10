@@ -440,7 +440,7 @@ Mend_PMP:                                    ;\
  clrov
 
 /* RVTEST_SIGBASE(reg, label) initializes to label and clears offset */
-#define RVTEST_SIGBASE(_R,_TAG)			;\
+#define RVTEST_SIGBASE(_R,_TAG)			\
   //LA(_R,_TAG)					;\
   //.set offset,0
 
@@ -460,7 +460,7 @@ Mend_PMP:                                    ;\
   /* this function ensures individual sig stores don't exceed offset limits  */
   /* if they would, update the base and reduce offset by 2048 - _SZ	     */
   /* an option is to pre-incr offset if there was a previous signature store */
-#define CHK_OFFSET(_BREG, _SZ, _PRE_INC)		;\
+#define CHK_OFFSET(_BREG, _SZ, _PRE_INC)		\
 //   .if (_PRE_INC!=0)					;\ -> COMMENT FOR LOCKSTEP
 //     .set offset, offset+_SZ				;\
 //   .endif						;\
@@ -472,7 +472,7 @@ Mend_PMP:                                    ;\
  /* automatically adjust base and offset if offset gets too big, resetting offset				 */
  /* RVTEST_SIGUPD(basereg, sigreg)	  stores sigreg at offset(basereg) and updates offset by regwidth	 */
  /* RVTEST_SIGUPD(basereg, sigreg,newoff) stores sigreg at newoff(basereg) and updates offset to regwidth+newoff */
-#define RVTEST_SIGUPD(_BR,_R,...)			;\
+#define RVTEST_SIGUPD(_BR,_R,...)			\
 //   .if NARG(__VA_ARGS__) == 1				;\ > COMMENT OUT FOR LOCKSTEP
 // 	.set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
 //   .endif						;\

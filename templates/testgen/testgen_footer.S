@@ -10,7 +10,6 @@ RVMODEL_HALT
 .align 4
 scratch:
     .space 136  # Reserve 136 bytes of uninitialized memory
-
 .section .data
 
 RVTEST_DATA_BEGIN
