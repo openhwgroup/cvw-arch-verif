@@ -557,21 +557,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + " # perform operation\n")
   elif (test in stype):#["sb", "sh", "sw", "sd"]
-    # if (rs1 != 0):
-    #   if (rs2 == rs1): # make sure registers are different so they don't conflict
-    #       rs2 = (rs1 + 1) % (maxreg+1)
-    #       if (rs2 == 0):
-    #         rs2 = 1
-    #   lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    #   lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-    #   if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
-    #     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
-    #     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
-    #   else:
-    #     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-    #   storeline = test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
-    #   #lines = writeStoreTest(lines, test, rs2, xlen, storeline) -> not needed since writeTest sw too.
-    #   lines = writeTest(lines, rs2, xlen, False, storeline)
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
           rs2 = (rs1 + 1) % (maxreg+1)
@@ -931,7 +916,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
-
+    #lines += f"auipc x{rs2b}, 0 # PC\n"
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
@@ -940,8 +925,10 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     [immvala, immvalb],
                     ["perform first operation", "perform second (triggering) operation"],
                     xlen)
+    #lines += f"addi x{rs2b}, x{rs2b}, 4 # should be skipped\n"
     lines += writeSIGUPD(rda)
     lines += writeSIGUPD(rdb)
+    #lines += writeSIGUPD(rs2b)
 
   f.write(lines)
 
@@ -1238,6 +1225,7 @@ def make_imm_zero(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
 def make_imm_corners_jal(test, xlen): # update these test
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   if (test == "jal"):
     minrng = 3
     maxrng = 14 # testing all 20 bits of immediate is too much code
@@ -1250,28 +1238,40 @@ def make_imm_corners_jal(test, xlen): # update these test
   lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
   lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one\n"
   if (test == "jal"):
+    lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, 1f\n"
+    lines += f"addi x{rs1}, x{rs1}, 4 \n"
   else:
     lines = lines + test + " 1f\n"  # c.jal, c.j
   lines = lines + "1: \n"
+  lines = lines +  writeSIGUPD(rs1)  +"\n" 
   if (test == "jal"):
+    lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, f"+str(minrng)+"_"+test+"\n"
+    lines += f"addi x{rs1}, x{rs1}, 4 \n"
   else:
     lines = lines + test + " f"+str(minrng)+"_"+test+"\n"  # c.jal, c.j
   f.write(lines)
   for r in rng:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
+    lines = lines +  writeSIGUPD(rs1) + "\n" 
     if (test == "jal"):
+      lines += f"auipc x{rs1}, 0 # PC\n"
       lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      lines += f"addi x{rs1}, x{rs1}, 4 \n"
     elif (test in ["c.jal", "c.j"]):
+      #lines += f"auipc x{rs1}, 0 # PC\n" TODO if needed
       lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      #lines += f"addi x{rs1}, x{rs1}, 2 \n" TODO if needed
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
+    lines = lines +  writeSIGUPD(rs1) + "\n" 
     if (test == "jal"):
+      lines += f"auipc x{rs1}, 0 # PC\n"
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      lines += f"addi x{rs1}, x{rs1}, 4 \n"
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1284,6 +1284,7 @@ def make_imm_corners_jal(test, xlen): # update these test
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
+  lines = lines +  writeSIGUPD(rs1) +"\n" 
   f.write(lines)
 
 def make_imm_corners_jalr(test, xlen):
@@ -1323,10 +1324,6 @@ def make_offset(test, xlen):
     lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
     lines = lines + test + " x" + str(rs2) +  ", x" + str(rs2) + ", 0 # backward jalr\n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
-    #lines = lines + "j 2f # jump past backward branch target\n"
-    #lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    #lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
-    #lines = lines + test + " x" + str(rs1) + " # backward branch\n"
   elif (test in cjtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO:
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
