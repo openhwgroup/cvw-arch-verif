@@ -37,9 +37,16 @@
 //  3: change to machine mode
 //  4: terminate program
 //
-//  Note a0: 5-9 is reserved for the S_trap hander used in ExceptionsS test
-
-//Macros
+// ExceptionsS.S tests for delgated ecalls from user mode to supervisor mode.
+// To return back to machine mode the s_traphandler in ExceptionsS.S executes an ecall
+// To signal to the machine mode trap handler that this call was issued from supervisor mode
+// the a0 register inputs are 5-9.  The machine mode trap handler will then use sepc instead
+// of mepc to return to the instruction that caused the exception.
+// Reserved a0 values:
+//   5: Change to user mode       (mret to address in sepc)
+//   6: Change to supervisor mode (mret to address in sepc)
+//   8: Change to machine mode    (mret to address in sepc)
+//Macros 
 #define ACCESS_FAULT_ADDRESS 0
 #define CLINT_BASE_ADDR 0x02000000
 #define PLIC_BASE_ADDR 0x0C000000
@@ -83,6 +90,7 @@ rvtest_entry_point:
     csrw mtvec, t0      # Initialize MTVEC to trap_handler
     la t0, topoftrapstack
     csrw mscratch, t0   # MSCRATCH holds trap stack pointer
+    csrw sscratch, t0   # SSCRATCH holds trap stack pointer
     csrw mideleg, zero  # Don't delegate interrupts
     csrw medeleg, zero  # Don't delegate exceptions
     li t0, 0x80
@@ -144,18 +152,17 @@ exception:
     bne t0, t1, exception_return  # ignore other exceptions
 
 ecall:
-//temporary code for supervisor traphendler
-//////////////////////////////
+
     li t0, 5
     bge a0, t0, scallM
-///////////////////////////////
+
+
     li t0, 4
     beq a0, t0, write_tohost        # call 4: terminate program
     bltu a0, t0, changeprivilege    # calls 0-3: change privilege level
     j exception_return                   # ignore other ecalls
 
-//temporary code for supervisor traphandler
-/////////////////////////////////
+
 scallM:
     csrr   t0, sepc           # Load faulting instruction address from sepc
 
@@ -164,8 +171,6 @@ scallM:
     csrw mepc, t0
 
     addi a0, a0, -5            #convert a0 to priv mode
-
-/////////////////////////////////
 
 changeprivilege:
     li t0, 0x00001800    # mask off mstatus.MPP in bits 11-12
@@ -180,7 +185,8 @@ exception_return:             # add 2 or 4 to mepc for exceptions except Instruc
     addi  t1, t1, -1              # Exception cause code 1 means Instruction Access Fault
     bne   t1, x0, mepc_ret_addr   # If not an IAF, skip ra load
     mv t0, ra 
-    addi t0, t0, -4               # remove 4 from ra to get address of instruction that caused exception (updated in next section)
+    # If its an IAF then it was called with a JALR (rd = PC +4). So subtract 4 from ra to get faulting address
+    addi t0, t0, -4               
     j post_ret_mepc               #Use ra instead of mepc if IAF
 mepc_ret_addr:
     csrr t0, mepc       # get address of instruction that caused exception if not an IAF
