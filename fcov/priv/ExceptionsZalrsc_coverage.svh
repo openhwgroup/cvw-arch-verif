@@ -86,16 +86,17 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_load_address_misaligned:  cross lr, adr_LSBs;
-    cp_load_access_fault:        cross lr, illegal_address;
-    cp_store_address_misaligned_legal_w: cross sc_w, adr_LSBs_legal_w,rd_gt_one_prev, rd_zero_cur;
-    cp_store_address_misaligned_illegal_w: cross sc_w, adr_LSBs_illegal_w, rd_gt_one_prev, rd_gt_one_cur;
+    cp_load_address_misaligned:                cross lr, adr_LSBs;
+    cp_load_access_fault:                      cross lr, illegal_address;
+    cp_load_misaligned_priority:               cross lr, illegal_address_misaligned;
+    cp_store_address_misaligned_legal_w:       cross sc_w, adr_LSBs_legal_w,rd_gt_one_prev, rd_zero_cur;
+    cp_store_address_misaligned_illegal_w:     cross sc_w, adr_LSBs_illegal_w, rd_gt_one_prev, rd_gt_one_cur;
     `ifdef XLEN64
-        cp_store_address_misaligned_legal_d: cross sc_d, adr_LSBs_legal_d,rd_gt_one_prev, rd_zero_cur;
-        cp_store_address_misaligned_illegal_d: cross sc_d, adr_LSBs_illegal_d, rd_gt_one_prev, rd_gt_one_cur;
+        cp_store_address_misaligned_legal_d:     cross sc_d, adr_LSBs_legal_d,rd_gt_one_prev, rd_zero_cur;
+        cp_store_address_misaligned_illegal_d:   cross sc_d, adr_LSBs_illegal_d, rd_gt_one_prev, rd_gt_one_cur;
     `endif
-    cp_store_access_fault:       cross sc, illegal_address, rd_gt_one_prev, rd_gt_one_cur;
-    cp_misaligned_priority:      cross sc, illegal_address_misaligned, rd_gt_one_prev, rd_gt_one_cur;
+    cp_store_access_fault:         cross sc, illegal_address, rd_gt_one_prev, rd_gt_one_cur;
+    cp_store_misaligned_priority:  cross sc, illegal_address_misaligned, rd_gt_one_prev, rd_gt_one_cur;
     
     
 endgroup
