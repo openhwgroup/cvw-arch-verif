@@ -15,7 +15,6 @@ from datetime import datetime
 from random import randint
 from random import seed
 from random import getrandbits
-import random
 import os
 import re
 import sys
@@ -451,15 +450,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     if (rs2 != rs1):
       lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load another value into integer register\n"
     lines = lines + f"{test} x{rd}, x{rs2}, (x{rs1}) # perform operation\n"
-  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]  # *** update to use constant memory
+  elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      if (immval == -2048):
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
-      else:
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
+      # Store the value at (scratch + immval) directly
       if (xlen == 32):
         storeop = "sw"
       else:
@@ -554,21 +549,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in cutype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + " # perform operation\n")
-  elif (test in stype):#["sb", "sh", "sw", "sd"]
+  elif (test in stype): #["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
-      if (rs2 == rs1): # make sure registers are different so they don't conflict
-          rs2 = (rs1 + 1) % (maxreg+1)
-          if (rs2 == 0):
-            rs2 = 1
-      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-      lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
-      if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
-      else:
-        lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
-      storeline = test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
-      lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+        if (rs2 == rs1): # make sure registers are different so they don't conflict
+            rs2 = (rs1 + 1) % (maxreg+1)
+            if (rs2 == 0):
+                rs2 = 1
+        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+        lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+        storeline = test + " x" + str(rs2) + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation \n"
+        lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
@@ -1497,15 +1487,15 @@ def make_align(test, xlen):
     base_addr = 0x1000 & ~0x7  # clear bottom 3 bits
     if test in ["lb", "lbu", "sb"]:
         for align in range(8):  # test all 8 byte alignments (imm[2:0])
-            desc = f"cp_byte_align: imm[2:0]={align:03b}"
+            desc = f"cp_align_byte: imm[2:0]={align:03b}"
             writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
     elif test in ["lh", "lhu", "sh"]:
         for align in [0, 2]:  # aligned (00, 10 in bits[2:1])
-            desc = f"cp_hword_align: imm[2:1]={align>>1:02b} (aligned)"
+            desc = f"cp_align_hword: imm[2:1]={align>>1:02b}"
             writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
     elif test in ["lw", "sw", "lwu"]:
         for align in [0, 4]:  # aligned (0 in bit[2])
-            desc = f"cp_word_align: imm[2]={align>>2} (aligned)"
+            desc = f"cp_align_word: imm[2]={align>>2}"
             writeCovVector(desc=desc,rs1=rs1,rs2=rs2,rd=rd,rs1val=base_addr,rs2val=rs2val,immval=align,rdval=rdval,test=test,xlen=xlen)
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
@@ -1803,10 +1793,11 @@ def write_tests(coverpoints, test, xlen):
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
       make_custom(test, xlen)
-    elif (coverpoint in ["cp_byte_align", "cp_hword_align", "cp_word_align"]):
+    elif (coverpoint in ["cp_align_byte", "cp_align_hword", "cp_align_word"]):
       make_align(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
+
 
 def getcovergroups(coverdefdir, coverfiles, xlen):
   coverpoints = {}
@@ -1814,9 +1805,10 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
   mode = "both"
   ingroup = False
   for coverfile in coverfiles:
-    coverfile = coverdefdir + "/" + coverfile + "_coverage.svh"
+    coverfile = coverdefdir + "/" + coverfile + "_coverage.svh" 
     f = open(coverfile, "r")
     for line in f:
+      #print(f"line {line}")
       if (re.search("covergroup .* with", line)):
         ingroup = True
       if (re.search("endgroup", line)):
@@ -1833,13 +1825,12 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
         if (m):
           curinstr = m.group(1).replace("_", ".")
           # print(f'instr is: {curinstr}')
-          coverpoints[curinstr] = []
+          coverpoints[curinstr] = []  
         m = re.search(r"\s*(\S+) :", line)
         if (m):
-          # print(f'coverpoint: {m.group(1)}')
+          print(f'coverpoint: {m.group(1)}')
           coverpoints[curinstr].append(m.group(1))
     f.close()
-    # print(coverpoints)
     return coverpoints
   
 def getExtensions():
@@ -1951,7 +1942,7 @@ zcdtype = ["c.fld", "c.fsd","c.fsdsp","c.fldsp"]
 flitype = ["fli.s", "fli.h", "fli.d"] # technically FI type but with a strange "immediate" encoding, need special cases
 csrtype = ["csrrw", "csrrs", "csrrc"]
 csritype = ["csrrwi", "csrrsi", "csrrci"]
-
+aligntype = ["lb", "lbu", "sb","lh", "lhu", "sh","lw", "sw", "lwu"]
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
 global hazardLabel
