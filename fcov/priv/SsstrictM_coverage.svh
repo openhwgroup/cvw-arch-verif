@@ -79,7 +79,7 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
     walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
         bins b_1[] = { [0:`XLEN-1] };
     }
-            // mie, mtvec, mscratch, mepc, mtval, mip, menvcfg, mstatush, medelegh, menvcfgh, mseccfgh
+    
     mcsrname : coverpoint ins.current.insn[31:20] {
         bins mstatus  = {12'h300};
         bins misa     = {12'h301};
