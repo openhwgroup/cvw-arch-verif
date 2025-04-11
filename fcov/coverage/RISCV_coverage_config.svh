@@ -176,8 +176,14 @@
 `ifdef EXCEPTIONSM_COVERAGE
   `include "ExceptionsM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSU_COVERAGE
+  `include "ExceptionsU_coverage.svh"
+`endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSF_COVERAGE
+  `include "ExceptionsF_coverage.svh"
 `endif
 `ifdef ZICNTRU_COVERAGE
   `include "ZicntrU_coverage.svh"
@@ -187,4 +193,31 @@
 `endif
 `ifdef ZICNTRM_COVERAGE
   `include "ZicntrM_coverage.svh"
+`endif
+`ifdef INTERRUPTSM_COVERAGE
+  `include "InterruptsM_coverage.svh"
+`endif
+`ifdef INTERRUPTSS_COVERAGE
+  `include "InterruptsS_coverage.svh"
+`endif
+`ifdef INTERRUPTSU_COVERAGE
+  `include "InterruptsU_coverage.svh"
+`endif
+`ifdef INTERRUPTSSSTC_COVERAGE
+  `include "InterruptsSstc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSVM_COVERAGE
+  `include "ExceptionsVM_coverage.svh"
+`endif
+`ifdef SSSTRICTS_COVERAGE
+  `include "SsstrictS_coverage.svh"
+`endif
+`ifdef SSSTRICTM_COVERAGE
+  `include "SsstrictM_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZAAMO_COVERAGE
+  `include "ExceptionsZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZALRSC_COVERAGE
+  `include "ExceptionsZalrsc_coverage.svh"
 `endif

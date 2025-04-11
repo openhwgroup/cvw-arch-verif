@@ -1,14 +1,5 @@
         "INSTR"     : begin 
-            ins = new(hart, issue, traceDataQ); 
             ins.add_rd(0);
-            if (ins.ops[2].key) begin           // To handle the form (instr rd, imm(rs1))
-                ins.add_imm(1);
-                ins.add_rs1(2);
-            end else if (ins.ops[1].key) begin  // To handle the form (instr rd, rs1)
-                ins.add_rs1(1);
-            end else begin                      // To handle compressed form (instr rs1)
-                ins.add_rd_1();
-                ins.add_rs1(0);
-            end
-            ARCHCASE_INSTRNODOT_cg.sample(ins); 
+            ins.add_imm_addr(1);
+            ins.add_rs1(2);
         end

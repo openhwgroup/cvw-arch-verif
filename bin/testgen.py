@@ -847,9 +847,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     if insMap[instype].get('loadstore', 0) != 0:
       lines += "la " + regconfig[1] + str(rs1b) + ", scratch\n"
       lines += "addi " + 2*(regconfig[1] + str(rs1b) + ", ") + str(signedImm12(-immvalb)) + "\n"
-      if haz_type != "war":
-        rs1a = rda
-        rs2a = 0
+      if haz_type == "raw":
+        if insMap[instype].get('loadstore', 0) == 'store':
+          rs1a = rda
+          rs2a = 0
+        elif insMap[instype].get('loadstore', 0) == 'load':
+          rda = rs1b
+          rs1a = rs1b
+          rs2a = 0
 
     if 'a' in regconfig:
       rsblist = [rdb, rs1b, rs2b, rs3b]
@@ -1773,10 +1778,10 @@ def write_tests(coverpoints, test, xlen):
       make_rnum(test, xlen)
     elif (coverpoint == "cp_sbox"):
       make_sbox(test, xlen)
-    elif (coverpoint == "cp_sc" or coverpoint == "cp_prev_lr" or coverpoint == "cp_prev_sc" or
-          coverpoint == "cp_custom_sc_after_sc" or coverpoint == "cp_sc_fail" or coverpoint == "cp_address_difference" or
-          coverpoint == "cp_custom_sc_lrsc" or coverpoint == "cp_custom_sc_addresses" or
-          coverpoint == "cp_custom_sc_after_store"):
+    elif (coverpoint in ["cp_sc", "cp_prev_lr", "cp_prev_sc", "cp_custom_sc_after_sc", "cp_custom_sc_after_store",
+                         "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
+                         "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
+
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
       make_custom(test, xlen)

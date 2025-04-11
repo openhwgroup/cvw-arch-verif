@@ -9,4 +9,3 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
     ExceptionsZc_exceptions_cg = new();         ExceptionsZc_exceptions_cg.set_inst_name("obj_ExceptionsZc_exceptions");
-    ExceptionsZc_instr_cg = new();              ExceptionsZc_instr_cg.set_inst_name("obj_ExceptionsZc_instr");

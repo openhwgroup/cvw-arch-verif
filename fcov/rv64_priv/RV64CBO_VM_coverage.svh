@@ -18,10 +18,9 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 `define COVER_RV64CBO_VM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_rv64cbo_vm_t;
-
-covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
-    option.per_instance = 0; 
+covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] { //exp.1
         wildcard bins leaflvl_u_w = {8'b???1?110};
@@ -107,10 +106,6 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     Mcause: coverpoint  ins.current.csr[12'h342] iff (ins.trap == 1) {
         bins store_amo_page_fault = {64'd15};
     }
-    priv_mode: coverpoint ins.current.mode{
-        bins S_mode = {2'b01};
-        bins U_mode = {2'b00};
-    }
     sum_sstatus: coverpoint ins.current.csr[12'h100][18]{
         bins notset = {0};
         bins set = {1};
@@ -154,21 +149,17 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
         `endif 
     }
 
-    spage_nowrite_s_d: cross PTE_rw_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode, sum_sstatus { //exp.4 & 5
-        ignore_bins ig1 = binsof(priv_mode.U_mode);
+    spage_nowrite_s_d: cross PTE_rw_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode_s, sum_sstatus { //exp.4 & 5
     }
 
-    spage_rwx_s_d_nowrite: cross PTE_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode { //exp.6
-        ignore_bins ig1= binsof(priv_mode.S_mode);
+    spage_rwx_s_d_nowrite: cross PTE_spage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode_u { //exp.6
     }
 
-    upage_smode_sumunset_nowrite_s: cross PTE_upage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode, sum_sstatus { //exp.7
-        ignore_bins ig1 = binsof(priv_mode.U_mode);
-        ignore_bins ig2 = binsof(sum_sstatus.set);
+    upage_smode_sumunset_nowrite_s: cross PTE_upage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode_s, sum_sstatus { //exp.7
+        ignore_bins ig1 = binsof(sum_sstatus.set);
     }
 
-    upage_umode_nowrite_u: cross PTE_rw_upage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode { //exp.8
-        ignore_bins ig1 = binsof(priv_mode.S_mode);
+    upage_umode_nowrite_u: cross PTE_rw_upage_d, PageType_d, mode, Mcause, write_acc, cbo_ins, priv_mode_u { //exp.8
     }
 
     Abit_unset_write_s: cross PTE_Abit_unset_d, PageType_d, mode, Mcause, write_acc, cbo_ins { //exp.9
@@ -193,11 +184,6 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_rv64cbo_vm_t ins);
     }
 endgroup
 
-function void rv64cbo_vm_sample(int hart, int issue);
-    ins_rv64cbo_vm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_csr(0);
-    
+function void rv64cbo_vm_sample(int hart, int issue, ins_t ins);
     RV64CBO_VM_exceptions_cg.sample(ins);
 endfunction

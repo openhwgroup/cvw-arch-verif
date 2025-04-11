@@ -128,6 +128,9 @@ gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,
 gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
 gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
+gen("cp_reserved_fence_fm_tso", "EEEE00000000RRRRR000RRRRR0001111") # reserved fm and ts0 for fence instruction
+gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved rs1 for fence instruction 
+gen("cp_reserved_fence_rd",     "000011111111RRRRE000000010001111") # reserved rd for fence instruction
 outfile.close
 
 pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstrCompressed-Tests.h"

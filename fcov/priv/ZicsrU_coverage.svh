@@ -21,50 +21,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRU
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicsru_t;
-
-covergroup ZicsrU_ucsr_cg with function sample(ins_zicsru_t ins);
-    option.per_instance = 0; 
-    // "ZicsrU ucsr"
-
-    // building blocks for the main coverpoints
-
-    nonzerord: coverpoint ins.current.insn[11:7] {
-        type_option.weight = 0;
-        bins nonzero = { [1:$] }; // rd != 0
-    }
-    csrr: coverpoint ins.current.insn  {
-        wildcard bins csrr = {32'b????????????_00000_010_?????_1110011};
-    }
-    csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
-    }
-    csr: coverpoint ins.current.insn[31:20]  {
-        bins all[] = {[0:$]};
-    }
-    priv_mode_u: coverpoint ins.current.mode {
-        bins U_mode = {2'b00};
-    }
-    rs1_ones: coverpoint ins.current.rs1_val {
-        bins ones = {'1};
-    }
-    rs1_corners: coverpoint ins.current.rs1_val {
-        bins zero = {0};
-        bins ones = {'1};
-    }
-    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
-        bins csrrs = {3'b010};
-        bins csrrc = {3'b011};
-    }
-    
-    // main coverpoints
-    cp_csrr:         cross csrr,  csr, priv_mode_u, nonzerord;
-    cp_csrw_corners: cross csrrw, csr, priv_mode_u, rs1_corners;
-    cp_csrcs:        cross csrop, csr, priv_mode_u, rs1_ones;
-endgroup
-
-covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
-    option.per_instance = 0; 
+covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // "ZicsrU uprivinst"
 
     // building blocks for the main coverpoints
@@ -83,27 +42,12 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_zicsru_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
-    priv_mode_u: coverpoint ins.current.mode {
-       bins U_mode = {2'b00};
-    }
-    old_priv_mode_u: coverpoint ins.prev.mode {
-       bins U_mode = {2'b00};
-    }
     // main coverpoints
     cp_uprivinst:  cross privinstrs, priv_mode_u;
-    cp_mret:       cross mret, old_priv_mode_u; // should trap 
-    cp_sret:       cross sret, old_priv_mode_u; // should trap 
+    cp_mret:       cross mret, priv_mode_u; // should trap 
+    cp_sret:       cross sret, priv_mode_u; // should trap 
 endgroup
 
-function void zicsru_sample(int hart, int issue);
-    ins_zicsru_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
-    ZicsrU_ucsr_cg.sample(ins);
+function void zicsru_sample(int hart, int issue, ins_t ins);
     ZicsrU_uprivinst_cg.sample(ins);
-    
 endfunction

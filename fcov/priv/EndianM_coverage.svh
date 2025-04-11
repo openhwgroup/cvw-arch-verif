@@ -19,10 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ENDIANM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_endianm_t;
-
-covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
-    option.per_instance = 0; 
+covergroup EndianM_endian_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // "Endianness tests in machine mode"
 
     // building blocks for the main coverpoints
@@ -70,9 +69,6 @@ covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
         mstatus_mbe: coverpoint ins.current.csr[12'h310][5] { // mbe is mstatush[5] in RV32
         }
     `endif
-    priv_mode_m: coverpoint ins.current.mode { 
-       bins M_mode = {2'b11};
-    }   
     // main coverpoints
     cp_mstatus_mbe_endianness_sw: cross priv_mode_m, mstatus_mbe, cp_sw, cp_wordoffset;
     cp_mstatus_mbe_endianness_sh: cross priv_mode_m, mstatus_mbe, cp_sh, cp_halfoffset;
@@ -103,14 +99,6 @@ covergroup EndianM_endian_cg with function sample(ins_endianm_t ins);
 
 endgroup
 
-function void endianm_sample(int hart, int issue);
-    ins_endianm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void endianm_sample(int hart, int issue, ins_t ins);
     EndianM_endian_cg.sample(ins);
-    
 endfunction

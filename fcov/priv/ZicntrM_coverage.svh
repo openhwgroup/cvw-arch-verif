@@ -21,21 +21,21 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICNTRM
-typedef RISCV_instruction #(ILEN, XLEN, FLEN, VLEN, NHART, RETIRE) ins_zicntrm_t;
-
-covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
-    option.per_instance = 0; 
+covergroup ZicntrM_mcounters_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     // Counter access in machine mode
 
     // building blocks for the main coverpoints
-    priv_mode_m: coverpoint ins.current.mode {
-       bins M_mode = {2'b11};
-    }
     csrrw: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
     }
     csrr: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b????????????_00000_010_?????_1110011}; 
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
     }
     storeop: coverpoint ins.current.insn {
         `ifdef XLEN64
@@ -45,7 +45,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
         `endif
     }
     clint_mtime: coverpoint {ins.current.imm + ins.current.rs1_val} {
-        bins mtime = {`CLINT_BASE + 16'hBFF8};
+        bins mtime = {`CLINT_BASE + 32'h0000BFF8};
     }
     counters: coverpoint ins.current.insn[31:20] {
         bins mcycle        = {12'hB00};
@@ -108,7 +108,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
         bins mhpmevent29   = {12'h33D};
         bins mhpmevent30   = {12'h33E};
         bins mhpmevent31   = {12'h33F};
-        bins mcountinhibit = {12'h302};
+        bins mcountinhibit = {12'h320};
     }
     `ifdef XLEN32 
         countersh: coverpoint ins.current.insn[31:20] {
@@ -175,8 +175,12 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
         }
     `endif
 
+    walking_ones_rs1: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
+        bins b_1[] = { [0:`XLEN-1] };
+    }
+
     `ifdef XLEN64
-        walking_ones_zeros: coverpoint ins.current.rs1_val[63:0] {
+        walking_ones_zeros_rs2: coverpoint ins.current.rs2_val[63:0] {
             bins b_1_0  = {64'b0000000000000000000000000000000000000000000000000000000000000001};
             bins b_1_1  = {64'b0000000000000000000000000000000000000000000000000000000000000010};
             bins b_1_2  = {64'b0000000000000000000000000000000000000000000000000000000000000100};
@@ -307,7 +311,7 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
             bins b_0_63 = {64'b0111111111111111111111111111111111111111111111111111111111111111};
         }
     `else
-        walking_ones_zeros: coverpoint ins.current.rs1_val[31:0] {
+        walking_ones_zeros_rs2: coverpoint ins.current.rs2_val[31:0] {
             bins b_1_0  = {32'b00000000000000000000000000000001};
             bins b_1_1  = {32'b00000000000000000000000000000010};
             bins b_1_2  = {32'b00000000000000000000000000000100};
@@ -376,22 +380,14 @@ covergroup ZicntrM_mcounters_cg with function sample(ins_zicntrm_t ins);
     `endif
 
     // main coverpoints
-    cp_cntr_write:      cross csrrw,   walking_ones_zeros, counters,    priv_mode_m;
-    cp_mtime_write:     cross storeop, walking_ones_zeros, clint_mtime, priv_mode_m;
+    cp_cntr_write:      cross csrop,    walking_ones_rs1, counters,    priv_mode_m;
+    cp_mtime_write:     cross storeop,  walking_ones_zeros_rs2, clint_mtime, priv_mode_m;
     `ifdef XLEN32
-        cp_cntrh_write: cross csrrw,   walking_ones_zeros, countersh,   priv_mode_m;
+        cp_cntrh_write: cross csrop,    walking_ones_rs1, countersh,   priv_mode_m;
     `endif
 
 endgroup
 
-function void zicntrm_sample(int hart, int issue);
-    ins_zicntrm_t ins;
-
-    ins = new(hart, issue, traceDataQ); 
-    ins.add_rd(0);
-    ins.add_rs1(2);
-    ins.add_csr(1);
-    
+function void zicntrm_sample(int hart, int issue, ins_t ins);
     ZicntrM_mcounters_cg.sample(ins);
-    
 endfunction
