@@ -244,7 +244,7 @@ function string get_frm_string(int key);
 endfunction
 
 //Vector vsetvli paramaters
-function string get_vtype_eSEW(int eSEW);
+function string get_vtype_eSEW_name(int eSEW);
   case(eSEW)
     3'b000: return "e8";
     3'b001: return "e16";
@@ -255,7 +255,7 @@ function string get_vtype_eSEW(int eSEW);
   endcase
 endfunction
 
-function string get_vtype_mLMUL(int mLMUL);
+function string get_vtype_mLMUL_name(int mLMUL);
   case(mLMUL)
     3'b101: return "mf8";
     3'b110: return "mf4";
@@ -269,14 +269,14 @@ function string get_vtype_mLMUL(int mLMUL);
   endcase
 endfunction
 
-function string get_vtype_ta(int ta);
+function string get_vtype_ta_name(int ta);
   case(ta)
     1'b1: return "ta";
     1'b0: return "tu";
   endcase
 endfunction
 
-function string get_vtype_ma(int ma);
+function string get_vtype_ma_name(int ma);
   case(ma)
     1'b1: return "ma";
     1'b0: return "mu";
