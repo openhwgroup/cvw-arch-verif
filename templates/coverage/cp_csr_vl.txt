@@ -1,0 +1,6 @@
+    cp_csr_vl : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")  iff (ins.trap == 0 )  {
+        // Corners values of VL.vl (vector length)
+        bins zero     = {0};
+        bins vlenm1   = {`VLEN-1};
+        bins vlen     = {`VLEN};
+    }

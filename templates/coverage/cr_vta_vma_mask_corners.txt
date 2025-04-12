@@ -1,0 +1,11 @@
+    cp_mask_corners_norm : coverpoint unsigned'(ins.prev.v_wdata[0])  iff (ins.trap == 0 & ins.current.sew == SEW & ins.current.vm == 0)  {
+        // Corners values of v0 (vector mask register), without thermometer and walking ones
+        bins zero     = {0};
+        bins ones     = {(`VLEN){1'b1}};
+        bins walkeodd = {(`VLEN/2){2'b10}};
+        bins walkeven = {(`VLEN/2){2'b01}};
+        bins onesm1   = {(SEW-1){1'b1}, {1'b0}};
+    }
+    cr_vta_vma_mask_corners : cross cp_csr_vtype_vta,cp_csr_vtype_vma,cp_mask_corners_norm  iff (ins.trap == 0 )  {
+        //Cross coverage of vector tail and mask agnostic and mask corners
+    }

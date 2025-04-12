@@ -1,0 +1,25 @@
+    cp_vs1_vs2_corners : coverpoint unsigned'({get_elem_val(vs2, i),get_elem_val(vs1, i)})  iff (ins.trap == 0 & ins.current.sew == SEW)  {
+        // Corners values of each element of vs1
+        // one element = (SEW){1'b?}
+        // # of elements = `VLEN/SEW
+        // {vs2, vs1} = {(M)*element, corner_vs2, (`VLEN/SEW-M-1)*element, (N)*element, corner_vs1, (`VLEN/SEW-N-1)*element}
+        bins zero  =    {0};
+        bins one  =     {(SEW-1){1'b0}, {1'b1}};
+        bins two  =     {(SEW-2){1'b0}, {2'b10}};
+        bins min  =     {{1'b1}, (SEW-1){1'b0}};
+        bins minp1  =   {{1'b1}, (SEW-2){1'b0}, {1'b1}};
+        bins max  =     {{1'b0}, (SEW-1){1'b1}};
+        bins maxm1  =   {{1'b0}, (SEW-2){1'b1}, {1'b0}};
+        bins ones  =    {(SEW){1'b1}};
+        bins onesm1  =  {(SEW-1){1'b1}, {1'b0}};
+        bins walkeodd = {(SEW/2){2'b10}};
+        bins walkeven = {(SEW/2){2'b01}};
+        bins random   = {(SEW/8){4'b1101}, (SEW/8){4'b0110}};
+
+        // i dont know how to or this
+        bins zero_zero = {0};
+        bins zero_one = {1};
+        bins zero_two = {(SEW){1'b0}, (SEW-2){1'b0}, {2'b10}};
+
+        // have one get_elem_val(vs1, i) coverpoint and one for vs2, cross them, but can't specify the ANY aspect
+    }

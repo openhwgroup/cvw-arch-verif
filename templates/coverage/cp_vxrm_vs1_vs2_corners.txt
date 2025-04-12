@@ -1,0 +1,324 @@
+    cr_vxrm_vs1_vs2_corners_zero_zero : cross cp_vs1_vs2_zero_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_one : cross cp_vs1_vs2_zero_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_two : cross cp_vs1_vs2_zero_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_min : cross cp_vs1_vs2_zero_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_minp1 : cross cp_vs1_vs2_zero_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_max : cross cp_vs1_vs2_zero_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_maxm1 : cross cp_vs1_vs2_zero_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_ones : cross cp_vs1_vs2_zero_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_zero_onesm1 : cross cp_vs1_vs2_zero_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_zero : cross cp_vs1_vs2_one_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_one : cross cp_vs1_vs2_one_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_two : cross cp_vs1_vs2_one_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_min : cross cp_vs1_vs2_one_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_minp1 : cross cp_vs1_vs2_one_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_max : cross cp_vs1_vs2_one_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_maxm1 : cross cp_vs1_vs2_one_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_ones : cross cp_vs1_vs2_one_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_one_onesm1 : cross cp_vs1_vs2_one_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_zero : cross cp_vs1_vs2_two_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_one : cross cp_vs1_vs2_two_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_two : cross cp_vs1_vs2_two_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_min : cross cp_vs1_vs2_two_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_minp1 : cross cp_vs1_vs2_two_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_max : cross cp_vs1_vs2_two_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_maxm1 : cross cp_vs1_vs2_two_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_ones : cross cp_vs1_vs2_two_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_two_onesm1 : cross cp_vs1_vs2_two_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_zero : cross cp_vs1_vs2_min_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_one : cross cp_vs1_vs2_min_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_two : cross cp_vs1_vs2_min_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_min : cross cp_vs1_vs2_min_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_minp1 : cross cp_vs1_vs2_min_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_max : cross cp_vs1_vs2_min_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_maxm1 : cross cp_vs1_vs2_min_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_ones : cross cp_vs1_vs2_min_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_min_onesm1 : cross cp_vs1_vs2_min_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_zero : cross cp_vs1_vs2_minp1_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_one : cross cp_vs1_vs2_minp1_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_two : cross cp_vs1_vs2_minp1_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_min : cross cp_vs1_vs2_minp1_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_minp1 : cross cp_vs1_vs2_minp1_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_max : cross cp_vs1_vs2_minp1_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_maxm1 : cross cp_vs1_vs2_minp1_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_ones : cross cp_vs1_vs2_minp1_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_minp1_onesm1 : cross cp_vs1_vs2_minp1_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_zero : cross cp_vs1_vs2_max_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_one : cross cp_vs1_vs2_max_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_two : cross cp_vs1_vs2_max_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_min : cross cp_vs1_vs2_max_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_minp1 : cross cp_vs1_vs2_max_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_max : cross cp_vs1_vs2_max_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_maxm1 : cross cp_vs1_vs2_max_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_ones : cross cp_vs1_vs2_max_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_max_onesm1 : cross cp_vs1_vs2_max_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_zero : cross cp_vs1_vs2_maxm1_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_one : cross cp_vs1_vs2_maxm1_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_two : cross cp_vs1_vs2_maxm1_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_min : cross cp_vs1_vs2_maxm1_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_minp1 : cross cp_vs1_vs2_maxm1_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_max : cross cp_vs1_vs2_maxm1_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_maxm1 : cross cp_vs1_vs2_maxm1_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_ones : cross cp_vs1_vs2_maxm1_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_maxm1_onesm1 : cross cp_vs1_vs2_maxm1_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_zero : cross cp_vs1_vs2_ones_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_one : cross cp_vs1_vs2_ones_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_two : cross cp_vs1_vs2_ones_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_min : cross cp_vs1_vs2_ones_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_minp1 : cross cp_vs1_vs2_ones_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_max : cross cp_vs1_vs2_ones_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_maxm1 : cross cp_vs1_vs2_ones_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_ones : cross cp_vs1_vs2_ones_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_ones_onesm1 : cross cp_vs1_vs2_ones_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_zero : cross cp_vs1_vs2_onesm1_zero,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_one : cross cp_vs1_vs2_onesm1_one,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_two : cross cp_vs1_vs2_onesm1_two,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_min : cross cp_vs1_vs2_onesm1_min,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_minp1 : cross cp_vs1_vs2_onesm1_minp1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_max : cross cp_vs1_vs2_onesm1_max,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_maxm1 : cross cp_vs1_vs2_onesm1_maxm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_ones : cross cp_vs1_vs2_onesm1_ones,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
+    cr_vxrm_vs1_vs2_corners_onesm1_onesm1 : cross cp_vs1_vs2_onesm1_onesm1,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        bins true = {1};
+    }
+
