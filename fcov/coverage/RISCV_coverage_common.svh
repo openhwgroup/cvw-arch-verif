@@ -369,7 +369,7 @@ endfunction
 //Vector vsetvli paramaters
 // Flipped: string -> int (bits), using case statements
 
-function bit [2:0] get_eSEW(string str);
+function bit [2:0] get_vtype_eSEW_val(string str);
   case (str)
     "e8":   return 3'b000;
     "e16":  return 3'b001;
@@ -378,7 +378,7 @@ function bit [2:0] get_eSEW(string str);
   endcase
 endfunction
 
-function bit [2:0] get_mLMUL(string str);
+function bit [2:0] get_vtype_mLMUL_val(string str);
   case (str)
     "mf8": return 3'b101;
     "mf4": return 3'b110;
@@ -390,14 +390,14 @@ function bit [2:0] get_mLMUL(string str);
   endcase
 endfunction
 
-function bit get_ta(string str);
+function bit get_vtype_ta_val(string str);
   case (str)
     "ta": return 1'b1;
     "tu": return 1'b0;
   endcase
 endfunction
 
-function bit get_ma(string str);
+function bit get_vtype_ma_val(string str);
   case (str)
     "ma": return 1'b1;
     "mu": return 1'b0;
