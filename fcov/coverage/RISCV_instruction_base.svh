@@ -532,5 +532,21 @@ class RISCV_instruction
   virtual function void add_vm(int offset);
     current.vm = get_vm(ops[offset].key);
   endfunction
+  
+  virtual function void add_eSEW(int offset);
+    current.eSEW = get_eSEW(ops[offset].key);
+  endfunction
+
+  virtual function void add_mLMUL(int offset);
+    current.mLMUL = get_mLMUL(ops[offset].key);
+  endfunction
+
+  virtual function void add_ta(int offset);
+    current.ta = get_ta(ops[offset].key);
+  endfunction
+
+  virtual function void add_ma(int offset);
+    current.ma = get_ma(ops[offset].key);
+  endfunction
 
 endclass

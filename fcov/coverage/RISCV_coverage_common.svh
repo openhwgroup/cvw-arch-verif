@@ -366,6 +366,45 @@ function bit get_vm(string s);
   endcase
 endfunction
 
+//Vector vsetvli paramaters
+// Flipped: string -> int (bits), using case statements
+
+function bit [2:0] get_eSEW(string str);
+  case (str)
+    "e8":   return 3'b000;
+    "e16":  return 3'b001;
+    "e32":  return 3'b010;
+    "e64":  return 3'b011;
+  endcase
+endfunction
+
+function bit [2:0] get_mLMUL(string str);
+  case (str)
+    "mf8": return 3'b101;
+    "mf4": return 3'b110;
+    "mf2": return 3'b111;
+    "m1":  return 3'b000;
+    "m2":  return 3'b001;
+    "m4":  return 3'b010;
+    "m8":  return 3'b011;
+  endcase
+endfunction
+
+function bit get_ta(string str);
+  case (str)
+    "ta": return 1'b1;
+    "tu": return 1'b0;
+  endcase
+endfunction
+
+function bit get_ma(string str);
+  case (str)
+    "ma": return 1'b1;
+    "mu": return 1'b0;
+  endcase
+endfunction
+
+
 // CSR address conversion
 function int get_csr_addr(int hart, string s);
   import RISCV_decode_pkg::*;
