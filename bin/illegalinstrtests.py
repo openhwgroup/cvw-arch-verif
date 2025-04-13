@@ -58,7 +58,7 @@ def gen(comment, template, len = 32, exclusion = []):
 # setup
 seed(0) # make tests reproducible
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstr-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 #gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011") # custom-0
@@ -133,7 +133,7 @@ gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved r
 gen("cp_reserved_fence_rd",     "000011111111RRRRE000000010001111") # reserved rd for fence instruction
 outfile.close
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstrCompressed-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)
