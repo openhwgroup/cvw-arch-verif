@@ -149,7 +149,7 @@ sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
 #wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
-	wsim rv32gc $(LOCKSTEPDIR)/rv32/I/WALLY-COV-sa.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE" > verbosem.log
+	wsim rv32gc $(LOCKSTEPDIR)/rv32/I/WALLY-COV-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE" > verbosem.log
 
 	$(MAKE) merge
 
