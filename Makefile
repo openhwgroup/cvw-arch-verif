@@ -24,7 +24,7 @@ SIGEXT         := elf.signature
 # temporary for faster testing
 #SRCDIR64     := $(LOCKSTEPDIR)/rv65
 #SRCDIR32     := $(LOCKSTEPDIR)/rv32/I
-#PRIVDIR 	:= $(LOCKSTEPDIR)/bogus
+#PRIVDIR    := $(LOCKSTEPDIR)/bogus
 
 
 # Dynamically find all source files
@@ -65,7 +65,15 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
-	bin/combinetests.py
+# bin/combinetests.py
+
+riscv-copy:
+	cp -r ${LOCKSTEPDIR}/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
+	cp -r ${LOCKSTEPDIR}/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
+
+riscv-copy-%:
+	cp -r ${LOCKSTEPDIR}/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
+	cp -r ${LOCKSTEPDIR}/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
@@ -121,7 +129,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 # Compile tests
 %.elf: $$(SOURCEFILE) $$(EXTRADEPS)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
+	-nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 #    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DSIGNATURE=1 $<   # for signature generation
 	$(MAKE) $@.objdump $@.memfile
 #	$(MAKE) $@.memfile $@.signature # uncomment for signature generation
@@ -140,7 +148,9 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+#wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(LOCKSTEPDIR)/rv32/I/WALLY-COV-sa.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE" > verbosem.log
+
 	$(MAKE) merge
 
 # Merge coverage files and generate report
@@ -157,6 +167,5 @@ clean:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf $(SELFCHECKDIR)/*
 	rm -rf $(SIGDIR)/*
-
 
 

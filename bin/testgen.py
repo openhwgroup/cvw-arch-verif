@@ -175,12 +175,16 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
   return lines
 
 # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
-def handleSignaturePointerConflict(lines, rs1, rs2, rd):
+def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
   global sigReg # this function can modify the signature register
   l = lines
   oldSigReg = sigReg
-  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
-    sigReg = (sigReg + 1) % 4 + 4
+  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3):
+    #print(sigReg, rs1, rs2, rs3)
+    sigReg = randint(1,31)
+    #print(f"{sigReg=}")
+    #print(sigReg, rs1, rs2, rs3)
+
   if (sigReg != oldSigReg):
     l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
   # if (not lockstep): # only needed for signature tests
@@ -565,13 +569,15 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1 
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
-      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n" #!
+      #lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
+      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n" #!
+      #lines = lines + test + " x" + str(rs2) + ", " + 1*makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n" #!
+      #lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
       lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
       sigupd_count += 1
-
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
@@ -614,13 +620,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       branchline = f"{test} x{rs1}, x{rs2}, 1f # perform operation\n"
       lines = writeBranchTest(lines, rd, rs1, rs2, xlen, branchline)
   elif (test in jtype):#["jal"]
-    if rd == 0:
-      rd = (rd + 1) % 32  # pick a different register
     jumpline = f"{test} x{rd}, 1f # perform operation\n"
     lines = writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline)
   elif (test in jalrtype):#["jalr"]
-    if rd == 0:
-      rd = (rd + 1) % 32  # pick a different register
     lines = lines + f"la x{rs1}, 1f # jump destination address\n"
     lines = lines + f"addi x{rs1}, x{rs1}, {signedImm12(-immval, immOffset=True)} # add immediate to lower part of rs1\n"
     jumpline = f"{test} x{rd}, x{rs1}, {signedImm12(immval, immOffset=True)} # perform operation\n"
@@ -823,18 +825,16 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
   ins2type = findInstype('instructions', testa, insMap)
   regconfig2 = insMap[ins2type].get('regconfig','xxx_')
-  regconfig3 = 'la'
+
 
   if testb in jalrtype:
     # Ensure rdb, rs3b, and rda are unique
-    if rs2b == rdb:
-        rs2b = (rdb + 1) % 32
-    if rda == rdb or rda == rs2b:
-        rda = (max(rdb, rs2b) + 1) % 32
-    if haz_type != "raw":
-      lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
-      lines += f"auipc x{rs2b}, 0 # PC\n"
-      immvalb = 0
+    if haz_type == "raw":
+      rs1a = rda 
+      rs2a = 0
+    lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
+    lines += f"auipc x{rs3a}, 0 # PC\n"
+    immvalb = 0
     lines += writeSingleInstructionSequence(desc,
                                 [testa],
                                 [regconfig2],
@@ -843,12 +843,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                                 [immvala],
                                 ["perform first operation"],
                                 xlen)                          
-    if haz_type == "raw":
-      lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
-      #lines += writeSIGUPD(rda)
-      #lines += writeSIGUPD(rdb)
-      lines += f"auipc x{rs2b}, 0 # PC\n"
-      immvalb = 0
     lines += writeSingleInstructionSequence(desc,
                                 [testb],
                                 [regconfig],
@@ -858,14 +852,11 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                                 ["perform second (triggering) operation"],
                                 xlen)
     #lines += "arbitraruLabel" + str(hazardLabel) + ":\nnop\n" #added to fix loop
-    lines += f"addi x{rs2b}, x{rs2b}, 4 # should be skipped\n"
+    lines += f"addi x{rs3a}, x{rs3a}, 4 # should be skipped\n"
     lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
     lines += writeSIGUPD(rdb) #jalr
-    lines += writeSIGUPD(rs2b) # needs to be auipc addi
+    lines += writeSIGUPD(rs3a) # needs to be auipc addi
     lines += writeSIGUPD(rda) #add
-    # lines += writeSIGUPD(rdb) #jalr
-    # lines += writeSIGUPD(rs1b) # needs to be auipc addi
-    # lines += writeSIGUPD(rda) #add
     hazardLabel += 1
 
   elif insMap[instype].get('loadstore', 0) == 'store':
@@ -914,7 +905,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
           rs1a = rs1b
           rs2a = 0
 
-    if 'a' in regconfig:
+    if 'a' in regconfig: 
       rsblist = [rdb, rs1b, rs2b, rs3b]
       
       lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
@@ -948,38 +939,45 @@ def findInstype(key, instruction, insMap):
     print('instruction ' + instruction + ' not found in insMap')
     return 0
 
-def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1, sigReg=3):
+def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
   # set up hazard
+  global sigReg
   [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
   regsB = [rdb, rs1b, rs2b, rs3b]
   compression = insMap[findInstype('instructions', test, insMap)].get('compressed', 0)
+  lines = ""
 
   match haz_type:
     case "nohaz":
-      while (set(regsA) & set(regsB) & set([sigReg])):
+      while (set(regsA) & set(regsB)) | (set(regsA) & set([sigReg])) | (set(regsB) & set([sigReg])):
+        handleSignaturePointerConflict(lines, regsA[1], regsA[2], regsA[0], regsA[3])
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
 
     case "waw":
-      while (set(regsA) & set(regsB) & set([sigReg])):
+      while (set(regsA) & set(regsB)) | (set(regsA) & set([sigReg])) | (set(regsB) & set([sigReg])):
+        handleSignaturePointerConflict(lines, regsA[1], regsA[2], regsA[0], regsA[3])
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
       regsB[0] = regsA[0]
 
     case "war":
-      while (set(regsA) & set(regsB) & set([sigReg])):
+      while (set(regsA) & set(regsB)) | (set(regsA) & set([sigReg])) | (set(regsB) & set([sigReg])):
+        handleSignaturePointerConflict(lines, regsA[1], regsA[2], regsA[0], regsA[3])
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
       regsB[0] = regsA[regchoice]
 
-
     case "raw":
-      while (regsB[0] not in regsA and regsB[0] == sigReg):
+      while (set(regsA) & set(regsB)) | (set(regsA) & set([sigReg])) | (set(regsB) & set([sigReg])):
+        handleSignaturePointerConflict(lines, regsA[1], regsA[2], regsA[0], regsA[3])
         [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
         regsB = [rdb, rs1b, rs2b, rs3b]
-        regsB[regchoice] = regsA[0]
+      regsB[regchoice] = regsA[0]
 
+  f.write(lines)
   return regsA, regsB
+  
 
 # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
 def randomNonconflictingReg(test):
