@@ -242,48 +242,48 @@ def writeTest(lines, rd, xlen, floatdest, testline):
 
 def writeJumpTest(lines, rd, rs1, xlen, jumpline):
   l = lines + jumpline
-  if (lockstep):
-    l = l + "nop\nnop\n"
-    l = l + "1:\n"
-  else:
-    [storeinstr, offsetInc] = getSigInfo(False)
-    l = l + f"auipc x{rs1}, 0 # should be skipped\n"
-    l = l + f"{storeinstr} x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
-    l = l + "1:\n"
-    l = l + "# JUMP SIGNATURE\n"
-    l = l + f"{storeinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n"
-    l = l + f"auipc x{rs1}, 0 # should be taken\n"
-    l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc*2}(x{sigReg}) # should be taken\n" 
-    l = l + incrementSigOffset(offsetInc*3)
+  # if (lockstep):
+  l = l + "nop\nnop\n"
+  l = l + "1:\n"
+  # else:
+  #   [storeinstr, offsetInc] = getSigInfo(False)
+  #   l = l + f"auipc x{rs1}, 0 # should be skipped\n"
+  #   l = l + f"{storeinstr} x{rs1}, {sigOffset}(x{sigReg}) # should be skipped\n"
+  #   l = l + "1:\n"
+  #   l = l + "# JUMP SIGNATURE\n"
+  #   l = l + f"{storeinstr} x{rd}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n"
+  #   l = l + f"auipc x{rs1}, 0 # should be taken\n"
+  #   l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc*2}(x{sigReg}) # should be taken\n" 
+  #   l = l + incrementSigOffset(offsetInc*3)
   return l 
 
 def writeBranchTest(lines, rs1, xlen, branchline):
   l = lines + branchline
-  if (lockstep):
-    l = l + "nop\nnop\n"
-    l = l + "1:\n"
-  else:
-    l = l + "# BRANCH SIGNATURE\n"
-    [storeinstr, offsetInc] = getSigInfo(False)
-    l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # write garbage; should be skipped\n"
-    l = l + "1:\n"
-    l = l + f"auipc x{rs1}, 0 # should be taken\n"
-    l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n" 
-    l = l + incrementSigOffset(2*offsetInc)
+  # if (lockstep):
+  l = l + "nop\nnop\n"
+  l = l + "1:\n"
+  # else:
+  #   l = l + "# BRANCH SIGNATURE\n"
+  #   [storeinstr, offsetInc] = getSigInfo(False)
+  #   l = l + f"sw x{rs1}, {sigOffset}(x{sigReg}) # write garbage; should be skipped\n"
+  #   l = l + "1:\n"
+  #   l = l + f"auipc x{rs1}, 0 # should be taken\n"
+  #   l = l + f"{storeinstr} x{rs1}, {sigOffset+offsetInc}(x{sigReg}) # should be taken\n" 
+  #   l = l + incrementSigOffset(2*offsetInc)
   return l 
 
 def writeStoreTest(lines, test, rs2, xlen, storeline):
   l = lines + storeline
-  if (not lockstep):
-    l = l + "# STORE SIGNATURE\n"
-    writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-    if (writeTest.startswith("c.")):
-      writeTest = test[2:] # remove the c. prefix
-    floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
-    [storeinstr, offsetInc] = getSigInfo(floatdest)
-    rdPrefix = "f" if floatdest else "x"
-    l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
-    l = l + incrementSigOffset(offsetInc*2)
+  # if (not lockstep):
+  #   l = l + "# STORE SIGNATURE\n"
+  #   writeTest = test # use same instruction for writing, but in non-compressed form if necessary
+  #   if (writeTest.startswith("c.")):
+  #     writeTest = test[2:] # remove the c. prefix
+  #   floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
+  #   [storeinstr, offsetInc] = getSigInfo(floatdest)
+  #   rdPrefix = "f" if floatdest else "x"
+  #   l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
+  #   l = l + incrementSigOffset(offsetInc*2)
   return l
 
 def genFrmTests(testInstr, rd, floatdest):
@@ -580,11 +580,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
-    if (lockstep):
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
-    else:
-      lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n"
+    # if (lockstep):
+    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
+    # else:
+    #   lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
   elif (test in csbtype + cshtype):
