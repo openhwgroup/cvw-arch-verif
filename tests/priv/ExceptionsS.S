@@ -10,7 +10,6 @@
 
 #include "WALLY-init-lib.h"                
 
-// program start
 main:
 
 // Set up the trap handler
@@ -37,8 +36,6 @@ csrw stvec, t0
     li a0, 1 
     jal ra, cp_medeleg
 
-
-
     // Covers the user mode coverpoints from cp_stvec and cp_medeleg_msu 
     // Call the cp_medeleg function
     //   a0 = 0 (user mode)
@@ -51,8 +48,8 @@ csrw stvec, t0
     li a0, 3 
     jal ra, cp_medeleg
 
-    // Test the remaining supervisor mode coverpoints that do 
-    // not require different values of medeleg
+    // Test the remaining supervisor mode coverpoints that
+    // do not require different values of medeleg
 
     // Restore medeleg to all zeros
     // Enter machine privilege mode 
@@ -78,7 +75,7 @@ csrw stvec, t0
 
     beq x0, x0, .+6  // use .+6 to change PC counter to 6 bytes ahead
 
-    // ensure a processor that has the compressed extension will execute a c.nop instruction preventing an illegal instruction exception
+    // If the configuration supports compressed instruction a c.nop instruction is executed.
     // If a processor does not have the compressed extension, there will be a misaligned access exception
     .word 0x00010013 // c.nop when 2 byte accessed, addi x0, x2, 0 when 4 byte accessed
 
@@ -108,7 +105,10 @@ csrw stvec, t0
 
     // these branches are not taken so there should be no exception
 
-    beq x0, t1, .+6 // t1 = 1
+    li t1,1        // load a test value
+    .align 2       // align the next instruction to a 4 byte boundary 
+
+    beq x0, t1, .+6
 
     bne x0, x0, .+6
 
@@ -132,7 +132,7 @@ csrw stvec, t0
     //cp_illegal_instruction_seed
     /////////////////////////////////
 
-    // throws illegal instruction in machine mode
+    // Throws illegal instruction in machine mode
     csrrs  t1, seed, x0
     csrrc  t2, seed, x0
     csrrsi t3, seed, 0
@@ -311,7 +311,7 @@ csrw stvec, t0
     ecall
 
     // mstatus_MIE = {0}, sstatus_SIE = {0}, medeleg_b8 = {1}
-    // change medeleg bit 8 (for this and the next user tests)
+    // change medeleg bit 8 (for the current and following test)
     li a4, 256        //  (1<<8) bit 8 in medeleg is the ecallu delegation bit                    
     csrs medeleg, a4  //  set bit 8 in medeleg
 
@@ -369,8 +369,6 @@ finished:
 // This may be replaced by the generic riscv-arch-test trap handler in the 
 // future to log trap signatures, but is adequate for lockstep testing
 //
-// Currently s7 is reserved for this traphandler
-//
 // Provides a simple trap handler that allows for privilege mode changes
 // Place argument in a0 and issue ecall:
 //  0: change to user mode
@@ -403,10 +401,10 @@ s_traphandler:
 
     // Check if the exception was caused by an access fault
     csrr   t1, scause            // t1 = exception cause
-    addi   t1, t1, -1            // Exception cause code 1 means Instruction Access Fault
-    bne    t1, x0, IAF_skip      // If not an IAF, skip ra load
+    li t0, 1                     // Exception cause code 1 means Instruction Access Fault
+    bne    t1, t0, IAF_skip      // If not an IAF, skip ra load
     // If it was an instruction access fault our program uses a jalr to jump to the fault address.
-    // A jalr sets rd = PC +4, so we need to subtract 4 from the return address  to get the  address
+    // A jalr sets rd = PC +4, so we need to subtract 4 from the return address to get the address
     // of the faulting instruction.
     addi  ra, ra, -4        
     csrw sepc, ra           // save ra to sepc if its an IAF
@@ -415,13 +413,13 @@ IAF_skip:
     csrr t0, scause
     li t1, 8                 // is it an ecall trap?
     andi t0, t0, 0xFC        // if CAUSE = 8, 9, or 11
-    bne t0, t1, s_trap_ecall_skip  # ignore other exceptions
+    bne t0, t1, s_trap_ecall_skip  // ignore other exceptions
 
-    //restore registers before going into machine trap handler
+    // Restore registers before going into machine trap handler
     LREG t0, 0(tp)          // Restore t0, t1, and s7
     LREG t1, -8(tp)
     LREG s7, -16(tp)
-    csrrw tp, sscratch, tp   // restore tp
+    csrrw tp, sscratch, tp   // Restore tp
 
     addi   a0, a0, 5        // Changes inputs to 5, 6, 7, or 8 (signals that it was an ecall from the s_traphandler)
     ecall                   // Trap to M-mode, where the privilege change is handled
@@ -450,26 +448,27 @@ cp_medeleg:
     mv a5, ra                  // Save return address
     mv a3, a0                  // Save test mode
 
-    //--- Test: Loop over all-zero plus 17 walking-1 values in medelegh ---
-    // Total iterations = 18:
-    //   Iteration 0: medeleg = all zeros (upper 32 bits are 0)
-    //   Iterations 1-17: a walking 1 in the upper 32 bits
+    //--- Test: Loop over all-zero, all-ones, and 17 walking-1 values in medeleg ---
+    // Total iterations = 19 (skips iterations 9-11):
+    //   Iteration  0:    medeleg = all zeros
+    //   Iterations 1-18: a walking 1 in the upper 32 bits (skips reserved bits 9-11)
+    //   Iteration  19:   medeleg = all ones
     li   a1, 0                // Loop counter
-    li   a2, 20               // Total iterations (0's + 1's+ 17 walking ones)
-    li   a4, 0                // Initialize test value to 0 (all zeros)
+    li   a2, 20               // Total iterations + 1 (0's + 1's+ 17 walking ones)
+    li   a4, 0                // Initialize test value to 0 (all zeros test)
 
 cp_medeleg_loop:
     bge  a1, a2, cp_medeleg_end   // Exit loop when a1 >= 19
 
-    mv t0, a3             // save the test mode privilege to a temp variable
-    li a0, 3              // set a0 to 3 to enter machine mode
-    ecall                 // Change privilege                     
-    mv a3, t0             // restore the test mode privilege to a3
-        
-    csrw medeleg, a4      // write walking 1 to medeleg
+    // Enter machin mode
+    li a0, 3              
+    ecall                                    
     
+    // write walking 1 to medeleg
+    csrw medeleg, a4      
     
-    mv   a0, a3            // load into test privilege mode
+    // Enter test mode (stored in a3)
+    mv   a0, a3  
     ecall   
 
     /////////////////////////////////
@@ -595,19 +594,19 @@ cp_medeleg_loop:
     //cp_breakpoint
     /////////////////////////////////
 
-    mv a0, a3 // move stored return priveledge mode to a0
+    mv a0, a3 // Move stored return priveledge mode to a0
     ebreak
 
     /////////////////////////////////
     //cp_load_address_misaligned
     /////////////////////////////////
 
-    // Get a pointer to scratch data
+    // Load scratch address
     la      t4, scratch
 
     // Initialize loop counter (offset) from 0 to 7
     li      t0, 0         // t0 = loop index (offset)
-    li      t5, 8         // loop limit (we will test offsets 0 through 7)
+    li      t5, 8         // loop limit (offsets 0 through 7)
 
 load_loop:
     // Compute effective address = base (t4) + current offset (t0)
@@ -796,8 +795,8 @@ load_loop_priority:
     li      t5, 8         // loop limit (we will test offsets 0 through 7)
 
 store_loop_priority:
-    // Compute effective address = base (t4) + current offset (t0)
-    add     t1, t4, t0    // t1 = effective address with 3 LSBs = t0
+    // Compute misaligned address 
+    add     t1, t4, t0    // t1 = base address with 3 LSBs = t0
 
     // Prepare a test value to store
     li      t2, 0xDECAFCAB
@@ -829,13 +828,13 @@ store_loop_priority:
     // Check if program is at iteration 0
     beq  a1, zero, update_first
 
-    // Check if program's next iteration is 9
-    addi a6, a1, -9
-    beq  a6, x0, update_9
+    // Check if program's iteration is 9
+    li a6, 9
+    beq  a6, a1, update_9
 
-    // at the end of walks set first 13 writable bits to 1
-    addi a6, a1, -18
-    beq  a6, x0, ones_update
+    // At the end of walks set first 13 writable bits to 1
+    li a6, 18
+    beq  a6, a1, ones_update
 
     // For iterations after the first, shift left by 1
     slli a4, a4, 1          
@@ -843,7 +842,7 @@ store_loop_priority:
 
     // Initialize walking 1 after testing all zeros in medeleg
 update_first:
-            li a4, 1        
+    li a4, 1        
     
 update_done:
     addi a1, a1, 1          // Increment loop counter
