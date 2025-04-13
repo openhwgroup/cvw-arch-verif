@@ -26,12 +26,7 @@ RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
 UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
-# Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
-# Make sure to add a rule to generate the header file if necessary. 
-# See $(PRIVHEADERSDIR)/Zicsr-CSR-Tests.h for an example
-PRIV_HEADERS  = ZicsrM-CSR-Tests.h ZicsrS-CSR-Tests.h ZicsrU-CSR-Tests.h ExceptionInstr-Tests.h ExceptionInstrCompressed-Tests.h
-
-.PHONY: all clean sim merge covergroupgen testgen unpriv priv
+.PHONY: all clean sim merge covergroupgen testgen unpriv priv privheaders
 
 # Main targets
 all: unpriv priv
@@ -39,7 +34,8 @@ all: unpriv priv
 unpriv: testgen
 	$(MAKE) $(UNPRIVOBJECTS)
 
-priv: $(PRIVOBJECTS)
+priv: privheaders | $(PRIVDIR64) $(PRIVDIR32)
+	$(MAKE) $(PRIVOBJECTS)
 
 # Test generation scripts
 covergroupgen: bin/covergroupgen.py
@@ -50,70 +46,39 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 	bin/combinetests.py
 
-$(PRIVHEADERSDIR)/ZicsrM-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
+privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
-$(PRIVHEADERSDIR)/ZicsrS-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
-	bin/csrtests.py
-$(PRIVHEADERSDIR)/ZicsrU-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
-	bin/csrtests.py
-
-$(PRIVHEADERSDIR)/ExceptionInstr-Tests.h $(PRIVHEADERSDIR)/ExceptionInstrCompressed-Tests.h: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/illegalinstrtests.py
-
-# This code is added especially for running VM SV32 tests
-# Replace --fcov with --lockstepverbose for debugging
-SV32DIR := ${WALLY}/tests/riscof/work/riscv-arch-test/rv32i_m/vm_sv32/src
-SV32OBJ = $(shell find $(SV32DIR)/*/ref -type f -name "*.$(OBJEXT)" | sort)
-# "make get_vm" outputs all the available SV32 tests in cvw-arch-verif/vm_tests.sh and "make vm" runs them
-get_vm:
-	@rm -f vm_tests.sh
-	@for elf in $(SV32OBJ); do \
-		echo "wsim rv32gc $$elf --fcov" >> vm_tests.sh; \
-	done
-vm:
-	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	chmod +x vm_tests.sh
-	./vm_tests.sh
-	$(MAKE) merge
 
 # Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
 ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
 ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)
 ZCF_FLAG = $(if $(findstring /Zcf, $(dir $<)),_zcf,)
-ZCB_ExceptionsZc_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),_zcb_c,)
-CMPR_FLAGS = $(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)$(ZCB_ExceptionsZc_FLAG)
+EXCEPTIONSZC_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),c_zcb_,)
+CMPR_FLAGS = $(EXCEPTIONSZC_FLAG)$(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
 MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
-SAIL = riscv_sim_rv$(BITWIDTH)d
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
-PRIV_HEADERS_EXPANDED := $(addprefix $(PRIVHEADERSDIR)/, $(PRIV_HEADERS))
-EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITWIDTH)))
 
 # Don't delete intermediate files
 .PRECIOUS: %.elf %.elf.objdump %.elf.memfile %.elf.signature
 
 # Compile tests
-%.elf: $$(SOURCEFILE) $$(EXTRADEPS)
+%.elf: $$(SOURCEFILE)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
     -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
-#    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DSIGNATURE=1 $<   # for signature generation
 	$(MAKE) $@.objdump $@.memfile
-#	$(MAKE) $@.memfile $@.signature # uncomment for signature generation
 
 %.elf.objdump: %.elf
 	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases $< > $@
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
-
-%.elf.signature: %.elf
-	#echo $< $@
-	$(SAIL) $< --enable-zcb -T $@ > $@.log
 
 # Run tests while collecting functional coverage
 sim:
