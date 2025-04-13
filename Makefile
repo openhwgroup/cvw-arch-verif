@@ -4,15 +4,10 @@
 MAKEFLAGS += --no-print-directory
 
 # Directories and extensions
-TESTDIR      := tests
-LOCKSTEPDIR  := $(TESTDIR)/lockstep
-SELFCHECKDIR := $(TESTDIR)/selfchecking
-SIGDIR       := $(TESTDIR)/signature
-SRCDIR64     := $(LOCKSTEPDIR)/rv64
-SRCDIR32     := $(LOCKSTEPDIR)/rv32
-SRCSELFCHECKDIR64   := $(SELFCHECKDIR)/rv64
-SRCSELFCHECKDIR32   := $(SELFCHECKDIR)/rv32
-PRIVDIR        := $(LOCKSTEPDIR)/priv
+TESTDIR        := tests
+SRCDIR64       := $(TESTDIR)/rv64
+SRCDIR32       := $(TESTDIR)/rv32
+PRIVDIR        := $(TESTDIR)/priv
 PRIVHEADERSDIR := $(PRIVDIR)/headers
 PRIVDIR64      := $(PRIVDIR)/rv64
 PRIVDIR32      := $(PRIVDIR)/rv32
@@ -20,12 +15,6 @@ WORK           := work
 SRCEXT         := S
 OBJEXT         := elf
 SIGEXT         := elf.signature
-
-# temporary for faster testing
-#SRCDIR64     := $(LOCKSTEPDIR)/rv65
-#SRCDIR32     := $(LOCKSTEPDIR)/rv32/I
-#PRIVDIR 	:= $(LOCKSTEPDIR)/bogus
-
 
 # Dynamically find all source files
 UNPRIV_SOURCES  = $(shell find $(SRCDIR32) $(SRCDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
@@ -36,8 +25,6 @@ RV64PRIV        = $(PRIVSOURCES:$(PRIVDIR)/%=$(PRIVDIR64)/%)
 RV64PRIVOBJECTS = $(RV64PRIV:.$(SRCEXT)=.$(OBJEXT))
 PRIVOBJECTS     = $(RV32PRIVOBJECTS) $(RV64PRIVOBJECTS)
 UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
-#UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(SIGEXT)) # temporarily disable until we need signatures for signature/self-checking
-UNPRIVSELFCHECKOBJECTS   = $(UNPRIVSELFCHECK_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
 # Add headers for priv tests here. They will all be prepended with PRIVHEADERSDIR
 # Make sure to add a rule to generate the header file if necessary. 
@@ -52,10 +39,6 @@ all: unpriv priv
 unpriv: testgen
 	$(MAKE) $(UNPRIVOBJECTS)
 
-selfcheck: UNPRIVSELFCHECK_SOURCES  = $(shell find $(SRCSELFCHECKDIR32) $(SRCSELFCHECKDIR64) -type f -regex ".**\.$(SRCEXT)" | sort)
-selfcheck: selfchecking $(UNPRIVSELFCHECK_SOURCES)
-	$(MAKE) $(UNPRIVSELFCHECKOBJECTS)
-
 priv: $(PRIVOBJECTS)
 
 # Test generation scripts
@@ -64,12 +47,8 @@ covergroupgen: bin/covergroupgen.py
 
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
-	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
+	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 	bin/combinetests.py
-
-selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
-	bin/makeselfchecking.py
-	rm -f ${SELFCHECKDIR}/*/*/WALLY-COV-ALL.S
 
 $(PRIVHEADERSDIR)/ZicsrM-CSR-Tests.h: bin/csrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
@@ -140,7 +119,7 @@ EXTRADEPS  = $(if $(findstring priv,$*),$(PRIV_HEADERS_EXPANDED) $(PRIVDIR$(BITW
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(LOCKSTEPDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 	$(MAKE) merge
 
 # Merge coverage files and generate report
@@ -155,8 +134,3 @@ $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $
 clean:
 	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
-	rm -rf $(SELFCHECKDIR)/*
-	rm -rf $(SIGDIR)/*
-
-
-
