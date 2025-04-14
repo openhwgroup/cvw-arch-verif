@@ -24,7 +24,7 @@ SIGEXT         := elf.signature
 # temporary for faster testing
 #SRCDIR64     := $(LOCKSTEPDIR)/rv65
 #SRCDIR32     := $(LOCKSTEPDIR)/rv32/I
-#PRIVDIR    := $(LOCKSTEPDIR)/bogus
+#PRIVDIR 	:= $(LOCKSTEPDIR)/bogus
 
 
 # Dynamically find all source files
@@ -65,15 +65,7 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${LOCKSTEPDIR}/rv32/E ${LOCKSTEPDIR}/rv64/E # E tests are not used in the regular (I) suite
-# bin/combinetests.py
-
-riscv-copy:
-	cp -r ${LOCKSTEPDIR}/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
-	cp -r ${LOCKSTEPDIR}/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
-
-riscv-copy-%:
-	cp -r ${LOCKSTEPDIR}/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
-	cp -r ${LOCKSTEPDIR}/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
+	bin/combinetests.py
 
 selfchecking: bin/makeselfchecking.py # *** maybe add signature directory
 	bin/makeselfchecking.py
