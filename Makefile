@@ -46,6 +46,14 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 	bin/combinetests.py
 
+riscv-copy:
+	cp -r ${TESTDIR}/lockstep/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
+	cp -r ${TESTDIR}/lockstep/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
+
+riscv-copy-%:
+	cp -r ${TESTDIR}/lockstep/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
+	cp -r ${TESTDIR}/lockstep/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
+
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 	bin/illegalinstrtests.py
