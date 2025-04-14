@@ -91,10 +91,10 @@ function string disassemble (logic [31:0] instrRaw);
 
   // Vector fields
   automatic string  vm    = instr[25] ? "" : ", v0.t";
-  automatic string  eSEW  = get_vtype_eSEW(instr[25:23]);
-  automatic string  mLMUL = get_vtype_mLMUL(instr[22:20]);
-  automatic string  ta    = get_vtype_ta(instr[27]);
-  automatic string  ma    = get_vtype_ma(instr[26]);
+  automatic string  eSEW  = get_vtype_eSEW_name(instr[25:23]);
+  automatic string  mLMUL = get_vtype_mLMUL_name(instr[22:20]);
+  automatic string  ta    = get_vtype_ta_name(instr[27]);
+  automatic string  ma    = get_vtype_ma_name(instr[26]);
 
 
   casez (instr)
