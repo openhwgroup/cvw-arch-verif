@@ -61,6 +61,7 @@ CMPR_FLAGS = $(EXCEPTIONSZC_FLAG)$(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 # Set bitwidth and ABI based on XLEN for each test
 BITWIDTH = $(if $(findstring 64,$*),64,32)
 MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
+SAIL = riscv_sim_rv$(BITWIDTH)d
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
@@ -71,7 +72,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 # Compile tests
 %.elf: $$(SOURCEFILE)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
+    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1  -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -84,7 +85,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(TESTDIR)/lockstep/rv32/I/WALLY-COV-lb.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE" > verbosem.log
 	$(MAKE) merge
 
 # Merge coverage files and generate report
