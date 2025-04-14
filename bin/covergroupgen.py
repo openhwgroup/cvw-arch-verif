@@ -74,7 +74,7 @@ def readCovergroupTemplates():
 # customizeTemplate replaces the placeholders in the covergroup template with the actual values
 # and picks from RV32/RV64 as necessary
 
-def customizeTemplate(covergroupTemplates, name, arch, instr):
+def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
@@ -88,16 +88,6 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
-    return template
-
-def customizeEFFEWTemplate(covergroupTemplates, name, effew):
-    if (name in covergroupTemplates):
-        template = covergroupTemplates[name]
-    else:
-        if (not (name in missingTemplates)):
-            print("No template found for " + name)
-            missingTemplates.append(name)
-        return ""
     template = template.replace("EFFEW", effew)
     return template
 
@@ -132,7 +122,7 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64, ef
                 if(effew != None):
                     for effew in ["8", "16", "32", "64"]:
                         if (anyEFFEWExclusion("EFFEW" + effew, k, tp) == False):
-                            f.write(customizeEFFEWTemplate(covergroupTemplates, cp, int(effew)))
+                            f.write(customizeTemplate(covergroupTemplates, cp, arch, instr, effew))
             f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
 
 def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
