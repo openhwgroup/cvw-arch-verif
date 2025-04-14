@@ -441,8 +441,8 @@ Mend_PMP:                                    ;\
 
 /* RVTEST_SIGBASE(reg, label) initializes to label and clears offset */
 #define RVTEST_SIGBASE(_R,_TAG)			\
-  LA(_R,_TAG)					;\
-  .set offset,0
+  //LA(_R,_TAG)					;\
+  //.set offset,0
 
 // This macro is loading data from memory with any offset value
 // This macro is loading data from memory with any offset value
