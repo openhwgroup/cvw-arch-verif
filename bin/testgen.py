@@ -25,11 +25,7 @@ import math
 # functions
 ##################################
 
-# OLD FUNCTION: 
-# def insertTemplate(name):
-#   f.write(f"\n # {name}\n")
-#   with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
-#     f.write(h.read())
+
 def insertTemplate(name):
     f.write(f"\n # {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
@@ -179,6 +175,8 @@ def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
   global sigReg # this function can modify the signature register
   l = lines
   oldSigReg = sigReg
+  #while (sigReg == rs1 or sigReg == rs2 or sigReg == rd):
+  #sigReg = (sigReg + 1) % 4 + 4
   while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3):
     #print(sigReg, rs1, rs2, rs3)
     sigReg = randint(1,31)
@@ -280,14 +278,14 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
 def writeStoreTest(lines, test, rs2, xlen, storeline):
   #writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  if (not lockstep):
-    l = l + "# STORE SIGNATURE\n"
-    writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-    if (writeTest.startswith("c.")):
-      writeTest = test[2:] # remove the c. prefix
-    floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
+  #if (not lockstep):
+  #  l = l + "# STORE SIGNATURE\n"
+  #  writeTest = test # use same instruction for writing, but in non-compressed form if necessary
+  #  if (writeTest.startswith("c.")):
+  #    writeTest = test[2:] # remove the c. prefix
+  #  floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
     #[storeinstr, offsetInc] = getSigInfo(floatdest)
-    rdPrefix = "f" if floatdest else "x"
+  #  rdPrefix = "f" if floatdest else "x"
     #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
     #l = l + incrementSigOffset(offsetInc*2)
   return l
@@ -587,9 +585,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
-    if (lockstep):
-      lines = lines + "la sp" + ", scratch" + " # base address \n"
-      lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
+    #if (lockstep):
+    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     #else:
       #lines = lines + f"addi sp, x{sigReg}, {sigOffset-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
@@ -1326,6 +1324,12 @@ def make_offset(test, xlen):
     lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
     lines = lines + test + " x" + str(rs2) +  ", x" + str(rs2) + ", 0 # backward jalr\n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n" 
+  elif (test in crtype): #TODO ACCIDENTALLY DELETED THIS SO HAVE TO CHECK IT
+    lines = lines + "j 2f # jump past backward branch target\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    rs1 = randomNonconflictingReg(test)
+    lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
+    lines = lines + test + " x" + str(rs1) + " # backward branch\n"
   elif (test in cjtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO:
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
@@ -2299,126 +2303,121 @@ if __name__ == '__main__':
 
   # generate files for each test\
   #for lockstep in [False, True]:
-  for lockstep in [True]: # for testing only ***
-    if (lockstep):
-      subdir = "lockstep"
-      #subdir = "signature" # temporary for testing
-    else:
-      subdir = "signature"
-      #subdir = "lockstep" # temporary for testing
-    for xlen in xlens:
-      corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
+
+  for xlen in xlens:
+    corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
-      for E_ext in [False]: # for testing only ***
-        if (E_ext):
-          extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]  
-          E_suffix = "e"
-          maxreg = 15 # E uses registers x0-x15
+    for E_ext in [False]: # for testing only ***
+      if (E_ext):
+        extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]  
+        E_suffix = "e"
+        maxreg = 15 # E uses registers x0-x15
+      else:
+        extensions = getExtensions() # find all extensions in 
+        E_suffix = ""
+        maxreg = 31 # I uses registers x0-x31
+      #print(extensions)
+      for extension in extensions:
+      #for extension in ["I"]:  # temporary for faster run
+        coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+        coverfiles = [extension]
+        coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
+        pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
+        #print(extension+": "+str(coverpoints))
+        print("Generating tests for " + pathname)
+        formatstrlen = str(int(xlen/4))
+        formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+        formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+        if (xlen == 32):
+          storecmd = "sw"
+          wordsize = 4
         else:
-          extensions = getExtensions() # find all extensions in 
-          E_suffix = ""
-          maxreg = 31 # I uses registers x0-x31
-        #print(extensions)
-        for extension in extensions:
-        #for extension in ["I"]:  # temporary for faster run
-          coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
-          coverfiles = [extension]
-          coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
-          pathname = f"{ARCH_VERIF}/tests/{subdir}/rv{xlen}{E_suffix}/{extension}"
-          #print(extension+": "+str(coverpoints))
-          print("Generating tests for " + pathname)
-          formatstrlen = str(int(xlen/4))
-          formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-          formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-          if (xlen == 32):
-            storecmd = "sw"
-            wordsize = 4
-          else:
-            storecmd = "sd"
-            wordsize = 8
-          if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
-            flen = 64
-          elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
-            flen = 128
-          else:
-            flen = 32
-          formatstrlenFP = str(int(flen/4))
-          formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-          corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-          if (xlen == 32):
-            corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-          else:
-            corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
-                                0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                                0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                                0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                                0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                                0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                                0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+          storecmd = "sd"
+          wordsize = 8
+        if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
+          flen = 64
+        elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
+          flen = 128
+        else:
+          flen = 32
+        formatstrlenFP = str(int(flen/4))
+        formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
+        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+        if (xlen == 32):
+          corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+        else:
+          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
+                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
+                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
+                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
+                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
+                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
+                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-            corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                            0b0000000000000000000000000000000000000000000000000000000000000001,
-                            0b1111111111111111111111111111111111111111111111111111111111111111,
-                            0b0000000000000000000000000000000001111111111111111111111111111111,
-                            0b1111111111111111111111111111111110000000000000000000000000000000]
+          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                          0b0000000000000000000000000000000000000000000000000000000000000001,
+                          0b1111111111111111111111111111111111111111111111111111111111111111,
+                          0b0000000000000000000000000000000001111111111111111111111111111111,
+                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
 
 
 
-          # global NaNBox_tests
-          NaNBox_tests = False
+        # global NaNBox_tests
+        NaNBox_tests = False
 
-          # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-          cmd = "mkdir -p " + pathname # make directory
-          os.system(cmd)
-          for test in coverpoints.keys():
-            # print("Generating test for ", test, " with entries: ", coverpoints[test])
-            
-            sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
-            basename = "WALLY-COV-" + test
-            fname = pathname + "/" + basename + ".S"
-            tempfname = pathname + "/" + basename + "_temp.S"
+        # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+        cmd = "mkdir -p " + pathname # make directory
+        os.system(cmd)
+        for test in coverpoints.keys():
+          # print("Generating test for ", test, " with entries: ", coverpoints[test])
+          
+          sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
+          basename = "WALLY-COV-" + test
+          fname = pathname + "/" + basename + ".S"
+          tempfname = pathname + "/" + basename + "_temp.S"
 
-            # print custom header part
-            f = open(tempfname, "w")
-            line = "///////////////////////////////////////////\n"
-            f.write(line)
-            line="// "+fname+ "\n// " + author + "\n"
-            f.write(line)
-            # Don't print creation date because this forces rebuild of files that are otherwise identical
-            #line ="// Created " + str(datetime.now()) + "\n"
-            #f.write(line)
+          # print custom header part
+          f = open(tempfname, "w")
+          line = "///////////////////////////////////////////\n"
+          f.write(line)
+          line="// "+fname+ "\n// " + author + "\n"
+          f.write(line)
+          # Don't print creation date because this forces rebuild of files that are otherwise identical
+          #line ="// Created " + str(datetime.now()) + "\n"
+          #f.write(line)
 
-            # insert generic header
-            insertTemplate("testgen_header.S")
+          # insert generic header
+          insertTemplate("testgen_header.S")
 
-            sigTotal = 0 # total number of bytes in signature
-            sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
+          sigOffset= 0
+          sigTotal = 0 # total number of bytes in signature
+          sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
 
-            # add assembly lines to enable fp where needed
-            if test in floattypes:
-              float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
-              f.write(float_en)
+          # add assembly lines to enable fp where needed
+          if test in floattypes:
+            float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+            f.write(float_en)
 
-            write_tests(coverpoints[test], test, xlen)
+          write_tests(coverpoints[test], test, xlen)
 
-            # print footer
-            line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
-            f.write(line)
-            insertTemplate("testgen_footer.S")  
+          # print footer
+          line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
+          f.write(line)
+          insertTemplate("testgen_footer.S")  
 
-            # Finish
-            f.close()
+          # Finish
+          f.close()
 
-            # if new file is different from old file, replace old file with new file
-            if os.path.exists(fname):
-              if filecmp.cmp(fname, tempfname): # files are the same
-                os.system(f"rm {tempfname}") # remove temp file
-              else:
-                os.system(f"mv {tempfname} {fname}")
-                print("Updated " + fname)
+          # if new file is different from old file, replace old file with new file
+          if os.path.exists(fname):
+            if filecmp.cmp(fname, tempfname): # files are the same
+              os.system(f"rm {tempfname}") # remove temp file
             else:
               os.system(f"mv {tempfname} {fname}")
+              print("Updated " + fname)
+          else:
+            os.system(f"mv {tempfname} {fname}")
 
 
 
