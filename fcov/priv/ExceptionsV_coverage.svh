@@ -22,10 +22,10 @@
 
 `define COVER_EXCEPTIONSV
 
-covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
+covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    vtype_prev_vill_clear: coverpoint ins.prev.csr[12'hC21][`XLEN-1] {
+    vtype_prev_vill_clear: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
         bins vill_not_set = {1'b0};
     }
     
@@ -89,14 +89,16 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
         //TODO:needs to be written
     }
 
-    vl_update: coverpoint (ins.current.csr[12'hC20] != ins.prev.csr[12'hC20]) {
+    vl_update: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vl", "vl") != 
+                           get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")) {
         bins vl_updated = {1'b1};
     }
 
     //TODO needs another coverpoint for specific situation
     vl_update_vl_ff: cross vl_ff, vl_update, vtype_prev_vill_clear;
 
-    vstart_set_non_zero: coverpoint (ins.prev.csr[12'h008] == '0 & ins.current.csr[12'h008] != '0) {
+    vstart_set_non_zero: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == '0 & 
+                                     get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vstart", "vstart") != '0) {
         //boolean coverpoint
     }
 
@@ -104,7 +106,7 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
         bins arithmatic_vv_opcode = {15'b000_?????_1010111};
     }
 
-    vtype_prev_vill_set: coverpoint ins.prev.csr[12'hC21][`XLEN-1] {
+    vtype_prev_vill_set: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
         bins vill_set = {1'b1};
     }
 
@@ -138,15 +140,15 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
 
     arithmatic_vstart_pow_2: cross vstart_write, rs1_val_pow_2, vector_vector_arithmatic_instruction;
 
-    vtype_lmul_2: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_2: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b001};
     }
 
-    vtype_lmul4: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_4: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b010};
     }
 
-    vtype_lmul_8: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_8: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b011};
     }
         
@@ -154,28 +156,27 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
         wildcard bins odd = {5'b????1};
     }
     
-    //TODO uncomment
-    // vd_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vd){
-    //     wildcard bins ndiv_4 = {[5'b???01, 5'b???10, 5'b???11]};
-    // }
+    vd_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vd){
+        wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
+    }
 
-    // vd_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vd){
-    //     wildcard bins ndiv_8 = {[5'b??001, 5'b??010, 5'b??011,
-    //                             5'b??101, 5'b??110, 5'b??111, 5'b??100]};
-    // }
+    vd_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vd){
+        wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
+                                5'b??101, 5'b??110, 5'b??111, 5'b??100};
+    }
 
-    // vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins odd = {5'b????1};
-    // }
+    vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins odd = {5'b????1};
+    }
         
-    // vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins ndiv_4 = {[5'b???01, 5'b???10, 5'b???11]};
-    // }
+    vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
+    }
 
-    // vs1_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins ndiv_8 = {[5'b??001, 5'b??010, 5'b??011,
-    //                             5'b??101, 5'b??110, 5'b??111, 5'b??100]};
-    // }
+    vs1_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
+                                5'b??101, 5'b??110, 5'b??111, 5'b??100};
+    }
 
     reduction_operation: coverpoint ins.current.insn {
         wildcard bins vredsum_vs    =   {32'b000000_?_?????_?????_010_?????_1010111};
@@ -190,10 +191,9 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
         wildcard bins vredxor_vs    =   {32'b000011_?_?????_?????_010_?????_1010111};
     }
 
-    //TODO uncomment
-    // reduction_vs1_vd_notdiv_2: cross vtype_lmul_2, vd_reg_notdiv_2, vs1_reg_notdiv_2, reduction_operation;
-    // reduction_vs1_vd_notdiv_4: cross vtype_lmul_4, vd_reg_notdiv_4, vs1_reg_notdiv_4, reduction_operation;
-    // reduction_vs1_vd_notdiv_8: cross vtype_lmul_8, vd_reg_notdiv_8, vs1_reg_notdiv_8, reduction_operation;
+    reduction_vs1_vd_notdiv_2: cross vtype_lmul_2, vd_reg_notdiv_2, vs1_reg_notdiv_2, reduction_operation;
+    reduction_vs1_vd_notdiv_4: cross vtype_lmul_4, vd_reg_notdiv_4, vs1_reg_notdiv_4, reduction_operation;
+    reduction_vs1_vd_notdiv_8: cross vtype_lmul_8, vd_reg_notdiv_8, vs1_reg_notdiv_8, reduction_operation;
 
     vd_v0: coverpoint ins.current.insn[11:7] {
         bins zero = {5'b0};
@@ -211,11 +211,11 @@ endgroup
 
 covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
 
-    vtype_prev_vill_clear: coverpoint ins.prev.csr[12'hC21][`XLEN-1] {
+    vtype_prev_vill_clear: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
         bins vill_clear = {1'b0};
     }
 
-    vtype_prev_vill_set: coverpoint ins.prev.csr[12'hC21][`XLEN-1] {
+    vtype_prev_vill_set: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
         bins vill_set = {1'b1};
     }
 
@@ -263,19 +263,19 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
 
     }
 
-    vtype_lmul_1: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_1: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b000};
     }
 
-    vtype_lmul_2: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_2: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b001};
     }
 
-    vtype_lmul4: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_4: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b010};
     }
 
-    vtype_lmul_8: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_lmul_8: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b011};
     }
 
@@ -283,41 +283,40 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         wildcard bins odd = {5'b????1};
     }
 
-    //TODO uncomment
-    // vd_reg_notdiv_4:coverpoint ins.get_vr_reg(ins.current.vd){
-    //     wildcard bins ndiv_4 = {[5'b???01, 5'b???10, 5'b???11]};
-    // }
+    vd_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vd){
+        wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
+    }
 
-    // vd_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vd){
-    //     wildcard bins ndiv_8 = {[5'b??001, 5'b??010, 5'b??011,
-    //                             5'b??101, 5'b??110, 5'b??111, 5'b??100]};
-    // }
+    vd_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vd){
+        wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
+                                5'b??101, 5'b??110, 5'b??111, 5'b??100};
+    }
 
-    // vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins odd = {5'b????1};
-    // }
+    vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins odd = {5'b????1};
+    }
         
-    // vs1_reg_notdiv_4: overpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins ndiv_4 = {[5'b???01, 5'b???10, 5'b???11]};
-    // }
+    vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
+    }
 
-    // vs1_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs1){
-    //     wildcard bins ndiv_8 = {[5'b??001, 5'b??010, 5'b??011,
-    //                             5'b??101, 5'b??110, 5'b??111, 5'b??100]};
-    // }
+    vs1_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs1){
+        wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
+                                5'b??101, 5'b??110, 5'b??111, 5'b??100};
+    }
 
-    // vs2_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs2){
-    //     wildcard bins odd = {5'b????1};
-    // }
+    vs2_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs2){
+        wildcard bins odd = {5'b????1};
+    }
         
-    // vs2_reg_notdiv_4:coverpoint ins.get_vr_reg(ins.current.vs2){
-    //     wildcard bins ndiv_4 = {[5'b???01, 5'b???10, 5'b???11]};
-    // }
+    vs2_reg_notdiv_4:coverpoint ins.get_vr_reg(ins.current.vs2){
+        wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
+    }
 
-    // vs2_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs2){
-    //     wildcard bins ndiv_8 = {[5'b??001, 5'b??010, 5'b??011,
-    //                             5'b??101, 5'b??110, 5'b??111, 5'b??100]};
-    // }
+    vs2_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs2){
+        wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
+                                5'b??101, 5'b??110, 5'b??111, 5'b??100};
+    }
 
     vd_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard bins divisible_by_2 = {5'b????0};
@@ -359,19 +358,17 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         bins arithmatic_vv_opcode = {15'b000_?????_1010111};
     }
 
-    //TODO uncomment
+    lmul2_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_2, vs1_reg_div_2, vs2_reg_div_2, vtype_prev_vill_clear;
+    lmul2_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_notdiv_2, vs2_reg_div_2, vtype_prev_vill_clear;
+    lmul2_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_div_2, vs2_reg_notdiv_2, vtype_prev_vill_clear;
 
-    // lmul2_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_2, vs1_reg_div_2, vs2_reg_div_2, vtype_prev_vill_clear;
-    // lmul2_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_notdiv_2, vs2_reg_div_2, vtype_prev_vill_clear;
-    // lmul2_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_div_2, vs2_reg_notdiv_2, vtype_prev_vill_clear;
+    lmul4_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_4, vs1_reg_div_4, vs2_reg_div_4, vtype_prev_vill_clear;
+    lmul4_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_notdiv_4, vs2_reg_div_4, vtype_prev_vill_clear;
+    lmul4_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_div_4, vs2_reg_notdiv_4, vtype_prev_vill_clear;
 
-    // lmul4_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_4, vs1_reg_div_4, vs2_reg_div_4, vtype_prev_vill_clear;
-    // lmul4_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_notdiv_4, vs2_reg_div_4, vtype_prev_vill_clear;
-    // lmul4_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_div_4, vs2_reg_notdiv_4, vtype_prev_vill_clear;
-
-    // lmul8_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_8, vs1_reg_div_8, vs2_reg_div_8, vtype_prev_vill_clear;
-    // lmul8_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_notdiv_8, vs2_reg_div_8, vtype_prev_vill_clear;
-    // lmul8_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_div_8, vs2_reg_notdiv_8, vtype_prev_vill_clear;
+    lmul8_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_8, vs1_reg_div_8, vs2_reg_div_8, vtype_prev_vill_clear;
+    lmul8_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_notdiv_8, vs2_reg_div_8, vtype_prev_vill_clear;
+    lmul8_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_div_8, vs2_reg_notdiv_8, vtype_prev_vill_clear;
 
     vector_load: coverpoint ins.current.insn {
         wildcard bins vle_v    =  {32'b???_?_00_?_00000_?????_???_?????_0000111};
@@ -402,7 +399,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         bins zero = {5'b0};
     }
 
-    vill_clear_post_instruction: coverpoint ins.current.csr[12'hC21][`XLEN-1] {
+    vill_clear_post_instruction: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vtype", "vill")) {
         bins clear = {1'b0};
     }
 
@@ -414,7 +411,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
 
     //EMUL > 8
     //for load instructions only (since EEW is in instruction)
-    EMUL_2x_LMUL: coverpoint {ins.current.insn[14:12], ins.prev.csr[12'hC21][5:3]} {
+    EMUL_2x_LMUL: coverpoint {ins.current.insn[14:12], 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew"))} {
         //width[2:0] sew[2:0]
         `ifdef SEW8_SUPPORTED
         `ifdef SEW16_SUPPORTED
@@ -453,10 +450,9 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
 
     vector_load_emul_16: cross vector_load, EMUL_2x_LMUL, vtype_lmul_8, vtype_prev_vill_clear;
 
-    //TODO uncomment
-    // vector_load_emul_2_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_1, vd_reg_notdiv_2, vtype_prev_vill_clear, NFIELDS_UPTO_4;
-    // vector_load_emul_4_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_2, vd_reg_notdiv_4, vtype_prev_vill_clear, NFIELDS_UPTO_2;
-    // vector_load_emul_8_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_4, vd_reg_notdiv_8, vtype_prev_vill_clear, NFIELDS_1;
+    vector_load_emul_2_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_1, vd_reg_notdiv_2, vtype_prev_vill_clear, NFIELDS_UPTO_4;
+    vector_load_emul_4_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_2, vd_reg_notdiv_4, vtype_prev_vill_clear, NFIELDS_UPTO_2;
+    vector_load_emul_8_vd_off_group: cross vector_load, EMUL_2x_LMUL, vtype_lmul_4, vd_reg_notdiv_8, vtype_prev_vill_clear, NFIELDS_1;
 
     NFIELDS: coverpoint ins.current.insn[31:29] {
         bins one    = {3'b000};
@@ -469,7 +465,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         bins eight  = {3'b111};
     }
 
-    vtype_csr_lmul: coverpoint ins.prev.csr[12'hC21][2:0] {
+    vtype_csr_lmul: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         `ifdef LMUL_F8_SUPPORTED
             bins f8 = {3'b101};
         `endif 
@@ -484,21 +480,20 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         bins four   = {3'b010};
         bins eight  = {3'b011};
 
-        //TODO uncomment
-        // bin random_legal = {[3'b000, 3'b001, 3'b010, 3'b011
-        // `ifdef LMUL_F8_SUPPORTED
-        //     ,3'b101
-        // `endif 
-        // `ifdef LMUL_F4_SUPPORTED
-        //     ,3'b110
-        // `endif 
-        // `ifdef LMUL_F2_SUPPORTED
-        //     ,3'b111
-        // `endif 
-        // ]};
+        bins random_legal = {3'b000, 3'b001, 3'b010, 3'b011
+        `ifdef LMUL_F8_SUPPORTED
+            ,3'b101
+        `endif 
+        `ifdef LMUL_F4_SUPPORTED
+            ,3'b110
+        `endif 
+        `ifdef LMUL_F2_SUPPORTED
+            ,3'b111
+        `endif 
+        };
     }
 
-    vtype_csr_sew: coverpoint ins.prev.csr[12'hC21][5:3] {
+    vtype_csr_sew: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")) {
         bins eight  = {3'b000};
         bins sixteen = {3'b001};
         bins thirtytwo = {3'b010};
@@ -518,7 +513,7 @@ endgroup
 
 function void exceptionsv_sample(int hart, int issue, ins_t ins);
     if(traceDataQ[hart][issue][0].inst_name[0] == "v") begin
-        ExceptionsV_exceptions_cg.sample(ins);
+        ExceptionsV_edgecases_cg.sample(ins);
         ExceptionsV_reserved_cg.sample(ins); //Doesnt appear to be colleting coverage
         ExcpetionsV_illegal_cg.sample(ins);
     end
