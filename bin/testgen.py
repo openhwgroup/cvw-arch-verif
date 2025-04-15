@@ -249,16 +249,15 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
 def writeStoreTest(lines, test, rs2, xlen, storeline):
   #writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  if (not lockstep):
-    l = l + "# STORE SIGNATURE\n"
-    writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-    if (writeTest.startswith("c.")):
-      writeTest = test[2:] # remove the c. prefix
-    floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
-    #[storeinstr, offsetInc] = getSigInfo(floatdest)
-    rdPrefix = "f" if floatdest else "x"
-    #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
-    #l = l + incrementSigOffset(offsetInc*2)
+  l = l + "# STORE SIGNATURE\n"
+  writeTest = test # use same instruction for writing, but in non-compressed form if necessary
+  if (writeTest.startswith("c.")):
+    writeTest = test[2:] # remove the c. prefix
+  floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
+  #[storeinstr, offsetInc] = getSigInfo(floatdest)
+  rdPrefix = "f" if floatdest else "x"
+  #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
+  #l = l + incrementSigOffset(offsetInc*2)
   return l
 
 def genFrmTests(testInstr, rd, floatdest):
