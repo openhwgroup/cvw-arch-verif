@@ -32,7 +32,7 @@ csrw stvec, t0
     //  cp_misaligned_priority
     // Covers the supervisor mode coverpoints from cp_stvec and cp_medeleg_msu
     // Call the cp_medeleg function
-    //   a0 = 0 (user mode)
+    //  a0 = 1 (supervisor mode)
     li a0, 1 
     jal ra, cp_medeleg
 
@@ -817,30 +817,30 @@ store_loop_priority:
     addi    t0, t0, 1
     blt     t0, t5, store_loop_priority
 
-    // Update test value for the next iteration:
+    // Update the medeleg value for the next iteration:
     // For iteration  0,     medeleg is all zeros
-    // For iteration  1,     initialize walking 1
-    // For iterations 2-7,   shift left by 1
-    // For iteration  8,     shift by 4 to skip bits 9-11
-    // For iterations 12-16, shift left by 1
-    // For iteration 17,     set all bits to 1
+    // For iteration  1,     initialize walking 1 in medeleg
+    // For iterations 2-7,   shift medeleg value left by 1
+    // For iteration  8,     shift medeleg left by 4 to skip bits 9-11
+    // For iterations 12-17, shift medeleg value left by 1
+    // For iteration 18,     set all applicable medeleg bits to 1
 
     // Check if program is at iteration 0
     beq  a1, zero, update_first
 
-    // Check if program's iteration is 9
+    // Check if program's iteration is 9 (skip reserved medeleg bits)
     li a6, 9
     beq  a6, a1, update_9
 
-    // At the end of walks set first 13 writable bits to 1
+    // At the end of walks set applicable bits to 1 (first 11 writable bits)
     li a6, 18
     beq  a6, a1, ones_update
 
-    // For iterations after the first, shift left by 1
+    // For iterations after the first, shift medeleg's value left by 1
     slli a4, a4, 1          
     j    update_done
 
-    // Initialize walking 1 after testing all zeros in medeleg
+    // Initialize walking 1 in medeleg after testing all zeros in medeleg
 update_first:
     li a4, 1        
     
@@ -855,6 +855,11 @@ update_9:
     j    cp_medeleg_loop    // Loop back
 
 ones_update:
+    // Delegating ecalls is excluded since this would make 
+    // it impossible to raise privilege level to machine mode. 
+    // All reserved Medeleg bits are excluded.
+    // The LSB is excluded since it is only writable
+    // when extension ZCA is enabled.
     li  a4, 0b1011000111111110
     addi a1, a1, 1
     j  cp_medeleg_loop
