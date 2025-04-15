@@ -32,6 +32,18 @@
 `ifdef D_COVERAGE
   `include "D_coverage.svh"
 `endif
+`ifdef VX8_COVERAGE
+  `include "Vx8_coverage.svh"
+`endif
+`ifdef VX16_COVERAGE
+  `include "Vx16_coverage.svh"
+`endif
+`ifdef VX32_COVERAGE
+  `include "Vx32_coverage.svh"
+`endif
+`ifdef VX64_COVERAGE
+  `include "Vx64_coverage.svh"
+`endif
 `ifdef ZBA_COVERAGE
   `include "Zba_coverage.svh"
 `endif
@@ -217,4 +229,10 @@
 `endif
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZALRSC_COVERAGE
+  `include "ExceptionsZalrsc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSV_COVERAGE
+  `include "ExceptionsV_coverage.svh"
 `endif
