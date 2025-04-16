@@ -148,4 +148,5 @@ gen("compressed10", "EEEEEEEEEEEEEE10", 16,
      "1001000000000010"
                ])
 print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal") 
+print("\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so should be illegal") 
 outfile.close
