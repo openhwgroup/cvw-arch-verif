@@ -48,7 +48,9 @@
             bins c_slli_rv64[] = {[14'b0001_0000000000:14'b0001_1111111111]}; // RV64Zca c.slli with shift amount of 32-63
         `endif
         bins c10b[] = {[14'b001_00000000000:14'b01111111111111]};
-        ignore_bins c_jr = {[14'b10000000000000:14'b10001111111111]};
-        ignore_bins c_jalr = {[14'b10010000000000:14'b10011111111111]};
+        bins illegal_c_jr = {14'b10000000000000}; // illegal for rs1 = 0
+        ignore_bins c_jr = {[14'b10000000000001:14'b10001111111111]};
+        bins illegal_c_jalr = {14'b10010000000000}; // illegal for rs1 = 0
+        ignore_bins c_jalr = {[14'b10010000000001:14'b10011111111111]};
         bins c10c[] = {[14'b10100000000000:$]};
     }
