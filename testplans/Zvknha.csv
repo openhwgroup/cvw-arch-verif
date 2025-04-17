@@ -1,0 +1,4 @@
+Instruction,Type,RV32,RV64,cp_asm_count,cp_vd,cr_vd_elem,cr_vs1_elem,cr_vs2_elem,cp_vs2,cp_vs1,cp_rs1,cp_uimm_5,cp_mask_corners,cr_mask_vstart,cp_vtype_lmul,cp_vtype_vta,cr_vta_mask_corners,cp_vtype_vma,cr_vma_mask_corners,cr_vta_vma_mask_corners,cp_vtype_vill,cp_vs2_corners,cp_vs1_corners,cp_rs1_corners,cp_uimm_corners,cr_vs2_vs1_corners,cr_vs2_rs1_corners,cr_vs2_uimm_corners,cmp_vd_vs2,cmp_vd_vs2_eqval,cmp_vd_vs1,cmp_vd_vs1_eqval,cmp_vd_vs2_vs1,cmp_vd_vs2_vs1_eqval,cmp_vs1_vs2,cmp_vs1_vs2_eqval,cr_vs2_vs1,cp_csr_vl,cp_csr_vstart,cp_csr_vm
+vsha2ms.vv,VVM,x,x,x,nVS1or2,x,x,x,x,x,,,,,-,x,,x,,,x,x,x,,,x,,,0,x,0,x,0,x,x,x,x,mul4,mul4,0
+vsha2ch.vv,VVM,x,x,x,nVS1or2,x,x,x,x,x,,,,,-,x,,x,,,x,x,x,,,x,,,0,x,0,x,0,x,x,x,x,mul4,mul4,0
+vsha2cl.vv,VVM,x,x,x,nVS1or2,x,x,x,x,x,,,,,-,x,,x,,,x,x,x,,,x,,,0,x,0,x,0,x,x,x,x,mul4,mul4,0
