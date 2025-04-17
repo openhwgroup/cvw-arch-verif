@@ -12,9 +12,6 @@
 #include "WALLY-init-lib.h"
 
 main:
-    // Set up the trap handler
-    la t0, trap_handler
-    csrw mtvec, t0
 
     # set mstatus.FS to 01 to enable fp
     li t0,0x4000
