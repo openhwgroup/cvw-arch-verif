@@ -32,6 +32,18 @@
 `ifdef D_COVERAGE
   `include "D_coverage.svh"
 `endif
+`ifdef VX8_COVERAGE
+  `include "Vx8_coverage.svh"
+`endif
+`ifdef VX16_COVERAGE
+  `include "Vx16_coverage.svh"
+`endif
+`ifdef VX32_COVERAGE
+  `include "Vx32_coverage.svh"
+`endif
+`ifdef VX64_COVERAGE
+  `include "Vx64_coverage.svh"
+`endif
 `ifdef ZBA_COVERAGE
   `include "Zba_coverage.svh"
 `endif
@@ -176,11 +188,17 @@
 `ifdef EXCEPTIONSM_COVERAGE
   `include "ExceptionsM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSS_COVERAGE
+  `include "ExceptionsS_coverage.svh"
+`endif
 `ifdef EXCEPTIONSU_COVERAGE
   `include "ExceptionsU_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSF_COVERAGE
+  `include "ExceptionsF_coverage.svh"
 `endif
 `ifdef ZICNTRU_COVERAGE
   `include "ZicntrU_coverage.svh"
@@ -202,4 +220,22 @@
 `endif
 `ifdef INTERRUPTSSSTC_COVERAGE
   `include "InterruptsSstc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSVM_COVERAGE
+  `include "ExceptionsVM_coverage.svh"
+`endif
+`ifdef SSSTRICTS_COVERAGE
+  `include "SsstrictS_coverage.svh"
+`endif
+`ifdef SSSTRICTM_COVERAGE
+  `include "SsstrictM_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZAAMO_COVERAGE
+  `include "ExceptionsZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZALRSC_COVERAGE
+  `include "ExceptionsZalrsc_coverage.svh"
+`endif
+`ifdef EXCEPTIONSV_COVERAGE
+  `include "ExceptionsV_coverage.svh"
 `endif

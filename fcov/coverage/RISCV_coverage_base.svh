@@ -59,7 +59,7 @@ class RISCV_coverage
         `cover_info("//    XLEN: 64");
     `endif
     `cover_info("//    EXTENSIONS:");
-    `include "RISCV_coverage_base_init.svh"
+    `include "coverage/RISCV_coverage_base_init.svh"
   endfunction
 
   // Returns just the instruction name from the disassembly
@@ -71,7 +71,7 @@ class RISCV_coverage
 
   // Runs all of the sample functions created per extension from templates
   function void sample_extensions(int hart, int issue);
-    `include "RISCV_instruction_sample.svh"
-    `include "RISCV_coverage_base_sample.svh"
+    `include "coverage/RISCV_instruction_sample.svh"
+    `include "coverage/RISCV_coverage_base_sample.svh"
   endfunction
 endclass

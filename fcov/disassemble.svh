@@ -52,10 +52,10 @@ function string disassemble (logic [31:0] instrRaw);
   automatic string cfs2 = get_fpr_name(instr[6:2]);
   automatic string fs1p = get_c_fpr_name(instr[9:7]);
   automatic string fs2p = get_c_fpr_name(instr[4:2]);
-  automatic string vs1  = get_vpr_name(rs1Bits);
-  automatic string vs2  = get_vpr_name(rs2Bits);
-  automatic string vs3  = get_vpr_name(rdBits);
-  automatic string vd   = get_vpr_name(rdBits);
+  automatic string vs1  = get_vr_name(rs1Bits);
+  automatic string vs2  = get_vr_name(rs2Bits);
+  automatic string vs3  = get_vr_name(rdBits);
+  automatic string vd   = get_vr_name(rdBits);
 
   // Immediates
   automatic bit signed [11:0] immIType = (instr[31:20]);
@@ -91,10 +91,10 @@ function string disassemble (logic [31:0] instrRaw);
 
   // Vector fields
   automatic string  vm    = instr[25] ? "" : ", v0.t";
-  automatic string  eSEW  = get_vtype_eSEW(instr[25:23]);
-  automatic string  mLMUL = get_vtype_mLMUL(instr[22:20]);
-  automatic string  ta    = get_vtype_ta(instr[27]);
-  automatic string  ma    = get_vtype_ma(instr[26]);
+  automatic string  eSEW  = get_vtype_eSEW_name(instr[25:23]);
+  automatic string  mLMUL = get_vtype_mLMUL_name(instr[22:20]);
+  automatic string  ta    = get_vtype_ta_name(instr[27]);
+  automatic string  ma    = get_vtype_ma_name(instr[26]);
 
 
   casez (instr)

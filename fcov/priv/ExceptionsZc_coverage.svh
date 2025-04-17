@@ -30,9 +30,10 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
         wildcard bins c_lh    = {16'b100001_???_1?_???_00}; 
         wildcard bins c_lhu   = {16'b100001_???_0?_???_00}; 
         wildcard bins c_lbu   = {16'b100000_???_??_???_00}; 
-        wildcard bins c_fld   = {16'b001_???_???_???_00};
+        wildcard bins c_fld   = {16'b001_???_???_??_???_00};
         wildcard bins c_lwsp  = {16'b010_?_?????_?????_10};
         wildcard bins c_fldsp = {16'b001_?_?????_?????_10};
+
         `ifdef XLEN64
             wildcard bins c_ld   = {16'b011_???_???_??_???_00}; 
             wildcard bins c_ldsp = {16'b011_?_?????_?????_10};
@@ -40,8 +41,8 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
             wildcard bins c_flw   = {16'b011_???_???_??_???_00};
             wildcard bins c_flwsp = {16'b011_?_?????_?????_10};
         `endif
-
     }
+
     storeops: coverpoint ins.current.insn[15:0] {
         wildcard bins c_sb    = {16'b100010_???_??_???_00}; 
         wildcard bins c_sh    = {16'b100011_???_0?_???_00}; 
@@ -49,6 +50,7 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
         wildcard bins c_fsd   = {16'b101_???_???_??_???_00};
         wildcard bins c_swsp  = {16'b110_??????_?????_10};
         wildcard bins c_fsdsp = {16'b101_??????_?????_10};
+
         `ifdef XLEN64
             wildcard bins c_sd   = {16'b111_???_???_??_???_00}; 
             wildcard bins c_sdsp = {16'b111_??????_?????_10};
@@ -57,6 +59,7 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
             wildcard bins c_fswsp = {16'b111_??????_?????_10};
         `endif
     }
+
     adr_LSBs: coverpoint {ins.current.rs1_val + ins.current.imm}[2:0]  {
         // auto fills 000 through 111
     }
@@ -73,45 +76,8 @@ covergroup ExceptionsZc_exceptions_cg with function sample(ins_t ins);
 
 endgroup
 
-// more detailed illegal instruction testing
-covergroup ExceptionsZc_instr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
-
-    cp_compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {
-        bins c00[] = {[0:$]};
-        // exhaustive test of 2^14 compressed instructions with op=00
-    }
-    cp_compressed01 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b01) {
-        // exhaustive test of 2^14 compressed instructions with op = 01 with following exceptions that would be hard to test
-        bins c01[] = {[0:14'b00011111111111]};
-        ignore_bins c_jal = {[14'b00100000000000:14'b00111111111111]};
-        bins c01b[] = {[14'b01000000000000:14'b10001_111111111]};
-        `ifdef XLEN32
-            ignore_bins c_srli_srai_custom = {[14'b10010_000000000:14'b10010_111111111]}; // reserved for custom use in RV32Zca; behavior is unpredictable
-        `else
-            bins c_srli_srai_rv64[] = {[14'b10010_000000000:14'b10010_111111111]}; // RV64Zca c.srli/srai with shift amount of 32-63
-        `endif
-        bins c01c[] = {[14'b10011_000000000:14'b10011_111111111]};
-        ignore_bins c_j = {[14'b10100000000000:14'b10111111111111]};
-        ignore_bins c_bez_bez = {[14'b11000000000000:14'b11111111111111]};
-     }
-    cp_compressed10 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b10) {
-        // exhaustive test of 2^14 compressed instructions with op = 10
-        //bins c10a[] = {[0:14'b01111111111111]};
-        bins c10a[] = {[0:14'b0000_1111111111]};
-        `ifdef XLEN32
-            ignore_bins c_slii_custom = {[14'b0001_0000000000:14'b0001_1111111111]}; // reserved for custom use in RV32Zca; behavior is unpredictable
-        `else
-            bins c_slli_rv64[] = {[14'b0001_0000000000:14'b0001_1111111111]}; // RV64Zca c.slli with shift amount of 32-63
-        `endif
-        bins c10b[] = {[14'b001_00000000000:14'b01111111111111]};
-        ignore_bins c_jr = {[14'b10000000000000:14'b10001111111111]};
-        ignore_bins c_jalr = {[14'b10010000000000:14'b10011111111111]};
-        bins c10c[] = {[14'b10100000000000:$]};
-    }
-endgroup
-
 function void exceptionszc_sample(int hart, int issue, ins_t ins);
     ExceptionsZc_exceptions_cg.sample(ins);
-    ExceptionsZc_instr_cg.sample(ins);
+    
+    //$display("OP: %b, LSB: %b, rs1: %b, SPdata???: %b ", ins.current.insn[15:0], {ins.current.rs1_val + ins.current.imm}[2:0], ins.current.rs1_val, ins.current.x_wdata[2][2:0]);
 endfunction

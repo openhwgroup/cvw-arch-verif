@@ -21,7 +21,7 @@
 
 package RISCV_decode_pkg;
 
-    `include "RISCV_imported_decode_pkg.svh"
+    `include "coverage/RISCV_imported_decode_pkg.svh"
 
     localparam [31:0] VLE8_V                 = 32'b000000?00000?????000?????0000111;
     localparam [31:0] VLE16_V                = 32'b000000?00000?????101?????0000111;

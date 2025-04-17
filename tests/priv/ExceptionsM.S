@@ -11,12 +11,7 @@
 
 #include "WALLY-init-lib.h"
 
-//Move to  WALLY-init-lib.h eventually
-
 main:
-    // Set up the trap handler
-    la t0, trap_handler
-    csrw mtvec, t0
 
     # set mstatus.FS to 01 to enable fp
     li t0,0x4000
@@ -89,111 +84,107 @@ main:
 
     .align 2 //Ensure jumps start aligned
 
-    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 01
-    auipc   t0, 0          # t0 = PC (aligned)
-    addi    t0, t0, 9       # 9 mod 4 = 1, so lower two bits become 01
-    jalr    t1, t0, 6
+    // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 00
+    auipc   t0, 0           
+    addi    t0, t0, 8       # 8 mod 4 = 0, so lower two bits become 00
+    jalr    t1, t0, 8       #offset 8 mod = 0, so lower two bits become 00
     .word   0x00010013
 
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t0, 0
-    addi    t0, t0, 9       # t0 now has lower two bits 01
+    addi    t0, t0, 5       # t0 now has lower two bits 01
     jalr    t1, t0, 8       # lower bits of offset 00
     nop
     .word   0x00010013
 
-    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 10
+    // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
-    addi    t1, t1, 10      # 10 mod 4 = 2, so lower two bits become 10
-    jalr    t1, t1, 6
-    .word   0x00010013
-
-    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 10
-    auipc   t1, 0
-    addi    t1, t1, 10      # lower two bits become 10
-    jalr    t1, t1, 8       # lower bits of offset 00
-    nop
-    .word   0x00010013
-
-    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 11
-    auipc   t1, 0
-    addi    t1, t1, 11      # 11 mod 4 = 3, so lower two bits become 11
-    jalr    t1, t1, 6
+    addi    t1, t1, 6       # 6 mod 4 = 2, so lower two bits become 10
+    jalr    t1, t1, 8
     .word   0x00010013
 
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 11
     auipc   t1, 0
-    addi    t1, t1, 11      # lower two bits become 11
-    jalr    t1, t1, 8
+    addi    t1, t1, 7       # lower two bits become 11
+    jalr    t1, t1, 8       # lower bits of offset 00
     nop
     .word   0x00010013
 
     // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 00
     auipc   t1, 0
-    addi    t1, t1, 8       # 8 mod 4 = 0, so lower two bits are 00
-    jalr    t1, t1, 6
+    addi    t1, t1, 8      # 8 mod 4 = 0, so lower two bits become 00
+    jalr    t1, t1, 5
     .word   0x00010013
 
-    // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 00
+    // test offset[1:0] = 01, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t1, 0
-    addi    t1, t1, 8       # lower two bits are 00
-    jalr    t1, t1, 8
+    addi    t1, t1, 5      # lower two bits become 11
+    jalr    t1, t1, 5
     nop
     .word   0x00010013
 
-    // For rs1[1:0] = 01 (base value = 9)
-    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 01
+    // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
-    addi    t1, t1, 9       # 9 mod 4 = 1, so rs1[1:0] becomes 01
-    jalr    t1, t1, 10     # jalr immediate 10 gives effective offset with lower bits “10”
+    addi    t1, t1, 6       # 6 mod 4 = 2, so lower two bits are 10
+    jalr    t1, t1, 5
+    .word   0x00010013
+
+    // test offset[1:0] = 01, odd multiple of 2+1, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 7      # lower two bits are 11
+    jalr    t1, t1, 5
+    nop
+    .word   0x00010013
+
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8       # 8 mod 4 = 0, so rs1[1:0] becomes 00
+    jalr    t1, t1, 6     
+    .word   0x00010013
+
+    // test offset[1:0] = 10, odd multiple of 2+1, rs1[1:0] = 01
+    auipc   t1, 0
+    addi    t1, t1, 5       # rs1[1:0] = 01
+    jalr    t1, t1, 6
+    nop
+    .word   0x00010013
+
+    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 10
+    auipc   t1, 0
+    addi    t1, t1, 6      # 6 mod 4 = 2, so rs1[1:0] becomes 10
+    jalr    t1, t1, 6
+    .word   0x00010013
+
+    // test offset[1:0] = 10, odd multiple of 2+1, rs1[1:0] = 11
+    auipc   t1, 0
+    addi    t1, t1, 7      # rs1[1:0] = 11
+    jalr    t1, t1, 6
+    nop
+    .word   0x00010013
+
+    // test offset[1:0] = 11, odd multiple of 2, rs1[1:0] = 00
+    auipc   t1, 0
+    addi    t1, t1, 8      # 8 mod 4 = 0, so rs1[1:0] becomes 00
+    jalr    t1, t1, 7
     .word   0x00010013
 
     // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t1, 0
-    addi    t1, t1, 9       # rs1[1:0] = 01
-    jalr    t1, t1, 11     # jalr immediate 11 gives effective offset with lower bits “11”
+    addi    t1, t1, 5      # rs1[1:0] = 01
+    jalr    t1, t1, 7
     nop
     .word   0x00010013
 
-    // For rs1[1:0] = 10 (base value = 10)
-    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 10
+    // test offset[1:0] = 11, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
-    addi    t1, t1, 10      # 10 mod 4 = 2, so rs1[1:0] becomes 10
-    jalr    t1, t1, 10
-    .word   0x00010013
-
-    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 10
-    auipc   t1, 0
-    addi    t1, t1, 10      # rs1[1:0] = 10
-    jalr    t1, t1, 11
-    nop
-    .word   0x00010013
-
-    // For rs1[1:0] = 11 (base value = 11)
-    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 11
-    auipc   t1, 0
-    addi    t1, t1, 11      # 11 mod 4 = 3, so rs1[1:0] becomes 11
-    jalr    t1, t1, 10
+    addi    t1, t1, 6       # 6 mod 4 = 2, so rs1[1:0] becomes 10
+    jalr    t1, t1, 7
     .word   0x00010013
 
     // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 11
     auipc   t1, 0
-    addi    t1, t1, 11      # rs1[1:0] = 11
-    jalr    t1, t1, 11
-    nop
-    .word   0x00010013
-
-    // For rs1[1:0] = 00 (base value = 8)
-    // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 00
-    auipc   t1, 0
-    addi    t1, t1, 8       # 8 mod 4 = 0, so rs1[1:0] becomes 00
-    jalr    t1, t1, 10
-    .word   0x00010013
-
-    // test offset[1:0] = 11, odd multiple of 2+1, rs1[1:0] = 00
-    auipc   t1, 0
-    addi    t1, t1, 8       # rs1[1:0] = 00
-    jalr    t1, t1, 11
+    addi    t1, t1, 7       # rs1[1:0] = 11
+    jalr    t1, t1, 7
     nop
     .word   0x00010013
 
@@ -384,7 +375,7 @@ store_loop:
 
     //Test misaligned priority for load instructions
 
-  # Get a pointer to an access fault address and deliberately misalign it by adding 1
+  # Get a pointer to an access fault address
     la      t4, ACCESS_FAULT_ADDRESS
 
     # Initialize loop counter (offset) from 0 to 7

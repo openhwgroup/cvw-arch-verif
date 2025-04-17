@@ -32,8 +32,6 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     branch: coverpoint ins.current.insn {
         wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
-    // TODO: This contains bit swizzling and the assumption that the  'bit' type is by default unsigned
-    //       we aught to test this for a sanity check to both of these assumptions
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
                                 ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
@@ -88,10 +86,9 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
             wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
         `endif
     }
-    sw_lw_jalr: coverpoint ins.current.insn {
+    sw_lw: coverpoint ins.current.insn {
         wildcard bins sw   = {32'b????????????_?????_010_?????_0100011}; 
         wildcard bins lw   = {32'b????????????_?????_010_?????_0000011}; 
-        wildcard bins jalr = {32'b????????????_?????_000_?????_1100111};
     }
     illegalops: coverpoint ins.current.insn {
         bins zeros = {'0}; 
@@ -122,6 +119,7 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
         bins zero = {0};
     }
     imm_bit_1: coverpoint ins.current.imm[1] {
+        bins one = {1};
     }
     offset: coverpoint ins.current.imm[1:0] {
     }
@@ -136,11 +134,13 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     medeleg_instraccessfault_enabled: coverpoint ins.current.csr[12'h302][1] {
         bins enabled = {1};
     }
-    medeleg_b9_8: coverpoint ins.current.csr[12'h302][9:8] {
+    medeleg_b8: coverpoint ins.current.csr[12'h302][8] {
     }
     medeleg_walk: coverpoint ins.current.csr[12'h302] {
         bins zeros                    = {16'b0000_0000_0000_0000};
-        bins instrmisaligned_enabled  = {16'b0000_0000_0000_0001};
+        `ifndef COVER_ZCA
+            bins instrmisaligned_enabled  = {16'b0000_0000_0000_0001};
+        `endif
         bins instraccessfault_enabled = {16'b0000_0000_0000_0010};
         bins illegalinstr_enabled     = {16'b0000_0000_0000_0100};
         bins breakpoint_enabled       = {16'b0000_0000_0000_1000};
@@ -149,14 +149,15 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
         bins storemisaligned_enabled  = {16'b0000_0000_0100_0000};
         bins storeaccessfault_enabled = {16'b0000_0000_1000_0000};
         bins ecallu_enabled           = {16'b0000_0001_0000_0000};
-        bins ecalls_enabled           = {16'b0000_0010_0000_0000};
+        // Delegating ecall to S mode makes it impossible to escape S mode
+        // bins ecalls_enabled           = {16'b0000_0010_0000_0000};
         // bit 10 reserved 
         // bit 11 is read only zero
         bins instrpagefault_enabled   = {16'b0001_0000_0000_0000};
         bins loadpagefault_enabled    = {16'b0010_0000_0000_0000};
         // bit 14 reserved
         bins storepagefault_enabled   = {16'b1000_0000_0000_0000};
-        bins ones                     = {16'b1011_0011_1111_1111};
+        wildcard bins ones            = {16'b1011_00?1_1111_111?};
     }
     mtvec_stvec_ne: coverpoint {ins.current.csr[12'h305] != ins.current.csr[12'h105]} {
         bins notequal = {1};
@@ -177,21 +178,29 @@ covergroup ExceptionsS_exceptions_cg with function sample(ins_t ins);
     cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_s;
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_s;
     cp_ecall_s:                              cross ecall, priv_mode_s;
-    cp_misaligned_priority:                  cross sw_lw_jalr, illegal_address_misaligned, priv_mode_s;
-    cp_medeleg_sum_instrmisaligned:          cross jalr,     rs1_1_0, imm_bit_1, priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_instraccessfault:         cross jalr,       illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_loadaccessfault:          cross loadops,    illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_storeaccessfault:         cross storeops,   illegal_address,  priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_illegalinstruction:       cross illegalops,                   priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_ecall:                    cross ecall,                        priv_mode_sum, medeleg_walk;
-    cp_medeleg_sum_ebreak:                   cross ebreak,                       priv_mode_sum, medeleg_walk;
+    cp_misaligned_priority:                  cross sw_lw, illegal_address_misaligned, priv_mode_s;
+    cp_medeleg_msu_instrmisaligned:          cross jalr,     rs1_1_0, offset, priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_loadmisaligned:           cross loadops,    adr_LSBs,         priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_storemisaligned:          cross storeops,   adr_LSBs,         priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_instraccessfault:         cross jalr,       illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_loadaccessfault:          cross loadops,    illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_storeaccessfault:         cross storeops,   illegal_address,  priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_illegalinstruction:       cross illegalops,                   priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_ecall:                    cross ecall,                        priv_mode_msu, medeleg_walk;
+    cp_medeleg_msu_ebreak:                   cross ebreak,                       priv_mode_msu, medeleg_walk;
     cp_stvec:                                cross jalr, illegal_address, priv_mode_su, medeleg_instraccessfault_enabled, mtvec_stvec_ne; // Testplan was not specific, I chose instr access fault for the delegated exception
-    cp_xstatus_ie:                           cross ecall, priv_mode_su, mstatus_MIE, sstatus_SIE, medeleg_b9_8;
+    cp_xstatus_ie:                           cross ecall, priv_mode_su, mstatus_MIE, sstatus_SIE, medeleg_b8;
 
 endgroup
 
 function void exceptionss_sample(int hart, int issue, ins_t ins);
     ExceptionsS_exceptions_cg.sample(ins);
+
+// $display("mode: %b, medel: %b, funct3: %b, rs1_1_0: %b, pc_1: %b, offset: %b ",
+//     ins.current.mode,
+//     ins.current.csr[12'h302],
+//     ins.current.insn[14:12],
+//     ins.current.rs1_val[1:0],
+//     ins.current.pc_rdata[1],
+//     ins.current.imm[1:0]);
 endfunction

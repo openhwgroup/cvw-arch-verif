@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 ##################################
-# covergroupegen.py
+# covergroupgen.py
 #
 # David_Harris@hmc.edu 15 August 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
@@ -54,6 +54,9 @@ def readTestplans():
             testplans[arch] = tp
             if (arch =="I"): # duplicate I testplan for E
                 testplans["E"] = tp
+            if (arch == "Vx"):
+                for effew in ["8", "16", "32", "64"]:
+                    testplans["Vx" + effew] = tp
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
@@ -71,7 +74,7 @@ def readCovergroupTemplates():
 # customizeTemplate replaces the placeholders in the covergroup template with the actual values
 # and picks from RV32/RV64 as necessary
 
-def customizeTemplate(covergroupTemplates, name, arch, instr):
+def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
@@ -85,6 +88,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr):
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
+    template = template.replace("EFFEW", effew)
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64
@@ -95,9 +99,16 @@ def anyExclusion(rv, instrs, tp):
             return True
     return False
 
+def anyEFFEWExclusion(effew, instrs, tp):
+    for instr in instrs:
+        cps = tp[instr]
+        if (not(effew in cps)):
+            return True
+    return False
+
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
 # Thereby group instructions according to which XLEN they are in
-def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
+def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64, effew=None):
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
@@ -106,8 +117,12 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
             f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
             finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
             for cp in cps:
-                if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64")): # skip these initial columns
+                if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
                     f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                if(effew != None):
+                    for effew in ["8", "16", "32", "64"]:
+                        if (anyEFFEWExclusion("EFFEW" + effew, k, tp) == False):
+                            f.write(customizeTemplate(covergroupTemplates, cp, arch, instr, effew))
             f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
 
 def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
