@@ -61,14 +61,14 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `else
         i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `endif
