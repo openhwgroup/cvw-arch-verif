@@ -26,7 +26,7 @@ import math
 ##################################
 
 def insertTemplate(name):
-    f.write(f"\n # {name}\n")
+    f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Replace placeholders with the actual values
@@ -2365,8 +2365,6 @@ if __name__ == '__main__':
           write_tests(coverpoints[test], test, xlen)
 
           # print footer
-          line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
-          f.write(line)
           insertTemplate("testgen_footer.S")  
 
           # Finish
