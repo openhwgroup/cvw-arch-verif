@@ -1,4 +1,4 @@
-# sc.S
+# sc.d.S
 # custom tests for store conditional
 
 # cp_custom_aqrl 
