@@ -44,7 +44,15 @@ covergroupgen: bin/covergroupgen.py
 testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	bin/testgen.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
-	bin/combinetests.py
+# bin/combinetests.py
+
+riscv-copy:
+	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
+	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
+
+riscv-copy-%:
+	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
+	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
 
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
@@ -71,7 +79,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 # Compile tests
 %.elf: $$(SOURCEFILE)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
-    -nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 $<
+	-nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -84,7 +92,8 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv64gc $(TESTDIR)/rv64/I/WALLY-COV-ALL-1.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(TESTDIR)/rv32/I/WALLY-COV-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+
 	$(MAKE) merge
 
 # Merge coverage files and generate report
