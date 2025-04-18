@@ -200,43 +200,41 @@ mCsrSkip = list(range(0x7A0, 0x7B0)) + list(range(0x7C0, 0x800)) + \
 
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-CSR-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrM-CSR-Tests.h"
 csrtests(pathname, mCsrSkip + sCsrSkip + uCsrSkip)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-CSR-Tests.h"
-csrtests(pathname, sCsrSkip + uCsrSkip + [0x180]) # 0x180 is satp, turns on virtual memory
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrS-CSR-Tests.h"
+csrtests(pathname, sCsrSkip + uCsrSkip + [0x180]) # 0x180 is the satp register
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrU-CSR-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrU-CSR-Tests.h"
 csrtests(pathname, uCsrSkip)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrM-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrM-Walk.h"
 csrwalk(pathname, mregs + sregs + uregs + ["satp"], mregsh)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs, []);
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrS-Walk.h"
+csrwalk(pathname, sregs + uregs, [])
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ZicntrM-Walk.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkU.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-MWalkU.h"
 counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "U")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkM.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-MWalkM.h"
 counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "M")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MWalkS.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-MWalkS.h"
 counterenwalk(pathname, "mcounteren", cntrs, cntrsh, "S")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-MSWalkU.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-MSWalkU.h"
 counterenwalkdouble(pathname, "scounteren", "mcounteren", cntrs, cntrsh, "U")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkM.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-SWalkM.h"
 counterenwalk(pathname, "scounteren", cntrs, cntrsh, "M")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkS.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-SWalkS.h"
 counterenwalk(pathname, "scounteren", cntrs, cntrsh, "S")
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/Zicntr-SWalkU.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-SWalkU.h"
 counterenwalk(pathname, "scounteren", cntrs, cntrsh, "U")
-
-

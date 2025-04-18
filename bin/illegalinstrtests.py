@@ -58,7 +58,7 @@ def gen(comment, template, len = 32, exclusion = []):
 # setup
 seed(0) # make tests reproducible
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstr-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstr-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 #gen("Illegal op2",  "RRRRRRRRRRRRRRRRRRRRRRRRR0001011") # custom-0
@@ -129,9 +129,12 @@ gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,
 gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
 gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
+gen("cp_reserved_fence_fm_tso", "EEEE00000000RRRRR000RRRRR0001111") # reserved fm and ts0 for fence instruction
+gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved rs1 for fence instruction 
+gen("cp_reserved_fence_rd",     "000011111111RRRRE000000010001111") # reserved rd for fence instruction
 outfile.close
 
-pathname = f"{ARCH_VERIF}/tests/lockstep/priv/headers/ExceptionInstrCompressed-Tests.h"
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
 gen("compressed00", "EEEEEEEEEEEEEE00", 16)
@@ -145,4 +148,6 @@ gen("compressed10", "EEEEEEEEEEEEEE10", 16,
      "1001XXXXX0000010", # skip c.jalr because it causes the test program to go to a random place
      "1001000000000010"
                ])
+print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal") 
+print("\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so should be illegal") 
 outfile.close

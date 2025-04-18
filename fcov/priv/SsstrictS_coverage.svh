@@ -40,7 +40,6 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
     csr: coverpoint ins.current.insn[31:20]  {
         bins user_std0[] = {[12'h000:12'h0FF]};
         bins super_std0[] = {[12'h100:12'h17F]};
-        bins satp = {12'h180};
         bins super_std02[] = {[12'h181:12'h1FF]};
         bins hyper_std0[] = {[12'h200:12'h2FF]};
         bins mach_std0[] = {[12'h300:12'h3FF]};
@@ -81,15 +80,6 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
         bins b_1[] = { [0:`XLEN-1] };
     }
 
-    satp_walking: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
-        bins b_1[] = { [0:`XLEN-1] };
-        `ifdef XLEN64
-            ignore_bins mode = { [63:60] };
-        `elsif XLEN32
-            ignore_bins mode = { 31 };
-        `endif
-    }
-
     csrname : coverpoint ins.current.insn[31:20] {
         bins sstatus       = {12'h100};
         bins sie           = {12'h104};
@@ -116,21 +106,15 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
         bins sie     = {12'h104};
         bins sip     = {12'h144};
     }
-    satp: coverpoint ins.current.insn[31:20] {
-        bins satp = {12'h180};
-    }
 
     // main coverpoints
     cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
     cp_csrw_corners: cross csrrw,   csr, priv_mode_s, rs1_corners {
-        ignore_bins satp = binsof(csr.satp);
     }
-    
+
     cp_csrcs:        cross csrop,   csr, priv_mode_s, rs1_ones {
-        ignore_bins satp = binsof(csr.satp);
     }
     cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
-    cp_satp:         cross csrop,   satp,        priv_mode_s, satp_walking;
     cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
@@ -138,8 +122,8 @@ endgroup
 covergroup SsstrictS_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    `include "coverage/RISCV_coverage_instr.svh"
-    
+    `include "RISCV_coverage_instr.svh"
+
     // main coverpoints
     cp_illegal:           cross priv_mode_s, illegal;
     cp_load:              cross priv_mode_s, load;
@@ -185,13 +169,14 @@ endgroup
 covergroup SsstrictS_comp_instr_cg with function sample(ins_t ins);
     option.per_instance = 0; 
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    `include "coverage/RISCV_coverage_comp_instr.svh"
+    `include "RISCV_coverage_comp_instr.svh"
 
     // main coverpoints
     cp_compressed00: cross priv_mode_s, compressed00;
     cp_compressed01: cross priv_mode_s, compressed01;
     cp_compressed10: cross priv_mode_s, compressed10;
 endgroup
+
 
 function void ssstricts_sample(int hart, int issue, ins_t ins);
     SsstrictS_scsr_cg.sample(ins);

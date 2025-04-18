@@ -58,25 +58,32 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         // auto fill valid bit 0/1
     }
     `ifdef XLEN64 // Number of physical address bits is different by XLEN, either 34 or 56
-        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            // auto fill 1/0 for the physical address being valid
-        }
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            // auto fill 1/0 for the physical address being valid
-        }
-    `else
         i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+    `else
+        i_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_i[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            // auto fill 1/0 for the physical address being valid
+        }
+        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `endif
-    sw: coverpoint ins.current.insn {
-        wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
-    }
-    lw: coverpoint ins.current.insn {
-        wildcard bins lw = {32'b????????????_?????_010_?????_0000011}; 
+    // sw: coverpoint ins.current.insn {
+    //     wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
+    // }
+    // lw: coverpoint ins.current.insn {
+    //     wildcard bins lw = {32'b????????????_?????_010_?????_0000011}; 
+    // }
+    memops: coverpoint ins.current.insn {
+        wildcard bins sw       = {32'b????????????_?????_010_?????_0100011}; 
+        wildcard bins lw       = {32'b????????????_?????_010_?????_0000011}; 
+        wildcard bins lr_w     = {32'b000100000000_?????_010_?????_0101111};
+        wildcard bins sc_w     = {32'b0001100_?????_?????_010_?????_0101111};
+        wildcard bins amoadd_w = {32'b0000000_?????_?????_010_?????_0101111};
     }
     medeleg_walk: coverpoint ins.current.csr[12'h302] {
         bins zeros                    = {16'b0000_0000_0000_0000};
@@ -107,30 +114,24 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     cp_instr_page_fault_m:          cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, instr_page_fault;
     cp_load_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, load_page_fault;
     cp_store_page_fault_m:          cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, store_page_fault;
+    cp_misaligned_priority_m:       cross priv_mode_m, memops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_misaligned_priority_fetch_m: cross priv_mode_m, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_m:  cross priv_mode_m, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_m: cross priv_mode_m, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_medeleg_m:                   cross priv_mode_m, memops,  d_page_table_entry_invalid, medeleg_walk;
     cp_medeleg_fetch_m:             cross priv_mode_m, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_m:              cross priv_mode_m, lw,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_m:             cross priv_mode_m, sw, d_page_table_entry_invalid, medeleg_walk;
     cp_instr_page_fault_s:          cross priv_mode_s, instr_page_fault;
     cp_load_page_fault_s:           cross priv_mode_s, load_page_fault;
     cp_store_page_fault_s:          cross priv_mode_s, store_page_fault;
+    cp_misaligned_priority_s:       cross priv_mode_s, memops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_misaligned_priority_fetch_s: cross priv_mode_s, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_s:  cross priv_mode_s, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_s: cross priv_mode_s, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_medeleg_s:                   cross priv_mode_s, memops, d_page_table_entry_invalid, medeleg_walk;
     cp_medeleg_fetch_s:             cross priv_mode_s, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_s:              cross priv_mode_s, lw,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_s:             cross priv_mode_s, sw, d_page_table_entry_invalid, medeleg_walk;
     cp_instr_page_fault_u:          cross priv_mode_u, instr_page_fault;
     cp_load_page_fault_u:           cross priv_mode_u, load_page_fault;
     cp_store_page_fault_u:          cross priv_mode_u, store_page_fault;
+    cp_misaligned_priority_u:       cross priv_mode_u, memops,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
     cp_misaligned_priority_fetch_u: cross priv_mode_u, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
-    cp_misaligned_priority_load_u:  cross priv_mode_u, lw,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_store_u: cross priv_mode_u, sw, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_medeleg_u:                   cross priv_mode_u, memops,  d_page_table_entry_invalid, medeleg_walk;
     cp_medeleg_fetch_u:             cross priv_mode_u, i_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_load_u:              cross priv_mode_u, lw,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_store_u:             cross priv_mode_u, sw, d_page_table_entry_invalid, medeleg_walk;
 
 endgroup
 

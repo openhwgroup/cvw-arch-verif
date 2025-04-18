@@ -144,6 +144,41 @@ typedef enum {
 } fpr_name_t;
 
 typedef enum {
+  v0,
+  v1,
+  v2,
+  v3,
+  v4,
+  v5,
+  v6,
+  v7,
+  v8,
+  v9,
+  v10,
+  v11,
+  v12,
+  v13,
+  v14,
+  v15,
+  v16,
+  v17,
+  v18,
+  v19,
+  v20,
+  v21,
+  v22,
+  v23,
+  v24,
+  v25,
+  v26,
+  v27,
+  v28,
+  v29,
+  v30,
+  v31
+} vr_name_t;
+
+typedef enum {
   c_f8,
   c_f9,
   c_f10,
@@ -264,6 +299,44 @@ function int get_fpr_num(string key);
   return -1;
 endfunction
 
+function int get_vr_num(string key);
+  case(key)
+    "v0": return 0;
+    "v1": return 1;
+    "v2": return 2;
+    "v3": return 3;
+    "v4": return 4;
+    "v5": return 5;
+    "v6": return 6;
+    "v7": return 7;
+    "v8": return 8;
+    "v9": return 9;
+    "v10": return 10;
+    "v11": return 11;
+    "v12": return 12;
+    "v13": return 13;
+    "v14": return 14;
+    "v15": return 15;
+    "v16": return 16;
+    "v17": return 17;
+    "v18": return 18;
+    "v19": return 19;
+    "v20": return 20;
+    "v21": return 21;
+    "v22": return 22;
+    "v23": return 23;
+    "v24": return 24;
+    "v25": return 25;
+    "v26": return 26;
+    "v27": return 27;
+    "v28": return 28;
+    "v29": return 29;
+    "v30": return 30;
+    "v31": return 31;
+  endcase
+  return -1;
+endfunction
+
 
 // Floating point rounding modes
 typedef enum {
@@ -283,6 +356,51 @@ function frm_name_t get_frm(string s);
     "rtz": return rtz;
     "rup": return rup;
     default: return dyn;
+  endcase
+endfunction
+
+function bit get_vm(string s);
+  case (s)
+    "v0.t": return 1'b0;
+    "": return 1'b1;
+  endcase
+endfunction
+
+//Vector vsetvli paramaters
+// Flipped: string -> int (bits), using case statements
+
+function bit [2:0] get_vtype_eSEW_val(string str);
+  case (str)
+    "e8":   return 3'b000;
+    "e16":  return 3'b001;
+    "e32":  return 3'b010;
+    "e64":  return 3'b011;
+  endcase
+endfunction
+
+function bit [2:0] get_vtype_mLMUL_val(string str);
+  case (str)
+    "mf8": return 3'b101;
+    "mf4": return 3'b110;
+    "mf2": return 3'b111;
+    "m1":  return 3'b000;
+    "m2":  return 3'b001;
+    "m4":  return 3'b010;
+    "m8":  return 3'b011;
+  endcase
+endfunction
+
+function bit get_vtype_ta_val(string str);
+  case (str)
+    "ta": return 1'b1;
+    "tu": return 1'b0;
+  endcase
+endfunction
+
+function bit get_vtype_ma_val(string str);
+  case (str)
+    "ma": return 1'b1;
+    "mu": return 1'b0;
   endcase
 endfunction
 

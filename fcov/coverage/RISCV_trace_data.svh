@@ -106,15 +106,25 @@ class riscvTraceData
   bit                       has_fs1;
   bit                       has_fs2;
   bit                       has_fs3;
+  bit                       has_vd;
+  bit                       has_vs1;
+  bit                       has_vs2;
+  bit                       has_vs3;
 
-  string                      rd;
-  string                      rs1;
-  string                      rs2;
-  string                      rs3;
-  string                      fd;
-  string                      fs1;
-  string                      fs2;
-  string                      fs3;
+  string                    rd;
+  string                    rs1;
+  string                    rs2;
+  string                    rs3;
+
+  string                    fd;
+  string                    fs1;
+  string                    fs2;
+  string                    fs3;
+
+  string                    vd;
+  string                    vs1;
+  string                    vs2;
+  string                    vs3;
 
   bit [(XLEN-1):0]          rd_val;
   bit [(XLEN-1):0]          rd_val_pre;
@@ -128,8 +138,20 @@ class riscvTraceData
   bit [(FLEN-1):0]          fs2_val;
   bit [(FLEN-1):0]          fs3_val;
 
+  bit [(VLEN-1):0]          vd_val;
+  bit [(VLEN-1):0]          vd_val_pre;
+  bit [(VLEN-1):0]          vs1_val;
+  bit [(VLEN-1):0]          vs2_val;
+  bit [(VLEN-1):0]          vs3_val;
+  bit                       vm;
+
   bit [(XLEN-1):0]          imm;
   bit [(XLEN-1):0]          imm2;
   bit [(XLEN-1):0]          imm3;
   bit [(XLEN-1):0]          mem_addr;
+
+  bit [2:0]                 eSEW;
+  bit [2:0]                 mLMUL;
+  bit                       ta;
+  bit                       ma;
 endclass
