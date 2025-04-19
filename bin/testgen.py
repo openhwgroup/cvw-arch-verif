@@ -15,6 +15,7 @@ from datetime import datetime
 from random import randint
 from random import seed
 from random import getrandbits
+import random
 import os
 import re
 import sys
@@ -28,8 +29,8 @@ import math
 ### Understand how to actually parameterize for vlen sew lmul and vl
 #!#!#!#!
 #!#!#!#!
-vlen = 128
-sew  = 32
+vlen = 2048
+sew  = 8
 #!#!#!#!
 #!#!#!#!
 
@@ -1185,7 +1186,7 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
 #!#!#!#!
 #!#!#!#!
 def randomizeVectorV(test, sew=32, vs1=None, vs2=None, vs3=None, rs1=None, allunique=True):
-
+    global vRandomCounter
     if vs1 is None:
       vs1 = randomNonconflictingReg(test)
     if vs2 is None:
@@ -1206,9 +1207,14 @@ def randomizeVectorV(test, sew=32, vs1=None, vs2=None, vs3=None, rs1=None, allun
     while ((vd == vs1) or (vd == vs2) or ((vs3 is not None) and (vd == vs3))):
       vd = randomNonconflictingReg(test)
 
-    vs1val = "vs1_val_random"
-    vs2val = "vs2_val_random"
-    vdval = "vd_val_random"
+    vs1mem = vRandomCounter
+    vRandomCounter = vRandomCounter + 1
+    vs2mem = vRandomCounter
+    vRandomCounter = vRandomCounter + 1
+
+    vs1val = f"v_random_{vs1mem:03d}"
+    vs2val = f"v_random_{vs2mem:03d}"
+    vdval  = "vd_val_random"
 
     immval = randint(0, 2**5)
     if (vs3 is None) and (rs1 is None): return [vs1, vs2, vd, vs1val, vs2val, immval, vdval]
@@ -1943,7 +1949,7 @@ def make_vs2_vs1_corners(test, vlen, sew, vl):
 
 def make_vm(test, vlen, sew, rng):
   lmul = 1
-  vlmax = int(vlen*(lmul/sew))
+  vlmax = int((vlen*lmul)/sew)
   vma = randint(0,1)
   ## added this as a guard but dont know if we would ever want to check this in exceptions
   if vlmax <= 1:
@@ -2401,7 +2407,6 @@ def getcovergroups(coverdefdir, coverfiles, xlen=None, vlen=None, sew=None, vect
           coverpoints[curinstr].append(m.group(1))
     f.close()
     return coverpoints
-  
 
 
 
@@ -2416,10 +2421,103 @@ def getExtensions():
         extensions.append(m.group(1))
   return extensions
 
+
+
+def genVector(sew, test):
+  vectorpath = ARCH_VERIF +"/tests/vectortest"
+  cmd = "mkdir -p " + vectorpath
+  os.system(cmd)
+
+  basename = f"vx{sew}_{test}_data"
+  fname = f"{vectorpath}/{basename}.S"
+
+  f = open(fname, "w")
+  f.write("///////////////////////////////////////////\n")
+  f.write(f"// {basename}\n")
+  f.write("///////////////////////////////////////////\n\n")
+  f.write(".section .data\n\n")
+
+  f.write("// Corner Vectors\n")
+
+  legallmuls = [1, 2, 4, 8]
+  if sew >= 16:
+    legallmuls.append(0.5)
+  if sew >= 32:
+    legallmuls.append(0.25)
+  if sew >= 64:
+    legallmuls.append(0.125)
+  
+  def convert(val, bitwidth):
+        return [f"0x{(val >> (sew * i)) & 0xFFFFFFFF:08x}" for i 
+                in range((bitwidth + (sew-1)) // sew)]
+
+  v_register_corners = [
+      0, 1, 2, -1, -2,
+      2**(sew - 1),
+      2**(sew - 1) + 1,
+      2**(sew - 1) - 1,
+      2**(sew - 1) - 2]
+
+  cp_vtype_mask_corners = [
+      1 << randint(0, vlen - 1),
+      (1 << vlen) - 1,
+      getrandbits(vlen)]
+
+  cp_vm_corners = [
+      ("cp_vm_ones", (1 << vlen) - 1),
+      ("cp_vm_zeroes", 0),
+      ("cp_vm_random", getrandbits(vlen)),
+      ("cp_vm_Echeckerboard", int(((1 << vlen) // 3) & ((1 << vlen) - 1))),
+      ("cp_vm_Ocheckerboard", int(((1 << (vlen + 1)) // 3) & ((1 << vlen) - 1))),]
+  
+  for lmul in legallmuls:
+      vlmax = vlen * lmul // sew
+      if vlmax > 1:
+          name = f"cp_vm_vlmax-1_l{lmul}"
+          val = (1 << (vlmax - 1)) - 1
+          cp_vm_corners.append((name, val))
+      if vlmax >= 2:
+          name = f"cp_vm_1+vlmax/2_l{lmul}"
+          val = (1 << ((vlmax // 2) + 1)) - 1
+          cp_vm_corners.append((name, val))
+      tests = 812
+      words = vlen // 32
+      for t in range(tests):
+          f.write(f"v_random_{t:03d}:\n")
+          for i in range(words):
+              randomElem = random.getrandbits(32)
+              f.write(f"    .word 0x{randomElem:08x}\n")
+
+      for i, val in enumerate(v_register_corners):
+          val &= (1 << sew) - 1
+          f.write(f"vs_corner_{i}:\n")
+          for w in convert(val, sew):
+              f.write(f"    .word {w}\n")
+
+      for i, val in enumerate(cp_vtype_mask_corners):
+          f.write(f"vtype_mask_corner_{i}:\n")
+          words = vlen // 32
+          for k in range(words):
+              f.write(f"    .word 0x{i:08x}\n")
+
+
+      for name, val in cp_vm_corners:
+          f.write(f"{name}:\n")
+          for i in range(vlen // 32):
+              word = (val >> (32 * i)) & 0xFFFFFFFF
+              f.write(f"    .word 0x{word:08x}\n")
+
+  f.write("\n")
+  f.close()
+
+
+
+  
+
+
 ##################################
 # main body
 ##################################
-
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
@@ -2667,11 +2765,12 @@ if __name__ == '__main__':
   #!#!#!#!
   #!#!#!#! according to google sheet, these are only tests we want to generate
   #!#!#!#!
+  vlens = [64, 512]
+  sews = [8, 16, 32, 64]
   #!#!#!#!
 
   # setup
   seed(0) # make tests reproducible
-
   corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
   corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
   corners_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
@@ -2838,6 +2937,7 @@ if __name__ == '__main__':
                         0x4fd77DFF]
 
   # generate files for each test
+  subdir = "lockstep"
   for xlen in xlens:
     corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
 #      for E_ext in [False, True]:
@@ -2850,18 +2950,22 @@ if __name__ == '__main__':
         extensions = getExtensions() # find all extensions in 
         E_suffix = ""
         maxreg = 31 # I uses registers x0-x31
+    for vlen in [2048]:
+      maxreg = 31
+      sew = 8
+      maxreg = 31
       #print(extensions)
 
 #!#!#!#!
 #!#!#!#!
         ### Just for now
-      extensions = []
+      extensions = ["Zv_i"]
       for extension in extensions:
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
         coverfiles = [extension]
         coverpoints = getcovergroups(coverdefdir, coverfiles, xlen=xlen)
-        pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
+        pathname = f"{ARCH_VERIF}/tests/{subdir}/rv{xlen}{E_suffix}/{extension}"
         #print(extension+": "+str(coverpoints))
         print("Generating tests for " + pathname)
         formatstrlen = str(int(xlen/4))
@@ -2899,6 +3003,12 @@ if __name__ == '__main__':
                           0b0000000000000000000000000000000001111111111111111111111111111111,
                           0b1111111111111111111111111111111110000000000000000000000000000000]
 
+        vcorners = ["vs_corner_0", "vs_corner_1", "vs_corner_2", "vs_corner_3", "vs_corner_4", "vs_corner_5", "vs_corner_6", "vs_corner_7"]
+
+        vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
+        
+        cp_vm_mask_lmul = ["cp_vm_mask_lmul_0", "cp_vm_mask_lmul_1", "cp_vm_mask_lmul_2", "cp_vm_mask_lmul_3", "cp_vm_mask_lmul_4", "cp_vm_mask_lmul_5", "cp_vm_mask_lmul_6", "cp_vm_mask_lmul_7"]
+
 
 
 
@@ -2931,13 +3041,16 @@ if __name__ == '__main__':
           sigOffset = 0 # offset of signature from signature pointer
           sigTotal = 0 # total number of bytes in signature
           sigReg = 4 # start with x4 for signatures
+          vRandomCounter = 0
 
           # add assembly lines to enable fp where needed
           if test in floattypes:
             float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
             f.write(float_en)
 
-          write_tests(coverpoints[test], test, xlen=xlen)
+          ## changed this just for vector!!!
+          genVector(sew, test)
+          write_tests(coverpoints[test], test, vlen=vlen, sew=sew)
 
           # print footer
           line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
@@ -2956,107 +3069,3 @@ if __name__ == '__main__':
               print("Updated " + fname)
           else:
             os.system(f"mv {tempfname} {fname}")
-
-    #!#!#!#!#!
-    #!#!#!#!#!
-
-#    for vlen in vlens:
-## just for now
-
-    #!#!#!#!#!
-    #!#!#!#!#!
-
-    for vlen in [2048]:
-#      for E_ext in [False, True]:
-      for E_ext in [False]: # for testing only ***
-        maxreg = 31
-        sew = 8
-        vlmax = 2048
-        maxreg = 31
-
-
-        #print(extensions)
-        for extension in ["Zv_i"]:
-        #for extension in ["I"]:  # temporary for faster run
-          vlens = [64, 512]
-          sews = [8, 16, 32, 64]
-          vcorners = ["vs_corner_0", "vs_corner_1", "vs_corner_2", "vs_corner_3", "vs_corner_4", "vs_corner_5", "vs_corner_6", "vs_corner_7"]
-          vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
-          cp_vm_mask_lmul = ["cp_vm_mask_lmul_0", "cp_vm_mask_lmul_1", "cp_vm_mask_lmul_2", "cp_vm_mask_lmul_3", "cp_vm_mask_lmul_4", "cp_vm_mask_lmul_5", "cp_vm_mask_lmul_6", "cp_vm_mask_lmul_7"]
-          #!#!#!#!#!  DIRECTORY LOCATION
-          #!#!#!#!#!  unsure
-
-          coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
-          coverfiles = [extension]
-          coverpoints = getcovergroups(coverdefdir, coverfiles, vlen=vlen, sew=sew, vector=True)
-          pathname = f"{ARCH_VERIF}/tests/{subdir}/rv{xlen}{E_suffix}/{extension}"
-          #print(extension+": "+str(coverpoints))
-
-          print("Generating tests for " + pathname)
-          formatstrlenV = str(int(vlen/4))
-          formatstr = "0x{:0" + formatstrlenV + "x}" # format as xlen-bit hexadecimal number
-          formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-
-
-          wordsize = 4
-
-          
-
-          # global NaNBox_tests
-          NaNBox_tests = False
-
-          # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-          cmd = "mkdir -p " + pathname # make directory
-          os.system(cmd)
-
-          
-          for test in coverpoints.keys():
-          
-
-            # print("Generating test for ", test, " with entries: ", coverpoints[test])
-
-            basename = "WALLY-COV-" + test
-            fname = pathname + "/" + basename + ".S"
-            tempfname = pathname + "/" + basename + "_temp.S"
-
-            # print custom header part
-            f = open(tempfname, "w")
-            line = "///////////////////////////////////////////\n"
-            f.write(line)
-            line="// "+fname+ "\n// " + author + "\n"
-            f.write(line)
-            # Don't print creation date because this forces rebuild of files that are otherwise identical
-            #line ="// Created " + str(datetime.now()) + "\n"
-            #f.write(line)
-
-            # insert generic header
-            insertTemplate("testgen_header.S")
-
-            sigOffset = 0 # offset of signature from signature pointer
-            sigTotal = 0 # total number of bytes in signature
-            sigReg = 4 # start with x4 for signatures
-
-            #!#!#!#!#!
-            #!#!#!#!#! 
-            write_tests(coverpoints[test], test, vlen=vlen, sew=sew)
-
-
-            # print footer
-            line = "\n.EQU SIGSIZE," + str(sigTotal) + "\n\n"
-            f.write(line)
-            insertTemplate("testgen_footer.S")  
-
-            # Finish
-            f.close()
-
-            # if new file is different from old file, replace old file with new file
-            if os.path.exists(fname):
-              if filecmp.cmp(fname, tempfname): # files are the same
-                os.system(f"rm {tempfname}") # remove temp file
-              else:
-                os.system(f"mv {tempfname} {fname}")
-                print("Updated " + fname)
-            else:
-              os.system(f"mv {tempfname} {fname}")
-    #!#!#!#!#!
-    #!#!#!#!#!
