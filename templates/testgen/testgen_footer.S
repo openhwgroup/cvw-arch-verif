@@ -10,7 +10,6 @@ RVMODEL_HALT
 .align 4
 scratch:
     .space 136  # Reserve 136 bytes of uninitialized memory
-.section .data
 
 RVTEST_DATA_BEGIN
 .align 4
@@ -27,9 +26,6 @@ RVMODEL_DATA_BEGIN
 rvtest_sig_begin:
 sig_begin_canary:
 CANARY;
-
-
-
 
 signature_base:
     .fill sigupd_count*(XLEN/32),4,0xdeadbeef
@@ -56,4 +52,3 @@ sig_end_canary:
 CANARY;
 rvtest_sig_end:
 RVMODEL_DATA_END
-

@@ -78,6 +78,7 @@ gen("cp_fence_cbo", "RRRRRRRRRRRRRRRRREEERRRRR0001111")
 gen("cp_cbo_immediate", "EEEEEEEEEEEE00000010000000001111") # tie rs1 = 0 to avoid overwriting program on cbo.zero
 gen("cp_cbo_rd",        "00000000000RRRRRR010EEEEE0001111")
 gen("cp_Itype",         "EEEEEEEEEEEERRRRRE01RRRRR0010011")
+gen("cp_llAItype",      "RRRRRRRRRRRRRRRRREEERRRRR0010011")
 gen("cp_aes64ks1i",     "0011000EEEEERRRRR001RRRRR0010011")
 gen("cp_IWtype",        "RRRRRRRRRRRRRRRRREEERRRRR0011011")
 gen("cp_IWshift",       "EEEEEEERRRRRRRRRRE01RRRRR0011011")
