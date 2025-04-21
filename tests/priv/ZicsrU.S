@@ -22,6 +22,10 @@ main:
     la t0, trap_handler_fastuncompressedillegalinstr
     csrw mtvec, t0
 
+    // Turn on floating-point so these tests can write to user-level floating-point CSRs
+    li t0,0x4000
+    csrs mstatus, t0
+
     # enter user mode
     li a0, 0
     ecall
