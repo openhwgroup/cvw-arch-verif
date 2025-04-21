@@ -1,4 +1,4 @@
-# lr.w.S
+# lr.d.S
 # custom tests for load reserved
 
 # cp_custom_aqrl 

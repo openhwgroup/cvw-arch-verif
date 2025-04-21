@@ -594,7 +594,7 @@ tohost:                 # write to HTIF
 fromhost:
     .dword 0
 
-.EQU XLEN,64
+//.EQU XLEN,64
 begin_signature:
     .fill 6*(XLEN/32),4,0xdeadbeef    #
 end_signature:
