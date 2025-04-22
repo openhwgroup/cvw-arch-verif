@@ -138,6 +138,48 @@ function string get_fpr_name(int key);
   endcase
 endfunction
 
+// Vector register number to string
+function string get_vr_name(int key);
+  case(key)
+    0: return "v0";
+    1: return "v1";
+    2: return "v2";
+    3: return "v3";
+    4: return "v4";
+    5: return "v5";
+    6: return "v6";
+    7: return "v7";
+    8: return "v8";
+    9: return "v9";
+    10: return "v10";
+    11: return "v11";
+    12: return "v12";
+    13: return "v13";
+    14: return "v14";
+    15: return "v15";
+    16: return "v16";
+    17: return "v17";
+    18: return "v18";
+    19: return "v19";
+    20: return "v20";
+    21: return "v21";
+    22: return "v22";
+    23: return "v23";
+    24: return "v24";
+    25: return "v25";
+    26: return "v26";
+    27: return "v27";
+    28: return "v28";
+    29: return "v29";
+    30: return "v30";
+    31: return "v31";
+    default: begin
+          $display("ERROR: SystemVerilog Functional Coverage: get_vr_name(%0s) not found vr", key);
+          $finish(-1); 
+      end
+  endcase
+endfunction
+
 // Compressed integer register number to string
 function string get_c_gpr_name(int key);
   case(key)
@@ -198,6 +240,46 @@ function string get_frm_string(int key);
           $display("SystemVerilog Functional Coverage: invalid rounding mode: %0d", key);
           return $sformatf("rm%0d", key); // return rounding mode number for invalid values for coverage purposes
       end
+  endcase
+endfunction
+
+//Vector vsetvli paramaters
+function string get_vtype_eSEW_name(int eSEW);
+  case(eSEW)
+    3'b000: return "e8";
+    3'b001: return "e16";
+    3'b010: return "e32";
+    3'b011: return "e64";
+    
+    default: return "reserved";
+  endcase
+endfunction
+
+function string get_vtype_mLMUL_name(int mLMUL);
+  case(mLMUL)
+    3'b101: return "mf8";
+    3'b110: return "mf4";
+    3'b111: return "mf2";
+    3'b000: return "m1";
+    3'b001: return "m2";
+    3'b010: return "m4";
+    3'b011: return "m8";
+    
+    default: return "reserved";
+  endcase
+endfunction
+
+function string get_vtype_ta_name(int ta);
+  case(ta)
+    1'b1: return "ta";
+    1'b0: return "tu";
+  endcase
+endfunction
+
+function string get_vtype_ma_name(int ma);
+  case(ma)
+    1'b1: return "ma";
+    1'b0: return "mu";
   endcase
 endfunction
 
@@ -664,81 +746,5 @@ function string get_csr_name(int key);
     CSR_MHPMCOUNTER30H: return "mhpmcounter30h";
     CSR_MHPMCOUNTER31H: return "mhpmcounter31h";
     default: return $sformatf("0x%0h", key);
-  endcase
-endfunction
-
-function string get_vtype_eSEW(int eSEW);
-  case(eSEW)
-    3'b000: return "e8";
-    3'b001: return "e16";
-    3'b010: return "e32";
-    3'b011: return "e64";
-    
-    default: return "reserved";
-  endcase
-endfunction
-
-function string get_vtype_mLMUL(int mLMUL);
-  case(mLMUL)
-    3'b101: return "mf8";
-    3'b110: return "mf4";
-    3'b111: return "mf2";
-    3'b000: return "m1";
-    3'b001: return "m2";
-    3'b010: return "m4";
-    3'b011: return "m8";
-    
-    default: return "reserved";
-  endcase
-endfunction
-
-function string get_vtype_ta(int ta);
-  case(ta)
-    1'b1: return "ta";
-    1'b0: return "tu";
-  endcase
-endfunction
-
-function string get_vtype_ma(int ma);
-  case(ma)
-    1'b1: return "ma";
-    1'b0: return "mu";
-  endcase
-endfunction
-
-function string get_vpr_name(int key);
-  case(key)
-    0: return "v0";
-    1: return "v1";
-    2: return "v2";
-    3: return "v3";
-    4: return "v4";
-    5: return "v5";
-    6: return "v6";
-    7: return "v7";
-    8: return "v8";
-    9: return "v9";
-    10: return "v10";
-    11: return "v11";
-    12: return "v12";
-    13: return "v13";
-    14: return "v14";
-    15: return "v15";
-    16: return "v16";
-    17: return "v17";
-    18: return "v18";
-    19: return "v19";
-    20: return "v20";
-    21: return "v21";
-    22: return "v22";
-    23: return "v23";
-    24: return "v24";
-    25: return "v25";
-    26: return "v26";
-    27: return "v27";
-    28: return "v28";
-    29: return "v29";
-    30: return "v30";
-    31: return "v31";
   endcase
 endfunction
