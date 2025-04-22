@@ -53,10 +53,10 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins one = {1};
     }
     mideleg_msi_zero: coverpoint ins.current.csr[12'h303][3] {
-        bins zero = {0}
+        bins zero = {0};
     }
     mideleg_mti_zero: coverpoint ins.current.csr[12'h303][7] {
-        bins zero = {0}
+        bins zero = {0};
     }    
     mideleg_sei: coverpoint ins.current.csr[12'h303][9] {
         // autofill 0/1
@@ -65,7 +65,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         // autofill 0/1
     }
     mideleg_mei_zero: coverpoint ins.current.csr[12'h303][11] {
-        bins zero = {0}
+        bins zero = {0};
     }
     mideleg_zeros: coverpoint ins.current.csr[12'h303][15:0] {
         wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
