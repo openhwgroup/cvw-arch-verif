@@ -215,6 +215,9 @@ csrwalk(pathname, mregs + sregs + uregs + ["satp"], mregsh)
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrS-Walk.h"
 csrwalk(pathname, sregs + uregs, [])
 
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrS-Walk.h"
+csrwalk(pathname, uregs, [])
+
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
 
