@@ -141,6 +141,37 @@ covergroup ZicsrM_mprivinst_cg with function sample(ins_t ins);
     }
     old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
     }
+    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
+        bins b_1[] = { [0:`XLEN-1] };
+    }
+    
+    mcsrname : coverpoint ins.current.insn[31:20] {
+        bins mstatus  = {12'h300};
+        bins misa     = {12'h301};
+        bins medeleg  = {12'h302};
+        bins mideleg  = {12'h303};
+        bins mie      = {12'h304};
+        bins mtvec    = {12'h305};
+        bins mscratch = {12'h340};
+        bins mepc     = {12'h341};
+        bins mcause   = {12'h342};
+        bins mtval    = {12'h343};
+        bins mip      = {12'h344};
+        bins menvcfg  = {12'h30A};
+        bins mseccfg  = {12'h747};
+        `ifdef XLEN32
+            bins mstatush = {12'h310};
+            bins medelegh = {12'h312};
+            bins menvcfgh = {12'h31A};
+            bins mseccfgh = {12'h757};
+        `endif
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
+    }
+
+    cp_mcsrwalk : cross priv_mode_m, mcsrname, csrop, walking_ones;
     cp_mprivinst: cross privinstrs, priv_mode_m;
     cp_mret: cross mret, priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
     cp_sret: cross sret, priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
