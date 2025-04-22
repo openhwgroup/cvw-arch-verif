@@ -57,7 +57,7 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_ucsrwalk:   cross csrname, csrop, priv_mode_s, walking_ones;
+    cp_ucsrwalk:   cross csrname, csrop, priv_mode_u, walking_ones;
     cp_uprivinst:  cross privinstrs, priv_mode_u;
     cp_mret:       cross mret, priv_mode_u; // should trap 
     cp_sret:       cross sret, priv_mode_u; // should trap 
