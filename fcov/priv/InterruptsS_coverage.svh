@@ -52,26 +52,29 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     mstatus_tw_one:  coverpoint ins.current.csr[12'h300][21] {
         bins one = {1};
     }
-    mideleg_msi: coverpoint ins.current.csr[12'h303][3] {
-        // autofill 0/1
+    mideleg_msi_zero: coverpoint ins.current.csr[12'h303][3] {
+        bins zero = {0}
     }
-    mideleg_mti: coverpoint ins.current.csr[12'h303][7] {
-        // autofill 0/1
+    mideleg_mti_zero: coverpoint ins.current.csr[12'h303][7] {
+        bins zero = {0}
     }    
     mideleg_sei: coverpoint ins.current.csr[12'h303][9] {
         // autofill 0/1
     }
-    mideleg_mei: coverpoint ins.current.csr[12'h303][11] {
+    mideleg_ssi: coverpoint ins.current.csr[12'h303][1] {
         // autofill 0/1
+    }
+    mideleg_mei_zero: coverpoint ins.current.csr[12'h303][11] {
+        bins zero = {0}
     }
     mideleg_zeros: coverpoint ins.current.csr[12'h303][15:0] {
         wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
     }
     mideleg_ones: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b????1?1?1?1?1?1?}; //  ones in every field that is not tied to zero
+        wildcard bins ones  = {16'b??????1???1???1?}; //  ones in every field that is not tied to zero (only supervisor delegable)
     }
     mideleg_ones_zeros: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b????1?1?1?1?1?1?}; //  ones in every field that is not tied to zero
+        wildcard bins ones  = {16'b??????1???1???1?}; //  ones in every field that is not tied to zero (only supervisor delegable)
         wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
     }
     mie_msie: coverpoint ins.current.csr[12'h304][3] {
@@ -202,13 +205,10 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
                                   ins.current.csr[12'h344][1]} {
         // auto fills all 2^6 combinations
     }
-    mideleg_combinations: coverpoint {ins.current.csr[12'h303][11],
-                                      ins.current.csr[12'h303][9],
-                                      ins.current.csr[12'h303][7],
+    mideleg_combinations: coverpoint {ins.current.csr[12'h303][9],
                                       ins.current.csr[12'h303][5],
-                                      ins.current.csr[12'h303][3],
                                       ins.current.csr[12'h303][1]} {
-        // auto fills all 2^6 combinations
+        // auto fills all 2^3 combinations (assuming only supervisor interrupts are delegable)
     }
     mip_mie_eq: coverpoint (ins.current.csr[12'h304][11:0] == ins.current.csr[12'h344][11:0]) {
         bins equal = {1};
@@ -247,8 +247,8 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     write_sstatus_sie: coverpoint ins.current.rs1_val[1] iff ( ins.current.insn[31:20] == 12'h100) {
         bins write_sie = {1};
     }
-    write_mstatus_mie: coverpoint ins.current.rs1_val[1] iff ( ins.current.insn[31:20] == 12'h300) {
-        bins write_sie = {1};
+    write_mstatus_mie: coverpoint ins.current.rs1_val[3] iff ( ins.current.insn[31:20] == 12'h300) {
+        bins write_mie = {1};
     }
     wfi: coverpoint ins.current.insn {
         bins wfi = {32'b0001000_00101_00000_000_00000_1110011};
@@ -308,7 +308,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_priority_mip:          cross priv_mode_m, mie_ones, mideleg_zeros, mip_combinations, mstatus_mie_rise;
     cp_priority_mie:          cross priv_mode_m, mip_ones, mideleg_zeros, mie_combinations, mstatus_mie_rise;
     cp_wfi_m:                 cross priv_mode_m, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw, mie_mtie_one, mip_meip_one;
-    cp_trigger_ssi_sip_m:     cross priv_mode_m, mstatus_mie, mie_ones, csrrs, write_sip_ssip;
+    cp_trigger_ssi_sip_m:     cross priv_mode_m, mstatus_mie, mie_ones, mideleg_ssi, csrrs, write_sip_ssip;
     cp_trigger_mti_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_mtip_one, csrrs, write_mstatus_mie;
     cp_trigger_msi_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_msip_one, csrrs, write_mstatus_mie;
     cp_trigger_mei_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_meip_one, csrrs, write_mstatus_mie;
@@ -322,12 +322,12 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_sei5:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_high, csrrc, write_mip_seip;
     cp_sei6_7:                cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
     // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,  
-    cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq; 
+    cp_global_ie:             cross priv_mode_m, mideleg_zeros, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq; 
 
 
-    cp_user_mti:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip;
-    cp_user_msi:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi, mie_msie, mip_msip;
-    cp_user_mei:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei, mie_meie, mip_meip;
+    cp_user_mti:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti_zero, mie_mtie, mip_mtip;
+    cp_user_msi:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi_zero, mie_msie, mip_msip;
+    cp_user_mei:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mei_zero, mie_meie, mip_meip;
     cp_user_sei:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_sei, mie_seie, mip_seip;
     cp_wfi_timeout_u:         cross priv_mode_u, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw_one, mie_mtie, timeout;
 endgroup
