@@ -130,6 +130,11 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     }
     old_sstatus_spp: coverpoint ins.prev.csr[12'h100][8] {
     }
+    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {
+        bins U_mode = {2'b00};
+        bins S_mode = {2'b01};
+        bins M_mode = {2'b11};
+    }
     old_sstatus_spie: coverpoint ins.prev.csr[12'h100][5] {
     }
     old_sstatus_sie: coverpoint ins.prev.csr[12'h100][1] {
@@ -158,8 +163,10 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     // main coverpoints
     cp_scsrwalk:  cross csrname, csrop, priv_mode_s, walking_ones;
     cp_mprivinst: cross privinstrs, priv_mode_s;
-    cp_mret:      cross mret,       priv_mode_s;
-    cp_sret:      cross sret,       priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
+    cp_mret_s:    cross mret,       priv_mode_s;
+    cp_sret_s:    cross sret,       priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
+    cp_mret_m:    cross mret,       priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
+    cp_sret_m:    cross sret,       priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);
