@@ -130,10 +130,22 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     }
     old_sstatus_spp: coverpoint ins.prev.csr[12'h100][8] {
     }
+    old_mstatus_spp: coverpoint ins.prev.csr[12'h300][8] {
+    }
     old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {
         bins U_mode = {2'b00};
         bins S_mode = {2'b01};
         bins M_mode = {2'b11};
+    }
+    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
+    }
+    old_mstatus_spie: coverpoint ins.prev.csr[12'h300][5] {
+    }
+    old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
+    }
+    old_mstatus_mie: coverpoint ins.prev.csr[12'h300][3] {
+    }
+    old_mstatus_mpie: coverpoint ins.prev.csr[12'h300][7] {
     }
     old_sstatus_spie: coverpoint ins.prev.csr[12'h100][5] {
     }
