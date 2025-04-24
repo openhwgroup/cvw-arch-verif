@@ -567,6 +567,7 @@ Mend_PMP:                                    ;\
       SREG _F,offset(_BR)					;\
       .set offset,offset+(REGWIDTH)
 
+#define RVTEST_SIGUPD_V(_BR,_R,...)	
 
 
   /* DEPRECATE this is redundant with RVTEST_BASEUPD(BR,_NR),	*/
