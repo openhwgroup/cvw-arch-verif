@@ -17,8 +17,6 @@ RVTEST_DATA_BEGIN
 rvtest_data:
 .word 0xbabecafe
 .word 0xbabecafe
-.word 0xbabecafe
-.word 0xbabecafe
 RVTEST_DATA_END
 
 

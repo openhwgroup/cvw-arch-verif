@@ -25,15 +25,23 @@ import math
 # functions
 ##################################
 
+
+#MULTIPLE extensions write now come out together ZcbsZsc-> Zcbs_Zsc TODO 
 def insertTemplate(name):
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Replace placeholders with the actual values
-    template = template.replace("sigupd_count", str(sigupd_count)) 
-    template = template.replace("ISAEXT", f"RV{xlen}{extension}")
-    template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
-    template = template.replace("Instruction", test)  #missing the 0 in front check meeting
+    if extension.upper() == "I":                         # <<< fixed line
+      template = template.replace("ISAEXT", f"RV{xlen}{extension}")
+      template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;")
+      template = template.replace("sigupd_count", str(sigupd_count)) # sigupd counter to create enough space
+      template = template.replace("Instruction", test)  # sets the specific instruction for RVTEST_CASE Macro
+    else: 
+      template = template.replace("sigupd_count", str(sigupd_count)) # sigupd counter to create enough space
+      template = template.replace("ISAEXT", f"RV{xlen}I{extension}") # used for RVTEST_ISA Macro
+      template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*.*I.*{extension}.*);def TEST_CASE_1=True;") # 
+      template = template.replace("Instruction", test)  # sets the specific instruction for RVTEST_CASE Macro
     f.write(template)
 
 def shiftImm(imm, xlen):
