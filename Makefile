@@ -67,8 +67,8 @@ EXCEPTIONSZC_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),c_zcb_,)
 CMPR_FLAGS = $(EXCEPTIONSZC_FLAG)$(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 
 # Set bitwidth and ABI based on XLEN for each test
-BITWIDTH = $(if $(findstring 64,$*),64,32)
-MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
+BITWIDTH = $(if $(findstring rv64,$*),64,32)
+MABI = $(if $(findstring rv32,$*),i,)lp$(BITWIDTH)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
@@ -77,7 +77,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 .PRECIOUS: %.elf %.elf.objdump %.elf.memfile %.elf.signature
 
 # Compile tests
-%.elf: $$(SOURCEFILE) $$(EXTRADEPS)
+%.elf: $$(SOURCEFILE)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
 	-nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 	$(MAKE) $@.objdump $@.memfile
