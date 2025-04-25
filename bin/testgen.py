@@ -2950,8 +2950,7 @@ if __name__ == '__main__':
             else:
               sew = int(sew_match.group(1))
             genVector(sew, test)
-            #vlens = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
-            vlens = [128]
+            vlens = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
             for vlen in vlens:
               lengthpathname = basepathname + f"_Zvl{vlen}"
               cmd = "mkdir -p " + lengthpathname # make length directory
