@@ -1161,6 +1161,7 @@ def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
     case 'w': haztypes = ["nohaz", "waw", "war"]
     case _: haztypes = ["nohaz", "raw", "waw", "war"]
 
+
   for haz in haztypes:
     for src in range(1, 4):
       [rs1a, rs2a, rs3a, rda, rs1vala, rs2vala, rs3vala, immvala, rdvala] = randomize(test, rs3=True)
