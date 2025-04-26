@@ -568,6 +568,9 @@ Mend_PMP:                                    ;\
       .set offset,offset+(REGWIDTH)
 
 
+// Updates signature with contents of vector register
+#define RVTEST_SIGUPD_V(_BR,_R,_F,...)			;\
+
 
   /* DEPRECATE this is redundant with RVTEST_BASEUPD(BR,_NR),	*/
   /* except it doesn't correct for offset overflow while moving */
