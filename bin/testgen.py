@@ -1190,6 +1190,7 @@ def make_imm_zero(test, xlen):
   desc = "cp_imm_zero"
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
+
 def make_imm_corners_jal(test, xlen): # update these test
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   if (test == "jal"):
