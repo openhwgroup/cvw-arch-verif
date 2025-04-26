@@ -42,7 +42,22 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
+
+    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
+        bins b_1[] = { [0:`XLEN-1] };
+    }
+    csrname : coverpoint ins.current.insn[31:20] {
+        bins fflags = {12'h001};
+        bins frm    = {12'h002};
+        bins fcsr   = {12'h003};
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
+    }
+
     // main coverpoints
+    cp_ucsrwalk:   cross csrname, csrop, priv_mode_u, walking_ones;
     cp_uprivinst:  cross privinstrs, priv_mode_u;
     cp_mret:       cross mret, priv_mode_u; // should trap 
     cp_sret:       cross sret, priv_mode_u; // should trap 

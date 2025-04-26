@@ -75,23 +75,6 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
         bins zero = {0};
         bins ones = {'1};
     }
-
-    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
-        bins b_1[] = { [0:`XLEN-1] };
-    }
-
-    csrname : coverpoint ins.current.insn[31:20] {
-        bins sstatus       = {12'h100};
-        bins sie           = {12'h104};
-        bins stvec         = {12'h105};
-        bins sscratch      = {12'h140};
-        bins sepc          = {12'h141};
-        bins scause        = {12'h142};
-        bins stval         = {12'h143};
-        bins sip           = {12'h144};
-        bins senvcfg       = {12'h10A};
-        bins scounteren    = {12'h106};
-    }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
         bins csrrs = {3'b010};
         bins csrrc = {3'b011};
@@ -114,7 +97,6 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
 
     cp_csrcs:        cross csrop,   csr, priv_mode_s, rs1_ones {
     }
-    cp_scsrwalk:     cross csrname, csrop,       priv_mode_s, walking_ones;
     cp_shadow_m:     cross csrrw,   mcsrs,       priv_mode_m, rs1_corners;  // write 1s/0s to mstatus, mie, mip in m mode
     cp_shadow_s:     cross csrrw,   scsrs,       priv_mode_s, rs1_corners;  // write 1s/0s to sstatus, sie, sip in s mode
 endgroup
