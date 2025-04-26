@@ -1,29 +1,16 @@
 #!/usr/bin/env python3
-##################################
-# testgen.py
-#
-# David_Harris@hmc.edu 27 March 2024
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-#
-# Generate directed tests for functional coverage
-##################################
+"""testgen.py
+David_Harris@hmc.edu 27 March 2024
+SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+Generate directed tests for functional coverage."""
 
-##################################
-# libraries
-##################################
-from datetime import datetime
-from random import randint
-from random import seed
-from random import getrandbits
 import os
-import re
 import sys
-import filecmp
+import re
 import math
-
-##################################
-# functions
-##################################
+import filecmp
+from datetime import datetime
+from random import randint, seed, getrandbits
 
 def insertTemplate(name):
     f.write(f"\n# {name}\n")
@@ -42,7 +29,7 @@ def shiftImm(imm, xlen):
   return str(imm)
 
 def signedImm12(imm, immOffset = False):
-#                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
+  #                     ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
   pos = imm > 0
   imm = imm % pow(2, 12)
   if (imm & 0x800): # Check if the 12th bit (0x800) is set
@@ -52,7 +39,7 @@ def signedImm12(imm, immOffset = False):
   return str(imm)
 
 def unsignedImm12(imm, immOffset = False):
-#                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
+  #                          ^~~~~~~~~~~~~~~~~ if the imm is used as an offset, restrict the range to [-2047, 2047]
   pos = imm > 0
   imm = imm % pow(2, 12)
   if immOffset and imm == -2048:
@@ -195,7 +182,7 @@ def loadVFloatReg(reg, val, sew):
   lines = lines + f"{loadop} v{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into v{reg}\n"
   return lines
 
-## uses x8 for placing value into vector reg
+  ## uses x8 for placing value into vector reg
 def loadVecReg(reg, pointer, sew):
     loadop = f"vle{sew}.v"
     lines = ""
@@ -204,7 +191,7 @@ def loadVecReg(reg, pointer, sew):
     return lines
 
 
-# handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
+  # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
 def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
   global sigReg # this function can modify the signature register
   l = lines
@@ -216,7 +203,7 @@ def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
     l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
   return l
 
-# getSigInfo returns the store instruction and offset increment for the current test
+  # getSigInfo returns the store instruction and offset increment for the current test
 def getSigInfo(floatdest):
   if (floatdest): # floating point destination register
     if (flen == 32):
@@ -252,9 +239,9 @@ def incrementSigOffset(amount):
   return ""
 
 
-# writeTest appends the test to the lines.
-# When doing signature generation, it also appends
-# the signature logic
+  # writeTest appends the test to the lines.
+  # When doing signature generation, it also appends
+  # the signature logic
 def writeTest(lines, rd, xlen, floatdest, testline):
   l = lines + testline
   if (floatdest):
@@ -308,7 +295,7 @@ def writeStoreTest(lines, test, rs2, xlen, storeline):
   return l
 
 
-#TODO : Check this works with vector (didn't have vector ops in csv yet)
+  #TODO : Check this works with vector (didn't have vector ops in csv yet)
 def genFrmTests(testInstr, rd, floatdest, vector=None):
   lines = ""
   frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
@@ -773,9 +760,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
 
 
 def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1, vl=None, vstart=None,
-                     rs1=None, fs1=None, rd=None, rs1val=None, fs1val=None, imm=None, maskval=None, vxrm=None,  
+                     rs1=None, fs1=None, rd=None, rs1val=None, fs1val=None, imm=None, maskval=None, vxrm=None,
                      vfrm=None, floattype=None, xtype=None, vxsat=None, vta=None, vma=None):
-         
+
     lines = "\n# Testcase " + str(desc) + "\n"
     lines = handleSignaturePointerConflict(lines, vs1, vs2, vd)
 
@@ -786,7 +773,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     # If mask value specified, load to x4
     if maskval is not None:
       lines = lines + f"la a0, {maskval}\n"
-      lines = lines + f"vlm.v v0, (a0)                   # Load mask value into v0\n"  
+      lines = lines + f"vlm.v v0, (a0)                   # Load mask value into v0\n"
       maskinstr = ", v0.t"
 
     if ((floattype is not None) and (vfrm is not None)):
@@ -799,7 +786,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       lines = lines + genVxrmTests(testline, lines, vd, sew, lmul)
     # Load vector operands
-    else: 
+    else:
       if (test in vvtype):
         lines = lines + loadVecReg(vs1, vs1val, sew)
         lines = lines + loadVecReg(vs2, vs2val, sew)
@@ -1095,7 +1082,7 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
   return regsA, regsB
 
 
-# return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
+  # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
 def randomNonconflictingReg(test):
   regfield3types = ciwtype + cltype + cstype + cbptype + catype + cbtype + clbtype + clhtype + csbtype + cshtype + cutype + ["c.srli", "c.srai"]
   if (test in regfield3types):
@@ -1130,8 +1117,6 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     if (rs3 is None): return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
     else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
-#!#!#!#!
-#!#!#!#!
 def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
   lmulflag = lmul
   if (lmul == 0.5):
@@ -1140,7 +1125,7 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
     lmulflag = "f4"
   elif (lmul == 0.125):
     lmulflag = "f8"
-      
+
   if ma is None:
     maflag = " "
   elif ma == 0:
@@ -1161,7 +1146,7 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
     lines = lines + f"li x8, {vstart}               # Load desired vstart value\n"
     lines = lines + f"csrw vstart, x8\n"
   return lines
-      
+
 
 def randomizeVectorV(test, vs1=None, vs2=None, vs3=None, rs1=None, rd=None, allunique=True):
     global vRandomCounter
@@ -1857,7 +1842,7 @@ def make_rdv(test, sew, rng):
 
 
 def make_vtype(test, vlen, sew, rng):
-  ## create lmul of [1 random_legal]
+  # create lmul of [1 random_legal]
   legallmuls = [1, 2, 4, 8]
   if sew >= 16:
     legallmuls.append(0.5)
@@ -1878,10 +1863,10 @@ def make_vtype(test, vlen, sew, rng):
         vlmax = int(vlen*(lmul/sew))
         if vlmax <= 1:
           return
-      #creating vl:
+        #creating vl:
         if (k == 0):
           vl = 1
-        elif (k == 1): 
+        elif (k == 1):
           vl = vlmax
         else:
           vl = randint(0, vlmax-1)
@@ -1939,7 +1924,7 @@ def make_vl(test, vlen, sew, rng):
         else:
           lmul = 8
         vlmax = int(vlen*(lmul/sew))
-          ## added this as a guard but dont know if we would ever want to check this in exceptions
+        # added this as a guard but dont know if we would ever want to check this in exceptions
         if vlmax <= 1:
           return
         #creating vl:
@@ -1947,7 +1932,7 @@ def make_vl(test, vlen, sew, rng):
           vl = vlmax
         elif (k == 1):
           vl = int(vlmax - 1)
-        else: 
+        else:
           vl = int(1 + (vlmax/2))
         #creating vta:
         if (t == 0):
@@ -1981,7 +1966,7 @@ def make_vm(test, vlen, sew, rng):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl=vlmax, maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
 
 
-## TODO: Check this with vector FP. Wasnt available in csv yet so couldnt check
+  # TODO: Check this with vector FP. Wasnt available in csv yet so couldnt check
 def make_vxrm_vs1_vs2_corners(test, vlen, sew, vl):
   for v1 in vcorners:
     for v2 in vcorners:
@@ -1990,8 +1975,8 @@ def make_vxrm_vs1_vs2_corners(test, vlen, sew, vl):
         [vs1, vs2, rs1, vd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
       desc = "cp_vxrm_vs1_vs2_corners"
       writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vxrm=True, vta=0)
-      # *** should sweep the rounding modes, and coverpoints should check they are hit
-      
+      # should sweep the rounding modes, and coverpoints should check they are hit
+
 
 
 def make_immv(test, vlen, sew, lmul, vl, rng, xlen, xtype=None, floattype=None):
@@ -2001,8 +1986,7 @@ def make_immv(test, vlen, sew, lmul, vl, rng, xlen, xtype=None, floattype=None):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immc)
 
 
-# Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases.
-# This function gives a simple hash as a random seed.
+  # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
 def myhash(s):
   h = 0
   for c in s:
@@ -2013,12 +1997,10 @@ def myhash(s):
 def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, vl=1):
   global NaNBox_tests
   for coverpoint in coverpoints:
-    # produce a deterministic seed for repeatable random numbers
-    # distinct for each instruction and coverpoint
+    # produce a deterministic seed for repeatable random numbers distinct for each instruction and coverpoint
     testname = test + coverpoint
     hashval = myhash(testname)
     # hashval = hash(testname) # doesn't work because of Python hash randomization
-    #print(" Seeding " + testname + " with " + str(hashval))
     seed(hashval)
     #seed(hash(test + coverpoint))
     if (coverpoint == "cp_asm_count"):
@@ -2410,7 +2392,7 @@ def genVector(sew, vlen, test):
   if sew >= 64:
     legallmuls.append(0.125)
   def convert(val, bitwidth):
-        return [f"0x{(val >> (sew * i)) & 0xFFFFFFFF:08x}" for i 
+        return [f"0x{(val >> (sew * i)) & 0xFFFFFFFF:08x}" for i
                 in range((bitwidth + (sew-1)) // sew)]
 
   v_register_corners = [
@@ -2445,7 +2427,7 @@ def genVector(sew, vlen, test):
       words = maxvlen // 32
       for k in range(words):
           f.write(f"    .word 0x{i:08x}\n")
-  ## TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
+  # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
   vlmax = int(vlen/sew)
   cp_vm_corners_data = [
       ("cp_vm_ones", (1 << maxvlen) - 1),
@@ -2468,13 +2450,13 @@ def genVector(sew, vlen, test):
 
 
 
-  
 
 
-##################################
-# main body
-##################################
-# change these to suite your tests
+
+  #
+  # main body
+  #
+  # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
         "addw", "subw", "sllw", "srlw", "sraw",
@@ -2571,21 +2553,21 @@ csrtype = ["csrrw", "csrrs", "csrrc"]
 csritype = ["csrrwi", "csrrsi", "csrrci"]
 
 vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vmadc.vv", "vredmax.vs", "vredmaxu.vs", "vredsum.vs", "vwaddu.wv","vmsbc.vvm",
-"vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmseq.vv", "vmsne.vv", "vredmin.vs", "vredminu.vs", "vwadd.wv", "vmadc.vvm", "vwredsum.vs", "vwredsumu.vs",
- "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vredor.vs", "vredxor.vs",
- "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
- "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
- "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
+          "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmseq.vv", "vmsne.vv", "vredmin.vs", "vredminu.vs", "vwadd.wv", "vmadc.vvm", "vwredsum.vs", "vwredsumu.vs",
+          "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vredor.vs", "vredxor.vs",
+          "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
+          "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
+          "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
 
 vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vmadc.vxm", "vwaddu.wx", "vwmaccus.vx",
-"vmadc.vx", "vmsbc.vxm", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
-"vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx", 
-"vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx", "vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx",
-"vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vslide1down.vx", "vslide1up.vx",
-"vssrl.vx", "vssra.vx", "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx", "vnclip.wx", "vnclipu.wx", "vnsra.wx", "vnsrl.wx"]
+          "vmadc.vx", "vmsbc.vxm", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
+          "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx",
+          "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx", "vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx",
+          "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vslide1down.vx", "vslide1up.vx",
+          "vssrl.vx", "vssra.vx", "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx", "vnclip.wx", "vnclipu.wx", "vnsra.wx", "vnsrl.wx"]
 
-vitype = ["vadd.vi", "vrsub.vi", "vmadc.vim", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi", 
-"vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
+vitype = ["vadd.vi", "vrsub.vi", "vmadc.vim", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi",
+          "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
 
 vrvtype = ["vcpop.m", "vfirst.m", "vmv.vx", "vmv.v.x"]
 
@@ -2601,7 +2583,6 @@ vxmtype = ["vsbc.vxm", "vmerge.vxm"]
 mvvtype = ["vnmsub.vv"]
 vvmtype = ["vmxnor.mm", "vmxor.mm", "vcompress.vm", "vmnand.mm", "vmnor.mm", "vmor.mm", "vmorn.mm"]
 vectortypes = vvmtype + mvvtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype
-#!#!#!
 
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
@@ -2710,7 +2691,7 @@ if __name__ == '__main__':
              30: "inf",
              31: "nan" }
 
-  # TODO: auipc missing, check whatelse is missing in ^these^ types
+    # TODO: auipc missing, check whatelse is missing in ^these^ types
 
   author = "David_Harris@hmc.edu"
   xlens = [32, 64]
@@ -2719,7 +2700,7 @@ if __name__ == '__main__':
   fcorners = []
 
 
-  # setup
+    # setup
   seed(0) # make tests reproducible
   corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
   corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
@@ -2890,7 +2871,7 @@ if __name__ == '__main__':
   # generate files for each test
   for xlen in xlens:
     corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
-#      for E_ext in [False, True]:
+  #     for E_ext in [False, True]:
     for E_ext in [False]: # for testing only ***
       if (E_ext):
         extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]
@@ -2901,7 +2882,7 @@ if __name__ == '__main__':
         E_suffix = ""
         maxreg = 31 # I uses registers x0-x31
 
-      for extension in extensions:  
+      for extension in extensions:
         print(extension)
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
@@ -2929,7 +2910,7 @@ if __name__ == '__main__':
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
         corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
         rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
-        ##TODO: How to deal with unsigned vs signed vector instructions! 
+        ##TODO: How to deal with unsigned vs signed vector instructions!
         if (xlen == 32):
           corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         else:
@@ -2988,7 +2969,7 @@ if __name__ == '__main__':
           if test in floattypes:
             float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
             f.write(float_en)
-            
+
           if test in vectortypes:
             sew_match = re.search(r"/Vx(\d+)", pathname)
             if sew_match is None:
