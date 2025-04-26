@@ -22,7 +22,7 @@ main:
     /////////////////////////////////
 
     li t1,1        #load a test value
-    .align 2       #align the next instruction to a 4 byte boundary 
+    .align 2       #align the next instruction to a 4 byte boundary
 
     //test all six types of taken branches to a misaligned address
 
@@ -44,7 +44,7 @@ main:
     bge t1, x0, .+6
     .word 0x00010013
 
-    //bltu test 
+    //bltu test
     bltu x0, t1, .+6
     .word 0x00010013
 
@@ -72,7 +72,7 @@ main:
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_jal
-    ///////////////////////////////// 
+    /////////////////////////////////
     .align 2 //Ensure jumps start aligned
 
     jal   x0,  .+6
@@ -85,7 +85,7 @@ main:
     .align 2 //Ensure jumps start aligned
 
     // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 00
-    auipc   t0, 0           
+    auipc   t0, 0
     addi    t0, t0, 8       # 8 mod 4 = 0, so lower two bits become 00
     jalr    t1, t0, 8       #offset 8 mod = 0, so lower two bits become 00
     .word   0x00010013
@@ -139,7 +139,7 @@ main:
     // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 00
     auipc   t1, 0
     addi    t1, t1, 8       # 8 mod 4 = 0, so rs1[1:0] becomes 00
-    jalr    t1, t1, 6     
+    jalr    t1, t1, 6
     .word   0x00010013
 
     // test offset[1:0] = 10, odd multiple of 2+1, rs1[1:0] = 01
@@ -203,9 +203,9 @@ main:
     //ExceptionsInstr.S tests all other illegal instructions exhaustively
 
     // Attempt to execute illegal instructions
-    .word 0x00000000 
+    .word 0x00000000
     .word 0xFFFFFFFF
- 
+
     /////////////////////////////////
     //cp_illegal_instruction_seed
     /////////////////////////////////
@@ -223,7 +223,7 @@ main:
     // Attempt to read from CSR 0x000, which is an invalid CSR address
     lui t2, 1
     csrrw t1, 0, t2 //check if needed
-    csrrs t1, 0, t2  
+    csrrs t1, 0, t2
     csrrc t1, 0, t2
     csrrwi t1, 0, 1 //check if needed
     csrrsi t1, 0, 1
@@ -253,16 +253,16 @@ load_loop:
 
     # The following five load instructions will use the same effective address.
     # Depending on the current offset, some of these accesses are misaligned
-    # relative to the load's natural alignment. In such cases, the processor 
+    # relative to the load's natural alignment. In such cases, the processor
     # will trigger a load misaligned exception, caught by trap_handler.
-    
+
     lh      t2, 0(t1)     # load halfword (16 bits)
     lhu     t2, 0(t1)     # load halfword unsigned
     lw      t2, 0(t1)     # load word (32 bits)
     lb      t2, 0(t1)     # load byte (signed)
     lbu     t2, 0(t1)     # load byte (unsigned)
-   
-   # Attempt to load doubleword for RV64  
+
+   # Attempt to load doubleword for RV64
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lwu     t2, 0(t1)     # load word (unsigned)
@@ -339,7 +339,7 @@ store_loop:
     /////////////////////////////////
 
     # Load the illegal address into a register
-    la t0, ACCESS_FAULT_ADDRESS 
+    la t0, ACCESS_FAULT_ADDRESS
 
     # Attempt to store byte
     li t1, 0xAB
@@ -367,7 +367,7 @@ store_loop:
 
     //switch from machine mode to machine mode
     li a0, 3
-    ecall     
+    ecall
 
     /////////////////////////////////
     //cp_misaligned_priority
@@ -388,16 +388,16 @@ load_loop_priority:
 
     # The following five load instructions will use the same effective address.
     # Depending on the current offset, these accesses are misaligned and on a fault access
-    # relative to the load's natural alignment. In such cases, the processor 
+    # relative to the load's natural alignment. In such cases, the processor
     # will trigger a load misaligned exception, caught by trap_handler.
-    
+
     lh      t2, 0(t1)     # load halfword (16 bits)
     lhu     t2, 0(t1)     # load halfword unsigned
     lw      t2, 0(t1)     # load word (32 bits)
     lb      t2, 0(t1)     # load byte (signed)
     lbu     t2, 0(t1)     # load byte (unsigned)
-   
-   # Attempt to load doubleword for RV64  
+
+   # Attempt to load doubleword for RV64
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lwu     t2, 0(t1)     # load word (unsigned)
@@ -407,7 +407,7 @@ load_loop_priority:
 
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
-    blt     t0, t5, load_loop_priority 
+    blt     t0, t5, load_loop_priority
 
     # Initialize loop counter (offset) from 0 to 7
     li      t0, 0         # t0 = loop index (offset)
@@ -445,7 +445,7 @@ store_loop_priority:
     # Increment loop counter and iterate if less than 8.
     addi    t0, t0, 1
     blt     t0, t5, store_loop_priority
-    
+
     /////////////////////////////////
     //cp_mstatus_ie
     /////////////////////////////////

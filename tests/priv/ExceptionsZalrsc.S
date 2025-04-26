@@ -3,7 +3,7 @@
 //
 // Written: Roman De Santos rdesantos@hmc.edu 1 April 2025
 //
-// Purpose: Functional coverage test for Zalrsc extension Exceptions 
+// Purpose: Functional coverage test for Zalrsc extension Exceptions
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
@@ -24,7 +24,7 @@ loop:
 
     // Call the atomic_instr function
     // a0 = misalignment value (loop counter), No instruction access fault (a1 = 0)
-    li  a1, 0       
+    li  a1, 0
     jal atomic_instr
 
     // loop update
@@ -37,18 +37,18 @@ loop:
 //////////////////////////////////////////////////////////////////
     // Call the atomic_instr function
     // No misalignment a2 = 0, instruction access fault (a1 = 1)
-    li  a0, 0        
-    li  a1, 1       
+    li  a0, 0
+    li  a1, 1
     jal atomic_instr
 
 ////////////////////////
-//cp_misaligned_priority 
+//cp_misaligned_priority
 ////////////////////////
 
     // Call the atomic_instr function
     // Enable misalignment a2 = 1, enable instruction access fault (a1 = 1)
-    li  a0, 1        
-    li  a1, 1        
+    li  a0, 1
+    li  a1, 1
     jal atomic_instr
 
 
@@ -57,7 +57,7 @@ finished:
 
 // Function: atomic_instr
 // Purpose: Tests the lr.x and sc.x instructions from the Zalsc extension.
-// This function tests misaligned and access fault addresses with lr.x and sc.x. 
+// This function tests misaligned and access fault addresses with lr.x and sc.x.
 //
 // The function takes two arguments:
 // a0: The misalignment value of rs1.
@@ -70,10 +70,10 @@ atomic_instr:
 
     li      t1, 0xDEADBEEF
 
-    sw      t1, 0(t0)          
-    sw      t1, 4(t0)          
-    sw      t1, 8(t0)          
-    sw      t1, 12(t0)  
+    sw      t1, 0(t0)
+    sw      t1, 4(t0)
+    sw      t1, 8(t0)
+    sw      t1, 12(t0)
 
     // Load the Access Fault address if enabled
     li  t1, 1
@@ -81,11 +81,11 @@ atomic_instr:
 
     li  t0, ACCESS_FAULT_ADDRESS
 
- skipIAF: 
+ skipIAF:
     // Update scratch/Instruction fault address to be misaligned based on a0 argument
     add t0, a0, t0
 
-    // Attempt an sc.w with the same address as lr.w 
+    // Attempt an sc.w with the same address as lr.w
     lr.w   t4, (t0)        // Load the current 32-bit value from the memory address in a0,
 
     addi   t4, t4, 2       // Update loaded value
@@ -105,7 +105,7 @@ atomic_instr:
     // Attempt a sc.w out of reservation range
     addi    t4, t4, 2     // update value to distinguish from previous sc.w
 
-    // Increment address to be outside of reserved range 
+    // Increment address to be outside of reserved range
     li t3, 4000
     add t1, t0, t3
 
@@ -132,16 +132,16 @@ atomic_instr:
             // Attempt a sc.d out of reservation range
             addi    t4, t4, 2     // update value to distinguish from previous sc.d
 
-            // Increment address to be outside of reserved range 
+            // Increment address to be outside of reserved range
             li t3, 4000
             add t1, t0, t3
 
             lr.d   t4, (t0)
 
-            sc.d   t2, t4, (t1)   // address in t0 from previous lr.d is significantly different from t1  
+            sc.d   t2, t4, (t1)   // address in t0 from previous lr.d is significantly different from t1
         #endif
     #endif
 
 
 
-    ret                 
+    ret

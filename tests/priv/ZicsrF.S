@@ -27,34 +27,34 @@ cp_fcsr_frm_write:
     csrr    s0, fcsr        //  Save the original fcsr CSR
 
     //  Set up clear/dirty mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     //  Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     //  Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
+    li      t3, 0x4000
     //  Set up loop limit
-    li      t4, 8         
+    li      t4, 8
 
   fcsr_frm_write_loop:
 
     slli    t5, t0, 5       //  Shift counter to the fmr bits in the fcsr CSR
 
-    //  Write to frm when mstatus.FS = 01 
+    //  Write to frm when mstatus.FS = 01
         // mstatus.FS = 01
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrw   x0, fcsr, t5      
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrw   x0, fcsr, t5
 
     //  Write to frm when mstatus.FS = 10
         // mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrw   x0, fcsr, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrw   x0, fcsr, t5
 
     //  Write to frm when mstatus.FS = 11
         // mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrw   x0, fcsr, t5 
+        csrs    mstatus, t1
+    csrrw   x0, fcsr, t5
 
     addi    t0, t0, 1                 //  Increment counter
     blt     t0, t4, fcsr_frm_write_loop    //  Loop until t0 equals 8
@@ -73,37 +73,37 @@ cp_fcsr_fflags_write:
     csrr    s0, fcsr        //  Save the original fcsr CSR
 
     //  Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     //  Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     //  Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
+    li      t3, 0x4000
     //  Set up loop limit in a different register (use t4)
-    li      t4, 32         
+    li      t4, 32
 
  fcsr_fflags_write_loop:
 
     //  fflags are bits 0-4 of the fcsr CSR, no shift necessary
 
-    //  Write to frm when mstatus.FS = 01 
-    csrc    mstatus, t1   
-    csrs    mstatus, t2 
-    csrrw   x0, fcsr, t0      
+    //  Write to frm when mstatus.FS = 01
+    csrc    mstatus, t1
+    csrs    mstatus, t2
+    csrrw   x0, fcsr, t0
 
     //  Write to frm when mstatus.FS = 10
-    csrc    mstatus, t1   
-    csrs    mstatus, t3 
-    csrrw   x0, fcsr, t0         
+    csrc    mstatus, t1
+    csrs    mstatus, t3
+    csrrw   x0, fcsr, t0
 
     //  Write to frm when mstatus.FS = 11
-    csrs    mstatus, t1 
-    csrrw   x0, fcsr, t0 
+    csrs    mstatus, t1
+    csrrw   x0, fcsr, t0
 
     addi    t0, t0, 1                         //  Increment counter
     blt     t0, t4, fcsr_fflags_write_loop    //  Loop until t0 equals 8
 
     //Restore the original frm CSR
-    csrrw   x2, fcsr, s0	 
+    csrrw   x2, fcsr, s0
 
 ///////////////////////
 //cp_fcsrwalk
@@ -116,71 +116,71 @@ cp_fcsrwalk:
     csrr    s0, fcsr        //  Save the original frm csr
 
     //  Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     //  Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     //  Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000    
+    li      t3, 0x4000
     // Initialize walking pattern
-    li      t5, 1           
-      
+    li      t5, 1
+
 
  fcsrwalk_loop:
 
-    // walking 1 
+    // walking 1
 
         // clear csr
-        csrrw x0, fcsr, x0 
-        //  Write to fcsr when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrs   x0, fcsr, t5   
+        csrrw x0, fcsr, x0
+        //  Write to fcsr when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrs   x0, fcsr, t5
 
         // clear csr
-        csrrw x0, fcsr, x0 
+        csrrw x0, fcsr, x0
         //  Write to fcsr when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrs   x0, fcsr, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrs   x0, fcsr, t5
 
         // clear csr
-        csrrw x0, fcsr, x0 
+        csrrw x0, fcsr, x0
         //  Write to fcsr when mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrs   x0, fcsr, t5 
+        csrs    mstatus, t1
+    csrrs   x0, fcsr, t5
 
     // walking 0
-    
+
     //set csr to all 1s
     li t6, -1           //  all 1s
     csrrs t6, fcsr, t1    //  set all bits
 
         // clear csr
-        csrrw x0, fcsr, x0 
-        //  Write to fcsr when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrc   x0, fcsr, t5   
+        csrrw x0, fcsr, x0
+        //  Write to fcsr when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrc   x0, fcsr, t5
 
         // clear csr
-        csrrw x0, fcsr, x0 
+        csrrw x0, fcsr, x0
         //  Write to fcsr when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrc   x0, fcsr, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrc   x0, fcsr, t5
 
         // clear csr
-        csrrw x0, fcsr, x0 
+        csrrw x0, fcsr, x0
         //  Write to fcsr when mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrc   x0, fcsr, t5 
+        csrs    mstatus, t1
+    csrrc   x0, fcsr, t5
 
     // Compute walking pattern:
     slli     t5, t5, 1             // walk one
     bnez     t5, fcsrwalk_loop     // Loop until t5 is shifted past XLEN
 
     //  Restore the original fcsr
-    csrrw   x2, fcsr, s0 	 
+    csrrw   x2, fcsr, s0
 
 ///////////////////////
 //cp_frm_write
@@ -192,34 +192,34 @@ cp_frm_write:
     csrr    s0, frm         //  Save the original frm CSR
 
     //  Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     //  Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     //  Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
+    li      t3, 0x4000
     //  Set up loop limit in a different register (use t4)
-    li      t4, 8         
+    li      t4, 8
 
  frm_write_loop:
-    //  Write to frm when mstatus.FS = 01 
-    csrc    mstatus, t1   
-    csrs    mstatus, t2 
-    csrrw   x0, frm, t0      
+    //  Write to frm when mstatus.FS = 01
+    csrc    mstatus, t1
+    csrs    mstatus, t2
+    csrrw   x0, frm, t0
 
     //  Write to frm when mstatus.FS = 10
-    csrc    mstatus, t1   
-    csrs    mstatus, t3 
-    csrrw   x0, frm, t0         
+    csrc    mstatus, t1
+    csrs    mstatus, t3
+    csrrw   x0, frm, t0
 
     //  Write to frm when mstatus.FS = 11
-    csrs    mstatus, t1 
-    csrrw   x0, frm, t0 
+    csrs    mstatus, t1
+    csrrw   x0, frm, t0
 
     addi    t0, t0, 1                 // Increment counter
     blt     t0, t4, frm_write_loop    // Loop until t0 equals 8
 
     //Restore the original frm CSR
-    csrrw   x2, frm, s0	 
+    csrrw   x2, frm, s0
 
 ///////////////////////
 //cp_frmwalk
@@ -232,68 +232,68 @@ cp_frm_walk:
     csrr    s0, frm        // Save the original frm csr
 
     //  Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     //  Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     //  Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
+    li      t3, 0x4000
     //initialize walking pattern
-    li      t5, 1 
+    li      t5, 1
 
  fcsr_frm_walk_loop:
-    //walking 1 
+    //walking 1
         // clear csr
-        csrrw x0, frm, x0 
-        // Write to fcsr when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrs   x0, frm, t5   
+        csrrw x0, frm, x0
+        // Write to fcsr when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrs   x0, frm, t5
 
         // clear csr
-        csrrw x0, frm, x0 
+        csrrw x0, frm, x0
         // Write to fcsr when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrs   x0, frm, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrs   x0, frm, t5
 
         // clear csr
-        csrrw x0, frm, x0 
+        csrrw x0, frm, x0
         //  Write to fcsr when mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrs   x0, frm, t5 
+        csrs    mstatus, t1
+    csrrs   x0, frm, t5
 
     //walking 0
-    
+
     //set csr to all 1s
     li t6, -1           // all 1s
     csrrs t6, frm, t1   //  set all bits
 
             // clear csr
-        csrrw x0, frm, x0 
-        //  Write to fcsr when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrc   x0, frm, t5   
+        csrrw x0, frm, x0
+        //  Write to fcsr when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrc   x0, frm, t5
 
         // clear csr
-        csrrw x0, frm, x0 
+        csrrw x0, frm, x0
         //  Write to fcsr when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrc   x0, frm, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrc   x0, frm, t5
 
         // clear csr
-        csrrw x0, frm, x0 
+        csrrw x0, frm, x0
         // Write to fcsr when mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrc   x0, frm, t5 
+        csrs    mstatus, t1
+    csrrc   x0, frm, t5
 
     // Compute walking pattern:
     slli     t5, t5, 1              // walk one
     bnez    t5, fcsr_frm_walk_loop  // Loop until t5 is shifted past XLEN
 
     // Restore the original fcsr
-    csrrw   x2, frm, s0	 
+    csrrw   x2, frm, s0
 
 
 ///////////////////////
@@ -306,34 +306,34 @@ cp_fflags_write:
     csrr    s0, fflags      // Save the original fflags CSR
 
     // Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     // Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     // Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
-    // Set up loop limit 
-    li      t4, 32         
+    li      t3, 0x4000
+    // Set up loop limit
+    li      t4, 32
 
  fflags_write_loop:
-    // Write to frm when mstatus.FS = 01 
-    csrc    mstatus, t1   
-    csrs    mstatus, t2 
-    csrrw   x0, fflags, t0      
+    // Write to frm when mstatus.FS = 01
+    csrc    mstatus, t1
+    csrs    mstatus, t2
+    csrrw   x0, fflags, t0
 
     // Write to frm when mstatus.FS = 10
-    csrc    mstatus, t1   
-    csrs    mstatus, t3 
-    csrrw   x0, fflags, t0         
+    csrc    mstatus, t1
+    csrs    mstatus, t3
+    csrrw   x0, fflags, t0
 
     // Write to frm when mstatus.FS = 11
-    csrs    mstatus, t1 
-    csrrw   x0, fflags, t0 
+    csrs    mstatus, t1
+    csrrw   x0, fflags, t0
 
     addi    t0, t0, 1                    // Increment counter
     blt     t0, t4, fflags_write_loop    // Loop until t0 equals 8
 
     //Restore the original fflags CSR
-    csrrw   x2, frm, s0	 
+    csrrw   x2, frm, s0
 
 ///////////////////////
 //cp_fflagswalk
@@ -343,68 +343,68 @@ cp_fflags_write:
 // Restores original CSR value at the end of the function.
 cp_fflagswalk:
     // Save the original frm csr
-    csrr    s0, fflags        
+    csrr    s0, fflags
     // Set up clear mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     // Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     // Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000  
+    li      t3, 0x4000
     // Initialize walking pattern
-    li      t5, 1           
-      
+    li      t5, 1
+
 
  fflagswalk_loop:
 
-    //walking 1 
+    //walking 1
         // clear csr
-        csrrw x0, fflags, x0 
-        // Write to fflags when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
+        csrrw x0, fflags, x0
+        // Write to fflags when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
 
-    csrrs   x0, fflags, t5   
+    csrrs   x0, fflags, t5
 
         // clear csr
-        csrrw x0, fflags, x0 
+        csrrw x0, fflags, x0
         // Write to fflags when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
+        csrc    mstatus, t1
+        csrs    mstatus, t3
 
-    csrrs   x0, fflags, t5         
+    csrrs   x0, fflags, t5
 
         // clear csr
-        csrrw x0, fflags, x0 
+        csrrw x0, fflags, x0
         // Write to fflags when mstatus.FS = 11
-        csrs    mstatus, t1 
+        csrs    mstatus, t1
 
-    csrrs   x0, fflags, t5 
+    csrrs   x0, fflags, t5
 
     // walking 0
-    
+
     //set csr to all 1s
-    li t6, -1           
-    csrrs t6, fflags, t1    
+    li t6, -1
+    csrrs t6, fflags, t1
 
         // clear csr
-        csrrw x0, fflags, x0 
-        // Write to fflags when mstatus.FS = 01 
-        csrc    mstatus, t1   
-        csrs    mstatus, t2 
-    csrrc   x0, fflags, t5   
+        csrrw x0, fflags, x0
+        // Write to fflags when mstatus.FS = 01
+        csrc    mstatus, t1
+        csrs    mstatus, t2
+    csrrc   x0, fflags, t5
 
         // clear csr
-        csrrw x0, fflags, x0 
+        csrrw x0, fflags, x0
         // Write to fflags when mstatus.FS = 10
-        csrc    mstatus, t1   
-        csrs    mstatus, t3 
-    csrrc   x0, fflags, t5         
+        csrc    mstatus, t1
+        csrs    mstatus, t3
+    csrrc   x0, fflags, t5
 
         // clear csr
-        csrrw x0, fflags, x0 
+        csrrw x0, fflags, x0
         // Write to fflags when mstatus.FS = 11
-        csrs    mstatus, t1 
-    csrrc   x0, fflags, t5 
+        csrs    mstatus, t1
+    csrrc   x0, fflags, t5
 
     // Compute walking pattern:
     slli     t5, t5, 1      // (walking one)
@@ -418,16 +418,16 @@ cp_fflagswalk:
 ///////////////////////
 
     // Set up clear/set mask for mstatus.FS (bits 13 and 14)
-    li      t1, 0x6000      
+    li      t1, 0x6000
     // Set up init mask for mstatus.FS (FS = 01)
-    li      t2, 0x2000      
+    li      t2, 0x2000
     // Set up clean mask for mstatus.FS (FS = 10)
-    li      t3, 0x4000 
+    li      t3, 0x4000
 
  // Set mstatus.FS to 11 to enable fp for initialization
     csrs mstatus, t1
 
-    // Initialize floating point registers used 
+    // Initialize floating point registers used
 
     // zero
     li t0, 0
@@ -455,13 +455,13 @@ cp_fflagswalk:
 
 // Test when mstatus.FS = 00
         // mstatus.FS = 00
-        csrc    mstatus, t1 
+        csrc    mstatus, t1
 
     //inf – inf sets invalid flag
     fsub.s   f7, f4, f4
 
         // mstatus.FS = 00
-        csrc    mstatus, t1 
+        csrc    mstatus, t1
 
     // 1/0 sets division by zero flag
     fdiv.s   f8, f1, f0
@@ -473,7 +473,7 @@ cp_fflagswalk:
     fadd.s   f9, f6, f6
 
         // mstatus.FS = 00
-        csrc    mstatus, t1 
+        csrc    mstatus, t1
 
     // smallest * smallest sets underflow flag
     fmul.s   f10, f5, f5
@@ -487,35 +487,35 @@ cp_fflagswalk:
 // Test when mstatus.FS = 01
         // mstatus.FS = 01
         csrc    mstatus, t1
-        csrs    mstatus, t2 
+        csrs    mstatus, t2
 
     //inf – inf sets invalid flag
-    fsub.s   f7, f4, f4  
+    fsub.s   f7, f4, f4
 
         // mstatus.FS = 01
         csrc    mstatus, t1
-        csrs    mstatus, t2 
+        csrs    mstatus, t2
 
     // 1/0 sets division by zero flag
-    fdiv.s   f8, f1, f0      
+    fdiv.s   f8, f1, f0
 
         // mstatus.FS = 01
         csrc    mstatus, t1
-        csrs    mstatus, t2 
+        csrs    mstatus, t2
 
-    // largest + largest sets overflow flag  
+    // largest + largest sets overflow flag
     fadd.s   f9, f6, f6
 
         // mstatus.FS = 01
         csrc    mstatus, t1
-        csrs    mstatus, t2 
+        csrs    mstatus, t2
 
     // smallest * smallest sets underflow flag
     fmul.s   f10, f5, f5
 
         // mstatus.FS = 01
         csrc    mstatus, t1
-        csrs    mstatus, t2 
+        csrs    mstatus, t2
 
     // 1/3 sets inexact flag
     fdiv.s   f11, f1, f3
@@ -523,54 +523,54 @@ cp_fflagswalk:
 // Test when mstatus.FS = 10
         // msstatus.FS = 10
         csrc    mstatus, t1
-        csrs    mstatus, t3 
+        csrs    mstatus, t3
 
     // inf – inf sets invalid flag
     fsub.s   f7, f4, f4
 
         // mstatus.FS = 10
         csrc    mstatus, t1
-        csrs    mstatus, t3 
-    
+        csrs    mstatus, t3
+
     // 1/0 sets division by zero flag
     fdiv.s   f8, f1, f0
 
         // mstatus.FS = 10
         csrc    mstatus, t1
-        csrs    mstatus, t3 
+        csrs    mstatus, t3
 
     // largest + largest sets overflow flag
     fadd.s   f9, f6, f6
 
         // mstatus.FS = 10
         csrc    mstatus, t1
-        csrs    mstatus, t3 
-    
+        csrs    mstatus, t3
+
     // smallest * smallest sets underflow flag
     fmul.s   f10, f5, f5
 
         // msstatus.FS = 10
         csrc    mstatus, t1
-        csrs    mstatus, t3 
+        csrs    mstatus, t3
 
     // 1/3 sets inexact flag
     fdiv.s   f11, f1, f3
 
 // Test when mstatus.FS = 11
         // mstatus.FS = 11
-        csrs    mstatus, t1   
+        csrs    mstatus, t1
 
     // inf – inf sets invalid flag
     fsub.s   f7, f4, f4
 
         // mstatus.FS = 11
-        csrs    mstatus, t1 
+        csrs    mstatus, t1
 
     // 1/0 sets division by zero flag
     fdiv.s   f8, f1, f0
 
         // mstatus.FS = 11
-        csrs    mstatus, t1  
+        csrs    mstatus, t1
 
     // largest + largest sets overflow flag
     fadd.s   f9, f6, f6
@@ -653,7 +653,7 @@ fp_instructions:
     sw     t1, 8(t5)
     sw     t1, 12(t5)
 
-    // Initialize floating point registers used 
+    // Initialize floating point registers used
     li t0, 1
     fcvt.s.w f0, t0
 
@@ -707,212 +707,212 @@ fp_instructions:
     li t1, 2
     add t0, t0, t1
 
-    // --- Floating-Point Memory Operations ---   
+    // --- Floating-Point Memory Operations ---
 
         // write a0 to mstatus.FS
-        csrc mstatus, s1   
-        csrs mstatus, s2  
-    fsw    f0, 0(a4)      
+        csrc mstatus, s1
+        csrs mstatus, s2
+    fsw    f0, 0(a4)
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    flw    f1, 0(a4)      
+        csrs mstatus, s2
+    flw    f1, 0(a4)
 
     // --- Floating-Point Arithmetic Operations ---
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fadd.s f2, f0, f1 
+        csrs mstatus, s2
+    fadd.s f2, f0, f1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsub.s f3, f0, f1 
+        csrs mstatus, s2
+    fsub.s f3, f0, f1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmul.s f4, f0, f1  
+        csrs mstatus, s2
+    fmul.s f4, f0, f1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fdiv.s f5, f0, f1        
+        csrs mstatus, s2
+    fdiv.s f5, f0, f1
 
     // --- Floating‑Point Conversions ---
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.w.s t2, f0  
+        csrs mstatus, s2
+    fcvt.w.s t2, f0
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.s.w f6, t2    
+        csrs mstatus, s2
+    fcvt.s.w f6, t2
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.s.d f7, f0          
+        csrs mstatus, s2
+    fcvt.s.d f7, f0
 
     // --- Floating Point Arithmetic ---
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmadd.s f8, f0, f1, f2 
+        csrs mstatus, s2
+    fmadd.s f8, f0, f1, f2
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsqrt.s f9, f0    
+        csrs mstatus, s2
+    fsqrt.s f9, f0
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsgnj.s f10, f0, f1   
+        csrs mstatus, s2
+    fsgnj.s f10, f0, f1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    feq.s  t3, f0, f1       
+        csrs mstatus, s2
+    feq.s  t3, f0, f1
 
     // --- Move Bit Representations ---
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmv.x.w t4, f0  
+        csrs mstatus, s2
+    fmv.x.w t4, f0
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmv.w.x f11, t4         
+        csrs mstatus, s2
+    fmv.w.x f11, t4
 
     // --- Floating‑Point Classification and Minimum ---
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fclass.s t5, f0 
+        csrs mstatus, s2
+    fclass.s t5, f0
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2  
-    fmin.s f12, f0, f1  
+        csrs mstatus, s2
+    fmin.s f12, f0, f1
 
-    // --- Zfa Extension Instructions ---   
+    // --- Zfa Extension Instructions ---
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fround.s f14, f0         
+        csrs mstatus, s2
+    fround.s f14, f0
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fli.s  f2, 2.5               
+        csrs mstatus, s2
+    fli.s  f2, 2.5
 
     // --- CSR Operations on Floating‑Point Status Registers ---
 
     // Note for the following csrrw and  csrrc instructions:
-    // Since fcsr, frm, and fflags are part of the same csr, frm is restored after each 
+    // Since fcsr, frm, and fflags are part of the same csr, frm is restored after each
     // csrrw/csrrc instruction. This prevents accidental modification of the frm register.
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrw  t1, fcsr, x0 
+        csrs mstatus, s2
+    csrrw  t1, fcsr, x0
 
         // Restore frm
-        csrw frm, a1 
+        csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrw  t0, frm, a1   // a1 stores the value of frm
 
         // Restore frm
         csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrw  t1, fflags, x0
 
         // Restore frm
         csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrs  t1, fcsr, t1 
+        csrs mstatus, s2
+    csrrs  t1, fcsr, t1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrs  t1, fflags, t1  
-        
+        csrs mstatus, s2
+    csrrs  t1, fflags, t1
+
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrs  t0, frm, a1   // a1 stores the value of frm
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrc  t1, fcsr, t1   
-
-        // Restore frm
-        csrw frm, a1
-        // write a1 to mstatus.FS
-        csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrc  t1, fcsr, t1
 
         // Restore frm
         csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2  
-    csrrc  t1, frm, a1   // a1 stores the value of frm 
+        csrs mstatus, s2
+    csrrc  t1, fcsr, t1
 
         // Restore frm
         csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrc  t1, fflags, t1  
-                
+        csrs mstatus, s2
+    csrrc  t1, frm, a1   // a1 stores the value of frm
+
+        // Restore frm
+        csrw frm, a1
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrr t1,  frm 
+        csrs mstatus, s2
+    csrrc  t1, fflags, t1
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
+    csrr t1,  frm
+
+        // write a1 to mstatus.FS
+        csrc mstatus, s1
+        csrs mstatus, s2
     csrr t1,  fflags
 
         // write a1 to mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrr t1,  fcsr  
+        csrs mstatus, s2
+    csrr t1,  fcsr
 
     // 32-bit only instructions
     #ifdef __riscv_xlen
     #if __riscv_xlen == 32
             // write a1 to mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmv.x.w t1, f0
-        
+
             // write a1 to mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmvh.x.d t2, f0
 
             // write a1 to mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmvp.d.x f1, t1, t2
     #endif
-    #endif 
+    #endif
 
     ret

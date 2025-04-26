@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 16 Feb 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
-// 
+//
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +78,7 @@ covergroup InterruptsU_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_user_mti:    cross priv_mode_u, mtvec_mode, mstatus_mie, mie_mtie_one, m_timer_intr, mip_mtip; 
+    cp_user_mti:    cross priv_mode_u, mtvec_mode, mstatus_mie, mie_mtie_one, m_timer_intr, mip_mtip;
     cp_user_msi:    cross priv_mode_u, mtvec_mode, mstatus_mie, mie_msie_one, m_soft_intr,  mip_msip;
     cp_user_mei:    cross priv_mode_u, mtvec_mode, mstatus_mie, mie_meie_one, m_ext_intr,   mip_meip;
     cp_wfi:         cross priv_mode_u, wfi,        mstatus_mie, mstatus_tw, mie_mtie_one, m_timer_intr;

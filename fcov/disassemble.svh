@@ -7,15 +7,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -444,7 +444,7 @@ function string disassemble (logic [31:0] instrRaw);
     XNOR:   $sformat(decoded, "xnor %s, %s, %s", rd, rs1, rs2);
   `ifdef XLEN32
     REV8_RV32: $sformat(decoded, "rev8 %s, %s", rd, rs1);
-    RORI_RV32: $sformat(decoded, "rori %s, %s, %0d", rd, rs1, uimm[4:0]);      
+    RORI_RV32: $sformat(decoded, "rori %s, %s, %0d", rd, rs1, uimm[4:0]);
     ZEXT_H_RV32: $sformat(decoded, "zext.h %s, %s", rd, rs1);
   `else // XLEN64
     REV8:      $sformat(decoded, "rev8 %s, %s", rd, rs1);
@@ -637,7 +637,7 @@ function string disassemble (logic [31:0] instrRaw);
     VMADC_VV:     $sformat(decoded, "vmadc.vv %s, %s, %s",        vd, vs2, vs1);
     VMADC_VX:     $sformat(decoded, "vmadc.vx %s, %s, %s",        vd, vs2, rs1);
     VMADC_VI:     $sformat(decoded, "vmadc.vi %s, %s, %0d",       vd, vs2, imm5);
-    VMADC_VVM:    $sformat(decoded, "vmadc.vvm %s, %s, %s, v0",   vd, vs2, vs1); 
+    VMADC_VVM:    $sformat(decoded, "vmadc.vvm %s, %s, %s, v0",   vd, vs2, vs1);
     VMADC_VXM:    $sformat(decoded, "vmadc.vxm %s, %s, %s, v0",   vd, vs2, rs1);
     VMADC_VIM:    $sformat(decoded, "vmadc.vim %s, %s, %0d, v0",  vd, vs2, imm5);
     VMSBC_VV:     $sformat(decoded, "vmsbc.vv %s, %s, %s",        vd, vs2, vs1);
@@ -829,7 +829,7 @@ function string disassemble (logic [31:0] instrRaw);
 
     VRGATHEREI16_VV:  $sformat(decoded, "vrgatherei16.vv %s, %s, %s%s",   vd, vs2, vs1, vm);
 
-    VLE8_V:       $sformat(decoded, "vle8.v %s, (%s)%s",          vd, rs1, vm); 
+    VLE8_V:       $sformat(decoded, "vle8.v %s, (%s)%s",          vd, rs1, vm);
     VLE16_V:      $sformat(decoded, "vle16.v %s, (%s)%s",         vd, rs1, vm);
     VLE32_V:      $sformat(decoded, "vle32.v %s, (%s)%s",         vd, rs1, vm);
     VLE64_V:      $sformat(decoded, "vle64.v %s, (%s)%s",         vd, rs1, vm);
@@ -849,7 +849,7 @@ function string disassemble (logic [31:0] instrRaw);
     VLOXEI16_V:   $sformat(decoded, "vloxei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
     VLOXEI32_V:   $sformat(decoded, "vloxei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
     VLOXEI64_V:   $sformat(decoded, "vloxei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
-    
+
     VLSEG2E8_V:      $sformat(decoded, "vlseg2e8.v %s, (%s)%s",         vd, rs1, vm);
     VLSEG2E16_V:     $sformat(decoded, "vlseg2e16.v %s, (%s)%s",        vd, rs1, vm);
     VLSEG2E32_V:     $sformat(decoded, "vlseg2e32.v %s, (%s)%s",        vd, rs1, vm);
@@ -994,7 +994,7 @@ function string disassemble (logic [31:0] instrRaw);
     VLOXSEG8EI16_V:   $sformat(decoded, "vloxseg8ei16.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
     VLOXSEG8EI32_V:   $sformat(decoded, "vloxseg8ei32.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
     VLOXSEG8EI64_V:   $sformat(decoded, "vloxseg8ei64.v %s, (%s), %s%s",  vd, rs1, vs2, vm);
-    
+
     VL1RE8_V:         $sformat(decoded, "vl1re8.v %s, (%s)",             vd, rs1);
     VL1RE16_V:        $sformat(decoded, "vl1re16.v %s, (%s)",            vd, rs1);
     VL1RE32_V:        $sformat(decoded, "vl1re32.v %s, (%s)",            vd, rs1);
@@ -1171,10 +1171,10 @@ function string disassemble (logic [31:0] instrRaw);
     VROL_VX:     $sformat(decoded, "vrol.vx %s, %s, %s%s", vd, vs2, rs1, vm);
     VROR_VV:     $sformat(decoded, "vror.vv %s, %s, %s%s", vd, vs2, vs1, vm);
     VROR_VX:     $sformat(decoded, "vror.vx %s, %s, %s%s", vd, vs2, rs1, vm);
-    VROR_VI:     $sformat(decoded, "vror.vi %s, %s, %s%s", vd, vs2, uimm5, vm); 
+    VROR_VI:     $sformat(decoded, "vror.vi %s, %s, %s%s", vd, vs2, uimm5, vm);
     VWSLL_VV:    $sformat(decoded, "vwsll.vv %s, %s, %s%s", vd, vs2, vs1, vm);
     VWSLL_VX:    $sformat(decoded, "vwsll.vx %s, %s, %s%s", vd, vs2, rs1, vm);
-    VWSLL_VI:    $sformat(decoded, "vwsll.vi %s, %s, %s%s", vd, vs2, uimm5, vm);      
+    VWSLL_VI:    $sformat(decoded, "vwsll.vi %s, %s, %s%s", vd, vs2, uimm5, vm);
 
     VCLMUL_VV:   $sformat(decoded, "vclmul.vv %s, %s, %s%s", vd, vs2, vs1, vm);
     VCLMUL_VX:   $sformat(decoded, "vclmul.vx %s, %s, %s%s", vd, vs2, rs1, vm);
@@ -1194,8 +1194,8 @@ function string disassemble (logic [31:0] instrRaw);
     VAESEF_VS:   $sformat(decoded, "vaesef.vs %s, %s", vd, vs2);
 
     VAESZ_VS:     $sformat(decoded, "vaesz.vs %s, %s",                vd, vs2);
-    VAESKF1_VI:   $sformat(decoded, "vaeskf1.vi %s, %s",              vd, uimm5); 
-    VAESKF2_VI:   $sformat(decoded, "vaeskf2.vi %s, %s",              vd, uimm5); 
+    VAESKF1_VI:   $sformat(decoded, "vaeskf1.vi %s, %s",              vd, uimm5);
+    VAESKF2_VI:   $sformat(decoded, "vaeskf2.vi %s, %s",              vd, uimm5);
 
     VSHA2MS_VV:   $sformat(decoded, "vsha2ms.vv %s, %s, %s",              vd, vs2, vs1);
     VSHA2CH_VV:   $sformat(decoded, "vsha2ch.vv %s, %s, %s",              vd, vs2, vs1);

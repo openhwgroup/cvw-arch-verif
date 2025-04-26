@@ -47,7 +47,7 @@ def csrtests(pathname, skipCsrs):
     outfile = open(pathname, 'w')
     sys.stdout = outfile
     for i in range(4096):
-        if (i in skipCsrs): 
+        if (i in skipCsrs):
             continue # skip custom CSRs
         reg1 = randint(1, 31)
         reg2 = randint(1, 31)
@@ -166,7 +166,7 @@ seed(0) # make tests reproducible
 # generate repetitive assembly language tests
 
 # writable registers to test with walking 1s and 0s
-mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"] 
+mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"]
 mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
 uregs = ["fflags", "frm", "fcsr"]
@@ -175,21 +175,21 @@ mcntrs = ["mcycle", "mcountinhibit", # "minstret" commented out because of https
           "mhpmcounter16", "mhpmcounter17", "mhpmcounter18", "mhpmcounter19", "mhpmcounter20", "mhpmcounter21", "mhpmcounter22", "mhpmcounter23", "mhpmcounter24", "mhpmcounter25", "mhpmcounter26", "mhpmcounter27", "mhpmcounter28", "mhpmcounter29", "mhpmcounter30", "mhpmcounter31",
           "mhpmevent3", "mhpmevent4", "mhpmevent5", "mhpmevent6", "mhpmevent7", "mhpmevent8", "mhpmevent9", "mhpmevent10", "mhpmevent11", "mhpmevent12", "mhpmevent13", "mhpmevent14", "mhpmevent15",
           "mhpmevent16", "mhpmevent17", "mhpmevent18", "mhpmevent19", "mhpmevent20", "mhpmevent21", "mhpmevent22", "mhpmevent23", "mhpmevent24", "mhpmevent25", "mhpmevent26", "mhpmevent27", "mhpmevent28", "mhpmevent29", "mhpmevent30", "mhpmevent31"
-          ] 
+          ]
 mcntrsh = ["mcycleh", "minstreth",
           "mhpmcounter3h", "mhpmcounter4h", "mhpmcounter5h", "mhpmcounter6h", "mhpmcounter7h", "mhpmcounter8h", "mhpmcounter9h", "mhpmcounter10h", "mhpmcounter11h", "mhpmcounter12h", "mhpmcounter13h", "mhpmcounter14h", "mhpmcounter15h",
           "mhpmcounter16h", "mhpmcounter17h", "mhpmcounter18h", "mhpmcounter19h", "mhpmcounter20h", "mhpmcounter21h", "mhpmcounter22h", "mhpmcounter23h", "mhpmcounter24h", "mhpmcounter25h", "mhpmcounter26h", "mhpmcounter27h", "mhpmcounter28h", "mhpmcounter29h", "mhpmcounter30h", "mhpmcounter31h",
           "mhpmevent3h", "mhpmevent4h", "mhpmevent5h", "mhpmevent6h", "mhpmevent7h", "mhpmevent8h", "mhpmevent9h", "mhpmevent10h", "mhpmevent11h", "mhpmevent12h", "mhpmevent13h", "mhpmevent14h", "mhpmevent15h",
           "mhpmevent16h", "mhpmevent17h", "mhpmevent18h", "mhpmevent19h", "mhpmevent20h", "mhpmevent21h", "mhpmevent22h", "mhpmevent23h", "mhpmevent24h", "mhpmevent25h", "mhpmevent26h", "mhpmevent27h", "mhpmevent28h", "mhpmevent29h", "mhpmevent30h", "mhpmevent31h"
-          ] 
-cntrs = ["cycle", "time", "instret", 
+          ]
+cntrs = ["cycle", "time", "instret",
           "hpmcounter3", "hpmcounter4", "hpmcounter5", "hpmcounter6", "hpmcounter7", "hpmcounter8", "hpmcounter9", "hpmcounter10", "hpmcounter11", "hpmcounter12", "hpmcounter13", "hpmcounter14", "hpmcounter15",
           "hpmcounter16", "hpmcounter17", "hpmcounter18", "hpmcounter19", "hpmcounter20", "hpmcounter21", "hpmcounter22", "hpmcounter23", "hpmcounter24", "hpmcounter25", "hpmcounter26", "hpmcounter27", "hpmcounter28", "hpmcounter29", "hpmcounter30", "hpmcounter31",
-          ] 
+          ]
 cntrsh = ["cycleh", "timeh", "instreth",
           "hpmcounter3h", "hpmcounter4h", "hpmcounter5h", "hpmcounter6h", "hpmcounter7h", "hpmcounter8h", "hpmcounter9h", "hpmcounter10h", "hpmcounter11h", "hpmcounter12h", "hpmcounter13h", "hpmcounter14h", "hpmcounter15h",
           "hpmcounter16h", "hpmcounter17h", "hpmcounter18h", "hpmcounter19h", "hpmcounter20h", "hpmcounter21h", "hpmcounter22h", "hpmcounter23h", "hpmcounter24h", "hpmcounter25h", "hpmcounter26h", "hpmcounter27h", "hpmcounter28h", "hpmcounter29h", "hpmcounter30h", "hpmcounter31h",
-          ] 
+          ]
 
 uCsrSkip = list(range(0x800, 0x900)) + list(range(0xCC0, 0xD00))
 sCsrSkip = list(range(0x5C0, 0x600)) + list(range(0x6C0, 0x700)) + \

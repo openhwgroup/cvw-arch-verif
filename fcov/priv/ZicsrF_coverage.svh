@@ -1,30 +1,30 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 `define COVER_ZICSRF
 covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
 
     // building blocks for the main coverpoints
     csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011};
     }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
         bins csrrs = {3'b010};
@@ -43,18 +43,18 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         // auto fills 0 through 7
     }
     frm_corners: coverpoint ins.current.rs1_val[2:0] {
-        // auto fills 0 through 7 
+        // auto fills 0 through 7
     }
     fflags_corners: coverpoint ins.current.rs1_val[4:0] {
         // auto fills 0 through 15
     }
-    walking_ones : coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
+    walking_ones : coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) {
         bins b_1[] = { [0:`XLEN-1] };
     }
 
     fadd: coverpoint ins.current.insn {
         wildcard bins fadd = {32'b00000_00_?????_?????_???_?????_1010011};
-    }//                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ assumes single precision since there isn't a good  
+    }//                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ assumes single precision since there isn't a good
     //                                                                      way to specify the fs1 and fs2 values otherwise
     fsub: coverpoint ins.current.insn {
         wildcard bins fsub = {32'b00001_00_?????_?????_???_?????_1010011};
@@ -66,7 +66,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         wildcard bins fmul = {32'b00010_00_?????_?????_???_?????_1010011};
     }
     fs2_zero: coverpoint ins.current.fs2_val[31:0] {
-        bins zero = {32'h00000000};  
+        bins zero = {32'h00000000};
     }
     fs1_one: coverpoint ins.current.fs1_val[31:0] {
         bins one = {32'h3f800000};
@@ -137,7 +137,7 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
         bins clean = {2'b10};
         bins dirty = {2'b11};
     }
-    
+
     // main coverpoints
     cp_fcsr_frm_write:        cross csrrw, fcsr,   fcsr_frm_corners,  mstatus_FS_n0;
     cp_fcsr_fflags_write:     cross csrrw, fcsr,   fflags_corners,    mstatus_FS_n0;

@@ -95,13 +95,13 @@ cp_csrwalk_satp:
 // with interrupt = 0: 0-64, walking 1s in bits 6-(XLEN-2)
     // with interrupt = 0: write scause with 0-64 (0 already done)
     li t1, 64           # upper bound
-    mv t0, x0           # initialize loop counter 
-1:  csrrw t6, scause, t0     # write CSR 
+    mv t0, x0           # initialize loop counter
+1:  csrrw t6, scause, t0     # write CSR
     beq t0, t1, cp_scause_walking1s_noint
     addi t0, t0, 1      # increment test value
     j   1b
    // with interrupt = 0: write scause with walking 1s in bits 6-(XLEN-2)"
-cp_scause_walking1s_noint: 
+cp_scause_walking1s_noint:
     slli t0, t0, 1      # walk 1s
     csrrw t6, scause, t0     # write CSR
     bnez t0, cp_scause_walking1s_noint  # until all 1s are gone
@@ -111,12 +111,12 @@ cp_scause_walking1s_noint:
     li t1, 16           # upper bound
     mv t0, x0           # initialize loop counter
 1: or t2, t0, a0       # set interrupt = 1 withmcause msb
-    csrrw t6, scause, t2    # write CSR 
+    csrrw t6, scause, t2    # write CSR
     beq t0, t1, cp_scause_walking1s_int
     addi t0, t0, 1      # increment test value
     j   1b
    // with interrupt = 0: write scause with walking 1s in bits 6-(XLEN-2)"
-cp_scause_walking1s_int: 
+cp_scause_walking1s_int:
     slli t0, t0, 1      # walk 1s
     or t0, t0, a0       # set 1 in msb for interrupts
     csrrw t6, scause, t0     # write CSR
@@ -426,7 +426,7 @@ setmstatus:                 # takes in the desired mstatus.tsr in bit 22 of a0 a
     ret
 
 srettest_sepc:
-    li a0, 1               
+    li a0, 1
     ecall                   # make sure we return to supervisor mode
     csrrw t6, sstatus, s0   # restore sstatus
     ret
@@ -439,7 +439,7 @@ postsrettest:
     # set fs = 1
     li t0, 0x2000
     csrrw t6, mstatus, t0
-    
+
 # return to supervisor mode to run tests
     li a0, 1
     ecall

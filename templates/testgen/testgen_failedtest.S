@@ -81,7 +81,7 @@ failedtest_saveregs:
     lhu t0, -6(x31)     # get upper half of the the beq that compared good and bad registers
     lhu t1, -8(x31)     # get lower half of the beq
     slli t0, t0, 16     # reassemble beq
-    or t0, t0, t1       
+    or t0, t0, t1
     # extract rs1 and rs2 from branch
     srli t0, x31, 15
     andi t1, t0, 31     # t1 = rs1 of branch
@@ -101,7 +101,7 @@ failedtest_saveregs:
     # Save failing address
     addi t0, x31, -12   # address of the failing instruction (possibly including half of previous instruction)
     SREG t0, 264(x30)
-    
+
 # print results
     jal failedtest_uartinit
     la a0, failstr  # print failure
@@ -123,7 +123,7 @@ failedtest_saveregs:
     li t0, GPIO_ENABLED
     beqz t0, 1f             # skip if not enabled
     li t0, GPIO_OUTPUT_EN   # address of OUTPUT_EN register
-    li t1, 3                
+    li t1, 3
     sw t1, 0(t0)            # enable GPIO pins 0 and 1
     li t0, GPIO_OUTPUT_VAL  # address of OUTPUT_VAL register
     sw t1, 0(t0)            # set GPIO pins 0 and 1 high to indicate failure
@@ -142,7 +142,7 @@ write_tohost_failure:
 failedtest_printstr:
     lb a1, 0(a0)    # fetch a character
     beqz a1, 1f     # terminate if null
-    jal a2, failedtest_putch   # print the character  
+    jal a2, failedtest_putch   # print the character
     addi a1, a1, 1  # move to next character
     j failedtest_printstr
 1:  ret             # return from function call
@@ -178,7 +178,7 @@ failedtest_uartinit:
     beqz t0, 1f             # skip if UART is not enabled
     li t0, UART_LCR
     li t1, 3                # 8-bit characters, 1 stop bit, no parity
-    sb t1, 0(t0)    
+    sb t1, 0(t0)
 1:
     ret
 
@@ -192,7 +192,7 @@ failedtest_waituartbusy:
     lbu t1, 0(t0)
     andi t1, t1, 0x20 # check line status register bit 5
     beqz t1, failedtest_waituartbusy # wait until Transmit Holding Register Empty is set
-    
+
     li t0, UART_THR     # transmit character
     sb a1, 0(t0)
 1:  jr a2               # return
