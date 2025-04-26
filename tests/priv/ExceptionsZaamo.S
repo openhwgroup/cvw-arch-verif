@@ -24,10 +24,10 @@ loop:
 
     // Call the Zaamo_Instructions function
     // a2 = misalignment value, No instruction access fault (a1 = 0)
-    mv  a0, a2         
-    li  a1, 0         
-    jal Zaamo_Instructions 
-    
+    mv  a0, a2
+    li  a1, 0
+    jal Zaamo_Instructions
+
     addi a2, a2, 1      // Increment loop counter by 1
     blt  a2, a3, loop   // If a2 is less than 8, branch back to 'loop'
 
@@ -36,11 +36,11 @@ loop:
 /////////////////////////////////
 
     // Call the Zaamo_Instructions function
-    // No missalignment (a2 = 0), 
+    // No missalignment (a2 = 0),
     // Enable Instruction access fault (a1 = 1)
-    li  a0, 0         
-    li  a1, 1         
-    jal Zaamo_Instructions 
+    li  a0, 0
+    li  a1, 1
+    jal Zaamo_Instructions
 
 finished:
     j done
@@ -59,10 +59,10 @@ Zaamo_Instructions:
 
     li      t1, 0xDEADBEEF
 
-    sw      t1, 0(t0)          
-    sw      t1, 4(t0)          
-    sw      t1, 8(t0)          
-    sw      t1, 12(t0)  
+    sw      t1, 0(t0)
+    sw      t1, 4(t0)
+    sw      t1, 8(t0)
+    sw      t1, 12(t0)
 
     // Update scratch address to be misaligned based a0 argument
     add t0, a0, t0
@@ -73,7 +73,7 @@ Zaamo_Instructions:
     bne a1, t1, skipIAF
     li    t0, ACCESS_FAULT_ADDRESS
 
- skipIAF: 
+ skipIAF:
 
     amoswap.w t2, t1, (t0)
 

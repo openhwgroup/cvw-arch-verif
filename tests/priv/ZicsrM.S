@@ -23,7 +23,7 @@ main:
     csrw mtvec, t0
 
     # For M-mode (ZicsrM) only, lock PMP region 0 so that all the PMP CSRs can be accessed without corrupting region 0
-    li t0, 0x8F 
+    li t0, 0x8F
     csrw pmpcfg0, t0   # configure PMP0 to TOR RWX locked
 
 
@@ -34,13 +34,13 @@ main:
 // with interrupt = 0: 0-64, walking 1s in bits 6-(XLEN-2)
     // with interrupt = 0: write mcause with 0-64 (0 already done)
     li t1, 64           # upper bound
-    mv t0, x0           # initialize loop counter 
-1:  csrrw t6, mcause, t0     # write CSR 
+    mv t0, x0           # initialize loop counter
+1:  csrrw t6, mcause, t0     # write CSR
     beq t0, t1, cp_mcause_walking1s_noint
     addi t0, t0, 1      # increment test value
     j   1b
    // with interrupt = 0: write mcause with walking 1s in bits 6-(XLEN-2)"
-cp_mcause_walking1s_noint: 
+cp_mcause_walking1s_noint:
     slli t0, t0, 1      # walk 1s
     csrrw t6, mcause, t0     # write CSR
     bnez t0, cp_mcause_walking1s_noint  # until all 1s are gone
@@ -50,12 +50,12 @@ cp_mcause_walking1s_noint:
     li t1, 16           # upper bound
     mv t0, x0           # initialize loop counter
 1: or t2, t0, a0       # set interrupt = 1 with msb
-    csrrw t6, mcause, t2    # write CSR 
+    csrrw t6, mcause, t2    # write CSR
     beq t0, t1, cp_mcause_walking1s_int
     addi t0, t0, 1      # increment test value
     j   1b
    // with interrupt = 0: write mcause with walking 1s in bits 6-(XLEN-2)"
-cp_mcause_walking1s_int: 
+cp_mcause_walking1s_int:
     slli t0, t0, 1      # walk 1s
     or t0, t0, a0       # set 1 in msb for interrupts
     csrrw t6, mcause, t0     # write CSR
@@ -131,7 +131,7 @@ tmp:
     .word 0x00019396    # try C instructions: c.add x7, x5 = 0x9396; c.nop = 0x0001
     csrrs t6, misa, t0       # set C bit
     .word 0x00019396    # try C instructions: c.add x7, x5 = 0x9396; c.nop = 0x0001
-  
+
     // F bit
     li t0, 0x2000       # 1 in bit 13
     csrrs t6, mstatus, t0    # turn on FS to enable floating-point
@@ -164,7 +164,7 @@ tmp:
 
     // Restore MISA
     csrrw t6, misa, s0       # restore saved value
-   
+
 
 /////////////////////////////////
 // cp_mststaus_tsr_write
@@ -192,7 +192,7 @@ tmp:
 1:  csrrc t6, mstatus, t0    # walk a zero
     csrrs t6, mstatus, t0    # walk a one
     csrrw t6, mstatus, s0   # restore mstatus
-    slli t0, t0, 1      # walk the 1 
+    slli t0, t0, 1      # walk the 1
     bnez t0, 1b         # repeat until all bits are walked
 
     li t0, 0x1800       # MPP: bits 12:11
@@ -329,14 +329,14 @@ formbits:
     j sretsetup
 
 mrettest:
-    la t1, mrettest_mepc    
+    la t1, mrettest_mepc
     csrrw t6, mepc, t1      # return to mrettest_mepc when done
     csrrw t6, mstatus, a0   # preload mstatus with argument
     mret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
     nop                     # should be skipped
 
 mrettest_mepc:
-    li a0, 3                
+    li a0, 3
     ecall                   # make sure we return to machine mode
     csrrw t6, mstatus, s0   # restore mstatus
     ret
@@ -417,7 +417,7 @@ sretsetup:
     j postsrettest
 
 srettest:
-    la t1, srettest_sepc    
+    la t1, srettest_sepc
     csrrw t6, sepc, t1      # return to mrettest_mepc when done
     csrrw t6, mstatus, a0   # preload mstatus with argument
     sret                    # take the mret. Should go to mrettest_mepc and adjust mstatus
@@ -425,7 +425,7 @@ srettest:
     nop                     # should be skipped
 
 srettest_sepc:
-    li a0, 3                
+    li a0, 3
     ecall                   # make sure we return to machine mode
     csrrw t6, mstatus, s0   # restore mstatus
     ret

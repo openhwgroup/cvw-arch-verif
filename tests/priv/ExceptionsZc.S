@@ -51,7 +51,7 @@ misaligned_loop:
 
     //Test shared compressed load floating instruction
     c.fld   f9, 0(a2)    # compressed load floating-point doubleword
-    
+
     //Test hardware specific compressed load instructions
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
@@ -65,12 +65,12 @@ misaligned_loop:
     # Now test the _sp forms.
 
 
-    c.fldsp f9, 0(sp) # Compressed load floating-point doubleword from sp 
+    c.fldsp f9, 0(sp) # Compressed load floating-point doubleword from sp
     c.lwsp  a3, 0(sp)
 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
-            c.ldsp  a3, 0(sp)  
+            c.ldsp  a3, 0(sp)
         #elif __riscv_xlen == 32
             # Compressed load floating-point word from sp:
             c.flwsp f9, 0(sp)
@@ -93,7 +93,7 @@ misaligned_loop:
     c.sb    a3, 0(a2)
 
     //Test shared compressed store floating instruction
-    c.fsd   f8, 0(a2)    # compressed store floating-point doubleword 
+    c.fsd   f8, 0(a2)    # compressed store floating-point doubleword
 
     #platform dependent store instructions
     #ifdef __riscv_xlen
@@ -102,7 +102,7 @@ misaligned_loop:
         #elif __riscv_xlen == 32
             c.fsw   f8, 0(a2)    # compressed store floating-point word
         #endif
-    #endif 
+    #endif
 
     #------------------------
     // Now test the _sp forms.
@@ -116,7 +116,7 @@ misaligned_loop:
         #elif __riscv_xlen == 32
             c.fswsp f8, 0(sp)
         #endif
-    #endif 
+    #endif
 
     //update loop
     addi sp, sp, 1     #increment the sp offset
@@ -178,7 +178,7 @@ misaligned_loop:
     c.sb    a3, 0(a2)
 
     //Test shared compressed floating instruction
-    c.fsd   f8, 0(a2)    # compressed load floating-point doubleword 
+    c.fsd   f8, 0(a2)    # compressed load floating-point doubleword
 
     #platform dependent load instructions
     #ifdef __riscv_xlen
@@ -187,7 +187,7 @@ misaligned_loop:
         #elif __riscv_xlen == 32
             c.fsw   f8, 0(a2)    # compressed load floating-point word
         #endif
-    #endif 
+    #endif
 
     #------------------------
     # Now test the _sp forms.
@@ -201,7 +201,7 @@ misaligned_loop:
         #elif __riscv_xlen == 32
             c.fswsp f8, 0(sp)
         #endif
-    #endif 
+    #endif
 
 /////////////////////////////////
 //cp_ebreak

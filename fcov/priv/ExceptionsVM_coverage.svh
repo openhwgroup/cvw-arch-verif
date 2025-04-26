@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 25 March 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@
 covergroup ExceptionsVM_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    
+
     // building blocks for the main coverpoints
 
     mstatus_mprv_one: coverpoint ins.current.csr[12'h300][17] {
@@ -35,14 +35,14 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         bins s_mode = {2'b01};
     }
     instr_page_fault: coverpoint (ins.current.csr[12'h342][31:0] == 32'd12) {
-        // auto fill 0/1 
-    } 
+        // auto fill 0/1
+    }
     load_page_fault: coverpoint (ins.current.csr[12'h342][31:0] == 32'd13) {
-        // auto fill 0/1 
-    } 
+        // auto fill 0/1
+    }
     store_page_fault: coverpoint (ins.current.csr[12'h342][31:0] == 32'd15) {
-        // auto fill 0/1 
-    } 
+        // auto fill 0/1
+    }
     i_virt_adr_misaligned: coverpoint ins.current.virt_adr_i[2:0] {
         bins aligned    = {2'b00};
         bins misaligned = {2'b10};
@@ -73,14 +73,14 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         }
     `endif
     // sw: coverpoint ins.current.insn {
-    //     wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
+    //     wildcard bins sw = {32'b????????????_?????_010_?????_0100011};
     // }
     // lw: coverpoint ins.current.insn {
-    //     wildcard bins lw = {32'b????????????_?????_010_?????_0000011}; 
+    //     wildcard bins lw = {32'b????????????_?????_010_?????_0000011};
     // }
     memops: coverpoint ins.current.insn {
-        wildcard bins sw       = {32'b????????????_?????_010_?????_0100011}; 
-        wildcard bins lw       = {32'b????????????_?????_010_?????_0000011}; 
+        wildcard bins sw       = {32'b????????????_?????_010_?????_0100011};
+        wildcard bins lw       = {32'b????????????_?????_010_?????_0000011};
         wildcard bins lr_w     = {32'b000100000000_?????_010_?????_0101111};
         wildcard bins sc_w     = {32'b0001100_?????_?????_010_?????_0101111};
         wildcard bins amoadd_w = {32'b0000000_?????_?????_010_?????_0101111};
@@ -100,7 +100,7 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
         bins ecallu_enabled           = {16'b0000_0001_0000_0000};
         // Delegating ecall to S mode makes it impossible to escape S mode
         // bins ecalls_enabled           = {16'b0000_0010_0000_0000};
-        // bit 10 reserved 
+        // bit 10 reserved
         // bit 11 is read only zero
         bins instrpagefault_enabled   = {16'b0001_0000_0000_0000};
         bins loadpagefault_enabled    = {16'b0010_0000_0000_0000};
