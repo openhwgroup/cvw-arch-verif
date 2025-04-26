@@ -10,8 +10,8 @@
 
 #include "WALLY-init-lib.h"
 
-main: 
- 
+main:
+
 /////////////////////////////////
 // cp_mcounteren_access_s
 /////////////////////////////////
@@ -44,5 +44,3 @@ main:
 
 finished:
     j done
-
-    

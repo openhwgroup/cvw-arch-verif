@@ -86,4 +86,3 @@ for arch in ["rv32", "rv64"]:
         # Only combine tests if the directory exists and has tests
         if (len(os.listdir(testdir)) > 0):
             combineDir(testdir)
-

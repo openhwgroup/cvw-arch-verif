@@ -46,7 +46,7 @@
 //   5: Change to user mode       (mret to address in sepc)
 //   6: Change to supervisor mode (mret to address in sepc)
 //   8: Change to machine mode    (mret to address in sepc)
-//Macros 
+//Macros
 #define ACCESS_FAULT_ADDRESS 0
 #define CLINT_BASE_ADDR 0x02000000
 #define PLIC_BASE_ADDR 0x0C000000
@@ -106,7 +106,7 @@ done:
     li a0, 4            # argument to finish program
     ecall               # system call to finish program
     j self_loop         # wait forever (not taken)
-    
+
 
 .align 8                # trap handlers aligned to multiple of 2^8
 trap_handler:
@@ -139,7 +139,7 @@ interrupt:              # must be an interrupt
 
     jal reset_msip
     jal reset_external_interrupts
-    
+
     li t0, 546          # 1 in bits 1, 4, and 9
     csrc mip, t0        # reset mip.STIP, SSIP, and SEIP
 
@@ -184,9 +184,9 @@ exception_return:             # add 2 or 4 to mepc for exceptions except Instruc
     csrr  t1, mcause              # t1 = exception cause
     addi  t1, t1, -1              # Exception cause code 1 means Instruction Access Fault
     bne   t1, x0, mepc_ret_addr   # If not an IAF, skip ra load
-    mv t0, ra 
+    mv t0, ra
     # If its an IAF then it was called with a JALR (rd = PC +4). So subtract 4 from ra to get faulting address
-    addi t0, t0, -4               
+    addi t0, t0, -4
     j post_ret_mepc               #Use ra instead of mepc if IAF
 mepc_ret_addr:
     csrr t0, mepc       # get address of instruction that caused exception if not an IAF
@@ -207,10 +207,10 @@ updateepc:
     csrr   t1, mcause            # t1 = exception cause
     addi   t1, t1, -1            # Exception cause code 1 means Instruction Access Fault
     bne    t1, x0, mepc_up_addr  # If not an IAF, skip ra load
-    mv t0, ra 
+    mv t0, ra
     j post_up_mepc               #Use ra instead of mepc (skips next instruction)
 mepc_up_addr:
-    csrr t1, mepc        
+    csrr t1, mepc
 post_up_mepc:
     add t1, t1, t0               # add 2 or 4 (from t0) to MEPC to determine return Address
     csrw mepc, t1
@@ -224,7 +224,7 @@ trap_return:                     # don't need to update mepc for interrupts
 write_tohost:
     la t1, tohost
     li t0, 1            # 1 for success, 3 for failure
-    SREG t0, 0(t1)     # write success code to tohost   
+    SREG t0, 0(t1)     # write success code to tohost
 
 self_loop:
     j self_loop         # wait
@@ -268,9 +268,9 @@ uncompressedillegalinstructionreturn:            # return from trap handler.  Fa
     mret                # return from trap
 
 /////////////////////////////////
-// Fast trap to return to the next uncompressed 
+// Fast trap to return to the next uncompressed
 // This handler is just meant for speedy illegal instruction handling.
-// It can't handle anything else including compressed instructions, 
+// It can't handle anything else including compressed instructions,
 // so point to a regular trap handler before needing others.
 /////////////////////////////////
 
@@ -282,9 +282,9 @@ trap_handler_returnplus4:
     mret
 
 /////////////////////////////////
-// Fast trap to return to the next compressed 
+// Fast trap to return to the next compressed
 // This handler is just meant for speedy illegal instruction handling.
-// It can't handle anything else including uncompressed instructions, 
+// It can't handle anything else including uncompressed instructions,
 // so point to a regular trap handler before needing others.
 /////////////////////////////////
 
@@ -301,7 +301,7 @@ trap_handler_returnplus2:
 
 reset_msip:
     la t0, MSIP
-    lw t1, 0(t0) 
+    lw t1, 0(t0)
     andi t1, t1, -2 # clear lowest bit for hart 0 while preserving all other bits
     sw t1, 0(t0)
 
@@ -312,7 +312,7 @@ reset_external_interrupts:
     la t0, THRESHOLD_0
     li t1, 7
     sw t1, 0(t0)
-    
+
     # set S-mode interrupt threshold to 7
     la t0, THRESHOLD_1
     li t1, 7
@@ -371,7 +371,7 @@ reset_stimecmp:
 set_msip:
     // sets the M-mode software interrupt bit in CLINT
     la t0, MSIP
-    lw t1, 0(t0) 
+    lw t1, 0(t0)
     ori t1, t1, 1 # set lowest bit for hart 0
     sw t1, 0(t0)
 
@@ -382,7 +382,7 @@ cause_external_interrupt_M:
     # set M-mode interrupt threshold to 0
     la t0, THRESHOLD_0
     sw zero, 0(t0)
-    
+
     # set S-mode interrupt threshold to 7
     la t0, THRESHOLD_1
     li t1, 7
@@ -423,7 +423,7 @@ cause_external_interrupt_S:
     la t0, THRESHOLD_0
     li t1, 7
     sw t1, 0(t0)
-    
+
     # set S-mode interrupt threshold to 0
     la t0, THRESHOLD_1
     sw zero, 0(t0)
@@ -484,25 +484,25 @@ cause_mtimer_interrupt_soon:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
                 ld t0, 0(t0)                    # read MTIME
-                
+
                 addi t0, t0, 0x100              # create a delay
-                
+
                 sd t0, 0(t4)         # set MTIMECMP = MTIME + 0x100 to cause timer interrupt later
 
         #elif __riscv_xlen == 32
                 lw t1, 0(t0)                    # low word of MTIME
                 lw t2, 4(t0)                    # high word of MTIME
-                
+
                 addi t3, t1, 0x100              # add 0x100 to MTIME value
                 bgtu t1, t3, MTIME_overflow     # if overflow occurred, carry the 1 to MTIME high word
                 j write_MTIMECMP                # otherwise, leave MTIME high word untouched
-                
+
                 MTIME_overflow:
                 addi t2, t2, 1
-                
+
                 write_MTIMECMP:
                 sw t3, 0(t4)          # MTIMECMP = MTIME + 0x100
-                sw t2, 4(t4)          
+                sw t2, 4(t4)
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -518,20 +518,20 @@ cross_interrupts_m_EP:
     SREG ra, 0(sp)
 
     for_mie:
-    
+
         slli t3, s1, 2      # setting mie.MEIE, MSIE, or MTIE based on s1 value
         li t4, 8
         sll t4, t4, t3
         csrrw t6, mie, t4   # set enable for interrupt type of interest, clear all others
-    
+
         jal raise_interrupts_m
-    
-        addi s1, s1, -1     
+
+        addi s1, s1, -1
         bge s1, zero, for_mie # iterate through interrupt types to be enabled
 
     LREG ra, 0(sp)
     addi sp, sp, 8
-        
+
     ret
 
 raise_interrupts_m:
@@ -543,10 +543,10 @@ raise_interrupts_m:
     li s2, 2
 
     for_mip:
-        
+
         # based on s2 value, attempt to trigger one of MEIP, MSIP, or MTIP
         # includes resets in case interrupt is not triggered
-        
+
         case2_vectored:
             li t3, 2
             bne s2, t3, case1_vectored      # if s2 == 2, trigger timer interrupt

@@ -17,8 +17,8 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    // helper coverpoints for illegal compressed instruction coverage for the Ssstrict extension 
+
+    // helper coverpoints for illegal compressed instruction coverage for the Ssstrict extension
 
     compressed00 : coverpoint ins.current.insn[15:2] iff (ins.current.insn[1:0] == 2'b00) {
         bins c00[] = {[0:$]};

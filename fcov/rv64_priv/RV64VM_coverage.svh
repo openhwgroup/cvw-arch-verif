@@ -1,20 +1,20 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -124,12 +124,12 @@ covergroup RV64VM_satp_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV64VM_PA_VA_cg with function sample(ins_t ins); //checking that all bits of PA and VA are live
-    option.per_instance = 0; 
-    VA_i: coverpoint ins.current.virt_adr_i { 
+    option.per_instance = 0;
+    VA_i: coverpoint ins.current.virt_adr_i {
         bins all_zeros = {64'd0};
         bins all_ones  = {64'hFFFFFFFF_FFFFFFFC};
     }
-    VA_d: coverpoint ins.current.virt_adr_d { 
+    VA_d: coverpoint ins.current.virt_adr_d {
         bins all_zeros = {64'd0};
         bins all_ones  = {64'hFFFFFFFF_FFFFFFFF};
     }
@@ -152,8 +152,8 @@ covergroup RV64VM_PA_VA_cg with function sample(ins_t ins); //checking that all 
 endgroup
 
 covergroup RV64VM_sfence_cg with function sample(ins_t ins); //sf.1
-    option.per_instance = 0; 
-    ins: coverpoint ins.current.insn { 
+    option.per_instance = 0;
+    ins: coverpoint ins.current.insn {
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
@@ -297,7 +297,7 @@ covergroup RV64VM_mstatus_mprv_cg with function sample(ins_t ins);
     mstatus_sbe_write: cross write_acc, satp_mode, PTE_sbe_d, PageType_d, Nopagefault, sbe_mstatus  { //ms.5
         ignore_bins ig1 = binsof(satp_mode.bare);
     }
-        
+
 endgroup
 
 covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
@@ -411,14 +411,14 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
     }
 
     PTE_DAU_i: coverpoint ins.current.pte_i[7:0] {
-        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
-        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
-        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001};
+        wildcard bins nonleaf_A_bit = {8'b?10?0001};
+        wildcard bins nonleaf_U_bit = {8'b??010001};
     }
     PTE_DAU_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
-        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
-        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001};
+        wildcard bins nonleaf_A_bit = {8'b?10?0001};
+        wildcard bins nonleaf_U_bit = {8'b??010001};
     }
 
     //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
@@ -640,7 +640,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
         `endif
     }
 
-    spage_exec_s_i: cross PTE_x_spage_i, PageType_i, mode, Nopagefault, exec_acc, priv_mode_s, sum_sstatus { //pte.5 & 6 
+    spage_exec_s_i: cross PTE_x_spage_i, PageType_i, mode, Nopagefault, exec_acc, priv_mode_s, sum_sstatus { //pte.5 & 6
         ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_0);
     }
     spage_noexec_s_i: cross PTE_x_spage_i, PageType_i, mode,Mcause, exec_acc, priv_mode_s, sum_sstatus { //pte.5 & 6
@@ -706,7 +706,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
 
     upage_smode_sumset_noexec_s: cross PTE_upage_i, PageType_i, mode, Mcause, exec_acc, priv_mode_s, sum_sstatus  { //pte.9
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
-        ignore_bins ig2 = binsof(Mcause.load_page_fault); 
+        ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(sum_sstatus.notset);
     }
     upage_smode_sumset_read_s: cross PTE_upage_d, PageType_d, mode, Nopagefault, read_acc, priv_mode_s, sum_sstatus  { //pte.9
@@ -762,7 +762,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
         ignore_bins ig3 = binsof(Mcause.store_amo_page_fault);
         ignore_bins ig4 = binsof(PTE_XnoRW_d.leaflvl_s);
-        
+
     }
 
     xpage_mxrset_read_s: cross PTE_XnoRW_d, PageType_d, mode,  Nopagefault, mxr_sstatus, read_acc { //pte.12
@@ -914,7 +914,7 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
             bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
         }
         VA_sv39_d: coverpoint ins.current.virt_adr_d[63:39] { //va.1
-            bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};       
+            bins not_zero_and_not_all_ones = {[25'b1:25'b11111_11111_11111_11111_11110]};
         }
         sv39_canonical_read_s: cross PTE_canonical_d, PageType_d, VA_sv39_d, mode, Mcause, read_acc { //va.1
             ignore_bins ig1 = binsof(Mcause.ins_page_fault);
@@ -949,15 +949,15 @@ covergroup RV64VM_vm_permissions_cg with function sample(ins_t ins);
             ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
             ignore_bins ig3 = binsof(Mcause.load_page_fault);
         }
-    `endif 
+    `endif
 endgroup
 
-covergroup RV64VM_res_global_pte_cg with function sample(ins_t ins); 
-    option.per_instance = 0; 
+covergroup RV64VM_res_global_pte_cg with function sample(ins_t ins);
+    option.per_instance = 0;
     //pte.1
     RSW: coverpoint ins.current.pte_i[9:8] {
-        bins all_comb[] = {[2'd0:2'd3]}; 
-    }      
+        bins all_comb[] = {[2'd0:2'd3]};
+    }
     mode: coverpoint  ins.current.csr[12'h180][63:60] {
         `ifdef sv48
             bins sv48   = {4'b1001};
@@ -1017,7 +1017,7 @@ covergroup RV64VM_res_global_pte_cg with function sample(ins_t ins);
     }
     global_write_u: cross global_PTE_d, PageType_d, mode, write_acc {
         ignore_bins ig1 = binsof(global_PTE_d.leaflvl_s);
-    } 
+    }
     global_exec_s: cross global_PTE_i, PageType_i, mode, exec_acc {
         ignore_bins ig1 = binsof(global_PTE_i.leaflvl_u);
     }
@@ -1027,22 +1027,22 @@ covergroup RV64VM_res_global_pte_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV64VM_add_feature_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     PTE_i: coverpoint ins.current.pte_i[63:54] {
         bins all_zeros = {10'd0};
-        bins svnapot = {10'b10000_00000}; 
+        bins svnapot = {10'b10000_00000};
         bins svpbmt = {10'b01100_00000, 10'b01000_00000, 10'b00100_00000};
         bins reserved = {[10'd1:10'd127]};
-    }   
+    }
     PTE_d: coverpoint ins.current.pte_d[63:54] {
         bins all_zeros = {10'd0};
-        bins svnapot = {10'b10000_00000}; 
+        bins svnapot = {10'b10000_00000};
         bins svpbmt = {10'b01100_00000, 10'b01000_00000, 10'b00100_00000};
-        bins reserved = {[10'd1:10'd127]}; 
-    }  
+        bins reserved = {[10'd1:10'd127]};
+    }
     svpbmt_support: coverpoint ins.current.csr[12'h30A][62] {
         bins not_set = {1'b0};
-    } 
+    }
     mode: coverpoint  ins.current.csr[12'h180][63:60] {
         `ifdef sv48
             bins sv48   = {4'b1001};
@@ -1111,19 +1111,19 @@ covergroup RV64VM_add_feature_cg with function sample(ins_t ins);
 
     //pte.17&19&20
     read_nofault: cross PTE_d, Nopagefault, read_acc, mode {
-        ignore_bins ig1 = binsof(PTE_d.svnapot); 
-        ignore_bins ig2 = binsof(PTE_d.svpbmt); 
-        ignore_bins ig3 = binsof(PTE_d.reserved); 
+        ignore_bins ig1 = binsof(PTE_d.svnapot);
+        ignore_bins ig2 = binsof(PTE_d.svpbmt);
+        ignore_bins ig3 = binsof(PTE_d.reserved);
     }
     write_nofault: cross PTE_d, Nopagefault, write_acc, mode{
-        ignore_bins ig1 = binsof(PTE_d.svnapot); 
-        ignore_bins ig2 = binsof(PTE_d.svpbmt); 
-        ignore_bins ig3 = binsof(PTE_d.reserved); 
+        ignore_bins ig1 = binsof(PTE_d.svnapot);
+        ignore_bins ig2 = binsof(PTE_d.svpbmt);
+        ignore_bins ig3 = binsof(PTE_d.reserved);
     }
     exec_nofault: cross PTE_i, Nopagefault, exec_acc, mode {
-        ignore_bins ig1 = binsof(PTE_i.svnapot); 
-        ignore_bins ig2 = binsof(PTE_i.svpbmt); 
-        ignore_bins ig3 = binsof(PTE_i.reserved); 
+        ignore_bins ig1 = binsof(PTE_i.svnapot);
+        ignore_bins ig2 = binsof(PTE_i.svpbmt);
+        ignore_bins ig3 = binsof(PTE_i.reserved);
     }
 
     //pte.18

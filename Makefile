@@ -58,7 +58,7 @@ privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 	bin/illegalinstrtests.py
 
-# Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
+# Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit
 ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
 ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)

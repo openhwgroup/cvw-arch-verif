@@ -21,7 +21,7 @@ main:
     csrw mtvec, t0
 
     # For M-mode (SsstrictM) only, lock PMP region 0 so that all the PMP CSRs can be accessed without corrupting region 0
-    li t0, 0x8F 
+    li t0, 0x8F
     csrw pmpcfg0, t0   # configure PMP0 to TOR RWX locked
 
 /////////////////////////////////

@@ -112,7 +112,7 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64, ef
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
-        match64 = ("RV64" in cps) ^ (not hasRV64) 
+        match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
             f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
             finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
@@ -129,7 +129,7 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
-        match64 = ("RV64" in cps) ^ (not hasRV64) 
+        match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
             if arch != "E": # E currently breaks coverage
                 f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
@@ -138,7 +138,7 @@ def writeInstructionSampleFunction(f, k, covergroupTemplates, tp, arch, hasRV32,
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
-        match64 = ("RV64" in cps) ^ (not hasRV64) 
+        match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
             for cp in cps:
                 if (cp in cps and cp.startswith("sample_")):
@@ -184,11 +184,11 @@ def writeCovergroups(testPlans, covergroupTemplates):
                 if (anyExclusion("RV64", k, tp)):
                     f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
                     writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, True, False)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))                
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))
                 if (anyExclusion("RV32", k, tp)):
                     f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
                     writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))                
+                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
                 f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))
 
                 # Instruction sample function: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
@@ -196,11 +196,11 @@ def writeCovergroups(testPlans, covergroupTemplates):
                 if (anyExclusion("RV64", k, tp)):
                     fsample.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
                     writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, True, False)
-                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))                
+                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))
                 if (anyExclusion("RV32", k, tp)):
                     fsample.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
                     writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, False, True)
-                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))                
+                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
 
         fsample.write(customizeTemplate(covergroupTemplates, "instruction_sample_end", "NA", "NA"))
 

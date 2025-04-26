@@ -1,20 +1,20 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -88,12 +88,12 @@ covergroup RV32VM_satp_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV32VM_PA_VA_cg with function sample(ins_t ins); //checking that all bits of PA and VA are live
-    option.per_instance = 0; 
-    VA_i: coverpoint ins.current.virt_adr_i { 
+    option.per_instance = 0;
+    VA_i: coverpoint ins.current.virt_adr_i {
         bins all_zeros = {32'd0};
         bins all_ones  = {32'hFFFFFFFC};                    // Instructions are only possible at multiples of 2 and 4
     }
-    VA_d: coverpoint ins.current.virt_adr_d { 
+    VA_d: coverpoint ins.current.virt_adr_d {
         bins all_zeros = {32'd0};
         bins all_ones  = {32'hFFFFFFFF};
     }
@@ -110,8 +110,8 @@ covergroup RV32VM_PA_VA_cg with function sample(ins_t ins); //checking that all 
 endgroup
 
 covergroup RV32VM_sfence_cg with function sample(ins_t ins); //sf.1
-    option.per_instance = 0; 
-    ins: coverpoint ins.current.insn { 
+    option.per_instance = 0;
+    ins: coverpoint ins.current.insn {
         wildcard bins sfence = {32'b0001001_?????_?????_000_00000_1110011};
     }
 endgroup
@@ -342,14 +342,14 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     }
 
     PTE_DAU_i: coverpoint ins.current.pte_i[7:0] {
-        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
-        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
-        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001};
+        wildcard bins nonleaf_A_bit = {8'b?10?0001};
+        wildcard bins nonleaf_U_bit = {8'b??010001};
     }
     PTE_DAU_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins nonleaf_D_bit = {8'b1?0?0001}; 
-        wildcard bins nonleaf_A_bit = {8'b?10?0001}; 
-        wildcard bins nonleaf_U_bit = {8'b??010001}; 
+        wildcard bins nonleaf_D_bit = {8'b1?0?0001};
+        wildcard bins nonleaf_A_bit = {8'b?10?0001};
+        wildcard bins nonleaf_U_bit = {8'b??010001};
     }
 
     //Pagetype && misaligned PPN for I&DTLB to ensure that leaf pte is found at all levels (through crosses of PTE and PageType)
@@ -485,47 +485,47 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
 
     PTE_nonleaf_lvl0_s_i_exec: cross PTE_nonleaf_lvl0_i, PageType_i, mode, Mcause, exec_acc  { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_u);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_s) && binsof(PageType_i.mega); 
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_s) && binsof(PageType_i.mega);
         ignore_bins ig3 = binsof(Mcause.load_page_fault);
-        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);       
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
     }
 
     PTE_nonleaf_lvl0_u_i_exec: cross PTE_nonleaf_lvl0_i, PageType_i, mode, Mcause, exec_acc  { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_s);
         ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_i.lvl0_u) && binsof(PageType_i.mega);
         ignore_bins ig3 = binsof(Mcause.load_page_fault);
-        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);        
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
     }
 
     PTE_nonleaf_lvl0_s_d_read: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, read_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && binsof(PageType_d.mega); 
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && binsof(PageType_d.mega);
         ignore_bins ig3 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);       
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
     }
 
     PTE_nonleaf_lvl0_u_d_read: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, read_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
         ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && binsof(PageType_d.mega);
         ignore_bins ig3 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);        
+        ignore_bins ig4 = binsof(Mcause.store_amo_page_fault);
     }
 
     PTE_nonleaf_lvl0_s_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && binsof(PageType_d.mega);  
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_s) && binsof(PageType_d.mega);
         ignore_bins ig3 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig4 = binsof(Mcause.load_page_fault);      
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
     }
 
     PTE_nonleaf_lvl0_u_d_write: cross PTE_nonleaf_lvl0_d, PageType_d, mode, Mcause, write_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
-        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && binsof(PageType_d.mega); 
+        ignore_bins ig2 = binsof(PTE_nonleaf_lvl0_d.lvl0_u) && binsof(PageType_d.mega);
         ignore_bins ig3 = binsof(Mcause.ins_page_fault);
-        ignore_bins ig4 = binsof(Mcause.load_page_fault);       
+        ignore_bins ig4 = binsof(Mcause.load_page_fault);
     }
 
-    spage_exec_s_i: cross PTE_x_spage_i, PageType_i, mode, exec_acc, Nopagefault, priv_mode_s, sum_sstatus { //pte.5 & 6 
+    spage_exec_s_i: cross PTE_x_spage_i, PageType_i, mode, exec_acc, Nopagefault, priv_mode_s, sum_sstatus { //pte.5 & 6
         ignore_bins ig1 = binsof(PTE_x_spage_i.leaflvl_x_0);
     }
     spage_noexec_s_i: cross PTE_x_spage_i, PageType_i, mode, Mcause, exec_acc, priv_mode_s, sum_sstatus { //pte.5 & 6
@@ -571,7 +571,7 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
     spage_rwx_s_d_nowrite: cross PTE_spage_d, PageType_d, mode, Mcause, write_acc, priv_mode_u { //pte.7
         ignore_bins ig1 = binsof(Mcause.ins_page_fault);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
-    } 
+    }
 
     upage_smode_sumunset_noexec_s: cross PTE_upage_i, PageType_i, mode, Mcause, exec_acc, priv_mode_s , sum_sstatus { //pte.8
         ignore_bins ig1 = binsof(Mcause.store_amo_page_fault);
@@ -588,7 +588,7 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(sum_sstatus.set);
     }
-    
+
     upage_smode_sumset_noexec_s: cross PTE_upage_i, PageType_i, mode, Mcause, exec_acc, priv_mode_s, sum_sstatus { //pte.9
         ignore_bins ig1 = binsof(Mcause.load_page_fault);
         ignore_bins ig2 = binsof(Mcause.store_amo_page_fault);
@@ -701,7 +701,7 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(Mcause.load_page_fault);
         ignore_bins ig3 = binsof(PTE_Dbit_set_W_d.leaflvl_s);
     }
-    
+
     PTE_DAU_nleaf_read_write_s: cross PTE_DAU_d, PageType_d, mode, priv_mode_s, Mcause {
         ignore_bins ig1 = binsof(PageType_d.kilo);
         ignore_bins ig2 = binsof(Mcause.ins_page_fault);
@@ -762,12 +762,12 @@ covergroup RV32VM_vm_permissions_cg with function sample(ins_t ins);
 
 endgroup
 
-covergroup RV32VM_res_global_pte_cg with function sample(ins_t ins); 
-    option.per_instance = 0; 
+covergroup RV32VM_res_global_pte_cg with function sample(ins_t ins);
+    option.per_instance = 0;
     //pte.1
     RSW: coverpoint ins.current.pte_i[9:8] {
-        bins all_comb[] = {[2'd0:2'd3]}; 
-    }      
+        bins all_comb[] = {[2'd0:2'd3]};
+    }
     mode: coverpoint  ins.current.csr[12'h180][31] {
         bins sv32   = {1'b1};
     }
@@ -830,7 +830,7 @@ covergroup RV32VM_res_global_pte_cg with function sample(ins_t ins);
 endgroup
 
 covergroup RV32VM_add_feature_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     mode: coverpoint  ins.current.csr[12'h180][31] {
         bins sv32   = {1'b1};
     }
