@@ -1,0 +1,15 @@
+    cp_csr_vtype_vlmul_rand : coverpoint lmul_check(2)  iff (ins.trap == 0 )  {
+        // Value of VTYPE.vlmul (vector register grouping), 1 and random legal
+        bins one = {3'b000};
+        bins randomlegal = {[3'b001,3'b010,3'b011
+`ifdef LMUL_F2_SUPPORTED
+        ,3'b111
+`endif
+`ifdef LMUL_F4_SUPPORTED
+        ,3'b110
+`endif
+`ifdef LMUL_F8_SUPPORTED
+        ,3'b101
+`endif
+        ]};
+    }

@@ -46,11 +46,16 @@
   `define FLEN 32
 `endif
 
+// VLEN as usable number
+`define VLEN 256
+`define SEW 64
+
 // Set register type length
 `define XLEN_BITS         bit        [`XLEN-1:0]
 `define SIGNED_XLEN_BITS  bit signed [`XLEN-1:0]
 `define FLEN_BITS         bit        [`FLEN-1:0]
 `define SIGNED_FLEN_BITS  bit signed [`FLEN-1:0]
+`define VLEN_BITS         bit        [`VLEN-1:0]
 
 // Instruction operand data structure
 typedef struct {

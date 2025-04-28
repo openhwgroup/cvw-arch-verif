@@ -1,4 +1,4 @@
-    cr_vs2_imm_corners : cross cr_vs2_corners,cp_uimm_5  iff (ins.trap == 0 )  {
+    cr_vs2_imm_corners : cross cp_vs2_corners,cp_uimm_5  iff (ins.trap == 0 )  {
         //Cross coverage of VS2 corners and 5 bit imm values
     }
 

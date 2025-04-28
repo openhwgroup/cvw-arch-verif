@@ -1,15 +1,3 @@
-    cp_vs1_corners : coverpoint unsigned'(ins.current.vs1_val)  iff (ins.trap == 0 & ins.current.sew == SEW)  {
-        // Corners values of vs1, with each element having the same value
-        bins zero  =    {0};
-        bins one  =     {(`VLEN/SEW){(SEW-1){1'b0}, {1'b1}}};
-        bins two  =     {(`VLEN/SEW){(SEW-2){1'b0}, {2'b10}}};
-        bins min  =     {(`VLEN/SEW){{1'b1}, (SEW-1){1'b0}}};
-        bins minp1  =   {(`VLEN/SEW){{1'b1}, (SEW-2){1'b0}, {1'b1}}};
-        bins max  =     {(`VLEN/SEW){{1'b0}, (SEW-1){1'b1}}};
-        bins maxm1  =   {(`VLEN/SEW){{1'b0}, (SEW-2){1'b1}, {1'b0}}};
-        bins ones  =    {(`VLEN/SEW){(SEW){1'b1}}};
-        bins onesm1  =  {(`VLEN/SEW){(SEW-1){1'b1}, {1'b0}}};
-        bins walkeodd = {(`VLEN/SEW){(SEW/2){2'b10}}};
-        bins walkeven = {(`VLEN/SEW){(SEW/2){2'b01}}};
-        bins random   = {(`VLEN/SEW){(SEW/8){4'b1101}, (SEW/8){4'b0110}}};
+    cp_vs1_corners : coverpoint vs_corners_check("vs1", 0)  iff (ins.trap == 0 )  {
+        // Corners values of vs1, assuming vl = 1
     }

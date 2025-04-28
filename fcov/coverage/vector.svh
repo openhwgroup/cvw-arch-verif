@@ -68,6 +68,7 @@ function corner_mask_values_t mask_corners_check();
     default: begin
       if ($onehot(mask_val)) return randomone;
       else                   return random;
+    end
   endcase
 endfunction
 
