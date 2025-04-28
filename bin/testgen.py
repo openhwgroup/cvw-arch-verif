@@ -2385,7 +2385,7 @@ def genVector(sew, vlen, test):
   maxvlen = 2048
   f.write("\n\n")
   f.write("///////////////////////////////////////////\n")
-  f.write(f"{test}_data\n")
+  f.write(f"// {test}_data\n")
   f.write("///////////////////////////////////////////\n\n")
   f.write(".section .data\n\n")
   f.write("// Corner Vectors\n")
@@ -2975,14 +2975,16 @@ if __name__ == '__main__':
             else:
               sew = int(sew_match.group(1))
 
-            #defined as max for test generation
+            # vlen defined as max for test generation
             vlen = 2048
+            # vl=1 for base suite
+            vl = 1
 
-            includeVData = f'\n#include "../../vectortest/{test}_data.S"\n'
-            vsetline1 = f"li x2 1\n"
-            vsetline2 = f"vsetvli x0, x2, e{sew}\n"
+            f.write(f"\n")
+            f.write(f"// Initial set vl = 1\n")
+            vsetline1 = f"li x2, {vl}\n"
+            vsetline2 = f"vsetvli x0, x2, e{sew}, m1, tu, mu\n"
 
-            f.write(includeVData)
             f.write(vsetline1)
             f.write(vsetline2)
             write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
