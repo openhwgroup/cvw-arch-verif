@@ -57,7 +57,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     }
     mideleg_mti_zero: coverpoint ins.current.csr[12'h303][7] {
         bins zero = {0};
-    }    
+    }
     mideleg_sei: coverpoint ins.current.csr[12'h303][9] {
         // autofill 0/1
     }
