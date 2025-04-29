@@ -17,9 +17,9 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    // helper coverpoints for illegal instruction coverage for the Ssstrict extension 
-    
+
+    // helper coverpoints for illegal instruction coverage for the Ssstrict extension
+
     illegal : coverpoint ins.current.insn { // illegal in RVA22S64; will trap if not in an implemented extension
         // wildcard bins op2  = {32'b?????????????????????????_0001011}; // unused ops custom-0
         wildcard bins op7  = {32'b?????????????????????????_0011111}; // unused ops, reserved for 48-bit
@@ -34,17 +34,17 @@
         wildcard bins op31 = {32'b?????????????????????????_1111111}; // unused ops, reserved for 80+ bit
     }
     // Loads op = 0000011
-    load : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0000011) { 
+    load : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0000011) {
         // Check all 8 types of loads, some illegal in rv32/always
     }
     // FP Loads op = 0000111
-    fload : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0000111) { 
+    fload : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0000111) {
         // Check all 8 types of fp Loads, some illegal in various combinations of F/D/Q/Zfh
     }
     // fences/cbo op = 0001111
-    fence_cbo : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0001111) { 
+    fence_cbo : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0001111) {
         // Check all 8 types of fences: 3-7 should be illegal
-    }    
+    }
     // cbo immediate
     cbo_immediate : coverpoint ins.current.insn[31:20] iff (ins.current.insn[6:0] == 7'b0001111 & ins.current.insn[11:7] == 5'b000 & ins.current.insn[14:12] == 3'b010) {
         // check all 2^12 types of cbo; only 0, 1, 2, and 4 should be legal
@@ -53,7 +53,7 @@
         // check all 2^5 rd for cbo instructions; only 0 should be legal
     }
     // I-type instructions
-    Itype : coverpoint {ins.current.insn[14], ins.current.insn[31:20]} iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[13:12] == 2'b01) { 
+    Itype : coverpoint {ins.current.insn[14], ins.current.insn[31:20]} iff (ins.current.insn[6:0] == 7'b0010011 & ins.current.insn[13:12] == 2'b01) {
         // Exhaustive test of 2 * 2^12 complicated bins for I-type instructions with op = 00100011 and funct3 = 1 or 5, and any imm_11:0
         // includes integer shifts, Zbb, Zbs, Zbkb, Zknd, Zkne, Zknh
     }
@@ -65,31 +65,31 @@
     }
 
     // RV64IW instruction space: op = 0011011
-    IWtype : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0011011) { 
+    IWtype : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0011011) {
         // exercise all 8 bins.  All are illegal in rv32
         // bin 0 is legal addiw in RV64I
         // bins 1 and 5 has some legal funct values
     }
     // RV64IW shifts with op = 001101, funct3 = 1 or 5
-    IWshift : coverpoint {ins.current.insn[14], ins.current.insn[31:25]} iff (ins.current.insn[6:0] == 7'b0011011 & ins.current.insn[13:12] == 2'b01) { 
+    IWshift : coverpoint {ins.current.insn[14], ins.current.insn[31:25]} iff (ins.current.insn[6:0] == 7'b0011011 & ins.current.insn[13:12] == 2'b01) {
         // exercise all 2 * 128 bins of funct7 for funct3 = 1/5
     }
     // Stores op = 0100011
-    store : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0100011) { 
+    store : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0100011) {
         // Check all 8 types of stores, some illegal in rv32/always
     }
     // FP Loads op = 0100111
-    fstore : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0100111) { 
+    fstore : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0100111) {
         // Check all 8 types of fp stores, some illegal in various combinations of F/D/Q/Zfh
     }
     // Atomic op = 0101111
-    atomic_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0101111) { 
+    atomic_funct3 : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b0101111) {
         // Check all 8 types of atomic funct3; only funct3 = 2 is legal, and only when A supported
     }
-    atomic_funct7 : coverpoint {ins.current.insn[12], ins.current.insn[31:27]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 3'b01) { 
+    atomic_funct7 : coverpoint {ins.current.insn[12], ins.current.insn[31:27]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 3'b01) {
         // Check all 2 flavors (w/d) * 32 flavors of atomics
     }
-    lrsc : coverpoint {ins.current.insn[12], ins.current.insn[24:20]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 2'b01 & ins.current.insn[31:27] == 5'b00010) { 
+    lrsc : coverpoint {ins.current.insn[12], ins.current.insn[24:20]} iff (ins.current.insn[6:0] == 7'b0101111 & ins.current.insn[14:13] == 2'b01 & ins.current.insn[31:27] == 5'b00010) {
         // Check all 2 flavors (w/d) * 2^5 rd values; only rs2 = 0 should be legal
     }
     // R-type op = 0110011
@@ -150,11 +150,11 @@
         // Exhaustive test of 2^2 formats * 2^5 encodings; only rs2 = 00001 is possibly legal
     }
     // Branches: op = 1100011
-    branch : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100011) { 
+    branch : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100011) {
         // Check all 8 types of branches: 2 & 3 illegal
     }
     // JALRs: op = 1100111
-    jalr : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100111) { 
+    jalr : coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1100111) {
         // test all 8 funct3 codes; only 000 should be legal
     }
     // privileged: op = 1110011

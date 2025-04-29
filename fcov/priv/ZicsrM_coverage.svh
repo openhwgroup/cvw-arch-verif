@@ -1,20 +1,20 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -92,9 +92,9 @@ covergroup ZicsrM_mstatus_cg with function sample(ins_t ins);
     cp_mstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
     }
     cp_mstatus_fs: coverpoint ins.current.rs1_val[14:13] {
-    }    
+    }
     cp_mstatus_vs: coverpoint ins.current.rs1_val[10:9] {
-    }    
+    }
     cp_mstatus_xs: coverpoint ins.current.rs1_val[16:15] {
     }
     csrrw_mstatus: coverpoint ins.current.insn {
@@ -122,9 +122,7 @@ covergroup ZicsrM_mprivinst_cg with function sample(ins_t ins);
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
     }
-    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {         // *** how to handle S or U not always supported
-        bins U_mode = {2'b00};
-        bins S_mode = {2'b01};
+    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {
         bins M_mode = {2'b11};
     }
     old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
@@ -135,15 +133,44 @@ covergroup ZicsrM_mprivinst_cg with function sample(ins_t ins);
     }
     old_mstatus_mie: coverpoint ins.prev.csr[12'h300][3] {
     }
-    old_mstatus_spp: coverpoint ins.prev.csr[12'h300][8] {
-    }
     old_mstatus_spie: coverpoint ins.prev.csr[12'h300][5] {
     }
     old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
     }
+    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) {
+        bins b_1[] = { [0:`XLEN-1] };
+    }
+
+    mcsrname : coverpoint ins.current.insn[31:20] {
+        bins mstatus  = {12'h300};
+        bins misa     = {12'h301};
+        bins medeleg  = {12'h302};
+        bins mideleg  = {12'h303};
+        bins mie      = {12'h304};
+        bins mtvec    = {12'h305};
+        bins mscratch = {12'h340};
+        bins mepc     = {12'h341};
+        bins mcause   = {12'h342};
+        bins mtval    = {12'h343};
+        bins mip      = {12'h344};
+        bins menvcfg  = {12'h30A};
+        bins mseccfg  = {12'h747};
+        `ifdef XLEN32
+            bins mstatush = {12'h310};
+            bins medelegh = {12'h312};
+            bins menvcfgh = {12'h31A};
+            bins mseccfgh = {12'h757};
+        `endif
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
+    }
+
+    cp_mcsrwalk : cross priv_mode_m, mcsrname, csrop, walking_ones;
     cp_mprivinst: cross privinstrs, priv_mode_m;
     cp_mret: cross mret, priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
-    cp_sret: cross sret, priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
+    cp_sret: cross sret, priv_mode_m, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie;
 endgroup
 
 function void zicsrm_sample(int hart, int issue, ins_t ins);

@@ -6,10 +6,10 @@
 /* This function set up the Page table entry for Sv32 Translation scheme
     Arguments:
     _PAR: Register containing Physical Address
-    _PR: Register containing Permissions for Leaf PTE. 
+    _PR: Register containing Permissions for Leaf PTE.
         (Note: No-leaf PTE (if-any) has only valid permssion (pte.v) set)
     _TR0, _TR1, _TR2: Temporary registers used and modified by function
-    VA: Virtual address 
+    VA: Virtual address
     level: Level at which PTE would be setup
         0: Two level translation
         1: Superpage
@@ -189,7 +189,7 @@ Mend_PMP:                                    ;\
     srli _PAR, _PAR, 12                                           ;\
     slli _PAR, _PAR, 10                                           ;\
     or _PAR, _PAR, _PR                                            ;\
-    SREG _PAR, 0(_TR1);                                          
+    SREG _PAR, 0(_TR1);
 
 #define PTE_SETUP_RV32(_PAR, _PR, _TR0, _TR1, VA, level)  	;\
     srli _PAR, _PAR, 12                                         ;\
@@ -204,7 +204,7 @@ Mend_PMP:                                    ;\
         LI(_TR0, ((VA>>12)&0x3FF)<<2)                           ;\
     .endif                                                      ;\
     add _TR1, _TR1, _TR0                                        ;\
-    SREG _PAR, 0(_TR1);                                          
+    SREG _PAR, 0(_TR1);
 
 // More Robust version of PTE_SETUP_32 to setup a PTE for a PA using Va
 // in a single line.
@@ -346,7 +346,7 @@ Mend_PMP:                                    ;\
     srli _TR0, _TR0, 10                                         ;\
     slli _TR0, _TR0, 10                                         ;\
     or _TR0, _TR0, _PR                                          ;\
-    SREG _TR0, 0(_TR1)                                          ;   
+    SREG _TR0, 0(_TR1)                                          ;
 
 
 #define SATP_SETUP_SV32 ;\
@@ -433,7 +433,7 @@ Mend_PMP:                                    ;\
  csrs mstatus, a0				;\
  csrwi fcsr, 0
 
-// This macro is for vector 
+// This macro is for vector
 #define RVTEST_VXSAT_ENABLE()			;\
  LI(a0, (MSTATUS_VS & (MSTATUS_VS >> 1)))	;\
  csrs mstatus, a0				;\
@@ -500,7 +500,7 @@ Mend_PMP:                                    ;\
   CHK_OFFSET(_BR, SIGALIGN, 1)				;\
   SREG _F,offset(_BR)					;\
   .set offset,offset+SIGALIGN
- 
+
 /* RVTEST_SIGUPD_FID(basereg, sigreg,flagreg,newoff)			*/
 /* This macro stores the signature values of (32 & 64) F & D insts	*/
 /* which uses TEST_(FPID_OP, FCMP_OP) ops				*/
@@ -548,7 +548,7 @@ Mend_PMP:                                    ;\
       RVTEST_SIGUPD_PK(_BR,_R,_R_HI,_ARG1(__VA_OPT__(__VA_ARGS__,0)))	;\
   .endif
 
-// for updating signatures that include flagreg when 'rd' is a 
+// for updating signatures that include flagreg when 'rd' is a
 // paired register (64-bit) in Zpsfoperand extension in RV32.
 #define RVTEST_SIGUPD_PK64(_BR,_R,_R_HI,_F,...)			;\
       rdov _F							;\
@@ -600,7 +600,7 @@ Mend_PMP:                                    ;\
 	addi _BR,		    _BR, corr		;\
     .else						;\
 	addi _ARG1(__VA_ARGS__,x0) ,_BR, corr		;\
-    .endif				
+    .endif
 
 //==============================================================================
 // This section borrows from Andrew's from Andrew Waterman's risc-v test macros
@@ -634,7 +634,7 @@ Mend_PMP:                                    ;\
 4: LA(tempreg, 5b)			;\
    andi tempreg,tempreg,~(3)		;\
     sub rd,rd,tempreg			;\
-    RVTEST_SIGUPD(swreg,rd,offset) 
+    RVTEST_SIGUPD(swreg,rd,offset)
 
 
 #define TEST_JAL_OP(tempreg, rd, imm, label, swreg, offset, adj)	;\
@@ -702,7 +702,7 @@ Mend_PMP:                                    ;\
 4: LA(tempreg, 5b)			;\
    andi tempreg,tempreg,~(3)		;\
     sub rd,rd,tempreg			;\
-    RVTEST_SIGUPD(swreg,rd,offset) 
+    RVTEST_SIGUPD(swreg,rd,offset)
 //SREG rd, offset(swreg);
 
 #define TEST_BRANCH_OP(inst, tempreg, reg1, reg2, val1, val2, imm, label, swreg, offset,adj) \
@@ -755,7 +755,7 @@ Mend_PMP:                                    ;\
     .fill 2,1,0x00			;\
     .endif				;\
 					;\
-4:   RVTEST_SIGUPD(swreg,tempreg,offset) 
+4:   RVTEST_SIGUPD(swreg,tempreg,offset)
 
 
 #define TEST_STORE(swreg,testreg,index,rs1,rs2,rs2_val,imm_val,offset,inst,adj)	;\
@@ -765,14 +765,14 @@ LI(testreg,imm_val)			;\
 sub rs1,rs1,testreg			;\
 inst rs2, imm_val(rs1)			;\
 nop					;\
-nop									    
+nop
 
 #define TEST_LOAD(swreg,testreg,index,rs1,destreg,imm_val,offset,inst,adj);\
 LA(rs1,rvtest_data+(index*4)+adj-imm_val);\
 inst destreg, imm_val(rs1)		;\
 nop					;\
 nop					;\
-RVTEST_SIGUPD(swreg,destreg,offset) 
+RVTEST_SIGUPD(swreg,destreg,offset)
 
 #define TEST_STORE_F(swreg,testreg,fcsr_val,rs1,rs2,imm_val,offset,inst,adj,flagreg,valaddr_reg, val_offset);\
 LOAD_MEM_VAL(FLREG, valaddr_reg, rs2, val_offset, testreg);\
@@ -793,7 +793,7 @@ inst destreg, imm_val(rs1)		;\
 nop					;\
 nop					;\
 csrr flagreg, fcsr			;\
-RVTEST_SIGUPD_F(swreg,destreg,flagreg) 
+RVTEST_SIGUPD_F(swreg,destreg,flagreg)
 
 #define TEST_CBO_ZERO(swreg,rs1,inst,imm_val)                               ;\
 LI(rs1,imm_val&(RVMODEL_CBZ_BLOCKSIZE-1))                                   ;\
@@ -827,7 +827,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 #elif FLEN==64 \
     RVMODEL_IO_ASSERT_DFPR_EQ(testreg, destreg, correctval);\
 #endif
-    
+
 #define TEST_CASE_FID(testreg, destreg, correctval, swreg, flagreg, code... )	;\
     code; \
     RVTEST_SIGUPD_FID(swreg,destreg,flagreg)	;\
@@ -867,7 +867,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
       inst destreg, freg			;\
       csrr flagreg, fcsr			;\
     )
-    
+
 //Tests for floating-point instructions with a single register operand and integer destination register
 #define TEST_FPID_OP( inst, destreg, freg, rm, fcsr_val, correctval, valaddr_reg, val_offset, flagreg, swreg, testreg,load_instr) \
     TEST_CASE_FID(testreg, destreg, correctval, swreg, flagreg,		 \
@@ -876,7 +876,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
       inst destreg, freg, rm			;\
       csrr flagreg, fcsr			;\
       )
-    
+
 //Tests for floating-point instructions with a single register operand and integer operand register
 #define TEST_FPIO_OP( inst, destreg, freg, rm, fcsr_val, correctval, valaddr_reg, val_offset, flagreg, swreg, testreg, load_instr) \
     TEST_CASE_F(testreg, destreg, correctval, swreg, flagreg,		 \
@@ -895,7 +895,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
       inst destreg, freg			;\
       csrr flagreg, fcsr			;\
       )
-    
+
 //Tests for floating-point instructions with a single register operand and integer operand register
 //This variant does not take the rm field and set it while writing the instruction
 #define TEST_FPIO_OP_NRM( inst, destreg, freg, fcsr_val, correctval, valaddr_reg, val_offset, flagreg, swreg, testreg, load_instr) \
@@ -948,7 +948,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
       inst destreg, freg1, freg2, rm		;\
       csrr flagreg, fcsr			;\
     )
-    
+
 //Tests for floating-point CMP instructions with register-register operand
 #define TEST_FCMP_OP(inst, destreg, freg1, freg2, fcsr_val, correctval, valaddr_reg, val_offset, flagreg, swreg, testreg) \
     TEST_CASE_FID(testreg, destreg, correctval, swreg, flagreg,			 \
@@ -1189,7 +1189,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 					;\
 3:  addi tempreg, tempreg ,0x3		;\
 					;\
-4:  RVTEST_SIGUPD(swreg,tempreg,offset) 
+4:  RVTEST_SIGUPD(swreg,tempreg,offset)
 
 #define TEST_CJ_OP(inst, tempreg, imm, label, swreg, offset) \
     .option push			;\
@@ -1230,7 +1230,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 					;\
 3:  addi tempreg, tempreg, 0x3		;\
 					;\
-4:  RVTEST_SIGUPD(swreg,tempreg,offset) 
+4:  RVTEST_SIGUPD(swreg,tempreg,offset)
 
 #define TEST_CJAL_OP(inst, tempreg, imm, label, swreg, offset) \
 5:					;\
@@ -1275,7 +1275,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 4: LA(tempreg, 5b)			;\
    andi tempreg,tempreg,~(3)		;\
     sub x1,x1,tempreg			;\
-  RVTEST_SIGUPD(swreg,x1,offset) 
+  RVTEST_SIGUPD(swreg,x1,offset)
 
 #define TEST_CJR_OP(tempreg, rs1, swreg, offset) \
 5:					;\
@@ -1290,7 +1290,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 4: LA(tempreg, 5b)			;\
    andi tempreg,tempreg,~(3)		;\
     sub rs1,rs1,tempreg			;\
-    RVTEST_SIGUPD(swreg,rs1,offset) 
+    RVTEST_SIGUPD(swreg,rs1,offset)
 
 #define TEST_CJALR_OP(tempreg, rs1, swreg, offset) \
 5:					;\
@@ -1305,7 +1305,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 4: LA(tempreg, 5b)			;\
    andi tempreg,tempreg,~(3)		;\
     sub x1,x1,tempreg			;\
-    RVTEST_SIGUPD(swreg,x1,offset) 
+    RVTEST_SIGUPD(swreg,x1,offset)
 
 
 // for updating signatures of Zacas paired destination register (RV32/RV64).
@@ -1369,7 +1369,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 #endif
 
 #define SWSIG(a, b)
-  
+
 #ifdef RV_COMPLIANCE_DATA_BEGIN
   #warning "RV_COMPLIANCE_DATA_BEGIN macro deprecated in v0.2. Please use RVMODEL_DATA_BEGIN instead"
   #define RVMODEL_DATA_BEGIN \
@@ -1394,7 +1394,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
     RVTEST_IO_ASSERT_GPR_EQ(_SP,_R, _I)
 #endif
 
-#ifdef RVTEST_IO_WRITE_STR 
+#ifdef RVTEST_IO_WRITE_STR
   #warning "RVTEST_IO_WRITE_STR macro deprecated in v0.2. Please use RVMODEL_IO_WRITE_STR instead"
   #define RVMODEL_IO_WRITE_STR(_SP, _STR) \
     RVTEST_IO_WRITE_STR(_SP, _STR)
@@ -1403,7 +1403,7 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 #ifdef RVTEST_IO_INIT
   #warning "RVTEST_IO_INIT is deprecated in v0.2. Please use RVMODEL_BOOT for initialization"
 #endif
-  
+
 #ifdef RVTEST_IO_CHECK
   #warning "RVTEST_IO_CHECK is deprecated in v0.2.
 #endif

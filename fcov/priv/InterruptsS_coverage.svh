@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 18 Feb 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +57,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     }
     mideleg_mti: coverpoint ins.current.csr[12'h303][7] {
         // autofill 0/1
-    }    
+    }
     mideleg_sei: coverpoint ins.current.csr[12'h303][9] {
         // autofill 0/1
     }
@@ -134,11 +134,11 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     mip_ones: coverpoint ins.current.csr[12'h344][15:0] {
         wildcard bins ones = {16'b????1?1?1?1?1?1?}; // ones in every field that is not tied to zero
     }
-    mie_walking: coverpoint {ins.current.csr[12'h304][11], 
-                             ins.current.csr[12'h304][9], 
-                             ins.current.csr[12'h304][7], 
-                             ins.current.csr[12'h304][5], 
-                             ins.current.csr[12'h304][3], 
+    mie_walking: coverpoint {ins.current.csr[12'h304][11],
+                             ins.current.csr[12'h304][9],
+                             ins.current.csr[12'h304][7],
+                             ins.current.csr[12'h304][5],
+                             ins.current.csr[12'h304][3],
                              ins.current.csr[12'h304][1]} {
         bins meie = {6'b100000};
         bins seie = {6'b010000};
@@ -147,11 +147,11 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins msie = {6'b000010};
         bins ssie = {6'b000001};
     }
-    mip_walking: coverpoint {ins.current.csr[12'h344][11], 
-                             ins.current.csr[12'h344][9], 
-                             ins.current.csr[12'h344][7], 
-                             ins.current.csr[12'h344][5], 
-                             ins.current.csr[12'h344][3], 
+    mip_walking: coverpoint {ins.current.csr[12'h344][11],
+                             ins.current.csr[12'h344][9],
+                             ins.current.csr[12'h344][7],
+                             ins.current.csr[12'h344][5],
+                             ins.current.csr[12'h344][3],
                              ins.current.csr[12'h344][1]} {
         bins meip = {6'b100000};
         bins seip = {6'b010000};
@@ -160,27 +160,27 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins msip = {6'b000010};
         bins ssip = {6'b000001};
     }
-    mie_s_ones: coverpoint {ins.current.csr[12'h304][9], 
-                            ins.current.csr[12'h304][5], 
+    mie_s_ones: coverpoint {ins.current.csr[12'h304][9],
+                            ins.current.csr[12'h304][5],
                             ins.current.csr[12'h304][1]} {
         bins ones = {3'b111};
     }
-    mip_s_walking: coverpoint {ins.current.csr[12'h304][9], 
-                               ins.current.csr[12'h304][5], 
+    mip_s_walking: coverpoint {ins.current.csr[12'h304][9],
+                               ins.current.csr[12'h304][5],
                                ins.current.csr[12'h304][1]}  {
         bins seip = {3'b100};
         bins stip = {3'b010};
         bins ssip = {3'b001};
     }
-    mie_m_walking: coverpoint {ins.current.csr[12'h304][11], 
-                               ins.current.csr[12'h304][7], 
+    mie_m_walking: coverpoint {ins.current.csr[12'h304][11],
+                               ins.current.csr[12'h304][7],
                                ins.current.csr[12'h304][3]} {
         bins meie = {3'b100};
         bins mtie = {3'b010};
         bins msie = {3'b001};
     }
-    mip_m_walking: coverpoint {ins.current.csr[12'h344][11], 
-                               ins.current.csr[12'h344][7], 
+    mip_m_walking: coverpoint {ins.current.csr[12'h344][11],
+                               ins.current.csr[12'h344][7],
                                ins.current.csr[12'h344][3]} {
         bins meip = {3'b100};
         bins mtip = {3'b010};
@@ -230,7 +230,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins vector   = {2'b01};
     }
     csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011};
     }
     csrrs: coverpoint ins.current.insn {
         wildcard bins csrrs = {32'b????????????_?????_010_?????_1110011};
@@ -239,7 +239,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         wildcard bins csrrc = {32'b????????????_?????_011_?????_1110011};
     }
     write_mip_seip: coverpoint ins.current.rs1_val[9] iff (ins.current.insn[31:20] == 12'h344) {
-        bins write_seip = {1}; 
+        bins write_seip = {1};
     }
     write_sip_ssip: coverpoint ins.current.rs1_val[1] iff (ins.current.insn[31:20] == 12'h144) {
         bins write_ssip = {1};
@@ -280,7 +280,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_trigger_msi:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_msip_one;
     cp_trigger_mei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_meip_one;
     cp_trigger_sti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_stip_one;
-    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_ssip_one; 
+    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_ssip_one;
     cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_sip_ssip;
     cp_trigger_sei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, sip_seip_one, s_ext_intr_high;
     cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_low;
@@ -302,8 +302,8 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mideleg_mie_eq, csrrs, write_sstatus_sie;
     cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_meip_one; // could cause funky coverage since WFI often doesn't retire. Revisit later
     cp_wfi_timeout_m:           cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
-    
-    cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_ones_zeros, mip_walking, mie_walking; 
+
+    cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_ones_zeros, mip_walking, mie_walking;
     cp_vectored_m:            cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mideleg_zeros, mip_s_walking, mie_s_ones;
     cp_priority_mip:          cross priv_mode_m, mie_ones, mideleg_zeros, mip_combinations, mstatus_mie_rise;
     cp_priority_mie:          cross priv_mode_m, mip_ones, mideleg_zeros, mie_combinations, mstatus_mie_rise;
@@ -321,8 +321,8 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_sei4:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_low,  csrrc, write_mip_seip;
     cp_sei5:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_high, csrrc, write_mip_seip;
     cp_sei6_7:                cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
-    // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,  
-    cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq; 
+    // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,
+    cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq;
 
 
     cp_user_mti:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti, mie_mtie, mip_mtip;

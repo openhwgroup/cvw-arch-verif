@@ -1,24 +1,24 @@
-//  
-// Copyright (c) 2023 Imperas Software Ltd., www.imperas.com  
+//
+// Copyright (c) 2023 Imperas Software Ltd., www.imperas.com
 // Modified February 2024, jcarlin@hmc.edu
-//   
-// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0  
-//  
-// Licensed under the Apache License, Version 2.0 (the "License");  
-// you may not use this file except in compliance with the License.  
-// You may obtain a copy of the License at  
-//  
-//   http://www.apache.org/licenses/LICENSE-2.0  
-//  
-// Unless required by applicable law or agreed to in writing, software  
-// distributed under the License is distributed on an "AS IS" BASIS,  
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,  
-// either express or implied.  
-//  
-// See the License for the specific language governing permissions and  
-// limitations under the License.  
-//  
-//  
+//
+// SPDX-License-Identifier: Apache-2.0 WITH SHL-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//
 
 `ifdef COVER_E
     `define NUM_REGS 16
@@ -26,7 +26,7 @@
     `define NUM_REGS 32
 `endif
 
-riscvTraceData #(ILEN, XLEN, FLEN, VLEN) traceDataQ [(NHART-1):0][(RETIRE-1):0] [$:`NUM_RVVI_DATA]; 
+riscvTraceData #(ILEN, XLEN, FLEN, VLEN) traceDataQ [(NHART-1):0][(RETIRE-1):0] [$:`NUM_RVVI_DATA];
 
 function void save_rvvi_data(bit trap, int hart, int issue, string disass);
   string inst_name = get_inst_name(trap, hart, issue, disass);
@@ -36,7 +36,7 @@ function void save_rvvi_data(bit trap, int hart, int issue, string disass);
 
   // Load initial prev values to use for checking register values during first (sampled) instruction
   // Todo: initial CSR values would be incorrect
-  while (traceDataQ[hart][issue].size() < `NUM_RVVI_DATA) begin  
+  while (traceDataQ[hart][issue].size() < `NUM_RVVI_DATA) begin
     rvviData = new();
     rvviData.valid = 0;
     rvviData.order = 0;
