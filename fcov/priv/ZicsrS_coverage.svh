@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 3 December 2024
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,7 +25,7 @@
 covergroup ZicsrS_scause_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
- 
+
     csrrw_scause: coverpoint ins.current.insn {
         wildcard bins csrrw = {32'b000101000010_?????_001_?????_1110011};
     }
@@ -92,9 +92,9 @@ covergroup ZicsrS_sstatus_cg with function sample(ins_t ins);
     cp_sstatus_sd: coverpoint ins.current.rs1_val[XLEN-1]  {
     }
     cp_sstatus_fs: coverpoint ins.current.rs1_val[14:13] {
-    }    
+    }
     cp_sstatus_vs: coverpoint ins.current.rs1_val[10:9] {
-    }    
+    }
     cp_sstatus_xs: coverpoint ins.current.rs1_val[16:15] {
     }
     csrrw_sstatus: coverpoint ins.current.insn {
@@ -123,21 +123,62 @@ covergroup ZicsrS_sprivinst_cg with function sample(ins_t ins);
     }
     sret: coverpoint ins.current.insn  {
         bins sret   = {32'h10200073};
-    }   
+    }
     // old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
     // }
     old_mstatus_tsr: coverpoint ins.prev.csr[12'h300][22] {
     }
     old_sstatus_spp: coverpoint ins.prev.csr[12'h100][8] {
     }
+    old_mstatus_spp: coverpoint ins.prev.csr[12'h300][8] {
+    }
+    old_mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {
+        bins U_mode = {2'b00};
+        bins S_mode = {2'b01};
+        bins M_mode = {2'b11};
+    }
+    old_mstatus_mprv: coverpoint ins.prev.csr[12'h300][17] {
+    }
+    old_mstatus_spie: coverpoint ins.prev.csr[12'h300][5] {
+    }
+    old_mstatus_sie: coverpoint ins.prev.csr[12'h300][1] {
+    }
+    old_mstatus_mie: coverpoint ins.prev.csr[12'h300][3] {
+    }
+    old_mstatus_mpie: coverpoint ins.prev.csr[12'h300][7] {
+    }
     old_sstatus_spie: coverpoint ins.prev.csr[12'h100][5] {
     }
     old_sstatus_sie: coverpoint ins.prev.csr[12'h100][1] {
     }
+    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) {
+        bins b_1[] = { [0:`XLEN-1] };
+    }
+
+    csrname : coverpoint ins.current.insn[31:20] {
+        bins sstatus       = {12'h100};
+        bins sie           = {12'h104};
+        bins stvec         = {12'h105};
+        bins sscratch      = {12'h140};
+        bins sepc          = {12'h141};
+        bins scause        = {12'h142};
+        bins stval         = {12'h143};
+        bins sip           = {12'h144};
+        bins senvcfg       = {12'h10A};
+        bins scounteren    = {12'h106};
+    }
+    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
+        bins csrrs = {3'b010};
+        bins csrrc = {3'b011};
+    }
+
     // main coverpoints
+    cp_scsrwalk:  cross csrname, csrop, priv_mode_s, walking_ones;
     cp_mprivinst: cross privinstrs, priv_mode_s;
-    cp_mret:      cross mret,       priv_mode_s;
-    cp_sret:      cross sret,       priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
+    cp_mret_s:    cross mret,       priv_mode_s;
+    cp_sret_s:    cross sret,       priv_mode_s, old_sstatus_spp, old_sstatus_spie, old_sstatus_sie, old_mstatus_tsr;
+    cp_mret_m:    cross mret,       priv_mode_m, old_mstatus_mpp, old_mstatus_mprv, old_mstatus_mpie, old_mstatus_mie;
+    cp_sret_m:    cross sret,       priv_mode_m, old_mstatus_spp, old_mstatus_mprv, old_mstatus_spie, old_mstatus_sie, old_mstatus_tsr;
 endgroup
 
 function void zicsrs_sample(int hart, int issue, ins_t ins);

@@ -42,7 +42,7 @@ main:
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
     // saving and restoring mstatus based on endianness
-    // calling WALLY-priv-endian.h to store and load 
+    // calling WALLY-priv-endian.h to store and load
 
     csrr s0, mstatus    # save CSR
     #ifdef __riscv_xlen
@@ -57,7 +57,7 @@ main:
     la s3, scratch  # s3 = pointer to scratch
     li s10, 1
     li s11, 3       #passing privilige mode: machine
-    
+
     // iterate over each endianness, doing all sizes of stores and loads
     li s4, 0        # endianness for write
     li s5, 0        # endianness for read
@@ -74,4 +74,3 @@ post_cp_mstatus_mbe_endianness:
 
 finished:
     j done
-

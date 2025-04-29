@@ -122,7 +122,7 @@ gen("cp_jalr1",         "RRRRRRRRRRRRRRRRR010RRRRR1100111")
 gen("cp_jalr2",         "RRRRRRRRRRRRRRRRR100RRRRR1100111")
 gen("cp_jalr3",         "RRRRRRRRRRRRRRRRR110RRRRR1100111")
 gen("cp_privileged_f3", "00000000000100000EEE000001110011")
-gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,    
+gen("cp_privileged_000","EEEEEEEEEEEE00000000000001110011", 32,
     ["1XXX11XXXXXX00000000000001110011", # exclude custom system instructions
     "00X10000001000000000000001110011", # exclude mret and sret because there is no trap to return from
      "00010000010100000000000001110011"]) # exclude wfi because it may not wake up
@@ -130,7 +130,7 @@ gen("cp_privileged_rd", "00000000000000000000EEEEE1110011")
 gen("cp_privileged_rs2","000000000000EEEEE000000001110011")
 gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_rm*_fma*
 gen("cp_reserved_fence_fm_tso", "EEEE00000000RRRRR000RRRRR0001111") # reserved fm and ts0 for fence instruction
-gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved rs1 for fence instruction 
+gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved rs1 for fence instruction
 gen("cp_reserved_fence_rd",     "000011111111RRRRE000000010001111") # reserved rd for fence instruction
 outfile.close
 
@@ -148,6 +148,6 @@ gen("compressed10", "EEEEEEEEEEEEEE10", 16,
      "1001XXXXX0000010", # skip c.jalr because it causes the test program to go to a random place
      "1001000000000010"
                ])
-print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal") 
-print("\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so should be illegal") 
+print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal")
+print("\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so should be illegal")
 outfile.close

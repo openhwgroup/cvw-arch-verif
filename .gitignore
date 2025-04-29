@@ -25,6 +25,7 @@ waves.shm/
 *.log
 .vscode
 work*
+!workflows
 *.wlf
 transcript
 .lib-rtl
