@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 18 November 2024
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
         wildcard bins branch = {32'b???????_?????_?????_???_?????_1100011};
     }
     branches_taken: coverpoint {ins.current.insn[14:12],                                     // funct3
-                                ins.current.rs1_val == ins.current.rs2_val,                  // A = B  
+                                ins.current.rs1_val == ins.current.rs2_val,                  // A = B
                                 $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                 $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
         wildcard bins beq_taken  = {6'b000_1_?_?};
@@ -43,7 +43,7 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
         wildcard bins bgeu_taken = {6'b111_?_?_0};
     }
     branches_nottaken: coverpoint {ins.current.insn[14:12],                                     // funct3
-                                   ins.current.rs1_val == ins.current.rs2_val,                  // A == B  
+                                   ins.current.rs1_val == ins.current.rs2_val,                  // A == B
                                    $signed(ins.current.rs1_val) < $signed(ins.current.rs2_val), // A < B (signed)
                                    $unsigned(ins.current.rs1_val) < $unsigned(ins.current.rs2_val)} {                 // A < B (unsigned)
         wildcard bins beq_nottaken  = {6'b000_0_?_?};
@@ -66,26 +66,26 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
         wildcard bins csrrci = {32'b????????????_?????_111_?????_1110011};
     }
     loadops: coverpoint ins.current.insn {
-        wildcard bins lw  = {32'b????????????_?????_010_?????_0000011}; 
-        wildcard bins lh  = {32'b????????????_?????_001_?????_0000011}; 
-        wildcard bins lhu = {32'b????????????_?????_101_?????_0000011}; 
-        wildcard bins lb  = {32'b????????????_?????_000_?????_0000011}; 
-        wildcard bins lbu = {32'b????????????_?????_100_?????_0000011}; 
+        wildcard bins lw  = {32'b????????????_?????_010_?????_0000011};
+        wildcard bins lh  = {32'b????????????_?????_001_?????_0000011};
+        wildcard bins lhu = {32'b????????????_?????_101_?????_0000011};
+        wildcard bins lb  = {32'b????????????_?????_000_?????_0000011};
+        wildcard bins lbu = {32'b????????????_?????_100_?????_0000011};
         `ifdef XLEN64
-            wildcard bins ld  = {32'b????????????_?????_001_?????_0000011}; 
-            wildcard bins lwu = {32'b????????????_?????_110_?????_0000011}; 
+            wildcard bins ld  = {32'b????????????_?????_001_?????_0000011};
+            wildcard bins lwu = {32'b????????????_?????_110_?????_0000011};
         `endif
     }
     storeops: coverpoint ins.current.insn {
-        wildcard bins sb = {32'b????????????_?????_000_?????_0100011}; 
-        wildcard bins sh = {32'b????????????_?????_001_?????_0100011}; 
-        wildcard bins sw = {32'b????????????_?????_010_?????_0100011}; 
+        wildcard bins sb = {32'b????????????_?????_000_?????_0100011};
+        wildcard bins sh = {32'b????????????_?????_001_?????_0100011};
+        wildcard bins sw = {32'b????????????_?????_010_?????_0100011};
         `ifdef XLEN64
-            wildcard bins sd = {32'b????????????_?????_011_?????_0100011}; 
+            wildcard bins sd = {32'b????????????_?????_011_?????_0100011};
         `endif
     }
     illegalops: coverpoint ins.current.insn {
-        bins zeros = {'0}; 
+        bins zeros = {'0};
         bins ones  = {'1};
     }
     ebreak: coverpoint ins.current.insn {
@@ -122,10 +122,10 @@ covergroup ExceptionsM_exceptions_cg with function sample(ins_t ins);
     illegal_address_priority: coverpoint {{ins.current.imm + ins.current.rs1_val}[XLEN-1:3], 3'b000} {
         bins illegal = {`ACCESS_FAULT_ADDRESS};
     }
-    
+
     // main coverpoints
-    cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_m; 
-    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_m;  
+    cp_instr_adr_misaligned_branch:          cross branch, branches_taken, pc_bit_1, imm_bit_1, priv_mode_m;
+    cp_instr_adr_misaligned_branch_nottaken: cross branch, branches_nottaken, pc_bit_1, imm_bit_1, priv_mode_m;
     cp_instr_adr_misaligned_jal:             cross jal, pc_bit_1, imm_bit_1, priv_mode_m;
     cp_instr_adr_misaligned_jalr:            cross jalr, rs1_1_0, offset, priv_mode_m;
     cp_instr_access_fault:                   cross jalr, illegal_address, priv_mode_m;

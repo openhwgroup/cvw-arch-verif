@@ -2,4 +2,3 @@
         // Value of VSTART.vstart (vector start index), accepts only zero
         bins zero    = {0};
     }
-    

@@ -32,7 +32,7 @@ main:
 /////////////////////////////////
 
    #include "ExceptionInstrCompressed-Tests.h"
- 
+
 // Restore trap handler before returning
 
     la t0, trap_handler

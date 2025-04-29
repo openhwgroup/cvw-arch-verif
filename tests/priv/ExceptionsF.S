@@ -27,20 +27,20 @@ main:
 
     // Test floating point instructions function with:
     // mstatus.FS = 1, frm = 5
-    li  a0, 1    
-    li  a1, 5                  
+    li  a0, 1
+    li  a1, 5
     jal ra, fp_instructions
 
     // Test floating point instructions function with:
     // mstatus.FS = 1, frm = 6
-    li  a0, 1      
-    li  a1, 6             
+    li  a0, 1
+    li  a1, 6
     jal ra, fp_instructions
-            
+
     // Test floating point instructions function with:
     // mstatus.FS = 1, frm = 7
-    li  a0, 1   
-    li  a1, 7    
+    li  a0, 1
+    li  a1, 7
     jal ra, fp_instructions
 
 /////////////////////////////////
@@ -105,7 +105,7 @@ fp_instructions:
     sw     t1, 8(t5)
     sw     t1, 12(t5)
 
-    // Initialize floating point registers used 
+    // Initialize floating point registers used
     li t0, 1
     fcvt.s.w f0, t0
 
@@ -154,203 +154,201 @@ fp_instructions:
     // Create mstatus.FS set mask dependent on a0
     slli s2, a0, 13  // shift a0 to mstatus.FS bits
 
-    // After initialization set frm to the value in a1  
+    // After initialization set frm to the value in a1
     // incase the value in a1 is illegal
     csrw frm, a1
 
-    // --- Floating-Point Memory Operations ---   
-
-        // Set mstatus.FS
-        csrc mstatus, s1   
-        csrs mstatus, s2  
-    fsw    f0, 0(a4)      
+    // --- Floating-Point Memory Operations ---
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    flw    f1, 0(a4)      
+        csrs mstatus, s2
+    fsw    f0, 0(a4)
+
+        // Set mstatus.FS
+        csrc mstatus, s1
+        csrs mstatus, s2
+    flw    f1, 0(a4)
 
     // --- Floating-Point Arithmetic Operations ---
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fadd.s f2, f0, f1 
+        csrs mstatus, s2
+    fadd.s f2, f0, f1
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsub.s f3, f0, f1 
+        csrs mstatus, s2
+    fsub.s f3, f0, f1
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmul.s f4, f0, f1  
+        csrs mstatus, s2
+    fmul.s f4, f0, f1
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fdiv.s f5, f0, f1        
+        csrs mstatus, s2
+    fdiv.s f5, f0, f1
 
     // --- Floating‑Point Conversions ---
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.w.s t2, f0  
+        csrs mstatus, s2
+    fcvt.w.s t2, f0
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.s.w f6, t2    
+        csrs mstatus, s2
+    fcvt.s.w f6, t2
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fcvt.s.d f7, f0          
+        csrs mstatus, s2
+    fcvt.s.d f7, f0
 
     // --- Floating Point Arithmetic ---
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmadd.s f8, f0, f1, f2 
+        csrs mstatus, s2
+    fmadd.s f8, f0, f1, f2
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsqrt.s f9, f0    
+        csrs mstatus, s2
+    fsqrt.s f9, f0
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fsgnj.s f10, f0, f1   
+        csrs mstatus, s2
+    fsgnj.s f10, f0, f1
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    feq.s  t3, f0, f1       
+        csrs mstatus, s2
+    feq.s  t3, f0, f1
 
     // --- Move Bit Representations ---
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmv.x.w t4, f0  
+        csrs mstatus, s2
+    fmv.x.w t4, f0
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fmv.w.x f11, t4         
+        csrs mstatus, s2
+    fmv.w.x f11, t4
 
     // --- Floating‑Point Classification and Minimum ---
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fclass.s t5, f0 
+        csrs mstatus, s2
+    fclass.s t5, f0
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2  
-    fmin.s f12, f0, f1  
+        csrs mstatus, s2
+    fmin.s f12, f0, f1
 
-    // --- Zfa Extension Instructions ---   
+    // --- Zfa Extension Instructions ---
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fround.s f14, f0         
+        csrs mstatus, s2
+    fround.s f14, f0
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    fli.s  f2, 2.5               
+        csrs mstatus, s2
+    fli.s  f2, 2.5
 
     // --- CSR Operations on Floating‑Point Status Registers ---
 
     // Note for the following csrrw and  csrrc instructions:
-    // Since fcsr, frm, and fflags are part of the same csr, frm is restored after each 
+    // Since fcsr, frm, and fflags are part of the same csr, frm is restored after each
     // csrrw/csrrc instruction. This prevents accidental modification of the frm register.
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrw  t1, fcsr, x0 
+        csrs mstatus, s2
+    csrrw  t1, fcsr, x0
 
         // Restore frm
-        csrw frm, a1 
+        csrw frm, a1
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrw  t0, frm, a1   // a1 stores the value of frm
 
         // Restore frm
         csrw frm, a1
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrw  t1, fflags, x0
 
         // Restore frm
         csrw frm, a1
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrs  t1, fcsr, t1 
+        csrs mstatus, s2
+    csrrs  t1, fcsr, t1
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrs  t1, fflags, t1  
-        
+        csrs mstatus, s2
+    csrrs  t1, fflags, t1
+
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrs  t0, frm, a1   // a1 stores the value of frm
 
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrc  t1, fcsr, t1   
-
-        // Restore frm
-        csrw frm, a1
-        // Set mstatus.FS
-        csrc mstatus, s1
-        csrs mstatus, s2 
+        csrs mstatus, s2
     csrrc  t1, fcsr, t1
 
         // Restore frm
         csrw frm, a1
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2  
-    csrrc  t1, frm, a1   // a1 stores the value of frm 
+        csrs mstatus, s2
+    csrrc  t1, fcsr, t1
 
         // Restore frm
         csrw frm, a1
         // Set mstatus.FS
         csrc mstatus, s1
-        csrs mstatus, s2 
-    csrrc  t1, fflags, t1   
+        csrs mstatus, s2
+    csrrc  t1, frm, a1   // a1 stores the value of frm
+
+        // Restore frm
+        csrw frm, a1
+        // Set mstatus.FS
+        csrc mstatus, s1
+        csrs mstatus, s2
+    csrrc  t1, fflags, t1
 
     // 32-bit only instructions
     #ifdef __riscv_xlen
     #if __riscv_xlen == 32
             // Set mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmv.x.w t1, f0
-        
+
             // Set mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmvh.x.d t2, f0
 
             // Set mstatus.FS
             csrc mstatus, s1
-            csrs mstatus, s2 
+            csrs mstatus, s2
         fmvp.d.x f1, t1, t2
     #endif
-    #endif 
+    #endif
 
     ret
-
-

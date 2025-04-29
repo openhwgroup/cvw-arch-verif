@@ -19,7 +19,7 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Extension | RV32 | RV64 | Notes |
 | --- | --- | --- | --- |
 | **Unprivileged** |
-| I | x|x | Integer base | 
+| I | x|x | Integer base |
 | M | x|x | Mul/div |
 | F |x |x | Floating-point |
 | D |x |x | Double-precision floating-point |
@@ -37,7 +37,7 @@ This repo contains testplans, covergroups, and directed tests for the RVA22S64 p
 | Zcf |x | | RV32 compressed single-precision fp |
 | Zcd |x |x | Compressed double-precision fp |
 | Zbkb |x |x | Basic bit manipulation for crypto |
-| Zbkc |x |x | Carry free multiplication for crypto | 
+| Zbkc |x |x | Carry free multiplication for crypto |
 | Zbkx |x |x | Crossbar permutations for crypto |
 | Zknd |x |x | AES decryption |
 | Zkne |x |x | AES encryption |
@@ -82,7 +82,7 @@ Notes:
 * A testplan such as ZcbM requires both Zcb and M extensions for c.mul
 * Exceptions also tests that illegal instruction behavior matches reference model for
 all categories of illegal instructions.
-* PMA is implementation-defined and cannot be tested explicitly.  The user must 
+* PMA is implementation-defined and cannot be tested explicitly.  The user must
 define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
 unless memory is implemented at that address); the Exceptions tests do limited PMA
 testing by ensuring this address thorows an AccessFault.  
@@ -233,4 +233,4 @@ Analyze the coverage report by checking out the covergroups in covSummary.html f
 * Muhammad Zain
 * Muhammad Ahmad
 * Muhammad Abdullah
-* Hamza Ali 
+* Hamza Ali
