@@ -1,5 +1,5 @@
 # align_word.S
-# Test all word-aligned operations 
+# Test all word-aligned operations
     la t0, scratch   # Load address of scratch memory
 
 #ifdef __riscv_xlen
