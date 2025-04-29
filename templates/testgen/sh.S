@@ -1,4 +1,4 @@
-# align_hword.S
+# cp_align_hword
 # test all halfword-aligned operations
     la t0, scratch
     li t1, 0x9ABCDEF0

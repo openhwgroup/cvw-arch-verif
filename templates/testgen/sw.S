@@ -1,4 +1,4 @@
-# align_word.S
+# cp_align_word
 # Test all word-aligned operations
     la t0, scratch   # Load address of scratch memory
 
