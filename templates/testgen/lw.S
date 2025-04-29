@@ -2,7 +2,7 @@
 # Test all word-aligned operations 
     la t0, scratch   # Load address of scratch memory
 
-#ifdef __riscv_xlen 
+#ifdef __riscv_xlen
     #if __riscv_xlen == 64
         li t2, 0x123456789ABCDEF0
         sd t2, 0(t0)
@@ -14,7 +14,7 @@
 #endif
 
 # cp_align_word: imm[2]=0 (aligned load/store)
-#ifdef __riscv_xlen 
+#ifdef __riscv_xlen
     #if __riscv_xlen == 64
         lwu t3, 0(t0)
 #else
