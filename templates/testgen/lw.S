@@ -35,4 +35,3 @@
     lw t1, 4(t0)
     sw t2, 4(t0)
 #endif
-
