@@ -8,20 +8,12 @@
 
 #cp_align_hword: imm[2:1]=00
     lh t1, 0(t0)
-    lhu t3, 0(t0)
-    sh t2, 0(t0)
 
 #cp_align_hword: imm[2:1]=01
     lh t1, 2(t0)
-    lhu t3, 2(t0)
-    sh t2, 2(t0)
 
 #cp_align_hword: imm[2:1]=10
     lh t1, 4(t0)
-    lhu t3, 4(t0)
-    sh t2, 4(t0)
 
 #cp_align_hword: imm[2:1]=11
     lh t1, 6(t0)
-    lhu t3, 6(t0)
-    sh t2, 6(t0)
