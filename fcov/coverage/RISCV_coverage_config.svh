@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Configuration
@@ -158,12 +159,6 @@
 `ifdef RV32CBO_VM_COVERAGE
   `include "RV32CBO_VM_coverage.svh"
 `endif
-`ifdef RV64PMP_COVERAGE
-  `include "PMPM_coverage.svh"
-`endif
-`ifdef RV32PMP_COVERAGE
-  `include "PMPM_coverage.svh"
-`endif
 `ifdef RV64CBO_PMP_COVERAGE
   `include "RV64CBO_PMP_coverage.svh"
 `endif
@@ -241,11 +236,7 @@
 `endif
 `ifdef EXCEPTIONSZALRSC_COVERAGE
   `include "ExceptionsZalrsc_coverage.svh"
-<<<<<<< HEAD
 `endif
 `ifdef EXCEPTIONSV_COVERAGE
   `include "ExceptionsV_coverage.svh"
 `endif
-=======
-`endif
->>>>>>> dd2194f (PMPM Coverpoints)
