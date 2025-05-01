@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Configuration
