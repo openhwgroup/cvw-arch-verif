@@ -532,7 +532,7 @@ class RISCV_instruction
   virtual function void add_vm(int offset);
     current.vm = get_vm(ops[offset].key);
   endfunction
-  
+
   virtual function void add_eSEW(int offset);
     current.eSEW = get_vtype_eSEW_val(ops[offset].key);
   endfunction

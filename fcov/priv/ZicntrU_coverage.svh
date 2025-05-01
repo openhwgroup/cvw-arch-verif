@@ -3,20 +3,20 @@
 // RISC-V Architectural Functional Coverage Covergroups
 //
 // Written: Madeleine Kan Mkan@hmc.edu, Roman De Santos rdesantos@hmc.edu November 20 2024
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@
 covergroup ZicntrU_ucounters_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
-    // Counter access in user mode 
+    // Counter access in user mode
 
     // building blocks for the main coverpoints
     csrr: coverpoint ins.current.insn  {
@@ -97,7 +97,7 @@ covergroup ZicntrU_ucounters_cg with function sample(ins_t ins);
         bins hpmcounter29_disabled  = {44'b110000011101_11011111111111111111111111111111};
         bins hpmcounter30_disabled  = {44'b110000011110_10111111111111111111111111111111};
         bins hpmcounter31_disabled  = {44'b110000011111_01111111111111111111111111111111};
-        
+
         `ifdef XLEN32
             bins cycleh_enabled         = {44'b110010000000_00000000000000000000000000000001};
             bins timeh_enabled          = {44'b110010000001_00000000000000000000000000000010};
@@ -174,5 +174,5 @@ endgroup
 
 
 function void zicntru_sample(int hart, int issue, ins_t ins);
-  ZicntrU_ucounters_cg.sample(ins); 
+  ZicntrU_ucounters_cg.sample(ins);
 endfunction

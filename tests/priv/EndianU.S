@@ -13,7 +13,7 @@
 
 main:
 
-///////////////////////////////// 
+/////////////////////////////////
 // Endianness testing
 // cp_mstatus_ube_endianness_*
 // cp_mstatus_mprv_ube_endianness isn’t implemented yet.
@@ -46,10 +46,10 @@ main:
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
     // saving and restoring mstatus based on endianness
-    
+
     csrr s0, mstatus     # save CSR
     #ifdef __riscv_xlen
-            li s1, 0x40  # 1 in bit 6 for mstatus.UBE 
+            li s1, 0x40  # 1 in bit 6 for mstatus.UBE
     #else
         ERROR: __riscv_xlen not defined
     #endif
@@ -90,15 +90,15 @@ post_cp_mstatus_ube_endianness:
     //  MPP  0x1800       | 0x1800
     //  UBE  0X40         | 0X40
     // --------------------------------------
-    // bit 17 for mstatus.MPRV  
+    // bit 17 for mstatus.MPRV
     // bit 12 for mstatus.MPP
-    // bit 11 for mstatus.MPP 
+    // bit 11 for mstatus.MPP
     // bit 6 for  mstatus.UBE
     // MBE AND SBE:
     //   64 bits: use mstatus
     //        bit 37 for mstatus.MBE
     //   32 bits: use mstatush
-    //        bit 5 for mstatush.MBE  
+    //        bit 5 for mstatush.MBE
     csrr s0, mstatus    # save CSR
     li a0, 3            # a0 = 3, change to Machine mode
     ecall               # Make a system call to enter Machine mode
@@ -117,91 +117,91 @@ post_cp_mstatus_ube_endianness:
             li      t4,   0x40            # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2  
+            jal s6, endianwrite2
             // 3:  MPRV=0, MPP=00, MBE=1, UBE=0
             li      t3,   0x21840         # 0s
             li      t4,   0x2000000000    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 4:  MPRV=0, MPP=00, MBE=1, UBE=1
             li      t3,   0x21800         # 0s
             li      t4,   0x2000000040    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
-            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0 
+            jal s6, endianwrite2
+            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0
             li      t3,   0x2000020040    # 0s
             li      t4,   0x1800          # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 6:  MPRV=0, MPP=11, MBE=0, UBE=1
             li      t3,   0x2000020000    # 0s
             li      t4,   0x1840          # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 7:  MPRV=0, MPP=11, MBE=1, UBE=0
             li      t3,   0x20040         # 0s
             li      t4,   0x2000001800    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 8:  MPRV=0, MPP=11, MBE=1, UBE=1
             li      t3,   0x20000         # 0s
             li      t4,   0x2000001840    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 9:  MPRV=1, MPP=00, MBE=0, UBE=0
             li      t3,   0x2000001840    # 0s
             li      t4,   0x20000         # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 10: MPRV=1, MPP=00, MBE=0, UBE=1
             li      t3,   0x2000001800    # 0s
             li      t4,   0x20040         # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 11: MPRV=1, MPP=00, MBE=1, UBE=0
             li      t3,   0x1840          # 0s
             li      t4,   0x2000020000    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 12: MPRV=1, MPP=00, MBE=1, UBE=1
             li      t3,   0x1800          # 0s
             li      t4,   0x2000020040    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 13: MPRV=1, MPP=11, MBE=0, UBE=0
             li      t3,   0x2000000040    # 0s
             li      t4,   0x21800         # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2   
+            jal s6, endianwrite2
             // 14: MPRV=1, MPP=11, MBE=0, UBE=1
             li      t3,   0x2000000000    # 0s
             li      t4,   0x21840         # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 15: MPRV=1, MPP=11, MBE=1, UBE=0
             li      t3,   0x40            # 0s
             li      t4,   0x2000021800    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 16: MPRV=1, MPP=11, MBE=1, UBE=1
             li      t3,   0x0             # 0s
             li      t4,   0x2000021840    # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
         // 16 READS:
             // 1:  MPRV=0, MPP=00, MBE=0, UBE=0
             li      t3,   0x2000021840    # 0s
@@ -227,7 +227,7 @@ post_cp_mstatus_ube_endianness:
             csrrc   t6, mstatus, t3       # setting the 0s
             csrrs   t6, mstatus, t4       # setting the 1s
             jal s7, endianread2
-            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0 
+            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0
             li      t3,   0x2000020040    # 0s
             li      t4,   0x1800          # 1s
             csrrc   t6, mstatus, t3       # setting the 0s
@@ -301,7 +301,7 @@ post_cp_mstatus_ube_endianness:
             jal s7, endianread2
             j postendian2
         #elif __riscv_xlen == 32
-        csrr s1, mstatush 
+        csrr s1, mstatush
         //16 WRITES:
             // 1:  MPRV=0, MPP=00, MBE=0, UBE=0
             li      t3, 0x21840       # 0s -> mstatus
@@ -312,7 +312,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x00          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2  
+            jal s6, endianwrite2
             // 2:  MPRV=0, MPP=00, MBE=0, UBE=1
             li      t3, 0x21800       # 0s
             li      t4, 0x40          # 1s
@@ -322,7 +322,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 3:  MPRV=0, MPP=00, MBE=1, UBE=0
             li      t3, 0x21840       # 0s
             li      t4, 0x0           # 1s
@@ -332,7 +332,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 4:  MPRV=0, MPP=00, MBE=1, UBE=1
             li      t3, 0x21800       # 0s
             li      t4, 0x40          # 1s
@@ -342,8 +342,8 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
-            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0 
+            jal s6, endianwrite2
+            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0
             li      t3, 0x20040       # 0s
             li      t4, 0x1800        # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
@@ -352,7 +352,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 6:  MPRV=0, MPP=11, MBE=0, UBE=1
             li      t3, 0x20000       # 0s
             li      t4, 0x1840        # 1s
@@ -362,7 +362,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 7:  MPRV=0, MPP=11, MBE=1, UBE=0
             li      t3, 0x20040       # 0s
             li      t4, 0x1800        # 1s
@@ -372,7 +372,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 8:  MPRV=0, MPP=11, MBE=1, UBE=1
             li      t3, 0x20000       # 0s
             li      t4, 0x1840        # 1s
@@ -382,7 +382,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 9:  MPRV=1, MPP=00, MBE=0, UBE=0
             li      t3, 0x1840        # 0s
             li      t4, 0x20000       # 1s
@@ -392,7 +392,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 10: MPRV=1, MPP=00, MBE=0, UBE=1
             li      t3, 0x1800        # 0s
             li      t4, 0x20040       # 1s
@@ -402,7 +402,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 11: MPRV=1, MPP=00, MBE=1, UBE=0
             li      t3, 0x1840        # 0s
             li      t4, 0x20000       # 1s
@@ -412,7 +412,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 12: MPRV=1, MPP=00, MBE=1, UBE=1
             li      t3, 0x1800        # 0s
             li      t4, 0x20040       # 1s
@@ -422,7 +422,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 13: MPRV=1, MPP=11, MBE=0, UBE=0
             li      t3, 0x40          # 0s
             li      t4, 0x21800       # 1s
@@ -432,7 +432,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 14: MPRV=1, MPP=11, MBE=0, UBE=1
             li      t3, 0x0           # 0s
             li      t4, 0x21840       # 1s
@@ -442,7 +442,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x0           # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 15: MPRV=1, MPP=11, MBE=1, UBE=0
             li      t3, 0x40          # 0s
             li      t4, 0x21800       # 1s
@@ -452,7 +452,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
             // 16: MPRV=1, MPP=11, MBE=1, UBE=1
             li      t3, 0x0           # 0s
             li      t4, 0x21840       # 1s
@@ -462,7 +462,7 @@ post_cp_mstatus_ube_endianness:
             li      t2, 0x20          # 1s -> mstatush
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
-            jal s6, endianwrite2 
+            jal s6, endianwrite2
         // 16 READS:
             // 1:  MPRV=0, MPP=00, MBE=0, UBE=0
             li      t3, 0x21840       # 0s -> mstatus
@@ -504,7 +504,7 @@ post_cp_mstatus_ube_endianness:
             csrrc   t6, mstatush, t1  # setting the 0s
             csrrs   t6, mstatush, t2  # setting the 1s
             jal s7, endianread2
-            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0 
+            // 5:  MPRV=0, MPP=11, MBE=0, UBE=0
             li      t3, 0x20040       # 0s
             li      t4, 0x1800        # 1s
             csrrc   t6, mstatus, t3   # setting the 0s
@@ -631,7 +631,7 @@ post_cp_mstatus_ube_endianness:
     #endif
 
 
-endianwrite2: 
+endianwrite2:
     // Try each size of stores with the write endianness
     // Test storing bytes
     li t0, 0x01
@@ -719,22 +719,22 @@ endianread2:
     lw  t3, 0(s3)
     lw  t3, 4(s3)
     #ifdef __riscv_xlen
-        #if __riscv_xlen == 64    
+        #if __riscv_xlen == 64
             lwu t3, 0(s3) # long loads for RV64
-            lwu t3, 4(s3) 
-            ld  t3, 0(s3) 
+            lwu t3, 4(s3)
+            ld  t3, 0(s3)
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
     jr s7   # return (return address was stored in s7)
 
-postendian2: 
+postendian2:
     csrrw t6, mstatus, s0    # restore CSR
-    //restoring mstatush if rv32 
+    //restoring mstatush if rv32
     #ifdef __riscv_xlen
-        #if __riscv_xlen == 32    
-            csrrw t5, mstatush, s1  
+        #if __riscv_xlen == 32
+            csrrw t5, mstatush, s1
         #endif
     #else
         ERROR: __riscv_xlen not defined

@@ -1,7 +1,7 @@
 # sc.d.S
 # custom tests for store conditional
 
-# cp_custom_aqrl 
+# cp_custom_aqrl
 # test acquire and release modifiers
     la t0, scratch
     li t2, 0x123456789ABCDEF0
@@ -49,7 +49,7 @@
     #else
         ERROR: __riscv_xlen not defined
     #endif
-   
+
     addi t6, t6, 8      # increment offset
     slti t5, t6, 129    # offset <= 128
     bnez t5, 1b         # repeat until done

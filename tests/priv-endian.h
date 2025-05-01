@@ -2,7 +2,7 @@
 // priv-endian.h
 //
 // Written: mbellido@hmc.edu 18 february 2025
-// Adapted for to support both RV32 and RV64 mbellido@hmc.edu 
+// Adapted for to support both RV32 and RV64 mbellido@hmc.edu
 //
 // Purpose: has the fuctions to store and load for endianness
 // Feed in: provide the endianness for the reads the writes and the privilege
@@ -32,14 +32,14 @@
 //   s5: endianness for read test
 //   s6: return address for calls to endiantest
 //   s7: return address for calls to endianaccess
-//   s8: stored endianess value 
+//   s8: stored endianess value
 //   s10: 0 to set/clear sstatus.UBE  (any other value otherwisse )
 //   s11: To switch back to running privilege mode once set/clear endianness
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Library used for EndianU, EndianM and EndianS
 // will store and load using the provided read and write endianness
 
-endiantest: //Write to memory function 
+endiantest: //Write to memory function
     # Try each size of stores with the write endianness, and then the loads with the read endianness
     mv s8, s4       # setEndianness(write)
     jal setendianness
@@ -96,7 +96,7 @@ endiantest: //Write to memory function
 
 setendianness:  //function to set/clear the bits depending on the endianness specified in the covergroups
     beq s10, x0, onlysstatus3 //branch if endianness is given from sstatus (3 bc used by 3rd cp in endianS)
-    
+
     // if s8 = 1, bigendian, otherwise littleendian
     li a0, 3         # a0 = 3, change to Machine mode
     ecall            # Make a system call to enter Machine mode
@@ -111,7 +111,7 @@ setendianness:  //function to set/clear the bits depending on the endianness spe
         ERROR: __riscv_xlen not defined
     #endif
     j change
-littleendian:  
+littleendian:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrc t6, mstatus, s1   # for RV64, clear mstatus
@@ -124,25 +124,25 @@ littleendian:
     j change
 
 
-onlysstatus3: //used for 3rd EndianS coverpoint: cp_sstatus_ube_endianness_* 
+onlysstatus3: //used for 3rd EndianS coverpoint: cp_sstatus_ube_endianness_*
               // endianness given in sstatus.UBE
     li a0, 1         # a0 = 1, change to supervisor mode ->to write to sstatus
-    ecall            # Make a system call 
+    ecall            # Make a system call
     beqz s8, littleendian3      # little endian
     csrrs t6, sstatus, s1   # set sstatus.UBE
     j change
-littleendian3:  
+littleendian3:
     csrrc t6, sstatus, s1   # clear sstatus.UBE
     j change
 
-change: 
+change:
     // Switch privilege mode
     mv a0, s11       # s11 has privilege mode
-    ecall            # Make a system call 
+    ecall            # Make a system call
     ret
 
 
-endianaccess: 
+endianaccess:
     // Try all the accesses to make sure they work for the endianness
      mv s8, s5   # setEndianness(read)
     jal setendianness
@@ -173,15 +173,12 @@ endianaccess:
     lw  t3, 0(s3)
     lw  t3, 4(s3)
     #ifdef __riscv_xlen
-        #if __riscv_xlen == 64    
+        #if __riscv_xlen == 64
             lwu t3, 0(s3) # long loads for RV64
-            lwu t3, 4(s3) 
-            ld t3, 0(s3) 
+            lwu t3, 4(s3)
+            ld t3, 0(s3)
         #endif
     #else
         ERROR: __riscv_xlen not defined
     #endif
     jr s7   # return (return address was stored in s7)
-
-
-
