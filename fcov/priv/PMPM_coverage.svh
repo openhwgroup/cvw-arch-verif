@@ -18,13 +18,15 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+//------------ Assuming it right for time being --------------
 `define RAMBASEADDR 32'h80000000
 `define LARGESTPROGRAM 32'h00010000
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 `define G 0
 `define g (2**(max(`G,1)+2))
-`define STANDARD_REGION (`REGIONSTART >> (`G+2)) | ((1 << (`G-1)) - 1)
+`define STANDARD_REGION {`REGIONSTART >> {`G+2}, 1'b0, {{`G-1}1'b1}}
+//------------------------------------------------------------
 
 `define COVER_RV32PMP
 `define COVER_RV64PMP
@@ -250,8 +252,6 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [3:0]
 	}
 
 //-------------------------------------------------------
-
-
 
 endgroup
 
