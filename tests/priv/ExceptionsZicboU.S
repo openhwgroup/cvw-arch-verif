@@ -12,9 +12,48 @@
 
 main:
 
+// machine cbie test
 li a0, 3
+ecall
 
-// TODO: add all function calls in all modes
+li a0, 3
+jal cbieFunction
+
+// user cbie test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbieFunction
+
+// Machine cbcfe test
+li a0, 3
+ecall
+
+li a0, 3
+jal cbcfeFunction
+
+// User cbcfe test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbcfeFunction
+
+// Machine cbze test
+li a0, 3
+ecall
+
+li a0, 3
+jal cbzeFunction
+
+// User cbze test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbzeFunction
+
 
 finished:
     j done
@@ -36,20 +75,20 @@ cbieLoop:
     ecall
 
     // update csr cbie
-    csrw  cbie, t0    //bits 4 and 5 of csr menvcfg
+    slli  t1, t0, 4
+    csrw  menvcfg, t0    //bits 4 and 5 of csr menvcfg
 
     // run test in desired privilege mode
     mv a0,a1
     ecall
 
-    la scratch, t2
-
-    cbo.inval    0(t2)      // HOW DO I SELECT A CACHE BLOCK
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
+    la t2, DataBlock
+    cbo.inval    0(t2)
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 4, cbieLoop   # while (i < 4) repeat outer loop
+    li      t3, 4
+    blt     t0, t3, cbieLoop   # while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
@@ -72,24 +111,21 @@ cbcfeLoop:
 
     // update csr cbie
     slli  t1, t0, 6
-    csrw  cbcfe, t1    //bit 6 of csr menvcfg
+    csrw  menvcfg, t1    //bit 6 of csr menvcfg
 
     // run test in desired privilege mode
     mv a0,a1
     ecall
 
-    la scratch, t2
-
-    ////
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    cbo.clean    0(t2)      // HOW DO I SELECT A CACHE BLOCK
+    la t2, DataBlock
+    cbo.clean    0(t2)
     cbo.flush    0(t2)
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    ////
+
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 2, cbcfeLoop   # while (i < 2) repeat outer loop
+    li t3, 2
+    blt     t0, t3, cbcfeLoop   # while (i < 2) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
@@ -98,10 +134,10 @@ cbcfeLoop:
     ret
 
 /////FUNCTION enter description
-cbcfeFunction:
+cbzeFunction:
     li      t0, 0          # t0 = i = 0  (outer loop counter)
 
-cbcfeLoop:
+cbzeLoop:
     // save the value of the desired priv mode
     mv a1, a0
 
@@ -117,18 +153,25 @@ cbcfeLoop:
     mv a0,a1
     ecall
 
-    la scratch, t2
-
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    cbo.zero    0(t2)      // HOW DO I SELECT A CACHE BLOCK
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
+    la t2, DataBlock
+    cbo.zero    0(t2)
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 2, cbzeLoop   # while (i < 2) repeat outer loop
+    li t3, 2
+    blt     t0, t3, cbzeLoop   # while (i < 2) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
     ret
+
+
+// Scratch data area for cache operations
+// 4 times larger than cach size incase
+// cbo instruction lands between two boundaries
+.data
+.align 10
+DataBlock:
+    .fill  2048

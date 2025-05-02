@@ -13,8 +13,47 @@
 main:
 
 
-// TODO: add all function calls in all modes
+// machine cbie test
+li a0, 3
+ecall
 
+li a0, 3
+jal cbieFunction
+
+// user cbie test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbieFunction
+
+// Machine cbcfe test
+li a0, 3
+ecall
+
+li a0, 3
+jal cbcfeFunction
+
+// User cbcfe test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbcfeFunction
+
+// Machine cbze test
+li a0, 3
+ecall
+
+li a0, 3
+jal cbzeFunction
+
+// User cbze test
+li a0, 0
+ecall
+
+li a0, 0
+jal cbzeFunction
 
 
 finished:
@@ -25,13 +64,13 @@ finished:
 ////////////////
 
 /// FUNCTION DESCRIPTION NEEDED
-cbieFunctioon:
+cbieFunction:
     li      t0, 0          # t0 = i = 0  (outer loop counter)
-outerLoop:
+outerCbieLoop:
     li      t1, 0          # t1 = j = 0  (inner loop counter)
 
-innerLoop:
-     // save the value of the desired priv mode
+innerCbieLoop:
+    // save the value of the desired priv mode
     mv a1, a0
 
     // load into machine mode
@@ -49,19 +88,18 @@ innerLoop:
     mv a0,a1
     ecall
 
-    /////
-    la scratch, t2
-    cbo.inval    0(t2)      // HOW DO I SELECT A CACHE BLOCK
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    ////
+    la t2, DataBlock
+    cbo.inval    0(t2)
 
     # ---- advance inner counter j ----
     addi    t1, t1, 1          # j++
-    blt     t1, 4, innerLoop   # while (j < 4) continue inner loop
+    li      t3, 4
+    blt     t1, t3, innerCbieLoop   # while (j < 4) continue inner loop
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 4, outerLoop   # while (i < 4) repeat outer loop
+    li      t2, 4
+    blt     t0, t2, outerCbieLoop   # while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
@@ -70,8 +108,9 @@ innerLoop:
     ret
 
 /// FUNCTION DESCRIPTION NEEDED
-cbcfeFunctioon:
+cbcfeFunction:
     li      t0, 0          # t0 = i = 0  (outer loop counter)
+
 outerCbcfeLoop:
     li      t1, 0          # t1 = j = 0  (inner loop counter)
 
@@ -95,22 +134,22 @@ innerCbcfeLoop:
     ecall
 
 
-    la scratch, t2
-    ////
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
+    la t2, DataBlock
+
     cbo.clean    0(t2)      // HOW DO I SELECT A CACHE BLOCK
     cbo.flush    0(t2)
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    ////
+
 
 
     # ---- advance inner counter j ----
     addi    t1, t1, 1          # j++
-    blt     t1, 4, innerCbcfeLoop   # while (j < 4) continue inner loop
+    li     t3, 4
+    blt     t1, t3, innerCbcfeLoop   # while (j < 4) continue inner loop
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 4, outerCbcfeLoop   # while (i < 4) repeat outer loop
+    li      t3, 4
+    blt     t0, t3, outerCbcfeLoop   # while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
@@ -119,7 +158,7 @@ innerCbcfeLoop:
     ret
 
 // FUNCTION DESCRIPTION NEEDED
-cbzeFunctioon:
+cbzeFunction:
     li      t0, 0          # t0 = i = 0  (outer loop counter)
 outerCbzeLoop:
     li      t1, 0          # t1 = j = 0  (inner loop counter)
@@ -140,25 +179,31 @@ innerCbzeLoop:
     csrw senvcfg, t3     // bits 4 and 5 of senvcfg
 
     // run test in desired privilege mode
-    mv a0,a1
+    mv a0, a1
     ecall
 
-    ///
-    la scratch, t2
     cbo.zero    0(t2)      // HOW DO I SELECT A CACHE BLOCK
-    fence iorw, iorw // IS THIS NEEDED FOR CACHE OPERATIONS?
-    ///
 
     # ---- advance inner counter j ----
     addi    t1, t1, 1          # j++
-    blt     t1, 4, innerCbzeLoop   # while (j < 4) continue inner loop
+    li      t3, 4
+    blt     t1, t3, innerCbzeLoop   # while (j < 4) continue inner loop
 
     # ---- once inner loop finishes, advance outer counter i ----
     addi    t0, t0, 1          # i++
-    blt     t0, 4, outerCbzeLoop   # while (i < 4) repeat outer loop
+    li      t3, 4
+    blt     t0, t3, outerCbzeLoop   # while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
     ret
+
+// Scratch data area for cache operations
+// 4 times larger than cach size incase
+// cbo instruction lands between two boundaries
+.data
+.align 10
+DataBlock:
+    .fill  2048
