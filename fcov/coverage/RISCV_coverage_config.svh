@@ -146,10 +146,10 @@
 `ifdef RV32VM_COVERAGE
   `include "RV32VM_coverage.svh"
 `endif
-`ifdef RV64VM_PMP_COVERAGE
+`ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
 `endif
-`ifdef RV32VM_PMP_COVERAGE
+`ifdef RV32PMP_COVERAGE
   `include "PMPM_coverage.svh"
 `endif
 `ifdef RV64CBO_VM_COVERAGE
