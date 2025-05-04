@@ -62,44 +62,59 @@ finished:
 // Helper functions
 ////////////////
 
-/////FUNCTION enter description
+
+// Function: cbieFunction
+// Tests cbo.inval with all possible combinations of cbie in the menvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbieFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 4          // loop limit
+    li      t0, 0          // t0 = i = 0  (loop counter)
 
 cbieLoop:
-    // save the value of the desired priv mode
+    // save requested priv mode
     mv a1, a0
 
-    // load into machine mode
+    // switch to machine priv mode
     li   a0, 3
     ecall
 
-    // update csr cbie
+    // shift i to bits 4-5 of menvcfg (cbie value)
     slli  t1, t0, 4
-    csrw  menvcfg, t0    //bits 4 and 5 of csr menvcfg
+    csrw  menvcfg, t1
 
-    // run test in desired privilege mode
+    // switch back to requested priv mode
     mv a0,a1
     ecall
 
+    // execute cbo instruction in a temp data block
     la t2, DataBlock
     cbo.inval    0(t2)
 
-    # ---- once inner loop finishes, advance outer counter i ----
-    addi    t0, t0, 1          # i++
-    li      t3, 4
-    blt     t0, t3, cbieLoop   # while (i < 4) repeat outer loop
+    // loop update
+    addi    t0, t0, 1
+    blt     t0, t6, cbieLoop
 
-    // load into machine mode when returning
+    // return in machine mode
     li   a0, 3
     ecall
+
+    //clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
 
     ret
 
 
-/////FUNCTION enter description
+// Function: cbcfeFunction
+// Tests cbo.clean and cbo.flush with all possible combinations of cbcfe in the menvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbcfeFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 2          // loop limit
+    li      t0, 0          // t0 = i = 0  (loop counter)
 
 cbcfeLoop:
     // save the value of the desired priv mode
@@ -109,7 +124,7 @@ cbcfeLoop:
     li   a0, 3
     ecall
 
-    // update csr cbie
+    // update csr cbcfe
     slli  t1, t0, 6
     csrw  menvcfg, t1    //bit 6 of csr menvcfg
 
@@ -117,25 +132,35 @@ cbcfeLoop:
     mv a0,a1
     ecall
 
+    // execute cbo instruction in a temp data block
     la t2, DataBlock
     cbo.clean    0(t2)
     cbo.flush    0(t2)
 
 
-    # ---- once inner loop finishes, advance outer counter i ----
+    // loop update
     addi    t0, t0, 1          # i++
-    li t3, 2
-    blt     t0, t3, cbcfeLoop   # while (i < 2) repeat outer loop
+    blt     t0, t6, cbcfeLoop   # while (i < 2) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
+    //clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
+
     ret
 
-/////FUNCTION enter description
+
+// Function: cbzeFunction
+// Tests cbo.zero with all possible combinations of cbze in the menvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbzeFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 2          // loop limit
+    li      t0, 0          // t0 = i = 0  (loop counter)
 
 cbzeLoop:
     // save the value of the desired priv mode
@@ -145,32 +170,36 @@ cbzeLoop:
     li   a0, 3
     ecall
 
-    // update csr cbcfe
+    // update csr cbze
     slli  t1, t0, 7
-    csrw  menvcfg, t0    // bit 7 csr menvcfg
+    csrw  menvcfg, t1    // bit 7 csr menvcfg
 
     // run test in desired privilege mode
     mv a0,a1
     ecall
 
+    // execute cbo instruction in a temp data block
     la t2, DataBlock
     cbo.zero    0(t2)
 
-    # ---- once inner loop finishes, advance outer counter i ----
-    addi    t0, t0, 1          # i++
-    li t3, 2
-    blt     t0, t3, cbzeLoop   # while (i < 2) repeat outer loop
+    // loop update
+    addi    t0, t0, 1          // i++
+    blt     t0, t6, cbzeLoop   // while (i < 2) repeat
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
+    //clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
+
     ret
 
 
 // Scratch data area for cache operations
-// 4 times larger than cach size incase
-// cbo instruction lands between two boundaries
+// 4 times larger than cach size to prevent
+// accidental clearing of program data.
 .data
 .align 10
 DataBlock:

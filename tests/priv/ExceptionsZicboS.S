@@ -20,7 +20,14 @@ ecall
 li a0, 3
 jal cbieFunction
 
-// user cbie test
+// Supervisor cbie test
+li a0, 1
+ecall
+
+li a0, 1
+jal cbieFunction
+
+// User cbie test
 li a0, 0
 ecall
 
@@ -32,6 +39,13 @@ li a0, 3
 ecall
 
 li a0, 3
+jal cbcfeFunction
+
+// Supervisor cbcfe test
+li a0, 1
+ecall
+
+li a0, 1
 jal cbcfeFunction
 
 // User cbcfe test
@@ -46,6 +60,13 @@ li a0, 3
 ecall
 
 li a0, 3
+jal cbzeFunction
+
+// Supervisor cbze test
+li a0, 1
+ecall
+
+li a0, 1
 jal cbzeFunction
 
 // User cbze test
@@ -63,11 +84,16 @@ finished:
 // Helper functions
 ////////////////
 
-/// FUNCTION DESCRIPTION NEEDED
+// Function: cbieFunction
+// Tests cbo.inval with all possible combinations of cbze in the menvcfg and senvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbieFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 2          // outer and inner loop limit
+    li      t0, 0          // t0 = i = 0  (outer loop counter)
 outerCbieLoop:
-    li      t1, 0          # t1 = j = 0  (inner loop counter)
+    li      t1, 0          // t1 = j = 0  (inner loop counter)
 
 innerCbieLoop:
     // save the value of the desired priv mode
@@ -88,31 +114,43 @@ innerCbieLoop:
     mv a0,a1
     ecall
 
+    // execute cbo instruction in a temp data block
     la t2, DataBlock
     cbo.inval    0(t2)
 
-    # ---- advance inner counter j ----
-    addi    t1, t1, 1          # j++
-    li      t3, 4
-    blt     t1, t3, innerCbieLoop   # while (j < 4) continue inner loop
+    // advance inner counter j
+    addi    t1, t1, 1               // j++
+    blt     t1, t6, innerCbieLoop   // while (j < 4) continue inner loop
 
-    # ---- once inner loop finishes, advance outer counter i ----
-    addi    t0, t0, 1          # i++
-    li      t2, 4
-    blt     t0, t2, outerCbieLoop   # while (i < 4) repeat outer loop
+    // advance outer counter i
+    addi    t0, t0, 1               // i++
+    blt     t0, t6, outerCbieLoop   // while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
+    // clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
+
+    // clear senvcfg csr before next test
+    li    t0, 0
+    csrw  senvcfg, t0
+
     ret
 
-/// FUNCTION DESCRIPTION NEEDED
+// Function: cbcfeFunction
+// Tests cbo.clean and cbo.flush with all possible combinations of cbcfe in the menvcfg and senvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbcfeFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 2          // outer and inner loop limit
+    li      t0, 0          // t0 = i = 0  (outer loop counter)
 
 outerCbcfeLoop:
-    li      t1, 0          # t1 = j = 0  (inner loop counter)
+    li      t1, 0          // t1 = j = 0  (inner loop counter)
 
 innerCbcfeLoop:
      // save the value of the desired priv mode
@@ -122,7 +160,7 @@ innerCbcfeLoop:
     li   a0, 3
     ecall
 
-    // update csr {m/s}cbie
+    // update csr {m/s}cbcfe
     slli  t2, t0, 6
     csrw  menvcfg, t2    // bit 6 of csr menvcfg
 
@@ -133,35 +171,44 @@ innerCbcfeLoop:
     mv a0,a1
     ecall
 
-
+    // execute cbo instruction in a temp data block
     la t2, DataBlock
 
-    cbo.clean    0(t2)      // HOW DO I SELECT A CACHE BLOCK
+    cbo.clean    0(t2)
     cbo.flush    0(t2)
 
+    // advance inner counter j
+    addi    t1, t1, 1                // j++
+    blt     t1, t6, innerCbcfeLoop   // while (j < 4) continue inner loop
 
-
-    # ---- advance inner counter j ----
-    addi    t1, t1, 1          # j++
-    li     t3, 4
-    blt     t1, t3, innerCbcfeLoop   # while (j < 4) continue inner loop
-
-    # ---- once inner loop finishes, advance outer counter i ----
-    addi    t0, t0, 1          # i++
-    li      t3, 4
-    blt     t0, t3, outerCbcfeLoop   # while (i < 4) repeat outer loop
+    // advance outer counter i
+    addi    t0, t0, 1                // i++
+    blt     t0, t6, outerCbcfeLoop   // while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
+    // clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
+
+    // clear senvcfg csr before next test
+    li    t0, 0
+    csrw  senvcfg, t0
+
     ret
 
-// FUNCTION DESCRIPTION NEEDED
+// Function: cbzeFunction
+// Tests cbo.zero with all possible combinations of cbze in the menvcfg and senvcfg csr.
+// Program always returns in machine mode.
+//
+// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbzeFunction:
-    li      t0, 0          # t0 = i = 0  (outer loop counter)
+    li      t6, 2          // outer and inner loop limit
+    li      t0, 0          // t0 = i = 0  (outer loop counter)
 outerCbzeLoop:
-    li      t1, 0          # t1 = j = 0  (inner loop counter)
+    li      t1, 0          // t1 = j = 0  (inner loop counter)
 
 innerCbzeLoop:
      // save the value of the desired priv mode
@@ -171,38 +218,46 @@ innerCbzeLoop:
     li   a0, 3
     ecall
 
-    // update csr {m/s}cbcfe
+    // update csr {m/s}cbze
     slli  t2, t0, 7
-    csrw  menvcfg, t2    //bit 7 csr menvcfg
+    csrw  menvcfg, t2    //bit 7 of menvcfg csr
 
     slli t3, t1, 7
-    csrw senvcfg, t3     // bits 4 and 5 of senvcfg
+    csrw senvcfg, t3     // bit 7 of senvcfg csr
 
     // run test in desired privilege mode
     mv a0, a1
     ecall
 
-    cbo.zero    0(t2)      // HOW DO I SELECT A CACHE BLOCK
+    // execute cbo instruction in a temp data block
+    la t2, DataBlock
+    cbo.zero    0(t2)
 
-    # ---- advance inner counter j ----
-    addi    t1, t1, 1          # j++
-    li      t3, 4
-    blt     t1, t3, innerCbzeLoop   # while (j < 4) continue inner loop
+    // advance inner counter j
+    addi    t1, t1, 1               // j++
+    blt     t1, t6, innerCbzeLoop   // while (j < 4) continue inner loop
 
-    # ---- once inner loop finishes, advance outer counter i ----
-    addi    t0, t0, 1          # i++
-    li      t3, 4
-    blt     t0, t3, outerCbzeLoop   # while (i < 4) repeat outer loop
+    // advance outer counter i
+    addi    t0, t0, 1               // i++
+    blt     t0, t6, outerCbzeLoop   // while (i < 4) repeat outer loop
 
     // load into machine mode when returning
     li   a0, 3
     ecall
 
+    // clear menvcfg csr before next test
+    li    t0, 0
+    csrw  menvcfg, t0
+
+    // clear senvcfg csr before next test
+    li    t0, 0
+    csrw  senvcfg, t0
+
     ret
 
 // Scratch data area for cache operations
-// 4 times larger than cach size incase
-// cbo instruction lands between two boundaries
+// 4 times larger than cach size to prevent
+// accidental clearing of program data.
 .data
 .align 10
 DataBlock:
