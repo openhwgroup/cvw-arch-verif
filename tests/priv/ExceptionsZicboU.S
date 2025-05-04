@@ -13,27 +13,27 @@
 main:
 
 // machine cbie test
-li a0, 3
+li a1, 3
 jal cbieFunction
 
 // user cbie test
-li a0, 0
+li a1, 0
 jal cbieFunction
 
 // Machine cbcfe test
-li a0, 3
+li a1, 3
 jal cbcfeFunction
 
 // User cbcfe test
-li a0, 0
+li a1, 0
 jal cbcfeFunction
 
 // Machine cbze test
-li a0, 3
+li a1, 3
 jal cbzeFunction
 
 // User cbze test
-li a0, 0
+li a1, 0
 jal cbzeFunction
 
 finished:
@@ -48,7 +48,7 @@ finished:
 // Tests cbo.inval with all possible combinations of cbie in the menvcfg csr.
 // Program always returns in machine mode.
 //
-// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
+// a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbieFunction:
     la t4, DataBlock       // load address of cache testing data block
 
@@ -56,8 +56,6 @@ cbieFunction:
     li      s0, 0          // s0 = i = 0  (loop counter)
 
 cbieLoop:
-    // save requested priv mode
-    mv a1, a0
 
     // switch to machine priv mode
     li   a0, 3
@@ -89,7 +87,7 @@ cbieLoop:
 // Tests cbo.clean and cbo.flush with all possible combinations of cbcfe in the menvcfg csr.
 // Program always returns in machine mode.
 //
-// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
+// a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbcfeFunction:
     la t4, DataBlock       // load address of cache testing data block
 
@@ -97,8 +95,6 @@ cbcfeFunction:
     li      s0, 0          // s0 = i = 0  (loop counter)
 
 cbcfeLoop:
-    // save the value of the desired priv mode
-    mv a1, a0
 
     // load into machine mode
     li   a0, 3
@@ -132,7 +128,7 @@ cbcfeLoop:
 // Tests cbo.zero with all possible combinations of cbze in the menvcfg csr.
 // Program always returns in machine mode.
 //
-// a0: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
+// a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbzeFunction:
     la t4, DataBlock       // load address of cache testing data block
 
@@ -140,8 +136,6 @@ cbzeFunction:
     li      s0, 0          // s0 = i = 0  (loop counter)
 
 cbzeLoop:
-    // save the value of the desired priv mode
-    mv a1, a0
 
     // load into machine mode
     li   a0, 3
