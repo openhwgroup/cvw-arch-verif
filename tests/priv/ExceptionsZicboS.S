@@ -58,7 +58,7 @@ finished:
 
 // Function: cbieFunction
 // Tests cbo.inval with all possible combinations of cbze in the menvcfg and senvcfg csr.
-// Program always returns in machine mode.
+// Program returns in privledge mode specified by a1.
 //
 // a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbieFunction:
@@ -96,15 +96,11 @@ innerCbieLoop:
     addi    s0, s0, 1               // i++
     blt     s0, t6, outerCbieLoop   // while (i < 4) repeat outer loop
 
-    // change into machine mode when returning
-    li   a0, 3
-    ecall
-
     ret
 
 // Function: cbcfeFunction
 // Tests cbo.clean and cbo.flush with all possible combinations of cbcfe in the menvcfg and senvcfg csr.
-// Program always returns in machine mode.
+// Program returns in privledge mode specified by a1.
 //
 // a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbcfeFunction:
@@ -144,15 +140,11 @@ innerCbcfeLoop:
     addi    s0, s0, 1                // i++
     blt     s0, t6, outerCbcfeLoop   // while (i < 2) repeat outer loop
 
-    // change into machine mode when returning
-    li   a0, 3
-    ecall
-
     ret
 
 // Function: cbzeFunction
 // Tests cbo.zero with all possible combinations of cbze in the menvcfg and senvcfg csr.
-// Program always returns in machine mode.
+// Program returns in privledge mode specified by a1.
 //
 // a1: Sets the privilege mode to test (0 = user, 1 = supervisor, 3 = machine).
 cbzeFunction:
@@ -189,10 +181,6 @@ innerCbzeLoop:
     // advance outer counter i
     addi    s0, s0, 1               // i++
     blt     s0, t6, outerCbzeLoop   // while (i < 4) repeat outer loop
-
-    // change into machine mode when returning
-    li   a0, 3
-    ecall
 
     ret
 
