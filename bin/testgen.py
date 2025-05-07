@@ -20,36 +20,27 @@ import re
 import sys
 import filecmp
 import math
-import re
+
 ##################################
 # functions
 ##################################
 
-
-#MULTIPLE extensions write now come out together ZcbsZsc-> Zcbs_Zsc TODO
 def insertTemplate(name):
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
-    ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)  # ['Zfa', 'D']
-    # Format regex part: I always included + each extension part
-    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts])  # ".*I.*Zfa.*D.*"
-    # Final TestCase line
+    ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
+    ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
+    # Construct the regex part
+    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
-    if extension == "I":
-      # Replace placeholders with the actual values
-      template = template.replace("sigupd_count", str(sigupd_count))
-      template = template.replace("ISAEXT", f"RV{xlen}{extension}")
-      template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
-      template = template.replace("Instruction", test)  #missing the 0 in front check meeting
-    else:
-      # Replace placeholders with the actual values
-      template = template.replace("sigupd_count", str(sigupd_count))
-      template = template.replace("ISAEXT", f"RV{xlen}I{extension}")
-      template = template.replace("TestCase",  test_case_line ) # , str(instruction)
-      #template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*I.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
-      template = template.replace("Instruction", test)  #missing the 0 in front check meeting
+    # Replace placeholders
+    template = template.replace("sigupd_count", str(sigupd_count))
+    template = template.replace("ISAEXT", ISAEXT)
+    template = template.replace("TestCase", test_case_line)
+    template = template.replace("Instruction", test)
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -1855,8 +1846,6 @@ def write_tests(coverpoints, test, xlen):
 
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
-      make_custom(test, xlen)
-    elif (coverpoint == "cp_align_byte", "cp_align_word", "cp_align_hword"):
       make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
