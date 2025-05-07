@@ -29,11 +29,18 @@ def insertTemplate(name):
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
-    # Replace placeholders with the actual values
+    # Split extension into components based on capital letters
+    ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
+    ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
+    # Construct the regex part
+    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
+    test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
+    # Replace placeholders
     template = template.replace("sigupd_count", str(sigupd_count))
-    template = template.replace("ISAEXT", f"RV{xlen}{extension}")
-    template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
-    template = template.replace("Instruction", test)  #missing the 0 in front check meeting
+    template = template.replace("ISAEXT", ISAEXT)
+    template = template.replace("TestCase", test_case_line)
+    template = template.replace("Instruction", test)
     f.write(template)
 
 def shiftImm(imm, xlen):
