@@ -7,15 +7,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -175,7 +175,7 @@ function string get_vr_name(int key);
     31: return "v31";
     default: begin
           $display("ERROR: SystemVerilog Functional Coverage: get_vr_name(%0s) not found vr", key);
-          $finish(-1); 
+          $finish(-1);
       end
   endcase
 endfunction
@@ -250,7 +250,7 @@ function string get_vtype_eSEW_name(int eSEW);
     3'b001: return "e16";
     3'b010: return "e32";
     3'b011: return "e64";
-    
+
     default: return "reserved";
   endcase
 endfunction
@@ -264,7 +264,7 @@ function string get_vtype_mLMUL_name(int mLMUL);
     3'b001: return "m2";
     3'b010: return "m4";
     3'b011: return "m8";
-    
+
     default: return "reserved";
   endcase
 endfunction

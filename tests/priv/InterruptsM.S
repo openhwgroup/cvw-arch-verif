@@ -75,7 +75,7 @@ cp_trigger_mei:
 
 /////////////////////////////////
 // cp_trigger_sti
-// With mstatus.MIE = {0/1}, and mie = 1s, write mip.STIP 
+// With mstatus.MIE = {0/1}, and mie = 1s, write mip.STIP
 /////////////////////////////////
 
 cp_trigger_sti:
@@ -151,7 +151,7 @@ cp_trigger_sei_sie:
 
 /////////////////////////////////
 // cp_interrupts
-// Cross of mstatus.MIE = {0/1}, mtvec.MODE = 00, 3 walking 1s in mip.MTIP/MSIP/MEIP, 
+// Cross of mstatus.MIE = {0/1}, mtvec.MODE = 00, 3 walking 1s in mip.MTIP/MSIP/MEIP,
 // 3 walking 1s in mie.MTIE/MSIE/MEIE (2 x 3 x 3 bins)
 /////////////////////////////////
 
@@ -169,10 +169,10 @@ cp_interrupts:
 
         set_mstatus:
         csrrsi t6, mstatus, 8 # if s0 == 1, set mstatus.MIE
-        
+
         cross_interrupts:
         jal cross_interrupts_m_EP
-        
+
         addi s0, s0, -1
         beqz s0, for_mstatus # iterate through mstatus.MIE values (1-0)
 
@@ -218,11 +218,11 @@ cp_priority:
 
         andi t0, s1, 2  # check bit 1
         slli t0, t0, 6  # set mie.MTIE based on bit 1 value
-        or s3, s3, t0 
+        or s3, s3, t0
 
         andi t0, s1, 1  # check bit 0
         slli t0, t0, 3  # set mie.MSIE based on bit 1 value
-        or s3, s3, t0 
+        or s3, s3, t0
 
         li s2, 7
 
@@ -244,15 +244,15 @@ cp_priority:
                 jal set_msip
 
             case_end_priority:
-                
+
                 csrrs t6, mie, s3   # write to enable certain machine interrupts, should trigger highest-priority pending interrupt
                 csrrc t6, mie, s3   # write to disable those machine interrupts before next test case
-                
+
                 # add in resets in case s1 == 0
                 jal reset_external_interrupts
                 jal reset_mtimecmp
                 jal reset_msip
-                
+
                 addi s2, s2, -1
                 bge s2, zero, for_mip_priority
 

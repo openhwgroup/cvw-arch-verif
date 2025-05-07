@@ -25,5 +25,3 @@ main:
 
 finished:
     j done
-
-    

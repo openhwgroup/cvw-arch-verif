@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 23 March 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
         wildcard bins csrr = {32'b????????????_00000_010_?????_1110011};
     }
     csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011};
     }
     // csr is similar to in ZicsrM, but also exercises custom/debug machine mode CSRs, which should trap from supervisor level
     csr: coverpoint ins.current.insn[31:20]  {
@@ -91,7 +91,7 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;             
+    cp_csrr:         cross csrr,    csr,         priv_mode_s, nonzerord;
     cp_csrw_corners: cross csrrw,   csr, priv_mode_s, rs1_corners {
     }
 
@@ -102,7 +102,7 @@ covergroup SsstrictS_scsr_cg with function sample(ins_t ins);
 endgroup
 
 covergroup SsstrictS_instr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "RISCV_coverage_instr.svh"
 
@@ -149,7 +149,7 @@ covergroup SsstrictS_instr_cg with function sample(ins_t ins);
 endgroup
 
 covergroup SsstrictS_comp_instr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "RISCV_coverage_comp_instr.svh"
 
