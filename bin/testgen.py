@@ -1847,6 +1847,8 @@ def write_tests(coverpoints, test, xlen):
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint == "cp_custom_aqrl"):
       make_custom(test, xlen)
+    elif (coverpoint == "cp_align_byte", "cp_align_word", "cp_align_hword"):
+      make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
