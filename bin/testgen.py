@@ -20,7 +20,7 @@ import re
 import sys
 import filecmp
 import math
-
+import re
 ##################################
 # functions
 ##################################
@@ -31,11 +31,25 @@ def insertTemplate(name):
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
-    # Replace placeholders with the actual values
-    template = template.replace("sigupd_count", str(sigupd_count))
-    template = template.replace("ISAEXT", f"RV{xlen}{extension}")
-    template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
-    template = template.replace("Instruction", test)  #missing the 0 in front check meeting
+    # Split extension into components based on capital letters
+    ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)  # ['Zfa', 'D']
+    # Format regex part: I always included + each extension part
+    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts])  # ".*I.*Zfa.*D.*"
+    # Final TestCase line
+    test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
+    if extension == "I":
+      # Replace placeholders with the actual values
+      template = template.replace("sigupd_count", str(sigupd_count))
+      template = template.replace("ISAEXT", f"RV{xlen}{extension}")
+      template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
+      template = template.replace("Instruction", test)  #missing the 0 in front check meeting
+    else:
+      # Replace placeholders with the actual values
+      template = template.replace("sigupd_count", str(sigupd_count))
+      template = template.replace("ISAEXT", f"RV{xlen}I{extension}")
+      template = template.replace("TestCase",  test_case_line ) # , str(instruction)
+      #template = template.replace("TestCase", f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex(.*I.*{extension}.*);def TEST_CASE_1=True;") # , str(instruction)
+      template = template.replace("Instruction", test)  #missing the 0 in front check meeting
     f.write(template)
 
 def shiftImm(imm, xlen):
