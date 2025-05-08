@@ -47,12 +47,12 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 # bin/combinetests.py
 
 riscv-copy:
-	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
-	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
+	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
+	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
 
 riscv-copy-%:
-	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
-	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
+	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
+	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
