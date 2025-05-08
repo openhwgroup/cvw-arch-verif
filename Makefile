@@ -46,11 +46,11 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 # bin/combinetests.py
 
-riscv-copy:
+riscv-arch: testgen
 	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
 	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
 
-riscv-copy-%:
+riscv-arch-%: testgen
 	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
 	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 
