@@ -26,6 +26,7 @@ onerror {quit -f}
 set TESTDIR ${1}
 set TESTNAME ${2}
 set FCOVDIR ${3}
+set COVERAGEFILEDIR ${4}
 set TRACEFILE ${TESTDIR}/${TESTNAME}.trace
 set UCDB ${TESTDIR}/${TESTNAME}.ucdb
 set WKDIR ${TESTDIR}/cov_work
@@ -38,8 +39,7 @@ if [file exists ${WKDIR}] {
 vlib ${WKDIR}
 
 # compile source files
-set COVERAGEFILE ${FCOVDIR}/../../../config/rv64gc
-set INC_DIRS "+incdir+${COVERAGEFILE}"
+set INC_DIRS "+incdir+${COVERAGEFILEDIR}"
 set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
 vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} ${TB}
 
