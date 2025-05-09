@@ -325,7 +325,4 @@ endgroup
 
 function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
-    $display("priv_mode=%b, mie=%b,\nmip=%b, mideleg=%b, sip=%b, \nmstatus=%b, sstatus=%b",
-            ins.prev.mode, ins.current.csr[12'h304][11:0], ins.current.csr[12'h344][11:0], ins.current.csr[12'h303][11:0],
-            ins.current.csr[12'h144][11:0], ins.current.csr[12'h300], ins.current.csr[12'h100]);
 endfunction
