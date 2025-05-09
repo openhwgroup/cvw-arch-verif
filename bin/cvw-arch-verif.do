@@ -23,7 +23,7 @@ onbreak {resume}
 onerror {quit -f}
 
 # Initialize variables
-set TRACEFILE_DIR ${1}
+set TRACEFILE ${1}
 set TRACEFILE_PATH [file split $TRACEFILE_DIR]
 set TRACEFILE_SHORT_NAME [string cat [lindex $TRACEFILE_PATH end-1] "/" [lindex $TRACEFILE_PATH end]]
 set WKDIR wkdir/${TRACEFILE_SHORT_NAME}
