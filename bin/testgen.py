@@ -147,6 +147,7 @@ def writeSIGUPD_F(rd):
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
+  global sigReg # this function can modify the signature register
   lines = "" # f"# Loading value {val} into f{reg}\n"
   if test[-1] == "d" or NaNBox_tests == "D":
     precision = 64
@@ -162,15 +163,21 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
     loadop = "flw"
   storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
   lines = lines + "la x2, scratch\n"
+   # Pick a safe temp register (avoid sigReg and x2)
+  tempReg = 4
+  while tempReg == sigReg or tempReg == reg:
+    tempReg += 1
+    if tempReg > 31:
+      raise Exception("No safe temp register available")
   if (precision > xlen): # precision = 64, xlen = 32
-    lines = lines + f"li x3, 0x{formatstrFP.format(val)[10:18]} # load x3 with 32 MSBs {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store x3 (0x{formatstrFP.format(val)[10:18]}) in memory\n"
-    lines = lines + f"li x3, 0x{formatstrFP.format(val)[2:10]} # load x2 with 32 LSBs of {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 4(x2) # store x4 (0x{formatstrFP.format(val)[2:10]}) in memory 4 bytes after x3\n"
+    lines = lines + f"li x{tempReg}, 0x{formatstrFP.format(val)[10:18]} # load x{tempReg} with 32 MSBs {formatstrFP.format(val)}\n"
+    lines = lines + f"{storeop} x{tempReg}, 0(x2) # store x{tempReg} (0x{formatstrFP.format(val)[10:18]}) in memory\n"
+    lines = lines + f"li x{tempReg}, 0x{formatstrFP.format(val)[2:10]} # load x{tempReg} with 32 LSBs of {formatstrFP.format(val)}\n"
+    lines = lines + f"{storeop} x{tempReg}, 4(x2) # store x{tempReg} (0x{formatstrFP.format(val)[2:10]}) in memory 4 bytes after x3\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   else:
-    lines = lines + f"li x3, {formatstrFP.format(val)} # load x3 with value {formatstrFP.format(val)}\n"
-    lines = lines + f"{storeop} x3, 0(x2) # store {formatstrFP.format(val)} in memory\n"
+    lines = lines + f"li x{tempReg}, {formatstrFP.format(val)} # load x{tempReg} with value {formatstrFP.format(val)}\n"
+    lines = lines + f"{storeop} x{tempReg}, 0(x2) # store {formatstrFP.format(val)} in memory\n"
     lines = lines + f"{loadop} f{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into f{reg}\n"
   return lines
 
@@ -843,7 +850,12 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                 [immvala, immvalb],
                 ["perform first operation", "perform second (triggering) operation"],
                 xlen)
-    lines = lines + "addi " + 2*(regconfig[1] + str(sigReg) + ", ")  + "REGWIDTH" + "\n"
+    # Use FLEN/8 if it's a float store, else REGWIDTH
+    if testa in fstype or testb in fstype:
+      flen_bytes = 8 #Im trying to implement this using FLEN MACRO -> 1*FLEN/8
+      lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(flen_bytes)+ "\n"
+    else:
+      lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     lines += writeSIGUPD(rda)
     lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
