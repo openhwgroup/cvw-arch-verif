@@ -23,14 +23,13 @@ onbreak {resume}
 onerror {quit -f}
 
 # Initialize variables
-set TRACEFILE ${1}
-set TRACEFILE_PATH [file split $TRACEFILE_DIR]
-set TRACEFILE_SHORT_NAME [string cat [lindex $TRACEFILE_PATH end-1] "/" [lindex $TRACEFILE_PATH end]]
-set WKDIR wkdir/${TRACEFILE_SHORT_NAME}
-set ARCH_VERIF $::env(CVW_ARCH_VERIF)
-set TB ${ARCH_VERIF}/fcov/testbench.sv
-set FCRVVI ${ARCH_VERIF}/fcov
-set UCDB ${ARCH_VERIF}/fcov_ucdb/${TRACEFILE_SHORT_NAME}/coverage.ucdb
+set TESTDIR ${1}
+set TESTNAME ${2}
+set FCOVDIR ${3}
+set TRACEFILE ${TESTDIR}/${TESTNAME}.trace
+set UCDB ${TESTDIR}/${TESTNAME}.ucdb
+set WKDIR ${TESTDIR}/cov_work
+set TB ${FCOVDIR}/testbench.sv
 
 # create library
 if [file exists ${WKDIR}] {
@@ -39,13 +38,14 @@ if [file exists ${WKDIR}] {
 vlib ${WKDIR}
 
 # compile source files
-set INC_DIRS "+incdir+${TRACEFILE_DIR}"
-set FCOV_MANIFEST "-f ${FCRVVI}/cvw-arch-verif.f"
+set COVERAGEFILE ${FCOVDIR}/../../../config/rv64gc
+set INC_DIRS "+incdir+${COVERAGEFILE}"
+set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
 vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} ${TB}
 
 # start and run simulation
 vopt ${WKDIR}.testbench -work ${WKDIR} -o testbenchopt
-vsim -lib ${WKDIR} testbenchopt +traceFile=${TRACEFILE_DIR}/trace.txt -fatal 7
+vsim -lib ${WKDIR} testbenchopt +traceFile=${TRACEFILE} -fatal 7
 
 coverage save -onexit ${UCDB}
 
