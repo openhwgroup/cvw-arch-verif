@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 ##################################
-# covertreport.py
+# trace-covertreport.py
 #
-# David_Harris@hmc.edu 15 Septmeber 2025
+# jcarlin@hmc.edu 9 May 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
 # Find and merge UCDBs on a per-configuration basis
@@ -43,31 +43,30 @@ def remove_duplicates_after_second_header(file_path):
                 unique_lines_before_header.add(stripped_line)  # Add line to the set
 
 ARCH_VERIF = Path(sys.argv[0]).resolve().parent.parent
-testdir = Path(sys.argv[1])
+testdir = Path(sys.argv[1]).absolute()
+configName = testdir.name
 reportdir = ARCH_VERIF / "work"
 os.makedirs(reportdir, exist_ok=True)
 ucdbs = testdir.rglob("*.ucdb")
-mergedUCDB = reportdir / "merge.ucdb"
+mergedUCDB = reportdir / f"merge_{configName}.ucdb"
 
 # Merge UCDBs
 cmd = f"vcover merge {mergedUCDB} {' '.join(str(ucdb) for ucdb in ucdbs)}"
 os.system(cmd)
 
 # Generate reports
-
-ucdbPath = "test" # str(mergedUCDB.relative_to(testdir).parent).replace('/', '_')
-cmd = f"vcover report -details {mergedUCDB} -output {reportdir}/report_{ucdbPath}.txt"
+cmd = f"vcover report -details {mergedUCDB} -output {reportdir}/report_{configName}.txt"
 os.system(cmd)
 
-cmd = f"vcover report -details {mergedUCDB} -below 100 -output {reportdir}/uncovered_{ucdbPath}.txt"
+cmd = f"vcover report -details {mergedUCDB} -below 100 -output {reportdir}/uncovered_{configName}.txt"
 os.system(cmd)
 
 # Use grep to get the lines that match the criteria
-cmd = "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' " + str(reportdir) + "/report_" + ucdbPath + ".txt | grep -v 'Covergroup instance' > " + str(reportdir) + "/temp_summary_" + ucdbPath + ".txt"
+cmd = "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' " + str(reportdir) + "/report_" + configName + ".txt | grep -v 'Covergroup instance' > " + str(reportdir) + "/temp_summary_" + configName + ".txt"
 os.system(cmd)
 
 # Process each line and replace the specified path pattern
-with (reportdir / f"temp_summary_{ucdbPath}.txt").open() as infile, (reportdir  / f"summary_{ucdbPath}.txt").open("w") as outfile:
+with (reportdir / f"temp_summary_{configName}.txt").open() as infile, (reportdir  / f"summary_{configName}.txt").open("w") as outfile:
     metric_start_pos = None
     previous_line = None  # To keep track of the previous line
 
@@ -145,12 +144,12 @@ with (reportdir / f"temp_summary_{ucdbPath}.txt").open() as infile, (reportdir  
             previous_line = line
 
 # Step 3: Remove the temporary file
-(reportdir / f"temp_summary_{ucdbPath}.txt").unlink()
+(reportdir / f"temp_summary_{configName}.txt").unlink()
 
 # Remove duplicates in generated reports
-remove_duplicates_after_second_header(f"{reportdir}/report_{ucdbPath}.txt")
-remove_duplicates_after_second_header(f"{reportdir}/uncovered_{ucdbPath}.txt")
-remove_duplicates_after_second_header(f"{reportdir}/summary_{ucdbPath}.txt")
+remove_duplicates_after_second_header(f"{reportdir}/report_{configName}.txt")
+remove_duplicates_after_second_header(f"{reportdir}/uncovered_{configName}.txt")
+remove_duplicates_after_second_header(f"{reportdir}/summary_{configName}.txt")
 
 # skip HTML report because it is a mess doing one for each different config
 # vcover report -details -html merge.ucdb && \
