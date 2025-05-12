@@ -152,6 +152,12 @@
 `ifdef RV32VM_PMP_COVERAGE
   `include "RV32VM_PMP_coverage.svh"
 `endif
+`ifdef RV64PMP_COVERAGE
+  `include "PMPM_coverage.svh"
+`endif
+`ifdef RV32PMP_COVERAGE
+  `include "PMPM_coverage.svh"
+`endif
 `ifdef RV64CBO_VM_COVERAGE
   `include "RV64CBO_VM_coverage.svh"
 `endif
@@ -238,4 +244,10 @@
 `endif
 `ifdef EXCEPTIONSV_COVERAGE
   `include "ExceptionsV_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZICBOU_COVERAGE
+  `include "ExceptionsZicboU_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZICBOS_COVERAGE
+  `include "ExceptionsZicboS_coverage.svh"
 `endif
