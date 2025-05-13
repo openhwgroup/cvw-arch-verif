@@ -279,11 +279,14 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_trigger_sti:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones, mip_stip_one;
-    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones, mip_ssip_one;
-    cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones, csrrs, write_sip_ssip;
-    cp_trigger_sei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones, sip_seip_one, s_ext_intr_high;
-    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones, mip_seip_one, s_ext_intr_low;
+    cp_trigger_sti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_stip_one;
+    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_ssip_one;
+    cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, csrrs, write_sip_ssip;
+    cp_trigger_sei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, sip_seip_one, s_ext_intr_high;
+    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_seip_one, s_ext_intr_low;
+    cp_trigger_changingtos_mti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_mtip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_msi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_msip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_mei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_meip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
