@@ -207,6 +207,7 @@ updateepc:
     csrr   t1, mcause            # t1 = exception cause
     addi   t1, t1, -1            # Exception cause code 1 means Instruction Access Fault
     bne    t1, x0, mepc_up_addr  # If not an IAF, skip ra load
+    mv t0, ra
     j post_up_mepc               #Use ra instead of mepc (skips next instruction)
 mepc_up_addr:
     csrr t1, mepc
