@@ -56,19 +56,19 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [3:0]
 	}
 
 	addr_offset: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  		bins at_base      = { `REGIONSTART } ;
+  		bins at_base      = {`REGIONSTART};
 
   		// this should fault, since it’s outside the region
-  		bins below_base   = { `REGIONSTART - 4 } ;
+  		bins below_base   = {`REGIONSTART-4};
 
 		//just into the region
-  		bins above_base   = { `REGIONSTART + 4 } ;
+  		bins above_base   = {`REGIONSTART+4};
 
   		// this should also fault as “outside”, but loads beyond this should succeed
-  		bins just_beyond  = { `REGIONSTART + `g } ;
+  		bins just_beyond  = {`REGIONSTART+`g};
 
 		//last word inside region
-		bins highest_word  = { `REGIONSTART + `g -4 } ;		
+		bins highest_word  = {`REGIONSTART +`g-4};		
 	}
 
 	exec_instr: coverpoint ins.current.insn {
@@ -114,7 +114,7 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [3:0]
 //-------------------------------------------------------
 
 pmpcfgA_OFF: coverpoint pmpcfg_a {
-		wildcard bins OFF0  = {30'b????????????????????????????00};	
+		wildcard bins OFF0  = {30'b????????????????????????????00};
 		wildcard bins OFF1  = {30'b??????????????????????????00??};
 		wildcard bins OFF2  = {30'b????????????????????????00????};
 		wildcard bins OFF3  = {30'b??????????????????????00??????};
@@ -644,10 +644,10 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 
 	cp_cfg_L_modify: cross priv_mode_m, lock_checking, pmp_region, write_pmp_csr, pmpcfg_xwr, pmpaddr ;
 	// If pmpcfg.A = TOR and pmpcfg.L = 1, pmpaddr_i-1 will be unchange but not pmpcfg_i-1.
-	cp_cfg_L_modify_TOR: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmp_csr, rs1_val, lower_pmpcfg_xwr, pmpaddr ;
+	cp_cfg_L_modify_TOR: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmp_csr, rs1_val, lower_pmpcfg_xwr, pmpaddr;
 
-	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpaddr_entries ;
-	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpcfg_entries ;
+	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpaddr_entries;
+	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpcfg_entries;
 
 	cp_cfg_A_OFF_allr : cross pmpcfgA_OFF, RWXL001, read_instr, addr_in_region;
 	cp_cfg_A_OFF_allw : cross pmpcfgA_OFF, RWXL001, write_instr, addr_in_region;
@@ -657,7 +657,7 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 		ignore_bins ig1  = binsof(read_instr.lb);
 		ignore_bins ig2  = binsof(read_instr.lbu);
 		ignore_bins ig3  = binsof(read_instr.lh);
-		ignore_bins ig4  = binsof(read_instr.lhu); 
+		ignore_bins ig4  = binsof(read_instr.lhu);
 		ignore_bins ig5  = binsof(addr_offset.above_base);
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
@@ -665,7 +665,7 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 	cp_cfg_A_napot_x : cross legal_RWX_L_NAPOT, addr_offset, exec_instr{
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-	} 
+	}
 	cp_cfg_A_napot_r : cross legal_RWX_L_NAPOT, addr_offset, read_instr{
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
@@ -704,7 +704,7 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 		ignore_bins ig1  = binsof(read_instr.lb);
 		ignore_bins ig2  = binsof(read_instr.lbu);
 		ignore_bins ig3  = binsof(read_instr.lh);
-		ignore_bins ig4  = binsof(read_instr.lhu); 
+		ignore_bins ig4  = binsof(read_instr.lhu);
 		ignore_bins ig5  = binsof(addr_offset.just_beyond);
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
