@@ -49,6 +49,9 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     mstatus_sie_one: coverpoint ins.current.csr[12'h300][1] {
         bins one = {1};
     }
+    mstatus_sie_zero: coverpoint ins.current.csr[12'h300][1] {
+        bins zero = {0};
+    }
     mstatus_tw:  coverpoint ins.current.csr[12'h300][21] {
         // autofill 0/1
     }
@@ -71,14 +74,14 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins zero = {0};
     }
     mideleg_zeros: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
+        wildcard bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
     }
     mideleg_ones: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b??????1???1???1?}; //  ones in every field that is not tied to zero (only supervisor delegable)
+        wildcard bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
     }
     mideleg_ones_zeros: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b??????1???1???1?}; //  ones in every field that is not tied to zero (only supervisor delegable)
-        wildcard bins zeros = {16'b????0?0?0?0?0?0?}; // zeros in every field that is not tied to zero
+        wildcard bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
+        wildcard bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
     }
     mie_msie: coverpoint ins.current.csr[12'h304][3] {
         // autofill 0/1
@@ -279,34 +282,31 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_trigger_sti:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_stip_one;
-    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_ssip_one;
-    cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, csrrs, write_sip_ssip;
-    cp_trigger_sei:             cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, sip_seip_one, s_ext_intr_high;
-    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie, mstatus_sie, mie_ones, mideleg_ones, mip_seip_one, s_ext_intr_low;
-    cp_trigger_changingtos_mti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_mtip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_msi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_msip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_mei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones_zeros, mip_meip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
-    cp_interrupts_s:            cross priv_mode_s, mstatus_mie_zero, mideleg_ones, mtvec_direct, mip_walking, mie_walking;
-    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, mie_ones, mideleg_ones, stvec_vectored, mip_walking, csrrs, write_sstatus_sie;
-    cp_priority_mip_m:          cross priv_mode_s, mstatus_mie_zero, mip_combinations, mie_ones,   mideleg_zeros, csrrs, write_sstatus_sie;
-    cp_priority_mie_m:          cross priv_mode_s, mstatus_mie_zero, mie_combinations, mip_ones,   mideleg_zeros, csrrs, write_sstatus_sie;
-    cp_priority_both_m:         cross priv_mode_s, mstatus_mie_zero, mie_combinations, mip_mie_eq, mideleg_zeros, csrrs, write_sstatus_sie;
-    cp_priority_mip_s:          cross priv_mode_s, mstatus_mie_zero,  mip_combinations, mie_ones,   mideleg_ones,  csrrs, write_sstatus_sie;
-    cp_priority_mie_s:          cross priv_mode_s, mstatus_mie_zero,  mie_combinations, mip_ones,   mideleg_ones,  csrrs, write_sstatus_sie;
-    cp_priority_both_s:         cross priv_mode_s, mstatus_mie_zero,  mie_combinations, mip_mie_eq, mideleg_ones,  csrrs, write_sstatus_sie;
-    cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mie_ones, csrrs, write_sstatus_sie;
-    cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mideleg_combinations, mip_ones, mideleg_mie_eq, csrrs, write_sstatus_sie;
+    cp_trigger_mti:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_mtip_one;
+    cp_trigger_msi:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_msip_one;
+    cp_trigger_mei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_meip_one;
+    cp_trigger_sti:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_stip_one;
+    cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_ssip_one;
+    cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_sip_ssip;
+    cp_trigger_sei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, sip_seip_one, s_ext_intr_high;
+    cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_low;
+    cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
+    cp_interrupts_s:            cross priv_mode_s, mstatus_mie_zero, mideleg_ones_zeros, mtvec_direct, mip_walking, mie_walking;
+    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, stvec_mode, mip_walking, csrrs, write_sstatus_sie;
+    cp_priority_mip_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mip_combinations, mie_ones,   mideleg_ones_zeros;
+    cp_priority_mie_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_ones,   mideleg_ones_zeros;
+    cp_priority_both_s:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_mie_eq, mideleg_ones_zeros;
+    cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mideleg_combinations, mip_ones, mie_ones;
+    cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mideleg_combinations, mip_ones, mideleg_mie_eq;
     cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_mtip_one; // could cause funky coverage since WFI often doesn't retire. Revisit later
     cp_wfi_timeout_m:           cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
 
-    cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_zeros, mip_walking, mie_walking;
+    cp_interrupts_m:          cross priv_mode_m, mstatus_mie, mtvec_direct, mideleg_ones_zeros, mip_walking, mie_walking;
     cp_vectored_m:            cross priv_mode_m, mstatus_mie_one, mtvec_vectored, mideleg_zeros, mip_s_walking, mie_s_ones;
-    cp_priority_mip:          cross priv_mode_m, mie_ones, mideleg_zeros, mip_combinations, write_mstatus_mie;
-    cp_priority_mie:          cross priv_mode_m, mip_ones, mideleg_zeros, mie_combinations, write_mstatus_mie;
+    cp_priority_mip:          cross priv_mode_m, mie_ones, mideleg_zeros, mip_combinations, mstatus_mie_rise;
+    cp_priority_mie:          cross priv_mode_m, mip_ones, mideleg_zeros, mie_combinations, mstatus_mie_rise;
     cp_wfi_m:                 cross priv_mode_m, wfi, mstatus_mie, mstatus_sie, mideleg_ones, mstatus_tw, mie_mtie_one, mip_mtip_one;
     cp_trigger_ssi_sip_m:     cross priv_mode_m, mstatus_mie, mie_ones, mideleg_ssi, csrrs, write_sip_ssip;
     cp_trigger_mti_m:         cross priv_mode_m, mideleg_zeros, mie_ones, mip_mtip_one, csrrs, write_mstatus_mie;
@@ -321,9 +321,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_sei4:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_low,  csrrc, write_mip_seip;
     cp_sei5:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, prev_mip_seip_one, s_ext_intr_high, csrrc, write_mip_seip;
     cp_sei6_7:                cross priv_mode_m, mideleg_zeros, mstatus_mie_zero, s_ext_intr, mip_seip;
-    // cp_sei7:                  cross priv_mode_m, mideleg_zeros, mstatus_mie_zero,
     cp_global_ie:             cross priv_mode_m, mstatus_mie, mstatus_sie, mip_m_walking, mip_mie_eq;
-
 
     cp_user_mti:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_mti_zero, mie_mtie, mip_mtip;
     cp_user_msi:              cross priv_mode_u, mstatus_mie, mstatus_sie, stvec_mode, mideleg_msi_zero, mie_msie, mip_msip;
@@ -334,7 +332,9 @@ endgroup
 
 function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
+    /*
     $display("priv_mode=%b, mie=%b,\nmip=%b, mideleg=%b, sip=%b, \nmstatus=%b, sstatus=%b",
             ins.prev.mode, ins.current.csr[12'h304][11:0], ins.current.csr[12'h344][11:0], ins.current.csr[12'h303][11:0],
             ins.current.csr[12'h144][11:0], ins.current.csr[12'h300], ins.current.csr[12'h100]);
+    */
 endfunction
