@@ -624,7 +624,7 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 		bins pmpcfg2   = {12'h3A2};
 	}
 
-	/*cp_cfg_X: cross priv_mode_m, legal_lxwr, exec_instr, standard_region, addr_in_region ;
+	cp_cfg_X: cross priv_mode_m, legal_lxwr, exec_instr, standard_region, addr_in_region ;
 	cp_cfg_R: cross priv_mode_m, legal_lxwr, read_instr, standard_region, addr_in_region ;
 	cp_cfg_W: cross priv_mode_m, legal_lxwr, write_instr, standard_region, addr_in_region ;
 
@@ -651,7 +651,7 @@ pmpcfgA_OFF: coverpoint pmpcfg_a {
 
 	cp_cfg_A_OFF_allr : cross pmpcfgA_OFF, RWXL001, read_instr, addr_in_region;
 	cp_cfg_A_OFF_allw : cross pmpcfgA_OFF, RWXL001, write_instr, addr_in_region;
-	cp_cfg_A_OFF_allx : cross pmpcfgA_OFF, RWXL001, exec_instr, addr_in_region;*/
+	cp_cfg_A_OFF_allx : cross pmpcfgA_OFF, RWXL001, exec_instr, addr_in_region;
 
 	cp_cfg_A_napot_all: cross pmpcfgA_NAPOT, RWXL001, read_instr, addr_offset{
 		ignore_bins ig1  = binsof(read_instr.lb);
