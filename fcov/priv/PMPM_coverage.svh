@@ -844,7 +844,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 
 	cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
-	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;   
+	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
 
 endgroup
 
