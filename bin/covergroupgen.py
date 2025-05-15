@@ -79,7 +79,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
         template = covergroupTemplates[name]
     else:
         if (not (name in missingTemplates)):
-            print("No template found for " + name)
+            print(f"No template found for '{name}'.  Check if there are spaces before or after coverpoint name.")
             missingTemplates.append(name)
         return ""
     instr_nodot = instr.replace(".", "_")
