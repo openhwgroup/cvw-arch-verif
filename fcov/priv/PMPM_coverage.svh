@@ -50,7 +50,7 @@
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
-covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [7:0], logic [XLEN-1:0] pmpaddr [62:0], logic [29:0] pmpcfg_rw, logic [95:0] pmpcfg_RW, logic [29:0] pmpcfg_a, logic [95:0] pmpcfg_A, logic [14:0] pmpcfg_x, logic [47:0] pmpcfg_X, logic [14:0] pmpcfg_l, logic [47:0] pmpcfg_L, logic [14:0] pmp_hit, logic [47:0] pmp_HIT);
+covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [15:0], logic [XLEN-1:0] pmpaddr [62:0], logic [29:0] pmpcfg_rw, logic [95:0] pmpcfg_RW, logic [29:0] pmpcfg_a, logic [95:0] pmpcfg_A, logic [14:0] pmpcfg_x, logic [47:0] pmpcfg_X, logic [14:0] pmpcfg_l, logic [47:0] pmpcfg_L, logic [14:0] pmp_hit, logic [47:0] pmp_HIT);
 	option.per_instance = 0;
 	`include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
@@ -537,7 +537,7 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [7:0]
 		`endif
 	}
 
-	legal_pmpcfg_entries_ones: coverpoint ins.current.insn[31:20] { 	// For writing walking ones in even PMPCFGs
+	legal_pmpcfg_entries_even: coverpoint ins.current.insn[31:20] { 	// For writing walking ones in even PMPCFGs
 		bins pmpcfg0   = {12'h3A0};
 		bins pmpcfg2   = {12'h3A2};
 		`ifdef PMP_64
@@ -550,7 +550,7 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [7:0]
 		`endif
 	}
 
-	legal_pmpcfg_entries_zeros: coverpoint ins.current.insn[31:20] { 	// For writing zero in odd PMPCFGs
+	legal_pmpcfg_entries_odd: coverpoint ins.current.insn[31:20] { 	// For writing zero in odd PMPCFGs
 		bins pmpcfg1   = {12'h3A1};
 		bins pmpcfg3   = {12'h3A3};
 		`ifdef PMP_64
@@ -641,24 +641,24 @@ covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [7:0]
 	cp_cfg_L_modify_TOR_pmpcfg: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpcfg, rs1_val_for_pmpcfg, lower_pmpcfg_xwr, pmpaddr ;
 
 	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1_pmpaddr, csrrw, legal_pmpaddr_entries ;
-	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_ones ;
-	cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_zeros ;
+	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_even ;
+	cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 
-	cp_pmp64_write: cross priv_mode_m, write_instr, pmp64;
-	cp_pmp64_read: cross priv_mode_m, read_instr, pmp64;
+	cp_pmp64_write: cross priv_mode_m, write_instr, pmp64; //** write_instr_sw
+	cp_pmp64_read: cross priv_mode_m, read_instr, pmp64;   //** read_instr_lw
 
 endgroup
 
 function void pmp_sample(int hart, int issue, ins_t ins);
 
-	logic [XLEN-1:0] pmpcfg [7:0];
+	logic [XLEN-1:0] pmpcfg [15:0];
 	logic [XLEN-1:0] pmpaddr [62:0];
 	logic [29:0] pmpcfg_rw, pmpcfg_a;			// for first 15 Regions
 	logic [95:0] pmpcfg_RW, pmpcfg_A;			// for next 48 Regions
 	logic [14:0] pmpcfg_x, pmpcfg_l, pmp_hit;   // for first 15 Regions
 	logic [47:0] pmpcfg_X, pmpcfg_L, pmp_HIT;   // for next 48 Regions
 
-	for (int i = 0; i < 8; i++) begin
+	for (int i = 0; i < 16; i++) begin
 		pmpcfg[i] = ins.current.csr[12'h3A0 + i];
 	end
 
