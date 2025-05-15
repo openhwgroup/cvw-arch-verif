@@ -27,14 +27,14 @@ covergroup ExceptionsZicboU_exceptions_cg with function sample(ins_t ins);
 
     // building blocks for the main coverpoints
     cbo_inval: coverpoint ins.current.insn {
-        bins cbo_inval = {32'b000000000000_?????_010_00000_0001111};
+       wildcard bins cbo_inval = {32'b000000000000_?????_010_00000_0001111};
     }
     cbo_flushclean: coverpoint ins.current.insn {
-        bins cbo_flush = {32'b000000000010_?????_010_00000_0001111};
-        bins cbo_clean = {32'b000000000001_?????_010_00000_0001111};
+        wildcard bins cbo_flush = {32'b000000000010_?????_010_00000_0001111};
+        wildcard bins cbo_clean = {32'b000000000001_?????_010_00000_0001111};
     }
     cbo_zero: coverpoint ins.current.insn {
-        bins cbo_zero = {32'b000000000100_?????_010_00000_0001111};
+        wildcard bins cbo_zero = {32'b000000000100_?????_010_00000_0001111};
     }
     menvcfg_cbie: coverpoint ins.current.csr[12'h30A][5:4] {
         ignore_bins reserved = {2'b10};

@@ -245,3 +245,9 @@
 `ifdef EXCEPTIONSV_COVERAGE
   `include "ExceptionsV_coverage.svh"
 `endif
+`ifdef EXCEPTIONSZICBOU_COVERAGE
+  `include "ExceptionsZicboU_coverage.svh"
+`endif
+`ifdef EXCEPTIONSZICBOS_COVERAGE
+  `include "ExceptionsZicboS_coverage.svh"
+`endif
