@@ -26,8 +26,8 @@ main:
     // cp_illegal_compressed_instruction    Test all legal/illegal compressed instructions
     /////////////////////////////////
 
-    #include "ExceptionInstr-Tests.h"
     #include "ExceptionInstrCompressed-Tests.h"
+    #include "ExceptionInstr-Tests.h"
 
 
 finish:

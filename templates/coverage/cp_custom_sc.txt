@@ -46,4 +46,3 @@
     }
     cp_custom_sc_lrsc : cross cp_prev_lr, cp_sc_fail;
     cp_custom_sc_addresses : cross cp_prev_lr, cp_address_difference;
-    

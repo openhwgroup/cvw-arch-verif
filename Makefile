@@ -46,19 +46,21 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 # bin/combinetests.py
 
-riscv-copy:
-	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/
-	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/
+riscv-arch: testgen
+	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
+	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
 
-riscv-copy-%:
-	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv32i_m/$*
-	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/riscv-arch-test/riscv-test-suite/rv64i_m/$*
+riscv-arch-%: testgen
+	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
+	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
+	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
+	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
 	bin/illegalinstrtests.py
 
-# Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit 
+# Some instructions get silently converted to 16-bit, this allows only Zc* instr to get converted to 16-bit
 ZCA_FLAG = $(if $(findstring /Zca, $(dir $<)),_zca,)
 ZCB_FLAG = $(if $(findstring /Zcb, $(dir $<)),_zcb,)
 ZCD_FLAG = $(if $(findstring /Zcd, $(dir $<)),_zcd,)
@@ -67,8 +69,8 @@ EXCEPTIONSZC_FLAG = $(if $(findstring /ExceptionsZc.S,  $<),c_zcb_,)
 CMPR_FLAGS = $(EXCEPTIONSZC_FLAG)$(ZCA_FLAG)$(ZCB_FLAG)$(ZCD_FLAG)$(ZCF_FLAG)
 
 # Set bitwidth and ABI based on XLEN for each test
-BITWIDTH = $(if $(findstring 64,$*),64,32)
-MABI = $(if $(findstring 32,$*),i,)lp$(BITWIDTH)
+BITWIDTH = $(if $(findstring rv64,$*),64,32)
+MABI = $(if $(findstring rv32,$*),i,)lp$(BITWIDTH)
 
 # Modify source file for priv tests to support 32-bit and 64-bit tests from the same source
 SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S

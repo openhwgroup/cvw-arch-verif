@@ -34,7 +34,7 @@ def makeSelfcheckingLine(outfile, line, rv64):
         resultreg = m.group(3)
         address = m.group(4)
         # create new lines
-        tempreg = nonconflictingReg(resultreg) 
+        tempreg = nonconflictingReg(resultreg)
         outfile.write(f"# {line}")
         outfile.write(f"l{accesstype} x{tempreg}, {address}\n")
         outfile.write(f"beq {resulttype}{resultreg}, x{tempreg}, 1f\n")
@@ -79,7 +79,7 @@ def makeSelfchecking(sig, source, dest, rv64):
                                     firstsig = line.strip()
                                     secondhalf = True
                             else: # rv32
-                                outfile.write(f"\t.word 0x{line.strip()}\n") 
+                                outfile.write(f"\t.word 0x{line.strip()}\n")
     # if new file is different from old file, replace old file with new file
     if os.path.exists(dest):
         if filecmp.cmp(dest, tempfname): # files are the same
@@ -106,4 +106,3 @@ for arch in ["rv32", "rv64"]:
             if (file.endswith(".signature")):
                 source = file.rsplit("elf.signature")[0]+"S" # name of source file matching signature
                 makeSelfchecking(f"{testdir}/{file}", f"{testdir}/{source}", f"{selfcheckbasedir}/{arch}/{ext}/{source}", arch.startswith("rv64"))
-

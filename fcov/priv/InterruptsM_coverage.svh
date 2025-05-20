@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu, Jordan Carlin jcarlin@hmc.edu 08 Feb 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +27,7 @@ covergroup InterruptsM_cg with function sample(ins_t ins);
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
     // building blocks for the main coverpoints
-    
+
     mstatus_mie_one: coverpoint ins.current.csr[12'h300][3] {
         bins one = {1};
     }
@@ -59,26 +59,26 @@ covergroup InterruptsM_cg with function sample(ins_t ins);
         bins one = {1};
     }
     mie_walking: coverpoint {ins.current.csr[12'h304][11],
-                             ins.current.csr[12'h304][7], 
+                             ins.current.csr[12'h304][7],
                              ins.current.csr[12'h304][3] } {
         bins meie = {3'b001};
         bins mtie = {3'b010};
         bins msie = {3'b100};
     }
     mip_walking: coverpoint {ins.current.csr[12'h344][11],
-                             ins.current.csr[12'h344][7], 
+                             ins.current.csr[12'h344][7],
                              ins.current.csr[12'h344][3] } {
         bins meip = {3'b001};
         bins mtip = {3'b010};
         bins msip = {3'b100};
     }
     mie_meie_mtie_msie: coverpoint {ins.current.csr[12'h304][11],
-                                    ins.current.csr[12'h304][7], 
+                                    ins.current.csr[12'h304][7],
                                     ins.current.csr[12'h304][3] } {
         // auto fills all 8 combinations
     }
     mip_meip_mtip_msip: coverpoint {ins.current.csr[12'h344][11],
-                                    ins.current.csr[12'h344][7], 
+                                    ins.current.csr[12'h344][7],
                                     ins.current.csr[12'h344][3] } {
         // auto fills all 8 combinations
     }

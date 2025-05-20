@@ -1,7 +1,7 @@
 # lr.w.S
 # custom tests for load reserved
 
-# cp_custom_aqrl 
+# cp_custom_aqrl
 # test acquire and release modifiers
     la t0, scratch
     li t2, 0x12345678
@@ -10,8 +10,8 @@
     lr.w.aq t2, (t0)
     lr.w.aqrl t3, (t0)
 
-   # cp_custom_rd_corners 
-    li t4, 0x0  
+   # cp_custom_rd_corners
+    li t4, 0x0
     sw t4, 0(t0)
     sw zero, 4(t0)
     lr.w t1, (t0)   # lr t1 = 0
@@ -23,4 +23,3 @@
     li t4, 0xFFFFFFFF
     sw t4, 0(t0)
     lr.w t1, (t0)   # lr t1 = FFFFFFFF (sign-extended in RV64)
-

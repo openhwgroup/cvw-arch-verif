@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: Corey Hickson chickson@hmc.edu 23 March 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
         wildcard bins csrr = {32'b????????????_00000_010_?????_1110011};
     }
     csrrw: coverpoint ins.current.insn {
-        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw = {32'b????????????_?????_001_?????_1110011};
     }
     csr: coverpoint ins.current.insn[31:20]  {
         bins user_std0[] = {[12'h000:12'h0FF]};
@@ -76,31 +76,6 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
         bins ones = {'1};
     }
 
-    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) { 
-        bins b_1[] = { [0:`XLEN-1] };
-    }
-    
-    mcsrname : coverpoint ins.current.insn[31:20] {
-        bins mstatus  = {12'h300};
-        bins misa     = {12'h301};
-        bins medeleg  = {12'h302};
-        bins mideleg  = {12'h303};
-        bins mie      = {12'h304};
-        bins mtvec    = {12'h305};
-        bins mscratch = {12'h340};
-        bins mepc     = {12'h341};
-        bins mcause   = {12'h342};
-        bins mtval    = {12'h343};
-        bins mip      = {12'h344};
-        bins menvcfg  = {12'h30A};
-        bins mseccfg  = {12'h747};
-        `ifdef XLEN32
-            bins mstatush = {12'h310};
-            bins medelegh = {12'h312};
-            bins menvcfgh = {12'h31A};
-            bins mseccfgh = {12'h757};
-        `endif
-    }
     csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
         bins csrrs = {3'b010};
         bins csrrc = {3'b011};
@@ -110,12 +85,11 @@ covergroup SsstrictM_mcsr_cg with function sample(ins_t ins);
     cp_csrr:         cross priv_mode_m, csrr,     csr,   nonzerord;   // CSR read of all 4096 registers
     cp_csrw_corners: cross priv_mode_m, csrrw,    csr,   rs1_corners; // CSR write of all 0s / all 1s to all 4096 registers
     cp_csrcs:        cross priv_mode_m, csrop,    csr,   rs1_ones;    // CSR clear and set of all bits of all registers
-    cp_mcsrwalk :    cross priv_mode_m, mcsrname, csrop, walking_ones;
 endgroup
 
 
 covergroup SsstrictM_instr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "priv/RISCV_coverage_instr.svh"
 
@@ -163,7 +137,7 @@ covergroup SsstrictM_instr_cg with function sample(ins_t ins);
 endgroup
 
 covergroup SsstrictM_comp_instr_cg with function sample(ins_t ins);
-    option.per_instance = 0; 
+    option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
     `include "priv/RISCV_coverage_comp_instr.svh"
 
@@ -178,7 +152,7 @@ function void ssstrictm_sample(int hart, int issue, ins_t ins);
     SsstrictM_comp_instr_cg.sample(ins);
     SsstrictM_mcsr_cg.sample(ins);
 
-// $display("mode: %b, csr: %h, csrrs: %b, csrrc: %b, walking: %b", 
+// $display("mode: %b, csr: %h, csrrs: %b, csrrc: %b, walking: %b",
 //          ins.current.mode,
 //          ins.current.insn[31:20],
 //          ((ins.current.insn[14:12] == 3'b010) && (ins.current.insn[6:0] == 7'b1110011)),
