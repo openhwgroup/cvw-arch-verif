@@ -1,22 +1,22 @@
 ///////////////////////////////////////////
 //
 // RISC-V Architectural Functional Coverage Covergroups
-// 
+//
 // Written: James Kaden Cassidy jacassidy@hmc.edu 28 Mar 2025
-// 
+//
 // Copyright (C) 2024 Harvey Mudd College, 10x Engineers, UET Lahore, Habib University
-// 
+//
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 //
-// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file 
-// except in compliance with the License, or, at your option, the Apache License version 2.0. You 
+// Licensed under the Solderpad Hardware License v 2.1 (the “License”); you may not use this file
+// except in compliance with the License, or, at your option, the Apache License version 2.0. You
 // may obtain a copy of the License at
 //
 // https://solderpad.org/licenses/SHL-2.1/
 //
-// Unless required by applicable law or agreed to in writing, any work distributed under the 
-// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific language governing permissions 
+// Unless required by applicable law or agreed to in writing, any work distributed under the
+// License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     vtype_prev_vill_clear: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
         bins vill_not_set = {1'b0};
     }
-    
+
     vcsrs: coverpoint ins.current.insn[31:20] {
         bins vstart = {12'h008};
         bins vxsat  = {12'h009};
@@ -42,7 +42,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     csrops: coverpoint ins.current.insn {
         wildcard bins csrrs     = {32'b????????????_?????_010_?????_1110011};
         wildcard bins csrrc     = {32'b????????????_?????_011_?????_1110011};
-        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011};
     }
 
     cp_vcsrrwc: cross vcsrs, csrops;
@@ -89,7 +89,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
         //TODO:needs to be written
     }
 
-    vl_update: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vl", "vl") != 
+    vl_update: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vl", "vl") !=
                            get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")) {
         bins vl_updated = {1'b1};
     }
@@ -97,7 +97,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     //TODO needs another coverpoint for specific situation
     vl_update_vl_ff: cross vl_ff, vl_update, vtype_prev_vill_clear;
 
-    vstart_set_non_zero: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == '0 & 
+    vstart_set_non_zero: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == '0 &
                                      get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vstart", "vstart") != '0) {
         //boolean coverpoint
     }
@@ -113,7 +113,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     vstart_not_modified_illegal_instruction: cross vtype_prev_vill_set, vector_vector_arithmatic_instruction, vstart_set_non_zero;
 
     vstart_write: coverpoint ins.current.insn {
-        wildcard bins vstart_csrrw     = {32'b000000001000_?????_001_?????_1110011}; 
+        wildcard bins vstart_csrrw     = {32'b000000001000_?????_001_?????_1110011};
     }
 
     rs1_val_pow_2: coverpoint unsigned'(ins.current.rs1_val) {
@@ -151,11 +151,11 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     vtype_lmul_8: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         bins two = {3'b011};
     }
-        
+
     vd_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard bins odd = {5'b????1};
     }
-    
+    //TODO: this is considered bit swizzling rather than an option of bins to hit
     vd_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
     }
@@ -168,7 +168,7 @@ covergroup ExceptionsV_edgecases_cg with function sample(ins_t ins);
     vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins odd = {5'b????1};
     }
-        
+
     vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
     }
@@ -229,7 +229,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     csrops: coverpoint ins.current.insn {
         wildcard bins csrrs     = {32'b????????????_?????_010_?????_1110011};
         wildcard bins csrrc     = {32'b????????????_?????_011_?????_1110011};
-        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011}; 
+        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011};
     }
 
     csrops_reserved_vcsrs: cross csrops, reserved_vcsrs;
@@ -295,7 +295,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins odd = {5'b????1};
     }
-        
+
     vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
     }
@@ -308,7 +308,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vs2_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs2){
         wildcard bins odd = {5'b????1};
     }
-        
+
     vs2_reg_notdiv_4:coverpoint ins.get_vr_reg(ins.current.vs2){
         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
     }
@@ -321,7 +321,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vd_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard bins divisible_by_2 = {5'b????0};
     }
-        
+
     vd_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard bins divisible_by_4 = {5'b???00};
     }
@@ -333,7 +333,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vs1_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins divisible_by_2 = {5'b????0};
     }
-        
+
     vs1_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard bins divisible_by_4 = {5'b???00};
     }
@@ -345,7 +345,7 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vs2_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vs2){
         wildcard bins divisible_by_2 = {5'b????0};
     }
-        
+
     vs2_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vs2){
         wildcard bins divisible_by_4 = {5'b???00};
     }
@@ -416,19 +416,19 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         `ifdef SEW8_SUPPORTED
         `ifdef SEW16_SUPPORTED
         bins eew16_sew8: {6'b001_000};
-        `endif 
+        `endif
         `endif
 
         `ifdef SEW16_SUPPORTED
         `ifdef SEW32_SUPPORTED
         bins eew32_sew16: {6'b010_001};
-        `endif 
+        `endif
         `endif
 
         `ifdef SEW32_SUPPORTED
         `ifdef SEW64_SUPPORTED
         bins eew64_sew32: {6'b011_010};
-        `endif 
+        `endif
         `endif
     }
 
@@ -468,13 +468,13 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
     vtype_csr_lmul: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
         `ifdef LMUL_F8_SUPPORTED
             bins f8 = {3'b101};
-        `endif 
+        `endif
         `ifdef LMUL_F4_SUPPORTED
             bins f4 = {3'b110};
-        `endif 
+        `endif
         `ifdef LMUL_F2_SUPPORTED
             bins f2 = {3'b111};
-        `endif 
+        `endif
         bins one    = {3'b000};
         bins two    = {3'b001};
         bins four   = {3'b010};
@@ -483,13 +483,13 @@ covergroup ExceptionsV_reserved_cg with function sample(ins_t ins);
         bins random_legal = {3'b000, 3'b001, 3'b010, 3'b011
         `ifdef LMUL_F8_SUPPORTED
             ,3'b101
-        `endif 
+        `endif
         `ifdef LMUL_F4_SUPPORTED
             ,3'b110
-        `endif 
+        `endif
         `ifdef LMUL_F2_SUPPORTED
             ,3'b111
-        `endif 
+        `endif
         };
     }
 
