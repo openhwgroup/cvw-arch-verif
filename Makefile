@@ -110,3 +110,5 @@ $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $
 clean:
 	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
+	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/*
+	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/*
