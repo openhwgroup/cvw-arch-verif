@@ -1,0 +1,29 @@
+    cp_csr_vtype_sew : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")  iff (ins.trap == 0 )  {
+        // Value of VTYPE.vsew (vector selected element width)
+        bins eight = {3'b000};
+        bins sixteen = {3'b001};
+        bins thirtytwo = {3'b010};
+        bins sixtyfour = {3'b011};
+    }
+
+    parameter int sew = 2 ** (3 + unsigned'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")));
+
+    cp_csr_vstart_vtype : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") iff (ins.trap == 0 )  {
+        // Value of VSTART.vstart (vector start index)
+        bins zero = {0};
+        bins random = {[1:ins.vlmax]};
+    }
+
+    parameter int vstart = get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart");
+
+    cp_csr_vl : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") iff (ins.trap == 0 )  {
+        // Value of VL.vl (vector length)
+        bins one  = {1};
+        bins random = {[vstart+1:ins.vlmax-1]}; // csr_val > vstart & < GETVLMAX-1???
+        // bins random = {RANDVSTVLMAX}; // replace this in covergroupgen
+        bins max  = {ins.vlmax};
+    }
+
+    cr_vtype_vstart_vl : cross cp_csr_vtype_sew,cp_csr_vtype_vlmul,cp_csr_vstart_vtype,cp_csr_vl  iff (ins.trap == 0 )  {
+        //Cross coverage SEW, LMUL, vl, vstart
+    }

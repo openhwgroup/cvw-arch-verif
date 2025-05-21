@@ -1,0 +1,7 @@
+    cp_csr_vstart : coverpoint vstart_check()  iff (ins.trap == 0 )  {
+        // Corners values of VSTART.vstart (vector start index)
+        ignore_bins vstart_two = {vstart_two};
+        ignore_bins vstart_vlmaxd2p1  = {vstart_vlmaxd2p1};
+        ignore_bins vstart_vlmaxm1 = {vstart_vlmaxm1};
+        ignore_bins vstart_other = {vstart_other};
+        }

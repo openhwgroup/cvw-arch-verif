@@ -1,0 +1,3 @@
+    cr_vxrm_vs1_vs2_corners : cross cp_vs2_corners,cp_vs1_corners,cp_csr_vxrm  iff (ins.trap == 0 )  {
+        //Cross coverage VS2, VS1, rounding mode
+    }

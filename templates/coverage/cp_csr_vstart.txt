@@ -1,0 +1,15 @@
+    cp_csr_vstart_two : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart")  iff (ins.trap == 0 )  {
+        // Corners values of VSTART.vstart (vector start index)
+        bins two     = {2};
+        }
+    cp_csr_vstart_maxd2p1 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == (GETVLMAX/2+1)  iff (ins.trap == 0 )  {
+        // Corners values of VSTART.vstart (vector start index)
+        bins true = {1};
+        }
+    cp_csr_vstart_maxm1 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == (GETVLMAX-1)  iff (ins.trap == 0 )  {
+        // Corners values of VSTART.vstart (vector start index)
+        bins true = {1};
+        }
+    cr_lmul_vstart : cross cp_csr_vtype_vlmul,cp_csr_vstart  iff (ins.trap == 0 )  {
+        //Cross coverage LMUL, vstart
+    }

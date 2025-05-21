@@ -1,0 +1,3 @@
+    cr_vtype_vstart : cross cp_csr_vtype_vlmul_rand,cp_csr_vstart_rand,cp_csr_vl_rand,cp_mask_rand  iff (ins.trap == 0 )  {
+        //Cross coverage LMUL (random), vl (random), and mask
+    }

@@ -3,3 +3,4 @@
         bins zero = {0};
         bins one  = {1};
     }
+// vill should trap

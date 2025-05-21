@@ -1,0 +1,3 @@
+    cp_mask_corners : coverpoint mask_corners_check()  iff (ins.trap == 0 & ins.current.vm == 0)  {
+        // Corners values of v0 (vector mask register)
+    }
