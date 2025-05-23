@@ -43,3 +43,6 @@ fcov/coverage/RISCV_instruction_sample.svh
 tests/priv/headers
 tests/priv/rv32
 tests/priv/rv64
+
+wkdir
+fcov_ucdb
