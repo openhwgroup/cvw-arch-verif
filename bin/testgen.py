@@ -140,11 +140,12 @@ def writeSIGUPD_F(rd):
     return ""
 
 def writeSIGUPD_V(vd, sew):
-    global sigOffset
     avl = 1   # Set AVL
     lines = ""
-    tempReg = 0
-    lines = lines + f"RVTEST_SIGUPD_V({avl}, {sew},  v{vd})\n"
+    tempReg = 6
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -189,7 +190,7 @@ def loadVFloatReg(reg, val, sew):
   if sew == 16:
     precision = 16
     loadop = "flh"
-    storeop = "sw"
+    storeop = "sh"
   elif sew == 32:
     precision = 32
     loadop = "flw"
@@ -208,9 +209,11 @@ def loadVFloatReg(reg, val, sew):
 def loadVecReg(reg, pointer, sew):
     loadop = f"vle{sew}.v"
     lines = ""
-    addrGPR = randint(1,31)
-    lines = lines + f"la x{addrGPR}, {pointer}          # Load address of desired value\n"
-    lines = lines + f"{loadop} v{reg}, (x{addrGPR})              # Load desired value from memory into v{reg}\n"
+    tempReg = 6
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    lines = lines + f"la x{tempReg}, {pointer}          # Load address of desired value\n"
+    lines = lines + f"{loadop} v{reg}, (x{tempReg})              # Load desired value from memory into v{reg}\n"
     return lines
 
 
@@ -350,7 +353,7 @@ def genVxrmTests(testline, lines, vd, sew, lmul):
   return lines
 
 
-def genvxsatTests(lines):
+def genVxsatTests(lines):
   lines = lines + f"csrr t0, vcsr"
   lines = lines + f"andi t1, t0, 1"
   lines = lines + f"la t2, vxsat_address"
@@ -782,13 +785,13 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
                      vfrm=None, floattype=None, xtype=None, vxsat=None, vta=None, vma=None):
 
     lines = "\n# Testcase " + str(desc) + "\n"
-    lines = handleSignaturePointerConflict(lines, vs1, vs2, vd)
+    lines = handleSignaturePointerConflict(lines, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
     if (vl is not None) and (lmul is not None) and (sew is not None):
       lines = lines + prepBaseV(lines, sew, lmul, vl, vstart, vta, vma)
 
     maskinstr = " "
-    # If mask value specified, load to x4
+    # If mask value specified, load to v0
     if maskval is not None:
       lines = lines + f"la a0, {maskval}\n"
       lines = lines + f"vlm.v v0, (a0)                   # Load mask value into v0\n"
@@ -2401,7 +2404,7 @@ def getExtensions():
         extensions.append(m.group(1))
   return extensions
 
-def genVector(sew, vlen, test):
+def genVector(sew, vl, vlen, test):
   maxvlen = 2048
   f.write("\n\n")
   f.write("///////////////////////////////////////////\n")
@@ -2433,11 +2436,12 @@ def genVector(sew, vlen, test):
       getrandbits(maxvlen)]
 
   maxVtests = 700
-  #arbitrary number for now
-  words = maxvlen // 32
+  # TODO: Fix this temporary arbitrary number
+  # num_words = math.ceil((vl * sew) / 32)
+  num_words = maxvlen // 32
   for t in range(maxVtests):
       f.write(f"v_random_{t:03d}:\n")
-      for i in range(words):
+      for i in range(num_words):
           randomElem = getrandbits(32)
           f.write(f"    .word 0x{randomElem:08x}\n")
 
@@ -2449,8 +2453,7 @@ def genVector(sew, vlen, test):
 
   for i, val in enumerate(cp_vtype_mask_corners):
       f.write(f"vtype_mask_corner_{i}:\n")
-      words = maxvlen // 32
-      for k in range(words):
+      for k in range(num_words):
           f.write(f"    .word 0x{i:08x}\n")
   # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
   vlmax = int(vlen/sew)
@@ -2465,7 +2468,7 @@ def genVector(sew, vlen, test):
 
   for name, val in cp_vm_corners_data:
       f.write(f"{name}:\n")
-      for i in range(maxvlen // 32):
+      for i in range(num_words):
           word = (val >> (32 * i)) & 0xFFFFFFFF
           f.write(f"    .word 0x{word:08x}\n")
 
@@ -2962,7 +2965,7 @@ if __name__ == '__main__':
         for test in coverpoints.keys():
         # print("Generating test for ", test, " with entries: ", coverpoints[test])
           sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
-          basename = "WALLY-COV-" + test
+          basename = "WALLY-COV-" + extension + "-" + test
           fname = pathname + "/" + basename + ".S"
           tempfname = pathname + "/" + basename + "_temp.S"
 
@@ -2977,7 +2980,10 @@ if __name__ == '__main__':
           #f.write(line)
 
           # insert generic header
-          insertTemplate("testgen_header.S")
+          if test in vectortypes:
+            insertTemplate("testgen_header_vector.S")
+          else:
+            insertTemplate("testgen_header.S")
 
           sigTotal = 0 # total number of bytes in signature
           sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
@@ -3008,13 +3014,17 @@ if __name__ == '__main__':
             f.write(vsetline1)
             f.write(vsetline2)
             write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
-            genVector(sew, vlen, test)
+            insertTemplate("testgen_footer_vector1.S")
+            genVector(sew, vl, vlen, test)
 
           else:
             write_tests(coverpoints[test], test, xlen)
 
           # print footer
-          insertTemplate("testgen_footer.S")
+          if test in vectortypes:
+            insertTemplate("testgen_footer_vector2.S")
+          else:
+            insertTemplate("testgen_footer.S")
 
           # Finish
           f.close()
