@@ -1,4 +1,4 @@
-# cp_align_word
+# lwu.S
 # Test all word-aligned operations for RV64 only
     la t0, scratch
     li t2, 0x123456789ABCDEF0

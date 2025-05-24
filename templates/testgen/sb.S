@@ -1,4 +1,4 @@
-# cp_align_byte
+# sb.S
 # test all 8 byte alignments
     la t0, scratch
     li t1, 0x9ABCDEF0

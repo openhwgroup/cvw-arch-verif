@@ -1,4 +1,4 @@
-# align_word.S
+# sw.S
 # Test word-aligned sw operations
     la t0, scratch
     li t2, 0x12345678

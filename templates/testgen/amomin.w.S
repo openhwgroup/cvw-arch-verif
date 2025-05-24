@@ -1,0 +1,11 @@
+# amomin.w.S
+# Test odd word-aligned amo operations
+# Put all flavors in here for simplicity
+    la t0, scratch
+    li t2, 0x9ABCDEF0
+    addi t0, t0, 4      # create odd alignment
+    sw t2, 0(t0)
+    li t2, 0xA5A5A5A5
+
+# cp_align_word
+    amomin.w t1, t2, (t0)
