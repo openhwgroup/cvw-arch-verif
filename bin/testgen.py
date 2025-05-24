@@ -1224,40 +1224,66 @@ def make_imm_corners_jal(test, xlen): # update these test
   lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
   lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one\n"
   if (test == "jal"):
-    lines += f"auipc x{rs1}, 0 # PC\n"
+    #lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, 1f\n"
-    lines += f"addi x{rs1}, x{rs1}, 4 \n"
+    #lines += f"addi x{rs1}, x{rs1}, 4 \n"
   else:
     lines = lines + test + " 1f\n"  # c.jal, c.j
-  lines = lines + "1: \n"
-  lines = lines +  writeSIGUPD(rs1)  +"\n"
+  lines = lines + "1: \n # alignment to small to test with signature\n"
   if (test == "jal"):
-    lines += f"auipc x{rs1}, 0 # PC\n"
+    #lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, f"+str(minrng)+"_"+test+"\n"
-    lines += f"addi x{rs1}, x{rs1}, 4 \n"
+    #lines += f"addi x{rs1}, x{rs1}, 4 \n"
+    #TODO: Deleting signsture for f1
   else:
+   # lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " f"+str(minrng)+"_"+test+"\n"  # c.jal, c.j
+  #  lines += f"addi x{rs1}, x{rs1}, 2 \n"
+   # lines = lines +  writeSIGUPD(rs1)  +"\n"
   f.write(lines)
+
   for r in rng:
+
     lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
-    lines = lines +  writeSIGUPD(rs1) + "\n"
+    #lines = lines + ".align " + str(1) + "\n"
+
+    #lines = lines +  writeSIGUPD(rs1) + "\n"
     if (test == "jal"):
-      lines += f"auipc x{rs1}, 0 # PC\n"
-      lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      lines += f"addi x{rs1}, x{rs1}, 4 \n"
+      if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6) IGNORE COMMENT TODO
+        lines += f"addi x{rs1}, x0, 1 # PC\n"
+        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      else:
+        lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+
     elif (test in ["c.jal", "c.j"]):
-      #lines += f"auipc x{rs1}, 0 # PC\n" TODO if needed
-      lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      #lines += f"addi x{rs1}, x{rs1}, 2 \n" TODO if needed
+      if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6) TODO COMMENT
+        lines += f"c.li x{rs1}, 1 # PC\n"
+        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      else:
+        lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+
+    if (r>=6): # comparison is 6 because it's not r+1 this time
+      if (test in ["c.jal", "c.j"]):
+        lines += f"c.li x{rs1}, 0 \n"
+      else:
+        lines += f"addi x{rs1}, x0, 0 \n"
+      lines = lines +  writeSIGUPD(rs1) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
-    lines = lines +  writeSIGUPD(rs1) + "\n"
-    if (test == "jal"):
-      lines += f"auipc x{rs1}, 0 # PC\n"
+    if (r>=6):
+      lines = lines +  writeSIGUPD(rs1) + "\n"
+
+    if (test == "jal"): #TODO REVISE THIS SECTION SO NOT PC DEPENDENT
+      #lines += f"auipc x{rs1}, 0 # PC\n"
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      lines += f"addi x{rs1}, x{rs1}, 4 \n"
+      #lines += f"addi x{rs1}, x{rs1}, 4 \n"
+      if(r>=6):
+        lines += f"addi x{rs1}, x0, 0# PC\n"
+        lines = lines +  writeSIGUPD(rs1) + "\n"
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1267,10 +1293,13 @@ def make_imm_corners_jal(test, xlen): # update these test
           #lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+        if(r>=6):
+          lines += f"c.li x{rs1}, 0 \n"
+          lines = lines +  writeSIGUPD(rs1) + "\n"
+
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
-  lines = lines +  writeSIGUPD(rs1) +"\n"
   f.write(lines)
 
 def make_imm_corners_jalr(test, xlen):
