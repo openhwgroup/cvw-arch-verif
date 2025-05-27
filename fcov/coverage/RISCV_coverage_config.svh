@@ -200,6 +200,9 @@
 `ifdef EXCEPTIONSU_COVERAGE
   `include "ExceptionsU_coverage.svh"
 `endif
+`ifdef EXCEPTIONSV_COVERAGE
+  `include "ExceptionsV_coverage.svh"
+`endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
 `endif
@@ -224,6 +227,9 @@
 `ifdef INTERRUPTSU_COVERAGE
   `include "InterruptsU_coverage.svh"
 `endif
+`ifdef EXCEPTIONSV_COVERAGE
+  `include "ExceptionsV_coverage.svh"
+`endif
 `ifdef INTERRUPTSSSTC_COVERAGE
   `include "InterruptsSstc_coverage.svh"
 `endif
@@ -241,9 +247,6 @@
 `endif
 `ifdef EXCEPTIONSZALRSC_COVERAGE
   `include "ExceptionsZalrsc_coverage.svh"
-`endif
-`ifdef EXCEPTIONSV_COVERAGE
-  `include "ExceptionsV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZICBOU_COVERAGE
   `include "ExceptionsZicboU_coverage.svh"

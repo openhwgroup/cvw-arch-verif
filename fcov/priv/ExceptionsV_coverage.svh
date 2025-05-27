@@ -515,6 +515,6 @@ function void exceptionsv_sample(int hart, int issue, ins_t ins);
     if(traceDataQ[hart][issue][0].inst_name[0] == "v") begin
         ExceptionsV_edgecases_cg.sample(ins);
         ExceptionsV_reserved_cg.sample(ins); //Doesnt appear to be colleting coverage
-        ExcpetionsV_illegal_cg.sample(ins);
+        ExceptionsV_illegal_cg.sample(ins);
     end
 endfunction
