@@ -49,12 +49,24 @@ testgen: covergroupgen bin/testgen.py bin/combinetests.py
 riscv-arch: testgen
 	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
 	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
+	cp -r ${TESTDIR}/priv/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/priv/
 
-riscv-arch-%: testgen
+riscv-arch-unpriv: testgen
+	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
+	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
+
+riscv-arch-priv: testgen
+	cp -r ${TESTDIR}/priv/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/priv/
+
+riscv-arch-unpriv-%: testgen
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
 	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
+
+riscv-arch-priv-%: testgen
+	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/priv/$*.S
+	cp -r ${TESTDIR}/priv/$*.S ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/priv/$*.S
 
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
