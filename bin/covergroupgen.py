@@ -57,6 +57,7 @@ def readTestplans():
             if (arch == "Vx"):
                 for effew in ["8", "16", "32", "64"]:
                     testplans["Vx" + effew] = tp
+                del testplans["Vx"]
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
