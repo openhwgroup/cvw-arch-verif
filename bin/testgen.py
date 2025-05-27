@@ -409,8 +409,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 9 # change to arbitrary other register
     elif (test == "c.addiw" and rd == 0):
       rd = 1
-    lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+    if (test != "c.addi16sp"):
+      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
+      lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
         immval = 16
