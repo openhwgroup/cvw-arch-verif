@@ -46,6 +46,7 @@
   `define FLEN 32
 `endif
 
+
 // Set register type length
 `define XLEN_BITS         bit        [`XLEN-1:0]
 `define SIGNED_XLEN_BITS  bit signed [`XLEN-1:0]
