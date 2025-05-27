@@ -136,16 +136,23 @@ def writeSIGUPD(rd):
     return l
 
 def writeSIGUPD_F(rd):
-    # *** write this
-    return ""
+    global sigupd_count  # Allow modification of global variable
+    sigupd_count += 2  # Increment counter by 2 on each call since SIGUPD_F macro stores two registers to memory
+    tempReg = 4
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    return l
 
 def writeSIGUPD_V(vd, sew):
+    global sigupd_count  # Allow modification of global variable
+    sigupd_count += 1  # Increment counter on each call
     avl = 1   # Set AVL
-    lines = ""
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
