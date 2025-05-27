@@ -40,9 +40,9 @@ main:
     // always do both.  One or the other will trap, but this
     // avoids needing separate code for the two architectures
     // code assumes s registers are saved during these tests
-    // saving and restoring mstatus based on endianness
-    // calling WALLY-priv-endian.h to store and load
-
+    // saving and restoring mstatus based on endianness.
+    // calling WALLY-priv-endian.h to store and load.
+    //TODO ADD COMMENTS
     csrr s0, mstatus    # save CSR
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
