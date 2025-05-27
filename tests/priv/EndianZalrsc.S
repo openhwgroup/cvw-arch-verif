@@ -80,42 +80,25 @@ endiantest: //Write to memory function
     mv s8, s4       # setEndianness(write)
     jal setendianness
     # Test storing bytes
-    li t0, 0x01
-    sb t0, 0(s3)
-    li t0, 0x02
-    sb t0, 1(s3)
-    li t0, 0x03
-    sb t0, 2(s3)
-    li t0, 0x04
-    sb t0, 3(s3)
-    li t0, 0x05
-    sb t0, 4(s3)
-    li t0, 0x06
-    sb t0, 5(s3)
-    li t0, 0x07
-    sb t0, 6(s3)
-    li t0, 0x08
-    sb t0, 7(s3)
     # Perform lr.w + sc.w test
+    li   t1, 0xAABBCCDD
+    sw   t1, 0(s3)
     lr.w t1, 0(s3)
-    li   t2, 0xAABBCCDD
-    sc.w t3, t2, 0(s3)  //success if t3 == 0
+    addi t1, t1, 1 # increment to check if it works
+    sc.w t3, t1, 0(s3)  //success if t3 == 0
     # Read endianness and read result
     jal s7, endianaccess
     mv s8, s4       # setEndianness(write)
     jal setendianness
-                                 //lw t4, 0(s3) #Check value when reading back
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             mv s8, s4       # setEndianness(write)
             jal setendianness
-
-            li   t0, 0xMMBBRRTTEEDD2255
+            li   t0, 0x0102030405060708
             sd   t0, 0(s3)
-
             lr.d t1, 0(s3)
-            li   t2, 0xMMBBRRTTEEDD2255
-            sc.d t3, t2, 0(s3)
+            addi t1, t1, 1 # increment to check if it works
+            sc.d t3, t1, 0(s3)
 
             # Read endianness and read result
             jal s7, endianaccess
@@ -166,7 +149,7 @@ change:
 
 
 
-endianaccess:
+endianaccess:// I believe this is NOT NEEDED
     // Try all the accesses to make sure they work for the endianness
      mv s8, s5   # setEndianness(read) -  # setEndianness(read from memory)
     jal setendianness
