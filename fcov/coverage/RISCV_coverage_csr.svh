@@ -84,11 +84,6 @@ typedef enum {
   vxsat
 } csr_name_t;
 
-// function  get_vlmax_val(int hart, int issue);
-//   logic [2:0] vlmul = get_
-//   return 
-// endfunction
-
 function `XLEN_BITS get_csr_val(int hart, int issue, int prev, string name, string field);
   int addr = get_csr_addr(hart, name);
   return get_csr_val_addr(hart, issue, prev, addr, name, field);

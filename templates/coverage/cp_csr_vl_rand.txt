@@ -1,7 +1,0 @@
-    cp_csr_vl_rand : coverpoint vl_check()  iff (ins.trap == 0 )  {
-        // Corners values of VL.vl (vector length)
-        ignore_bins vl_zero = {vl_zero};
-        ignore_bins vl_vlmaxm1 = {vl_vlmaxm1};
-        ignore_bins vl_vlmaxd2p1 = {vl_vlmaxd2p1};
-        ignore_bins vl_illegal = {vl_other};
-    }

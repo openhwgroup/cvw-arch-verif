@@ -1,3 +1,0 @@
-    cp_vs2_corners_widen : coverpoint vs_corners_check("vs2", 1)  iff (ins.trap == 0 )  {
-        // Corners values of vs2, assuming vl = 1
-    }
