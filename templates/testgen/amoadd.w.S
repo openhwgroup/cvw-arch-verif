@@ -1,6 +1,5 @@
 # amoadd.w.S
 # Test odd word-aligned amo operations
-# Put all flavors in here for simplicity
     la t0, scratch
     li t2, 0x9ABCDEF0
     addi t0, t0, 4      # create odd alignment
