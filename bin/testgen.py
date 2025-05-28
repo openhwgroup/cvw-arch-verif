@@ -27,6 +27,8 @@ def insertTemplate(name):
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    if 'V' in ext_parts_no_I:
+      ext_parts_no_I = ['M'] + ext_parts_no_I
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     # Construct the regex part
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
@@ -140,6 +142,8 @@ def writeSIGUPD_F(rd):
     return ""
 
 def writeSIGUPD_V(vd, sew):
+    global sigupd_count  # Allow modification of global variable
+    sigupd_count += 1  # Increment counter on each call
     avl = 1   # Set AVL
     lines = ""
     tempReg = 6
@@ -2439,8 +2443,7 @@ def genVector(sew, vl, vlen, test):
 
   maxVtests = 700
   # TODO: Fix this temporary arbitrary number
-  # num_words = math.ceil((vl * sew) / 32)
-  num_words = maxvlen // 32
+  num_words = math.ceil((vl * sew) / 32)
   for t in range(maxVtests):
       f.write(f"v_random_{t:03d}:\n")
       for i in range(num_words):
