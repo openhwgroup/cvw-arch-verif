@@ -1,0 +1,2 @@
+Instruction,Type,RV32,RV64,EFFEW8,EFFEW16,EFFEW32,EFFEW64,cp_asm_count,cp_vd,cp_rd,cp_vs2,cp_rs2,cp_vs1,cp_rs1,cp_uimm_5,cp_vs3,cmp_vd_vs2,cmp_vd_vs1,cmp_vs1_vs2,cmp_vd_vs1_vs2,cp_custom
+vadd.vv,VV,x,x,x,x,x,x,x,,,,,,,,,,,,,

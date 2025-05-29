@@ -57,6 +57,7 @@ def readTestplans():
             if (arch == "Vx"):
                 for effew in ["8", "16", "32", "64"]:
                     testplans["Vx" + effew] = tp
+                del testplans["Vx"]
     return testplans
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
@@ -79,7 +80,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
         template = covergroupTemplates[name]
     else:
         if (not (name in missingTemplates)):
-            print("No template found for " + name)
+            print(f"No template found for '{name}'.  Check if there are spaces before or after coverpoint name.")
             missingTemplates.append(name)
         return ""
     instr_nodot = instr.replace(".", "_")

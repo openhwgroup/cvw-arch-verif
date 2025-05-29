@@ -851,8 +851,9 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_cfg_L_modify: cross priv_mode_m, lock_checking, pmp_region, write_pmp_csr, pmpcfg_xwr, pmpaddr ;
 	// If pmpcfg.A = TOR and pmpcfg.L = 1, pmpaddr_i-1 will be unchange but not pmpcfg_i-1.
 
-  	cp_cfg_L_modify_TOR_pmpaddr: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpaddr, rs1_val_for_pmpaddr, lower_pmpcfg_xwr, pmpaddr ;
+  cp_cfg_L_modify_TOR_pmpaddr: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpaddr, rs1_val_for_pmpaddr, lower_pmpcfg_xwr, pmpaddr ;
 	cp_cfg_L_modify_TOR_pmpcfg: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpcfg, rs1_val_for_pmpcfg, lower_pmpcfg_xwr, pmpaddr ;
+
 
 	cp_cfg_A_all_even: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_even ;
 	cp_cfg_A_all_odd: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_odd ;
@@ -898,11 +899,11 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1_pmpaddr, csrrw, legal_pmpaddr_entries ;
-	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_even ;
-	cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
+	cp_pmpcfg_walk:  cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_even ;
+	cp_pmpcfg_zero:  cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 
 	cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
-	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+	cp_pmp64_read:  cross priv_mode_m, read_instr_lw, pmp64;
 
 	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, read_instr_lw ;
 	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, write_instr_sw ;
