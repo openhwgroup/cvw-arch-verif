@@ -1467,7 +1467,7 @@ def make_imm_corners_jal(test, xlen): # update these test
       else:
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
 
-    if (r>=6): # comparison is 6 because it's not r+1 this time TODO CHECK THAT 6 IS THE CORRECT VALUE!!!!
+    if (r>=6): # comparison is 6 because it's not r+1 this time
       if (test in ["c.jal", "c.j"]):
         lines += f"c.li x{rs1}, 0 \n"
       else:
