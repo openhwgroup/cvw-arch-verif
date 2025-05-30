@@ -138,18 +138,23 @@ def writeSIGUPD(rd):
     return l
 
 def writeSIGUPD_F(rd):
-    # *** write this
-    return ""
+    global sigupd_count  # Allow modification of global variable
+    sigupd_count += 2  # Increment counter by 2 on each call since SIGUPD_F macro stores two registers to memory
+    tempReg = 4
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    return l
 
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
     avl = 1   # Set AVL
-    lines = ""
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -1058,8 +1063,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     ["perform first operation", "perform second (triggering) operation"],
                     xlen)
     #lines += f"addi x{rs2b}, x{rs2b}, 4 # should be skipped\n"
-    lines += writeSIGUPD(rda)
-    lines += writeSIGUPD(rdb)
+    if testa in floattypes and testa not in fTOrtype:
+      lines += writeSIGUPD_F(rda)
+    else:
+      lines += writeSIGUPD(rda)
+    if testb in floattypes and testb not in fTOrtype:
+      lines += writeSIGUPD_F(rdb)
+    else:
+      lines += writeSIGUPD(rdb)
     #lines += writeSIGUPD(rs2b)
 
   f.write(lines)
@@ -2556,6 +2567,10 @@ PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
 fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
               "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
               "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
+fTOrtype  = ["feq.s", "feq.h", "feq.d", "flt.s", "flt.h", "flt.d", "fle.s", "fle.h", "fle.d",
+             "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d", "fclass.s", "fclass.h", "fclass.d"
+              "fcvt.dst.src", "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d",
+              "fmvp.x.q", "fcvtmod.w.d"] # *All* floating point instructions that return to xregisters (rd) *(I think all (fcvt.dist.src may be exeption))
 citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp","c.flwsp","c.fldsp"]
 c_shiftitype = ["c.slli","c.srli","c.srai"]
 cltype = ["c.lw","c.ld","c.flw","c.fld"]
