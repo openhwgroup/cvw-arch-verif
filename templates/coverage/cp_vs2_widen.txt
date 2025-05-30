@@ -1,0 +1,4 @@
+    cp_vs2_widen : coverpoint ins.get_vr_reg(ins.current.vs2) iff (ins.trap == 0) {
+        //VS2 register assignment (widening operand, excluding v31)
+        ignore_bins v31 = {v31};
+    }
