@@ -25,7 +25,7 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
-`define G 2              // Set G as needed (0, 1, 2, etc.)
+`define G 4              // Set G as needed (0, 1, 2, etc.)
 `define g (2**(`G+2))    // Region size = 2^(G+2)
 
 // Define PMP_16 or PMP_64
@@ -50,7 +50,7 @@
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
-covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [15:0], logic [XLEN-1:0] pmpaddr [62:0], logic [29:0] pmpcfg_rw, logic [95:0] pmpcfg_RW, logic [29:0] pmpcfg_a, logic [95:0] pmpcfg_A, logic [14:0] pmpcfg_x, logic [47:0] pmpcfg_X, logic [14:0] pmpcfg_l, logic [47:0] pmpcfg_L, logic [14:0] pmp_hit, logic [47:0] pmp_HIT);
+covergroup PMPM_cg with function sample(ins_t ins, logic [XLEN-1:0] pmpcfg [15:0], logic [XLEN-1:0] pmpaddr [62:0], logic [16*XLEN-1:0] PMPADDR, logic [29:0] pmpcfg_rw, logic [95:0] pmpcfg_RW, logic [29:0] pmpcfg_a, logic [95:0] pmpcfg_A, logic [14:0] pmpcfg_x, logic [47:0] pmpcfg_X, logic [14:0] pmpcfg_l, logic [47:0] pmpcfg_L, logic [14:0] pmp_hit, logic [47:0] pmp_HIT);
 	option.per_instance = 0;
 	`include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
@@ -419,42 +419,43 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 	cp_walk_rs1_pmpaddr: coverpoint ins.current.rs1_val {
 		bins all_zeros = {0};
-		bins all_ones = {-1};
 		`ifdef XLEN32
-			wildcard bins walking_ones_0  = {32'b00000000000000000000000000000001};
-			wildcard bins walking_ones_1  = {32'b00000000000000000000000000000010};
-			wildcard bins walking_ones_2  = {32'b00000000000000000000000000000100};
-			wildcard bins walking_ones_3  = {32'b00000000000000000000000000001000};
-			wildcard bins walking_ones_4  = {32'b00000000000000000000000000010000};
-			wildcard bins walking_ones_5  = {32'b00000000000000000000000000100000};
-			wildcard bins walking_ones_6  = {32'b00000000000000000000000001000000};
-			wildcard bins walking_ones_7  = {32'b00000000000000000000000010000000};
-			wildcard bins walking_ones_8  = {32'b00000000000000000000000100000000};
-			wildcard bins walking_ones_9  = {32'b00000000000000000000001000000000};
-			wildcard bins walking_ones_10 = {32'b00000000000000000000010000000000};
-			wildcard bins walking_ones_11 = {32'b00000000000000000000100000000000};
-			wildcard bins walking_ones_12 = {32'b00000000000000000001000000000000};
-			wildcard bins walking_ones_13 = {32'b00000000000000000010000000000000};
-			wildcard bins walking_ones_14 = {32'b00000000000000000100000000000000};
-			wildcard bins walking_ones_15 = {32'b00000000000000001000000000000000};
-			wildcard bins walking_ones_16 = {32'b00000000000000010000000000000000};
-			wildcard bins walking_ones_17 = {32'b00000000000000100000000000000000};
-			wildcard bins walking_ones_18 = {32'b00000000000001000000000000000000};
-			wildcard bins walking_ones_19 = {32'b00000000000010000000000000000000};
-			wildcard bins walking_ones_20 = {32'b00000000000100000000000000000000};
-			wildcard bins walking_ones_21 = {32'b00000000001000000000000000000000};
-			wildcard bins walking_ones_22 = {32'b00000000010000000000000000000000};
-			wildcard bins walking_ones_23 = {32'b00000000100000000000000000000000};
-			wildcard bins walking_ones_24 = {32'b00000001000000000000000000000000};
-			wildcard bins walking_ones_25 = {32'b00000010000000000000000000000000};
-			wildcard bins walking_ones_26 = {32'b00000100000000000000000000000000};
-			wildcard bins walking_ones_27 = {32'b00001000000000000000000000000000};
-			wildcard bins walking_ones_28 = {32'b00010000000000000000000000000000};
-			wildcard bins walking_ones_29 = {32'b00100000000000000000000000000000};
-			wildcard bins walking_ones_30 = {32'b01000000000000000000000000000000};
-			wildcard bins walking_ones_31 = {32'b10000000000000000000000000000000};
+			bins all_ones        = {32'b11111111111111111111111111111111};
+			bins walking_ones_0  = {32'b00000000000000000000000000000001};
+			bins walking_ones_1  = {32'b00000000000000000000000000000010};
+			bins walking_ones_2  = {32'b00000000000000000000000000000100};
+			bins walking_ones_3  = {32'b00000000000000000000000000001000};
+			bins walking_ones_4  = {32'b00000000000000000000000000010000};
+			bins walking_ones_5  = {32'b00000000000000000000000000100000};
+			bins walking_ones_6  = {32'b00000000000000000000000001000000};
+			bins walking_ones_7  = {32'b00000000000000000000000010000000};
+			bins walking_ones_8  = {32'b00000000000000000000000100000000};
+			bins walking_ones_9  = {32'b00000000000000000000001000000000};
+			bins walking_ones_10 = {32'b00000000000000000000010000000000};
+			bins walking_ones_11 = {32'b00000000000000000000100000000000};
+			bins walking_ones_12 = {32'b00000000000000000001000000000000};
+			bins walking_ones_13 = {32'b00000000000000000010000000000000};
+			bins walking_ones_14 = {32'b00000000000000000100000000000000};
+			bins walking_ones_15 = {32'b00000000000000001000000000000000};
+			bins walking_ones_16 = {32'b00000000000000010000000000000000};
+			bins walking_ones_17 = {32'b00000000000000100000000000000000};
+			bins walking_ones_18 = {32'b00000000000001000000000000000000};
+			bins walking_ones_19 = {32'b00000000000010000000000000000000};
+			bins walking_ones_20 = {32'b00000000000100000000000000000000};
+			bins walking_ones_21 = {32'b00000000001000000000000000000000};
+			bins walking_ones_22 = {32'b00000000010000000000000000000000};
+			bins walking_ones_23 = {32'b00000000100000000000000000000000};
+			bins walking_ones_24 = {32'b00000001000000000000000000000000};
+			bins walking_ones_25 = {32'b00000010000000000000000000000000};
+			bins walking_ones_26 = {32'b00000100000000000000000000000000};
+			bins walking_ones_27 = {32'b00001000000000000000000000000000};
+			bins walking_ones_28 = {32'b00010000000000000000000000000000};
+			bins walking_ones_29 = {32'b00100000000000000000000000000000};
+			bins walking_ones_30 = {32'b01000000000000000000000000000000};
+			bins walking_ones_31 = {32'b10000000000000000000000000000000};
 		`endif
 		`ifdef XLEN64
+			wildcard bins all_ones        = {64'b??????????111111111111111111111111111111111111111111111111111111};
 			wildcard bins walking_ones_0  = {64'b??????????000000000000000000000000000000000000000000000000000001};
 			wildcard bins walking_ones_1  = {64'b??????????000000000000000000000000000000000000000000000000000010};
 			wildcard bins walking_ones_2  = {64'b??????????000000000000000000000000000000000000000000000000000100};
@@ -770,6 +771,91 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		wildcard bins pmp63cfg = {240'b1???????????????????????????????????????????????_1???????????????????????????????????????????????_01??????????????????????????????????????????????????????????????????????????????????????????????_100000000000000000000000000000000000000000000000};
 	}
 
+	rs1_val_for_pmpcfg_A: coverpoint ins.current.insn {
+		bins OFF = {32'd0};
+		`ifdef XLEN32
+			bins TOR   = {32'b00001000000010000000100000001000};
+			bins NA4   = {32'b00010000000100000001000000010000};
+			bins NAPOT = {32'b00011000000110000001100000011000};
+		`endif
+		`ifdef XLEN64
+			bins TOR   = {64'b0000100000001000000010000000100000001000000010000000100000001000};
+			bins NA4   = {64'b0001000000010000000100000001000000010000000100000001000000010000};
+			bins NAPOT = {64'b0001100000011000000110000001100000011000000110000001100000011000};
+		`endif
+	}
+
+//-------------------------------------------------------
+
+	// Starting from same base address `REGIONSTART if pmphit is 1, NAPOT regions are locked, and rotating xwr.
+	pmp_entries_setup: coverpoint {pmp_hit, pmpcfg_a, pmpcfg_l, pmpcfg_x, pmpcfg_rw} {
+		bins pmp_entry = {105'b111111111111111_111111111111111111111111111111_111111111111111_000111000111000_11_01_00_11_01_00_11_01_00_11_01_00_11_01_00};
+	}
+
+	overlapping_regions: coverpoint PMPADDR {
+		bins twice_subsequent_regions = {`STANDARD_REGION<14,
+										 `STANDARD_REGION<13,
+										 `STANDARD_REGION<12,
+										 `STANDARD_REGION<11,
+										 `STANDARD_REGION<10,
+										 `STANDARD_REGION<9,
+										 `STANDARD_REGION<8,
+										 `STANDARD_REGION<7,
+										 `STANDARD_REGION<6,
+										 `STANDARD_REGION<5,
+										 `STANDARD_REGION<4,
+										 `STANDARD_REGION<3,
+										 `STANDARD_REGION<2,
+										 `STANDARD_REGION<1,
+										 `STANDARD_REGION
+										 };
+	}
+
+	addr_in_overlapping_region: coverpoint (ins.current.imm + ins.current.rs1_val) {
+		bins addr_in_region14  = {`STANDARD_REGION < 14};
+		bins addr_in_region13  = {`STANDARD_REGION < 13};
+		bins addr_in_region12  = {`STANDARD_REGION < 12};
+		bins addr_in_region11  = {`STANDARD_REGION < 11};
+		bins addr_in_region10  = {`STANDARD_REGION < 10};
+		bins addr_in_region9   = {`STANDARD_REGION < 9};
+		bins addr_in_region8   = {`STANDARD_REGION < 8};
+		bins addr_in_region7   = {`STANDARD_REGION < 7};
+		bins addr_in_region6   = {`STANDARD_REGION < 6};
+		bins addr_in_region5   = {`STANDARD_REGION < 5};
+		bins addr_in_region4   = {`STANDARD_REGION < 4};
+		bins addr_in_region3   = {`STANDARD_REGION < 3};
+		bins addr_in_region2   = {`STANDARD_REGION < 2};
+		bins addr_in_region1   = {`STANDARD_REGION < 1};
+		bins addr_in_region0   = {`STANDARD_REGION};
+	}
+
+//-------------------------------------------------------
+
+	// {TOR, OFF, TOR, OFF} and {1111, 1000, 1101, 1000}
+	cfg_first_four_entries: coverpoint pmpcfg[0][31:0] {
+		bins cfg_regions = {32'h8F808D80};
+	}
+
+	// {all 1s, all 0s, all 1s, all 0s}
+	first_four_pmp_entries: coverpoint PMPADDR[4*XLEN-1:0] {
+		`ifdef XLEN32
+			bins pmp_entries = {128'hFFFFFFFF_00000000_FFFFFFFF_00000000};
+		`endif
+		`ifdef XLEN64
+			bins pmp_entries = {256'h???FFFFFFFFFFFFF_???0000000000000000_???FFFFFFFFFFFFF_???0000000000000000};
+		`endif
+	}
+
+//-------------------------------------------------------
+
+	all_pmp_entries_off: coverpoint {pmpcfg_a,pmpcfg_A[1:0]} { // Including Background Top PMP Entry
+		bins PMP_OFF = {32'd0};
+	}
+
+	all_pmpaddr_zero: coverpoint PMPADDR { // Including Background Top PMP Entry
+		bins pmpaddr_zeros = {0};
+	}
+
 //-------------------------------------------------------
 
 	cp_cfg_X: cross priv_mode_m, legal_lxwr, exec_instr, standard_region, addr_in_region ;
@@ -796,52 +882,67 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
   	cp_cfg_L_modify_TOR_pmpaddr: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpaddr, rs1_val_for_pmpaddr, lower_pmpcfg_xwr, pmpaddr ;
 	cp_cfg_L_modify_TOR_pmpcfg: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpcfg, rs1_val_for_pmpcfg, lower_pmpcfg_xwr, pmpaddr ;
 
-	cp_cfg_A_OFF_allr : cross pmpcfgA_OFF, RWXL001, read_instr, addr_in_region;
-	cp_cfg_A_OFF_allw : cross pmpcfgA_OFF, RWXL001, write_instr, addr_in_region;
-	cp_cfg_A_OFF_allx : cross pmpcfgA_OFF, RWXL001, exec_instr, addr_in_region;
+	cp_cfg_A_all_even: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_even ;
+	cp_cfg_A_all_odd: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_odd ;
 
-	cp_cfg_A_napot_all: cross pmpcfgA_NAPOT, RWXL001, read_instr_lw, addr_offset{
+	cp_cfg_A_OFF_allr : cross priv_mode_m, pmpcfgA_OFF, RWXL001, read_instr, addr_in_region;
+	cp_cfg_A_OFF_allw : cross priv_mode_m, pmpcfgA_OFF, RWXL001, write_instr, addr_in_region;
+	cp_cfg_A_OFF_allx : cross priv_mode_m, pmpcfgA_OFF, RWXL001, exec_instr, addr_in_region;
+
+	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, RWXL001, read_instr_lw, addr_offset {
 		ignore_bins ig5  = binsof(addr_offset.above_base);
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
 
-	cp_cfg_A_napot_x : cross legal_RWX_L_NAPOT, addr_offset, exec_instr{
+	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, exec_instr {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
 	}
-	cp_cfg_A_napot_r : cross legal_RWX_L_NAPOT, addr_offset, read_instr_lw{
+	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, read_instr_lw {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
 	}
-	cp_cfg_A_napot_w : cross legal_RWX_L_NAPOT, addr_offset, write_instr_sw{
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-	}
-
-	cp_cfg_A_na4_x : cross legal_RWX_L_NA4, addr_offset, exec_instr{
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-	}
-	cp_cfg_A_na4_r : cross legal_RWX_L_NA4, addr_offset, read_instr_lw{
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-	}
-	cp_cfg_A_na4_w : cross legal_RWX_L_NA4, addr_offset, write_instr_sw{
+	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, write_instr_sw {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
 	}
 
-	cp_cfg_A_NA4_all: cross pmpcfgA_NA4, RWXL001, read_instr_lw, addr_offset{
+	cp_cfg_A_na4_x : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, exec_instr {
+		ignore_bins ig1  = binsof(addr_offset.below_base);
+		ignore_bins ig2  = binsof(addr_offset.highest_word);
+	}
+	cp_cfg_A_na4_r : cross priv_mode_m,legal_RWX_L_NA4, addr_offset, read_instr_lw {
+		ignore_bins ig1  = binsof(addr_offset.below_base);
+		ignore_bins ig2  = binsof(addr_offset.highest_word);
+	}
+	cp_cfg_A_na4_w : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, write_instr_sw {
+		ignore_bins ig1  = binsof(addr_offset.below_base);
+		ignore_bins ig2  = binsof(addr_offset.highest_word);
+	}
+
+	cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, RWXL001, read_instr_lw, addr_offset {
 		ignore_bins ig5  = binsof(addr_offset.just_beyond);
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
 
 	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1_pmpaddr, csrrw, legal_pmpaddr_entries ;
-	cp_pmpcfg_walk:  cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_even ;
-	cp_pmpcfg_zero:  cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
+	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1_pmpcfg, csrrw, legal_pmpcfg_entries_even ;
+	cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 
 	cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
-	cp_pmp64_read:  cross priv_mode_m, read_instr_lw, pmp64;
+	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+
+	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, read_instr_lw ;
+	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, write_instr_sw ;
+	cp_priority_jalr: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, exec_instr ;
+
+	cp_priority_off_lw: cross priv_mode_m, cfg_first_four_entries, first_four_pmp_entries, read_instr_lw ;
+	cp_priority_off_sw: cross priv_mode_m, cfg_first_four_entries, first_four_pmp_entries, write_instr_sw ;
+	cp_priority_off_jalr: cross priv_mode_m, cfg_first_four_entries, first_four_pmp_entries, exec_instr ;
+
+	cp_none_lw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, read_instr_lw ;
+	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
+	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
 endgroup
 
@@ -849,6 +950,7 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 
 	logic [XLEN-1:0] pmpcfg [15:0];
 	logic [XLEN-1:0] pmpaddr [62:0];
+	logic [16*XLEN-1:0] PMPADDR;
 	logic [29:0] pmpcfg_rw, pmpcfg_a;			// for first 15 Regions
 	logic [95:0] pmpcfg_RW, pmpcfg_A;			// for next 48 Regions
 	logic [14:0] pmpcfg_x, pmpcfg_l, pmp_hit;   // for first 15 Regions
@@ -869,6 +971,24 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 	for (int k = 15; k < 64; k++) begin				// for next 48 regions
 		pmp_HIT[k] = (pmpaddr[k] == `REGIONSTART);
 	end
+
+	PMPADDR = {  ins.current.csr[12'h3BF]
+				,ins.current.csr[12'h3BE]
+				,ins.current.csr[12'h3BD]
+				,ins.current.csr[12'h3BC]
+				,ins.current.csr[12'h3BB]
+				,ins.current.csr[12'h3BA]
+				,ins.current.csr[12'h3B9]
+				,ins.current.csr[12'h3B8]
+				,ins.current.csr[12'h3B7]
+				,ins.current.csr[12'h3B6]
+				,ins.current.csr[12'h3B5]
+				,ins.current.csr[12'h3B4]
+				,ins.current.csr[12'h3B3]
+				,ins.current.csr[12'h3B2]
+				,ins.current.csr[12'h3B1]
+				,ins.current.csr[12'h3B0]
+			};
 
 	`ifdef XLEN32
 		pmpcfg_rw = {
@@ -1446,5 +1566,6 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 
-	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pmpcfg_rw, pmpcfg_RW, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
+	PMPM_cg.sample(ins, pmpcfg, pmpaddr, PMPADDR, pmpcfg_rw, pmpcfg_RW, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
+
 endfunction
