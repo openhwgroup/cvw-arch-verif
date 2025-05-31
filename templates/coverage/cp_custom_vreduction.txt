@@ -1,0 +1,17 @@
+    // Custom coverpoints for Vector reduction operations
+
+    vd_v0: coverpoint ins.current.insn[11:7] {
+        bins zero = {5'b0};
+    }
+
+    cp_custom_vreduction_vd_not_div2:       cross vtype_lmul_2, vd_all_reg_notdiv_2,    vs1_reg_div_2,        vs2_reg_div_2, nontrivial;
+    cp_custom_vreduction_vs1_not_div2:      cross vtype_lmul_2, vd_reg_div_2,           vs1_reg_notdiv_2,     vs2_reg_div_2, nontrivial;
+
+    cp_custom_vreduction_vd_not_div4:       cross vtype_lmul_4, vd_all_reg_notdiv_4,    vs1_reg_div_4,        vs2_reg_div_4, nontrivial;
+    cp_custom_vreduction_vs1_not_div4:      cross vtype_lmul_4, vd_reg_div_4,           vs1_all_reg_notdiv_4, vs2_reg_div_4, nontrivial;
+
+    cp_custom_vreduction_vd_not_div8:       cross vtype_lmul_8, vd_all_reg_notdiv_8,    vs1_reg_div_8,        vs2_reg_div_8, nontrivial;
+    cp_custom_vreduction_vs1_not_div8:      cross vtype_lmul_8, vd_reg_div_8,           vs1_all_reg_notdiv_8, vs2_reg_div_8, nontrivial;
+
+
+    cp_custom_vreduction_vd_eq_v0_masked:   cross  vd_v0, mask_enabled, nontrivial;

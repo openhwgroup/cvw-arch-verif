@@ -1,0 +1,9 @@
+    // Custom coverpoints for Vector Mask write operations
+
+    vd_v0: coverpoint ins.current.insn[11:7] {
+        bins zero = {5'b0};
+    }
+
+    cp_custom_vmask_write_lmulge1:      cross vtype_lmulge1, nontrivial, vl_max, no_trap;
+
+    cp_custom_vmask_write_v0_masked:    cross vd_v0, mask_enabled, nontrivial;
