@@ -179,6 +179,9 @@
 `ifdef ZICSRU_COVERAGE
   `include "ZicsrU_coverage.svh"
 `endif
+`ifdef ZICSRV_COVERAGE
+  `include "ZicsrV_coverage.svh"
+`endif
 `ifdef ZICSRF_COVERAGE
   `include "ZicsrF_coverage.svh"
 `endif
@@ -238,6 +241,9 @@
 `endif
 `ifdef SSSTRICTM_COVERAGE
   `include "SsstrictM_coverage.svh"
+`endif
+`ifdef SSSTRICTV_COVERAGE
+  `include "SsstrictV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"
