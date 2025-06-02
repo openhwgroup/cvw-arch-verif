@@ -85,7 +85,7 @@ covergroup Vector_edgecases_cg with function sample(ins_t ins);
         //autofill 000-111
     }
 
-    rs2_vtype_legal: coverpoint ins.current.rs2_val[`XLEN:8] {
+    rs2_vtype_legal: coverpoint ins.current.rs2_val[`XLEN-1:8] {
         bins legal     =   {0};
     }
 
