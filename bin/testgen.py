@@ -927,13 +927,13 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
           case 'l':
-            lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\n"
+            lines += ","*(lines[-1*len(test):] != test) + " " + "1f\n"
             needLabel = True
       if test == 'fcvtmod.w.d' :
         lines += ", rtz"
       lines += " # " + commentlist[testindex] + "\n"
   if needLabel:
-    lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
+    lines += "1:\n"
     hazardLabel += 1
 
   return lines
@@ -1477,7 +1477,6 @@ def make_imm_corners_jal(test, xlen): # update these test
     lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
-    #lines = lines + ".align " + str(1) + "\n"
     if (test == "jal"):
       if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
         lines += f"li x{rs1}," + str(r) + "\n"
