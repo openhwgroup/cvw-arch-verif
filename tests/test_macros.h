@@ -569,7 +569,7 @@ Mend_PMP:                                    ;\
 
 
 // Updates signature with contents of vector register
-#define RVTEST_SIGUPD_V(_BR,_R,_F,...)			;\
+// #define RVTEST_SIGUPD_V(_BR,_R,_F,...)			;\
 
 
   /* DEPRECATE this is redundant with RVTEST_BASEUPD(BR,_NR),	*/

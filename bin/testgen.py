@@ -2402,7 +2402,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
                          "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
                          "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
       pass # Zalrsc coverpoints handled custom
-    elif (coverpoint == "cp_custom_aqrl"):
+    elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei"]):
       make_custom(test, xlen)
     elif (coverpoint == "cp_vd"):
       make_vd(test, sew, vl, range(maxreg+1))
@@ -3023,7 +3023,6 @@ if __name__ == '__main__':
         maxreg = 31 # I uses registers x0-x31
 
       for extension in extensions:
-        print(extension)
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
         coverfiles = [extension]
