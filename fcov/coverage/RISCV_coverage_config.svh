@@ -141,6 +141,9 @@
 `ifdef ZALRSC_COVERAGE
   `include "Zalrsc_coverage.svh"
 `endif
+`ifdef SVINVAL_COVERAGE
+  `include "Svinval_coverage.svh"
+`endif
 
 // Privileged extensions
 `ifdef RV64VM_COVERAGE

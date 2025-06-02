@@ -2400,7 +2400,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_sbox(test, xlen)
     elif (coverpoint in ["cp_sc", "cp_prev_lr", "cp_prev_sc", "cp_custom_sc_after_sc", "cp_custom_sc_after_store",
                          "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
-                         "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
+                         "cp_custom_sc_addresses", "cp_custom_rd_corners", "cp_custom_svinval"]):
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei"]):
       make_custom(test, xlen)
@@ -2444,7 +2444,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vs1_corners(test, sew, vl, range(1,maxreg+1))
     elif (coverpoint == "cp_vs2_corners"):
       make_vs2_corners(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_align_byte", "cp_align_word", "cp_align_hword"):
+    elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
