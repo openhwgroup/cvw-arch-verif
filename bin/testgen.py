@@ -296,18 +296,18 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
 # Ensure rs2 is not equal to rs1
   if rs2 == rs1:
     rs2 = (rs1 + 1) % 32  # pick a different register
-  l = lines + f"auipc x{rs2}, 0 \n"
+  l = lines + f"li x{rs2}, 1 \n"
   l = l + jumpline
-  l = l + f"addi x{rs2}, x{rs2}, 4 \n"
+  l = l + f"li x{rs2}, 0 \n"
   l = l + "1:\n"
   l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
   return l
 
 def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
-  l = lines + f"auipc x{rd}, 0 \n"
+  l = lines + f"li x{rd}, 1 \n"
   l = l + branchline
-  l = l + f"addi x{rd}, x{rd}, 4 \n"
+  l = l + f"li x{rd}, 0 \n"
   l = l + "1:\n"
   l = l + writeSIGUPD(rd)
   return l
@@ -932,13 +932,13 @@ def writeSingleInstructionSequence(desc, testlist, regconfiglist, rdlist, rs1lis
           case 'c':
             lines += ","*(lines[-1*len(test):] != test) + " " + "mscratch"
           case 'l':
-            lines += ","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\n"
+            lines += ","*(lines[-1*len(test):] != test) + " " + "1f\n"
             needLabel = True
       if test == 'fcvtmod.w.d' :
         lines += ", rtz"
       lines += " # " + commentlist[testindex] + "\n"
   if needLabel:
-    lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
+    lines += "1:\n"
     hazardLabel += 1
 
   return lines
@@ -979,7 +979,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       rs1a = rda
       rs2a = 0
     lines += 'la x' + str(rs1b) + ', arbitraryLabel' + str(hazardLabel) + '\n'
-    lines += f"auipc x{rs3a}, 0 # PC\n"
+    lines += f"li x{rs3a}, 1 \n"
     immvalb = 0
     lines += writeSingleInstructionSequence(desc,
                                 [testa],
@@ -997,11 +997,10 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                                 [immvalb],
                                 ["perform second (triggering) operation"],
                                 xlen)
-    #lines += "arbitraruLabel" + str(hazardLabel) + ":\nnop\n" #added to fix loop
-    lines += f"addi x{rs3a}, x{rs3a}, 4 # should be skipped\n"
+    lines += f"li x{rs3a}, 0 \n"
     lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
     lines += writeSIGUPD(rdb) #jalr
-    lines += writeSIGUPD(rs3a) # needs to be auipc addi
+    lines += writeSIGUPD(rs3a) #Macro to check branching
     lines += writeSIGUPD(rda) #add
     hazardLabel += 1
 
@@ -1034,10 +1033,10 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
   elif testb in btype:
     if rs2b == rda:
         rda = (rs2b + 1) % 32
-    lines += f"auipc x{rs2b}, 0 # PC\n"
+    lines += f"li x{rs2b}, 1 \n"
     lines += testa + " x" +str(rda) + ", x" +str(rdb) + ", x" +str(rs2a) + " # add \n"
     lines += testb + " x"+ str(rs1a) + ", x" + str(rs1b) +","*(lines[-1*len(test):] != test) + " " + "arbitraryLabel" + str(hazardLabel) + "\n"
-    lines += f"addi x{rs2b}, x{rs2b}, 4 \n"
+    lines += f"li x{rs2b}, 0 \n"
     lines += "arbitraryLabel" + str(hazardLabel) + ":\n"
     hazardLabel += 1
     lines += writeSIGUPD(rda)
@@ -1058,12 +1057,10 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
     if 'a' in regconfig:
       rsblist = [rdb, rs1b, rs2b, rs3b]
-
       lines += "la " + "x" + str(rsblist[regconfig.find('a')]) + ", scratch\n"
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
-    #lines += f"auipc x{rs2b}, 0 # PC\n"
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
@@ -1072,10 +1069,8 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     [immvala, immvalb],
                     ["perform first operation", "perform second (triggering) operation"],
                     xlen)
-    #lines += f"addi x{rs2b}, x{rs2b}, 4 # should be skipped\n"
     lines += writeSIGUPD(rda)
     lines += writeSIGUPD(rdb)
-    #lines += writeSIGUPD(rs2b)
 
   f.write(lines)
 
@@ -1473,40 +1468,51 @@ def make_imm_corners_jal(test, xlen): # update these test
   lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
   lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one\n"
   if (test == "jal"):
-    lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, 1f\n"
-    lines += f"addi x{rs1}, x{rs1}, 4 \n"
   else:
     lines = lines + test + " 1f\n"  # c.jal, c.j
-  lines = lines + "1: \n"
-  lines = lines +  writeSIGUPD(rs1)  +"\n"
+  lines = lines + "1: \n"# alignment too small to test with signature
   if (test == "jal"):
-    lines += f"auipc x{rs1}, 0 # PC\n"
     lines = lines + test + " x1, f"+str(minrng)+"_"+test+"\n"
-    lines += f"addi x{rs1}, x{rs1}, 4 \n"
   else:
     lines = lines + test + " f"+str(minrng)+"_"+test+"\n"  # c.jal, c.j
   f.write(lines)
+
   for r in rng:
     lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
-    lines = lines +  writeSIGUPD(rs1) + "\n"
     if (test == "jal"):
-      lines += f"auipc x{rs1}, 0 # PC\n"
-      lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      lines += f"addi x{rs1}, x{rs1}, 4 \n"
+      if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
+        lines += f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      else:
+        lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
-      #lines += f"auipc x{rs1}, 0 # PC\n" TODO if needed
-      lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      #lines += f"addi x{rs1}, x{rs1}, 2 \n" TODO if needed
+      if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
+        lines += f"c.li x{rs1}," + str(r) + " \n"
+        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+      else:
+        lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
+
+    if (r>=6): # comparison is 6 because it's not r+1 this time
+      if (test in ["c.jal", "c.j"]):
+        lines += f"c.li x{rs1}, 0 \n"
+      else:
+        lines += f"li x{rs1}, 0 \n"
+      lines += writeSIGUPD(rs1) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
-    lines = lines +  writeSIGUPD(rs1) + "\n"
+    if (r>=6):
+      lines += f"li x{rs1}," + str(r) + "\n"
+      lines = lines + writeSIGUPD(rs1) + "\n"
     if (test == "jal"):
-      lines += f"auipc x{rs1}, 0 # PC\n"
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
-      lines += f"addi x{rs1}, x{rs1}, 4 \n"
+      if(r>=6):
+        lines += f"li x{rs1}, 0 " + "\n"
+        lines = lines + writeSIGUPD(rs1) +"\n"
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1516,10 +1522,13 @@ def make_imm_corners_jal(test, xlen): # update these test
           #lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
+        if(r>=6):
+          lines += f"c.li x{rs1}, 0" +"\n"
+          lines += writeSIGUPD(rs1) + "\n"
+
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
-  lines = lines +  writeSIGUPD(rs1) +"\n"
   f.write(lines)
 
 def make_imm_corners_jalr(test, xlen):
@@ -1529,17 +1538,17 @@ def make_imm_corners_jalr(test, xlen):
       continue
     lines = "\n# Testcase cp_imm_corners jalr " + str(immval) + " bin\n"
     lines = lines + "la x"+str(rs1)+", 1f\n" #load the address of the label '1' into x21
-    lines += f"auipc x{rs2}, 0 # PC \n"
+    lines += f"li x{rs2}, 1 " + "\n"
     if (immval == -2048):
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
-    #.line on top maybe eliminate TODO
-    lines = lines + "addi x" + str(rs2) + ", x" + str(rs2) + ", " "4 \n"
+    lines += f"li x{rs2}, 0 " + "\n"
     lines = lines + "1:\n"
-    lines = lines +  writeSIGUPD(rs2) +"\n"
+    lines = lines +  writeSIGUPD(rd) +"\n" #checking if return addres is correct
+    lines = lines +  writeSIGUPD(rs2) +"\n" #checking if jump was performed
     f.write(lines)
 
 def make_offset(test, xlen):
@@ -1551,37 +1560,41 @@ def make_offset(test, xlen):
   if (test in btype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    lines = lines + "2: auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines + "2:" + f"li x{rs1}, 1" + " # branch is taken \n"
     lines = lines +  test + " x0, x0, 1b # backward branch\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken \n"
   elif (test in jalrtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward jalr target: jump past backward jalr\n"
     lines = lines + "2: la" + " x" + str(rs2) + ", 1b # backward branch\n"
-    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x" + str(rs2) +  ", x" + str(rs2) + ", 0 # backward jalr\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken \n"
   elif (test in crtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
     rs1 = randomNonconflictingReg(test)
-    lines = lines + "2: " + "la x" + str(rs1) + ", 1b\n"
-    lines = lines + test + " x" + str(rs1) + " # backward branch\n"
-  elif (test in cjtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO:
+    lines = lines + "2: " + "la x" + str(rs2) + ", 1b\n"
+    lines = lines + f"li x{rs1}, 1" + " # branch is taken \n"
+    lines = lines + test + " x" + str(rs2) + " # backward branch\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken \n"
+  elif (test in cjtype):
     lines = lines + "j 2f # jump past backward branch target\n"
     lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
-    lines = lines + "2: " + "nop\n"
+    lines = lines + "2: " + f"li x{rs1}, 1" + " # branch is taken \n"
     lines = lines + test + " 1b" + " # backward branch\n"
-  elif (test in cbtype): #THIS MACRO IS NOT CORRECTLY IMPLEMENTED SINCE I HAVENT CHECKED IT YET TODO
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken \n"
+  elif (test in cbtype):
     lines = lines + "j 2f # jump past backward branch target\n"
-    lines = lines + "1: j 3f # backward branch target: jump past backward branch\n"
+    lines = lines + "1: j 3f # backward branch target: jump past backward branch \n"
     rs1val = 0 if test == "c.beqz" else 1  # This makes sure branch is taken for both beqz & bnez
-    lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1 to {rs1val}\n"
+    lines = lines + "2: " + f"li x8, {rs1val}" + f" # initialize rs1val to {rs1val}\n"
+    lines = lines + "2: " + f"li x{rs1}, 1" + " # branch is taken \n"
     lines = lines + test + " x8,  1b # backward branch\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken \n"
 
   lines = lines + "3:  # done with sequence\n"
-  lines = lines +  writeSIGUPD(rs1)
-  #lines += f"RVTEST_SIGUPD(x{sigReg}, x0)\n"
+  lines = lines +  writeSIGUPD(rs1) # checking if branch was taken
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):
@@ -1589,18 +1602,21 @@ def make_offset_lsbs(test, xlen):
   lines = "\n# Testcase cp_offset_lsbs\n"
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
-    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
+    lines = lines +  writeSIGUPD("1") #check return value in jalr
     lines = lines + "la x3, jalrlsb2 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
-    lines = lines + "auipc x" + str(rs1) + ", 0 # loading PC\n"
+    lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + "jalr x1, x3, -2 # jump to label + 1, extra plus 1 should be discarded\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 4  # Adding to PC if branch fails\n"
+    lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb2: \n"
     lines = lines +  writeSIGUPD(rs1)
+    lines = lines +  writeSIGUPD("1") #check return value in jalr
+
   else: # c.jalr / c.jr #TODO Probably the same as above but jumping by 2
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
