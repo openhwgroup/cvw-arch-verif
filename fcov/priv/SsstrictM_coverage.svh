@@ -101,6 +101,7 @@ covergroup SsstrictM_instr_cg with function sample(ins_t ins);
     cp_cbo_immediate:     cross priv_mode_m, cbo_immediate;
     cp_cbo_rd:            cross priv_mode_m, cbo_rd;
     cp_Itype:             cross priv_mode_m, Itype;
+    cp_Itypef3:           cross priv_mode_m, Itypef3;
     cp_aes64ks1i:         cross priv_mode_m, aes64ks1i;
     cp_IWtype:            cross priv_mode_m, IWtype;
     cp_IWshift:           cross priv_mode_m, IWshift;

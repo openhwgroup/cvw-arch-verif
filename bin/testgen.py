@@ -281,9 +281,12 @@ def writeTest(lines, rd, xlen, floatdest, testline):
   return l
 
 
-def writeVecTest(lines, vd, sew, vlen, testline):
+def writeVecTest(lines, vd, sew, vlen, testline, test=None):
     l = lines + testline
-    l = l + writeSIGUPD_V(vd, sew)
+    if (test in widenins):
+      l = l + writeSIGUPD_V(vd, 2*sew)  # EEW of vd = 2 * SEW for widening
+    else:
+      l = l + writeSIGUPD_V(vd, sew)
     return l
 
 
@@ -813,37 +816,44 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       lines = lines + genVxrmTests(testline, lines, vd, sew, lmul)
     else:
+      # determining EEW for vs2
+      if (test in wwvins) or (test in wwxins) or (test in narrowins):
+        vs2eew = 2 * sew
+      else:
+        vs2eew = sew
+
+      # test writing
       if (test in vvtype):
         lines = lines + loadVecReg(vs1, vs1val, sew)
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       elif (test in vxtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
         testline = f"{test} v{vd}, v{vs2}, x{rs1}{maskinstr}\n"
       elif (test in vxvtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
         testline = f"{test} v{vd}, x{rs1}, v{vs2}{maskinstr}\n"
       elif (test in vitype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} v{vd}, v{vs2}, {imm}{maskinstr}\n"
       elif (test in vimtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} v{vd}, v{vs2}, {imm}, v0\n"
       elif (test in vvvmtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         lines = lines + loadVecReg(vs1, vs1val, sew)
         testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
       elif (test in vxmtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
         testline = f"{test} v{vd}, v{vs2}, x{rs1}, v0\n"
       elif (test in vrvtype) or (test in vrvxtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
       elif (test in vvvtype):
-        lines = lines + loadVecReg(vs2, vs2val, sew)
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       elif (test in vdtype):
         testline = f"{test} v{vd}{maskinstr}\n"
@@ -858,7 +868,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       else:
         print("Error: %s type not implemented yet" % test)
         return
-      lines = writeVecTest(lines, vd, sew, vlen, testline)
+      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test)
       f.write(lines)
 
 
@@ -1121,6 +1131,13 @@ def randomNonconflictingReg(test):
     reg = randomNonconflictingReg(test)
   return reg
 
+def randomNonconflictingVecReg(test, emul):
+  if (emul >= 1):
+    reg = emul * randint(1, math.floor(maxreg/emul))
+  else: # normal instructions
+    reg = randint(1, maxreg) # 1 to maxreg, inclusive
+  return reg
+
 def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     if rs1 is None:
       rs1 = randomNonconflictingReg(test)
@@ -1174,30 +1191,39 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
   return lines
 
 
-def randomizeVectorV(test, vs1=None, vs2=None, vs3=None, rs1=None, rd=None, allunique=True):
+def randomizeVectorV(test, lmul=1, vd=None, vs1=None, vs2=None, vs3=None, rs1=None, rd=None, allunique=True):
     global vRandomCounter
     if vs1 is None:
-      vs1 = randomNonconflictingReg(test)
+      vs1 = randomNonconflictingVecReg(test, lmul)
     if vs2 is None:
-      vs2 = randomNonconflictingReg(test)
+      if (test in vs2wideins):
+        vs2 = randomNonconflictingVecReg(test, 2*lmul)
+      else:
+        vs2 = randomNonconflictingVecReg(test, lmul)
     if (vs3 is not None):
-      vs3 = randomNonconflictingReg(test)
+      vs3 = randomNonconflictingVecReg(test, lmul)
       vs3val = randint(0, 2**sew-1)
     if (rs1 is None):
       rs1 = randomNonconflictingReg(test)
       rs1val = randint(1, 2**xlen)
-    # all three source registers must be different for corners to work
     if (rd is None):
       rd = randomNonconflictingReg(test)
     # all three source registers must be different for corners to work
     while (vs1 == vs2 and allunique):
-      vs2 = randomNonconflictingReg(test)
+      if (test in vs2wideins):
+        vs2 = randomNonconflictingVecReg(test, 2*lmul)
+      else:
+        vs2 = randomNonconflictingVecReg(test, lmul)
     while ((vs3 is not None) and ((vs3 == vs1) or (vs3 == vs2)) and allunique):
-      vs3 = randomNonconflictingReg(test)
+      vs3 = randomNonconflictingVecReg(test, lmul)
     # choose vd that is different than rs1 and rs2 and rs3
-    vd = vs1
+    if vd is None:
+      vd = vs1
     while ((vd == vs1) or (vd == vs2) or ((vs3 is not None) and (vd == vs3))):
-      vd = randomNonconflictingReg(test)
+      if (test in widenins):
+        vd = randomNonconflictingVecReg(test, 2*lmul)
+      else:
+        vd = randomNonconflictingVecReg(test, lmul)
     vs1mem = vRandomCounter
     vRandomCounter = vRandomCounter + 1
     vs2mem = vRandomCounter
@@ -1805,10 +1831,30 @@ def make_custom(test, xlen):
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
 
+def narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval):
+  if (test in wvvins) or (test in wvxins):
+    while (vd == vs2 or vd == vs1):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in narrowins):
+    while (vd == (vs2+1) or vs1 == vs2 or vs1 == (vs2+1)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in wwvins):
+    while (vd == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  return [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval]
 
 def make_vd(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wvvins) or (test in wvxins):
+      while (v == vs2 or v == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in narrowins):
+      while (v == (vs2+1) or vs1 == vs2 or vs1 == (vs2+1)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wwvins):
+      while (v == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vd (Test destination vd = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1816,6 +1862,15 @@ def make_vd(test, sew, vl, rng):
 def make_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wvvins) or (test in wvxins):
+      while (v == vd or vd == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in narrowins):
+      while (v == (vd-1) or v == vs1 or v == (vs1-1)): # source operands cannot be more than one EEW, using lmul=1 in cp_vs2
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wwvins):
+      while (v == vs1 or v == (vs1-1) or vd == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, v, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1825,6 +1880,15 @@ def make_vs1(test, sew, vl, rng):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     while (v == vs2):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wvvins):
+      while (v == vd or v == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in narrowins):
+      while (v == vs2 or v == (vs2+1) or vd == (vs2+1)):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wwvins):
+      while (v == vs2 or v == (vs2+1) or v == vd):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
     writeCovVector_V(desc, v, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1832,6 +1896,9 @@ def make_vs1(test, sew, vl, rng):
 def make_vd_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wwvins):
+      while (v == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
     writeCovVector_V(desc, vs1, v, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1839,6 +1906,9 @@ def make_vd_vs2(test, sew, vl, rng):
 def make_vd_vs1(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wvins):
+      while (v == vs2 or v == (vs2+1)):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
     writeCovVector_V(desc, v, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1853,6 +1923,9 @@ def make_vd_vs1_vs2(test, sew, vl, rng):
 def make_vs1_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    if (test in wvvins):
+      while (v == vd):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
     writeCovVector_V(desc, v, v, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1873,6 +1946,7 @@ def make_vs1_corners(test, sew, vl, rng):
 def make_rs1_v(test, sew, vl, rng):
   for r in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_rs1 (Test rs1 = " + str(r) + ")"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=r, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1886,11 +1960,13 @@ def make_uimm_v(test, sew, vl, rng):
   if (test in imm_31):
     for immi in range(0,31):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cp_uimm_5 (Test uimm = " + str(immi) + ")"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immi, vta=0)
   else:
     for imm in range(-16,16):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cp_uimm_5 (Test uimm = " + str(imm) + ")"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=imm, vta=0)
 
@@ -2053,7 +2129,7 @@ def myhash(s):
   return h
 
 
-def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, vl=1):
+def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, vl=1, lmul=1):
   global NaNBox_tests
   for coverpoint in coverpoints:
     # produce a deterministic seed for repeatable random numbers distinct for each instruction and coverpoint
@@ -2353,14 +2429,20 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, vl, range(1,maxreg+1))
+    elif (coverpoint == "cp_vd_widen"):
+      make_vd(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cp_vs2"):
       make_vs2(test, sew, vl, range(maxreg+1))
+    elif (coverpoint == "cp_vs2_widen"):
+      make_vs2(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cp_vs1"):
       make_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2"):
       make_vd_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
       make_vd_vs2(test, sew, vl, range(1,maxreg+1))
+    elif (coverpoint == "cmp_vd_vs2_widen"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cmp_vd_vs1"):
       make_vd_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
@@ -2464,7 +2546,8 @@ def genVector(sew, vl, vlen, test):
 
   maxVtests = 700
   # TODO: Fix this temporary arbitrary number
-  num_words = math.ceil((vl * sew) / 32)
+  num_words = vlen // 32
+  # num_words = math.ceil((vl * sew) / 32)
   for t in range(maxVtests):
       f.write(f"v_random_{t:03d}:\n")
       for i in range(num_words):
@@ -2635,6 +2718,36 @@ imm_31 = ["vnclip.wi", "vnclipu.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgat
 vectortypes = vvmtype + mvvtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype
 
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
+
+# vector instruction groups by EEW (prefix + suffix)
+# normal
+vvins = ["vadd.vv", "vsub.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv",
+         "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv", "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv"]
+vxins = ["vadd.vx", "vsub.vx", "vrsub.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx", "vmulhsu.vx",
+         "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx", "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vssrl.vx", "vssra.vx"]
+viins = ["vadd.vi", "vrsub.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi"]
+# narrowing
+wvins = ["vnsrl.wv", "vnsra.wv", "vnclip.wv", "vnclipu.wv"]
+wxins = ["vnsrl.wx", "vnsra.wx", "vnclip.wx", "vnclipu.wx"]
+wiins = ["vnsrl.wi", "vnsra.wi", "vnclip.wi", "vnclipu.wi"]
+narrowins = wvins + wxins + wiins
+# widening
+wvvins = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
+wvxins = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+wwvins = ["vwadd.wv", "vwaddu.wv", "vwsub.wv"]
+wwxins = ["vwadd.wx", "vwaddu.wx", "vwsub.wx"]
+widenins = wvvins + wvxins + wwvins + wwxins
+vs2wideins = narrowins + wwvins + wwxins
+# masking
+vvmins = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm"]
+vxmins = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm"]
+vimins = ["vadc.vim", "vmerge.vim"]
+mvvins = ["vmadc.vv", "vmsbc.vv", "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
+mvxins = ["vmadc.vx", "vmsbc.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
+mviins = ["vmadc.vi", "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
+mvvmins = ["vmadc.vvm", "vmsbc.vvm", "vmacc.vv", "vnmsac.vv", "vmadd.vv"]
+mvxmins = ["vmadc.vxm", "vmsbc.vxm", "vmacc.vx", "vnmsac.vx", "vmadd.vx"]
+mvimins = ["vmadc.vim"]
 
 global hazardLabel
 hazardLabel = 1
