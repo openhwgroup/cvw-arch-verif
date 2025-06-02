@@ -21,17 +21,27 @@ from datetime import datetime
 from random import randint, seed, getrandbits
 
 def insertTemplate(name):
+    global sigupd_count
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    if 'D' in ext_parts_no_I:
+      ext_parts_no_I = ['D']+ext_parts_no_I
+      sigupd_count = sigupd_count * 2 # double the space needed for double precision
+    if 'f' in  ext_parts[0]:
+      ext_parts_no_I = ['F']+ext_parts_no_I
+    if len(ext_parts_no_I) != 0:
+      if ext_parts_no_I[-1] == 'D':
+        ext_parts_no_I = ext_parts_no_I[:-1]
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     # Construct the regex part
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
+
     template = template.replace("sigupd_count", str(sigupd_count))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
@@ -313,13 +323,14 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
 def writeStoreTest(lines, test, rs2, xlen, storeline):
 # writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  l = l + "# STORE SIGNATURE\n"
   writeTest = test # use same instruction for writing, but in non-compressed form if necessary
   if (writeTest.startswith("c.")):
     writeTest = test[2:] # remove the c. prefix
   floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
   #[storeinstr, offsetInc] = getSigInfo(floatdest)
-  rdPrefix = "f" if floatdest else "x"
+  if (floatdest):
+    temp = 0
+    #TODO
   #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
   #l = l + incrementSigOffset(offsetInc*2)
   return l
@@ -649,9 +660,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     if (test == "c.fswsp" or test == "c.fsdsp"):
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
-      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
+    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + "la sp" + ", scratch" + " # base address \n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
@@ -2567,9 +2579,10 @@ fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
               "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
               "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
 fTOrtype  = ["feq.s", "feq.h", "feq.d", "flt.s", "flt.h", "flt.d", "fle.s", "fle.h", "fle.d",
-             "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d", "fclass.s", "fclass.h", "fclass.d"
-              "fcvt.dst.src", "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d",
-              "fmvp.x.q", "fcvtmod.w.d"] # *All* floating point instructions that return to xregisters (rd) *(I think all (fcvt.dist.src may be exeption))
+             "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d", "fclass.s", "fclass.h", "fclass.d",
+              "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d",
+              "fmvp.x.q", "fcvtmod.w.d"]
+fTOrtype += F2Xtype # *All* floating point instructions that return to xregisters (rd)
 citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp","c.flwsp","c.fldsp"]
 c_shiftitype = ["c.slli","c.srli","c.srai"]
 cltype = ["c.lw","c.ld","c.flw","c.fld"]
@@ -2924,7 +2937,6 @@ if __name__ == '__main__':
         maxreg = 31 # I uses registers x0-x31
 
       for extension in extensions:
-        print(extension)
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
         coverfiles = [extension]
