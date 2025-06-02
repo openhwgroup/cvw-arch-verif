@@ -8,5 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Vector_edgecases_cg = new();           Vector_edgecases_cg.set_inst_name("obj_Vector_edgecases");
-    // ExceptionsV_illegal_cg = new();             ExceptionsV_illegal_cg.set_inst_name("obj_ExceptionsV_illegal");
+    ZicsrV_cg = new();    ZicsrV_cg.set_inst_name("obj_ZicsrV");
