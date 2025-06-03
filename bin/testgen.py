@@ -1128,6 +1128,8 @@ def randomNonconflictingReg(test):
   regfield3types = ciwtype + cltype + cstype + cbptype + catype + cbtype + clbtype + clhtype + csbtype + cshtype + cutype + ["c.srli", "c.srai"]
   if (test in regfield3types):
     reg = randint(8, 15) # for compressed instructions
+  elif E_ext : # Extension
+    reg = randint(1, 15)
   else: # normal instructions
     reg = randint(1, maxreg) # 1 to maxreg, inclusive
   while reg == sigReg: # resolve conflicts; *** add constReg when implemented
