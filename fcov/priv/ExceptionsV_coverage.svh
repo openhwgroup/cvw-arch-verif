@@ -25,14 +25,18 @@
 covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    vl_ff: coverpoint ins.current.insn { //vector load fault first operation
-        bins load = {32'b???_0_00_?_10000_?????_???_?????_0000111};
+    test: coverpoint ins.current.insn[0] {
+        bins one    = {0};
     }
 
-    vl_update: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vl", "vl") !=
-                           get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")) {
-        bins vl_updated = {1'b1};
-    }
+    // vl_ff: coverpoint ins.current.insn { //vector load fault first operation
+    //     bins load = {32'b???_0_00_?_10000_?????_???_?????_0000111};
+    // }
+
+    // vl_update: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vl", "vl") !=
+    //                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")) {
+    //     bins vl_updated = {1'b1};
+    // }
 
 
 //     Test: coverpoint ins.current.insn[31:29] {

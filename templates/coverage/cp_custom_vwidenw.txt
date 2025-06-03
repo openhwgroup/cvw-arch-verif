@@ -1,4 +1,4 @@
-    // Custom coverpoints for Vector widdening operations that end in .v*
+    // Custom coverpoints for Vector widdening operations that end in .w*
 
     vs2_vd_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
         bins overlapping = {1'b1};
@@ -24,5 +24,4 @@
         bins odd = {1'b1};
     }
 
-    cp_custom_vwiden_overlapping_vd_vs2_agnostic_lmul1:          cross nontrivial, vl_not_max, vtype_lmul_1, vs2_vd_overlap_lmul1, mask_enabled, vs2_odd, vs1_vd_no_overlap_lmul1;
-    cp_custom_vwiden_overlapping_vd_vs1_agnostic_lmul1:          cross nontrivial, vl_not_max, vtype_lmul_1, vs1_vd_overlap_lmul1, mask_enabled, vs1_odd, vs2_vd_no_overlap_lmul1;
+    cp_custom_vwidenw_overlapping_vd_vs1_lmul1:          cross nontrivial, vl_not_max, vtype_lmul_1, vs1_vd_overlap_lmul1, mask_enabled, vs1_odd;

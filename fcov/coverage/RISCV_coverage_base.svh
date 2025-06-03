@@ -38,6 +38,7 @@ class RISCV_coverage
   // Additional functions for coverage collection
   `include "coverage/RISCV_coverage_rvvi.svh"
   `include "coverage/RISCV_coverage_csr.svh"
+  `include "coverage/RISCV_coverage_vector.svh"
   `include "coverage/RISCV_coverage_exceptions.svh"
   `include "coverage/RISCV_coverage_hazards.svh"
   `include "coverage/RISCV_coverage_config.svh"

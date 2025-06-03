@@ -26,7 +26,10 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints_vector.svh"
 
-    //TODO find new home for below
+    //////////////////////////////////////////////////////////////////////////////////
+    // cp_vcsrrwc
+    // writing setting and clearing all vector csrs
+    //////////////////////////////////////////////////////////////////////////////////
 
     vcsrs: coverpoint ins.current.insn[31:20] {
         bins vstart = {12'h008};
@@ -38,45 +41,54 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         bins vlenb  = {12'hC22};
     }
 
-    csrops: coverpoint ins.current.insn {
-        wildcard bins csrrs     = {32'b????????????_?????_010_?????_1110011};
-        wildcard bins csrrc     = {32'b????????????_?????_011_?????_1110011};
-        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011};
+    csrops: coverpoint ins.current.inst_name {
+        bins csrrs     = {"csrrs"};
+        bins csrrc     = {"csrrc"};
+        bins csrrw     = {"csrrw"};
     }
 
     cp_vcsrrwc: cross vcsrs, csrops;
 
-    //TODO find new home for above
+    //////////////////////////////////////////////////////////////////////////////////
+    // cp_sew_lmul_vset*
+    // writes all combinations of lmul and sew to vtype with all vset* instructions
+    //////////////////////////////////////////////////////////////////////////////////
 
-    vset_i_vli_instructions: coverpoint ins.current.insn {
-        wildcard bins vsetvli   =   {32'b0000_?_?_???_???_?????_111_?????_1010111};
-        wildcard bins vsetivli  =   {32'b1100_?_?_???_???_?????_111_?????_1010111};
+    vset_i_vli_instructions: coverpoint ins.current.inst_name {
+        bins vsetvli   = {"vsetvli"};
+        bins vsetivli  = {"vsetivli"};
     }
 
-    vsetvl_instruction: coverpoint ins.current.insn {
-        wildcard bins vsetvl    =   {32'b1000000_?????_?????_111_?????_1010111};
+    vsetvl_instruction: coverpoint ins.current.inst_name {
+        bins vsetvl    = {"vsetvl"};
     }
 
-    //attempt to set lmul to all values
+    // attempt to set lmul to all values
     vset_lmul: coverpoint ins.prev.insn[22:20] {
-        //autofill 000-111
+        // autofill 000-111
     }
 
-    //attempt to set sew to all values
+    // attempt to set sew to all values
     vset_sew: coverpoint ins.prev.insn[25:23] {
-        //autofill 000-111
+        // autofill 000-111
     }
 
-    rs2_vtype_legal: coverpoint ins.current.rs2_val[(`XLEN-1):8] {
+    // rs2 in vsetvl is written to vtype
+    rs2_vtype_legal: coverpoint ins.current.rs2_val[`XLEN-1:8] {
         bins legal     =   {0};
     }
 
     rs2_lmul_sew: coverpoint ins.current.rs2_val[5:0] {
-        //autofill all combinations of lmul and sew
+        // autofill all combinations of lmul and sew
     }
 
     cp_sew_lmul_vsetvl:         cross vsetvl_instruction, rs2_vtype_legal, rs2_lmul_sew;
     cp_sew_lmul_vset_i_vli:     cross vset_i_vli_instructions, vset_sew, vset_lmul;
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // cr_vill_vset*
+    // writes vtype with legal lmul and sew values starting with vill = 1
+    //////////////////////////////////////////////////////////////////////////////////
 
     rs2_lmulge1_sew8: coverpoint ins.current.rs2_val[7:0] {
         wildcard bins lmul_one      = {8'b??_000_000};
@@ -97,9 +109,6 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
 
     cr_vill_vsetvl:     cross vsetvl_instruction, vtype_prev_vill_set, rs2_vtype_legal, rs2_lmulge1_sew8;
     cr_vill_vset_i_vli: cross vset_i_vli_instructions, vtype_prev_vill_set, vset_lmulge1, vset_sew8;
-
-    cr_lmul_vsetvl:     cross vtype_prev_vill_clear,    vsetvl_instruction,         vtype_lmulge1,    rs2_lmulge1_sew8, rs2_vtype_legal;
-    cr_lmul_vset_i_vli: cross vtype_prev_vill_clear,    vset_i_vli_instructions,    vtype_lmulge1,    vset_lmulge1, vset_sew8;
 
 endgroup
 
