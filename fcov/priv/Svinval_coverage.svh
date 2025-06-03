@@ -45,7 +45,7 @@ endgroup
 // ---------------------
 function void svinval_sample(int hart, int issue, ins_t ins);
 
-make     case (traceDataQ[hart][issue][0].inst_name)
+    case (traceDataQ[hart][issue][0].inst_name)
         "sfence.inval.ir"     : begin
             Svinval_sfence_inval_ir_cg.sample(ins);
         end
