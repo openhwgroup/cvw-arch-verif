@@ -2448,13 +2448,13 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vd_widen"):
+    elif (coverpoint == "cp_vd_emul2"):
       make_vd(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cp_vs2"):
       make_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vs2_nv0"):
       make_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vs2_widen"):
+    elif (coverpoint == "cp_vs2_emul2"):
       make_vs2(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cp_vs1"):
       make_vs1(test, sew, vl, range(maxreg+1))
@@ -2464,7 +2464,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
       make_vd_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cmp_vd_vs2_widen"):
+    elif (coverpoint == "cmp_vd_vs2_emul2"):
       make_vd_vs2(test, sew, vl, range(0,maxreg,2*lmul))
     elif (coverpoint == "cmp_vd_vs1"):
       make_vd_vs1(test, sew, vl, range(maxreg+1))
