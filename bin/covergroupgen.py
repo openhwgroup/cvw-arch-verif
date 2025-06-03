@@ -109,7 +109,7 @@ def anyEFFEWExclusion(effew, instrs, tp):
 
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
 # Thereby group instructions according to which XLEN they are in
-def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64, effew=None):
+def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
@@ -120,10 +120,6 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64, ef
             for cp in cps:
                 if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
                     f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
-                if(effew != None):
-                    for effew in ["8", "16", "32", "64"]:
-                        if (anyEFFEWExclusion("EFFEW" + effew, k, tp) == False):
-                            f.write(customizeTemplate(covergroupTemplates, cp, arch, instr, effew))
             f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
 
 def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
@@ -164,6 +160,10 @@ def writeCovergroups(testPlans, covergroupTemplates):
                 finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
                 k = list(tp.keys())
                 k.sort()
+
+                if arch.startswith("Vx"):
+                    effew = arch[2:]  # e.g. "8" from "Vx8"
+                    k = [instr for instr in k if f"EFFEW{effew}" in tp[instr]]
 
                 writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
                 if (anyExclusion("RV64", k, tp)):

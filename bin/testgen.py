@@ -161,6 +161,7 @@ def writeSIGUPD_F(rd):
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
+    # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
     avl = 1   # Set AVL
     tempReg = 6
     while tempReg == sigReg:
@@ -295,12 +296,14 @@ def writeTest(lines, rd, xlen, floatdest, testline):
   return l
 
 
-def writeVecTest(lines, vd, sew, vlen, testline, test=None):
+def writeVecTest(lines, vd, sew, vlen, testline, test=None, rd=None):
     l = lines + testline
     if (test in widenins):
       l = l + writeSIGUPD_V(vd, 2*sew)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
       l = l + writeSIGUPD_V(vd, 1)      # EEW of vd = 1 for mask
+    elif (test in vrvxtype):
+      l = l + writeSIGUPD(rd)
     else:
       l = l + writeSIGUPD_V(vd, sew)
     return l
@@ -805,7 +808,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
                      vfrm=None, floattype=None, xtype=None, vxsat=None, vta=None, vma=None):
 
     lines = "\n# Testcase " + str(desc) + "\n"
-    lines = handleSignaturePointerConflict(lines, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
+    lines = handleSignaturePointerConflict(lines, rd, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
     if (vl is not None) and (lmul is not None) and (sew is not None):
       lines = lines + prepBaseV(lines, sew, lmul, vl, vstart, vta, vma)
@@ -874,15 +877,20 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       elif (test in vrvtype):
         testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
       elif (test in vxxtype):
+        lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
         testline = f"{test} v{vd}, x{rs1}{maskinstr}\n"
       elif (test in vvxtype):
+        lines = lines + loadVecReg(vs1, vs1val, vs1eew)
         testline = f"{test} v{vd}, v{vs1}{maskinstr}\n"
+      elif (test in vvvxtype):
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
+        testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       elif (test in vixtype):
         testline = f"{test} v{vd}, {imm}{maskinstr}\n"
       else:
         print("Error: %s type not implemented yet" % test)
         return
-      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test)
+      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
       f.write(lines)
 
 
@@ -1893,7 +1901,7 @@ def narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
 def make_vd(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins) or (test in mv_ins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vs2 or v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -1908,6 +1916,8 @@ def make_vd(test, sew, vl, rng):
     elif (test in mv_mins):
       while (vs1 == 0 or vs2 == 0 or v == vs2 or v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cp_vd (Test destination vd = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1915,7 +1925,7 @@ def make_vd(test, sew, vl, rng):
 def make_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins) or (test in mv_ins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vd or vd == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -1930,6 +1940,8 @@ def make_vs2(test, sew, vl, rng):
     elif (test in mv_mins):
       while (vs1 == 0 or v == 0 or vd == v or vd == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, v, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1964,6 +1976,8 @@ def make_vd_vs2(test, sew, vl, rng):
     if (test in wwvins):
       while (v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
     writeCovVector_V(desc, vs1, v, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -2494,14 +2508,22 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vd_widen"):
-      make_vd(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cp_vd_emul2"):
+      make_vd(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cp_vd_emul4"):
+      make_vd(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cp_vd_emul8"):
+      make_vd(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cp_vs2"):
       make_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vs2_nv0"):
       make_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vs2_widen"):
-      make_vs2(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cp_vs2_emul2"):
+      make_vs2(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cp_vs2_emul4"):
+      make_vs2(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cp_vs2_emul8"):
+      make_vs2(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cp_vs1"):
       make_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vs1_nv0"):
@@ -2510,8 +2532,12 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
       make_vd_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cmp_vd_vs2_widen"):
-      make_vd_vs2(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cmp_vd_vs2_emul2"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cmp_vd_vs2_emul4"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cmp_vd_vs2_emul8"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cmp_vd_vs1"):
       make_vd_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
@@ -2774,21 +2800,22 @@ vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx"
 vitype = ["vadd.vi", "vrsub.vi", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi",
           "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
 
-vrvtype = ["vcpop.m", "vfirst.m", "vmv.vx"]
+vrvtype = ["vcpop.m", "vfirst.m"]
 
 vvvtype = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
-vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx","vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 vvxtype =["vmv.v.v"]
 vxxtype = ["vmv.s.x", "vmv.v.x"]
 vixtype = ["vmv.v.i"]
 vrvxtype = ["vmv.x.s"]
+vvvxtype = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
 vdtype = ["vid.v"]
 vimtype = ["vadc.vim", "vsbc.vim", "vmerge.vim", "vmadc.vim"]
 vvvmtype = ["vadc.vvm", "vsbv.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm", "vsbc.vvm"]
 vxmtype = ["vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm", "vadc.vxm"]
 vvmtype = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
-vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype
+vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype + vvvxtype
 
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
@@ -2818,14 +2845,16 @@ vimins = ["vadc.vim", "vmerge.vim"]
 mvvins = ["vmadc.vv", "vmsbc.vv", "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
 mvxins = ["vmadc.vx", "vmsbc.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
 mviins = ["vmadc.vi", "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
-mvvmins = ["vmadc.vvm", "vmsbc.vvm", "vmacc.vv", "vnmsac.vv", "vmadd.vv"]
-mvxmins = ["vmadc.vxm", "vmsbc.vxm", "vmacc.vx", "vnmsac.vx", "vmadd.vx"]
+mvvmins = ["vmadc.vvm", "vmsbc.vvm"]
+mvxmins = ["vmadc.vxm", "vmsbc.vxm"]
 mvimins = ["vmadc.vim"]
 mmins = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm"]
 maskins = mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
 v_mins = vvmins + vxmins + vimins
 mv_ins = mvvins + mvxins + mviins
 mv_mins = mvvmins + mvxmins + mvimins
+# extending
+vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
 
 global hazardLabel
 hazardLabel = 1
