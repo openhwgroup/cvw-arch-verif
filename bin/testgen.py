@@ -1942,6 +1942,9 @@ def make_vs2(test, sew, vl, rng):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in vvvxtype): # vmv<nr>r.v
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
+    elif (test in wvsins):
+      while (v == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, v, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -2855,6 +2858,8 @@ mv_ins = mvvins + mvxins + mviins
 mv_mins = mvvmins + mvxmins + mvimins
 # extending
 vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
+# widening reduction
+wvsins = ["vwredsum.vs", "vwredsumu.vs"]
 
 global hazardLabel
 hazardLabel = 1
