@@ -8,4 +8,4 @@
         bins odd = {2'b11};
     }
 
-    cp_custom_vext4_overlapping_vd_vs2:    cross nontrivial, vl_not_max, vtype_lmul_4, vs2_vd_overlap_lmul4, mask_enabled, vs2_mod4_3;
+    cp_custom_vext4_overlapping_vd_vs2:    cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vs2_mod4_3;

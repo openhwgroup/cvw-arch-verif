@@ -53,6 +53,10 @@ covergroup SsstrictV_instr_cg with function sample(ins_t ins);
         bins two    = {1};
     }
 
+    test_two: coverpoint ins.current.insn[3:0] {
+        wildcard bins range = {[3'b?00: 3'b?01], [3'b?10: 3'b?11]};
+    }
+
     // Test: coverpoint ins.current.insn[31:29] {
     //     bins one    = {3'b000};
     //     bins two    = {3'b001};

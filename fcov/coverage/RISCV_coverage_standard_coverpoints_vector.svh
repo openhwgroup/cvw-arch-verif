@@ -20,6 +20,9 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+//TODO many of these coverpoints are uncessary for most instructions thus this document should be seperated into categories
+// that way coverpoints are only imported when needed TODO
+
     //Common custom vector coverpoints
     //included at the top of every custom vector covergroup
 
@@ -58,6 +61,19 @@
 
     // ensures vd updates
     std_vec: cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
+    std_trap_vec : cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+
+    vd_all_reg : coverpoint ins.current.insn[11:7] {
+        // All vector destination registers
+    }
+
+    vs1_all_reg : coverpoint ins.current.insn[19:15] {
+        // All vs1 registers
+    }
+
+    vs2_all_reg : coverpoint ins.current.insn[24:20] {
+        // All vs2 registers
+    }
 
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")
                         == get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
@@ -185,4 +201,64 @@
 
     vs2_reg_aligned_lmul_8: coverpoint ins.current.insn[24:20] {
         wildcard bins divisible_by_8 = {5'b??000};
+    }
+
+    vs1_reg_aligned_lmul_2: coverpoint ins.current.insn[19:15] {
+        wildcard bins divisible_by_2 = {5'b????0};
+    }
+
+    vs1_reg_aligned_lmul_4: coverpoint ins.current.insn[19:15] {
+        wildcard bins divisible_by_4 = {5'b???00};
+    }
+
+    vs1_reg_aligned_lmul_8: coverpoint ins.current.insn[19:15] {
+        wildcard bins divisible_by_8 = {5'b??000};
+    }
+
+    vd_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
+        wildcard bins divisible_by_2 = {5'b????0};
+    }
+
+    vd_reg_aligned_lmul_4: coverpoint ins.current.insn[11:7] {
+        wildcard bins divisible_by_4 = {5'b???00};
+    }
+
+    vd_reg_aligned_lmul_8: coverpoint ins.current.insn[11:7] {
+        wildcard bins divisible_by_8 = {5'b??000};
+    }
+
+    vs2_reg_unaligned_lmul_2: coverpoint ins.current.insn[24:20] {
+        wildcard bins odd = {5'b????1};
+    }
+
+    vs2_reg_unaligned_lmul_4: coverpoint ins.current.insn[24:20] {
+        wildcard bins range = {[5'b???01: 5'b???11]};
+    }
+
+    vs2_reg_unaligned_lmul_8: coverpoint ins.current.insn[24:20] {
+        wildcard bins range = {[5'b??001: 5'b??111]};
+    }
+
+    vs1_reg_unaligned_lmul_2: coverpoint ins.current.insn[19:15] {
+        wildcard bins odd = {5'b????1};
+    }
+
+    vs1_reg_unaligned_lmul_4: coverpoint ins.current.insn[19:15] {
+        wildcard bins range = {[5'b???01: 5'b???11]};
+    }
+
+    vs1_reg_unaligned_lmul_8: coverpoint ins.current.insn[19:15] {
+        wildcard bins range = {[5'b??001: 5'b??111]};
+    }
+
+    vd_reg_unaligned_lmul_2: coverpoint ins.current.insn[11:7] {
+        wildcard bins odd = {5'b????1};
+    }
+
+    vd_reg_unaligned_lmul_4: coverpoint ins.current.insn[11:7] {
+        wildcard bins range = {[5'b???01: 5'b???11]};
+    }
+
+    vd_reg_unaligned_lmul_8: coverpoint ins.current.insn[11:7] {
+        wildcard bins range = {[5'b??001: 5'b??111]};
     }
