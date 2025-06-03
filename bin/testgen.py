@@ -21,12 +21,20 @@ from datetime import datetime
 from random import randint, seed, getrandbits
 
 def insertTemplate(name):
+    global signatureWords
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    if 'D' in ext_parts_no_I:
+      ext_parts_no_I = ['D']+ext_parts_no_I
+    if 'f' in  ext_parts[0]:
+      ext_parts_no_I = ['F']+ext_parts_no_I
+    if len(ext_parts_no_I) != 0:
+      if ext_parts_no_I[-1] == 'D':
+        ext_parts_no_I = ext_parts_no_I[:-1]
     if 'V' in ext_parts_no_I:
       ext_parts_no_I = ['M'] + ext_parts_no_I
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
@@ -34,7 +42,8 @@ def insertTemplate(name):
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
-    template = template.replace("sigupd_count", str(sigupd_count))
+
+    template = template.replace("sigupd_count", str(signatureWords))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
@@ -138,19 +147,26 @@ def writeSIGUPD(rd):
     return l
 
 def writeSIGUPD_F(rd):
-    # *** write this
-    return ""
+    global sigupd_count  # Allow modification of global variable
+    global sigupd_countF
+    sigupd_count += 1  #Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_countF += 1  # Increment counter on each call since SIGUPD_F macro stores FREG
+    tempReg = 4
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    return l
 
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
     # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
     avl = 1   # Set AVL
-    lines = ""
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -257,18 +273,16 @@ def getSigInfo(floatdest):
       offsetInc = 8
   return storeinstr, offsetInc
 
-def incrementSigOffset(amount):
-  global sigOffset  # necessary to declare global so we can modify it
-  global sigTotal
-  sigOffset = sigOffset + amount
-  sigTotal = sigTotal + amount
-  maxOffset = 1800 # could go to 2048, but give room for several consecutive instructions
-  if (sigOffset >= maxOffset):
-    l = f"addi x{sigReg}, x{sigReg}, {sigOffset} # increment signature pointer and reset offset\n"
-    sigOffset = 0
-    return l
-  return ""
-
+def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
+  #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
+  signatureWords = sigupd_count
+  if sigupd_countF > 0:
+    if flen > xlen:
+      mult = flen//xlen
+      signatureWords = sigupd_count + (sigupd_countF * (mult *2-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+    else:
+      signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+  return signatureWords
 
 # writeTest appends the test to the lines.
 # When doing signature generation, it also appends
@@ -299,11 +313,14 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
 # Ensure rs2 is not equal to rs1
   if rs2 == rs1:
     rs2 = (rs1 + 1) % 32  # pick a different register
-  l = lines + f"li x{rs2}, 1 \n"
+  l = lines + f"li x{rs2}, {rs1} # branch is taken. Value to debug what register testing\n"
   l = l + jumpline
-  l = l + f"li x{rs2}, 0 \n"
+  l = l + f"li x{rs2}, 0 # branch is not taken \n"
   l = l + "1:\n"
-  l = l + writeSIGUPD(rd)
+  if (test in ["c.jalr", "c.jal"]):
+    l = l + writeSIGUPD("1")
+  elif (test in ["jalr", "jal"]):
+    l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
   return l
 
@@ -316,17 +333,8 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
   return l
 
 def writeStoreTest(lines, test, rs2, xlen, storeline):
-# writestoretest need to be replaced. -< new signature method like stores done with hamza
+#*** writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  l = l + "# STORE SIGNATURE\n"
-  writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-  if (writeTest.startswith("c.")):
-    writeTest = test[2:] # remove the c. prefix
-  floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
-  #[storeinstr, offsetInc] = getSigInfo(floatdest)
-  rdPrefix = "f" if floatdest else "x"
-  #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
-  #l = l + incrementSigOffset(offsetInc*2)
   return l
 
 
@@ -485,7 +493,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif test in ["c.jalr", "c.jr"]:
       if (rs1 == 0):
         rs1 = 1
-      if (test == "c.jalr"):
+      if (test in "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = lines + f"la x{rs1}, 1f\n"
       jumpline = f"{test} x{rs1} # perform operation\n"
@@ -654,9 +662,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     if (test == "c.fswsp" or test == "c.fsdsp"):
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
-      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
+    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + "la sp" + ", scratch" + " # base address \n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
@@ -1077,8 +1086,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     [immvala, immvalb],
                     ["perform first operation", "perform second (triggering) operation"],
                     xlen)
-    lines += writeSIGUPD(rda)
-    lines += writeSIGUPD(rdb)
+    if testa in floattypes and testa not in fTOrtype:
+      lines += writeSIGUPD_F(rda)
+    else:
+      lines += writeSIGUPD(rda)
+    if testb in floattypes and testb not in fTOrtype:
+      lines += writeSIGUPD_F(rdb)
+    else:
+      lines += writeSIGUPD(rdb)
 
   f.write(lines)
 
@@ -1138,6 +1153,8 @@ def randomNonconflictingReg(test):
   regfield3types = ciwtype + cltype + cstype + cbptype + catype + cbtype + clbtype + clhtype + csbtype + cshtype + cutype + ["c.srli", "c.srai"]
   if (test in regfield3types):
     reg = randint(8, 15) # for compressed instructions
+  elif E_ext : # Extension
+    reg = randint(1, 15)
   else: # normal instructions
     reg = randint(1, maxreg) # 1 to maxreg, inclusive
   while reg == sigReg: # resolve conflicts; *** add constReg when implemented
@@ -1492,35 +1509,47 @@ def make_imm_corners_jal(test, xlen): # update these test
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
     if (test == "jal"):
       if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"li x{rs1}," + str(r) + "\n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
       if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"c.li x{rs1}," + str(r) + " \n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+        lines = lines + f"c.li x{rs1}," + str(r) + " \n"
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
 
     if (r>=6): # comparison is 6 because it's not r+1 this time
       if (test in ["c.jal", "c.j"]):
-        lines += f"c.li x{rs1}, 0 \n"
+        lines = lines + f"c.li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
       else:
-        lines += f"li x{rs1}, 0 \n"
-      lines += writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
+
     if (r>=6):
-      lines += f"li x{rs1}," + str(r) + "\n"
-      lines = lines + writeSIGUPD(rs1) + "\n"
+      if (test in ["c.jal", "c.j"]):
+        lines = lines + f"c.li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+      else:
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
+
     if (test == "jal"):
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
       if(r>=6):
-        lines += f"li x{rs1}, 0 " + "\n"
-        lines = lines + writeSIGUPD(rs1) +"\n"
+        lines = lines + f"li x{rs1}, 0 " + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines + writeSIGUPD(rs1)
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1531,9 +1560,9 @@ def make_imm_corners_jal(test, xlen): # update these test
       else:
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
         if(r>=6):
-          lines += f"c.li x{rs1}, 0" +"\n"
-          lines += writeSIGUPD(rs1) + "\n"
-
+          lines = lines + f"c.li x{rs1}, 0" +"\n"
+          lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+          lines = lines + writeSIGUPD(rs1)
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
@@ -1555,8 +1584,8 @@ def make_imm_corners_jalr(test, xlen):
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     lines += f"li x{rs2}, 0 " + "\n"
     lines = lines + "1:\n"
-    lines = lines +  writeSIGUPD(rd) +"\n" #checking if return addres is correct
-    lines = lines +  writeSIGUPD(rs2) +"\n" #checking if jump was performed
+    lines = lines +  writeSIGUPD(rd) #checking if return addres is correct
+    lines = lines +  writeSIGUPD(rs2) #checking if jump was performed
     f.write(lines)
 
 def make_offset(test, xlen):
@@ -1603,6 +1632,11 @@ def make_offset(test, xlen):
 
   lines = lines + "3:  # done with sequence\n"
   lines = lines +  writeSIGUPD(rs1) # checking if branch was taken
+  if (test in "c.jalr" ):
+    lines = lines +  writeSIGUPD("1") # checking return value of c.jalr
+  elif (test in jalrtype):
+    lines = lines +  writeSIGUPD(rd) # checking return value of jalr
+
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):
@@ -1611,7 +1645,7 @@ def make_offset_lsbs(test, xlen):
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
-    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
+    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded!!!\n"
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
@@ -1625,30 +1659,43 @@ def make_offset_lsbs(test, xlen):
     lines = lines +  writeSIGUPD(rs1)
     lines = lines +  writeSIGUPD("1") #check return value in jalr
 
-  else: # c.jalr / c.jr #TODO Probably the same as above but jumping by 2
+  else: # c.jalr / c.jr
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb00: nop\n"
+    lines = lines + test+"lsb00: "  + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb01 # load address of label\n"
     lines = lines + "addi x3, x3, 1 # add 1 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 01\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb01: nop\n"
+    lines = lines + test+"lsb01: " + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb10 # load address of label\n"
     lines = lines + "addi x3, x3, 2 # add 2 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 10\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb10: nop\n"
+    lines = lines + test+"lsb10: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+    lines = lines + "nop\n" # c.jalr does not support 2 byte jumps, so this is a noop
     lines = lines + "la x3, "+test+"lsb11 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 11\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb11: nop\n"
+    lines = lines + test+"lsb11: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
   f.write(lines)
 
 def make_mem_hazard(test, xlen):
@@ -2711,6 +2758,11 @@ PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
 fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
               "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
               "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
+fTOrtype  = ["feq.s", "feq.h", "feq.d", "flt.s", "flt.h", "flt.d", "fle.s", "fle.h", "fle.d",
+             "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d", "fclass.s", "fclass.h", "fclass.d",
+              "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d",
+              "fmvp.x.q", "fcvtmod.w.d"]
+fTOrtype += F2Xtype # *All* floating point instructions that return to xregisters (rd)
 citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp","c.flwsp","c.fldsp"]
 c_shiftitype = ["c.slli","c.srli","c.srai"]
 cltype = ["c.lw","c.ld","c.flw","c.fld"]
@@ -3163,6 +3215,8 @@ if __name__ == '__main__':
         for test in coverpoints.keys():
         # print("Generating test for ", test, " with entries: ", coverpoints[test])
           sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
+          sigupd_countF = 0  #initialize signature update count for F tests
+          signatureWords = 0 #initialize signature words
           basename = "WALLY-COV-" + extension + "-" + test
           fname = pathname + "/" + basename + ".S"
           tempfname = pathname + "/" + basename + "_temp.S"
@@ -3219,6 +3273,7 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
           # print footer
+          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
           if test in vectortypes:
             insertTemplate("testgen_footer_vector2.S")
           else:
