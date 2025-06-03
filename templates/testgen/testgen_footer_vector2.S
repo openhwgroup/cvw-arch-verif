@@ -8,6 +8,7 @@ rvtest_sig_begin:
 sig_begin_canary:
 CANARY;
 
+    .align 3
 signature_base:
     .fill sigupd_count*(XLEN/32),4,0xdeadbeef
 

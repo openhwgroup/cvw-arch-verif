@@ -1846,7 +1846,7 @@ def narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
 def make_vd(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins) or (test in mv_ins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vs2 or v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -1868,7 +1868,7 @@ def make_vd(test, sew, vl, rng):
 def make_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins) or (test in mv_ins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vd or vd == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -2774,6 +2774,8 @@ maskins = mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
 v_mins = vvmins + vxmins + vimins
 mv_ins = mvvins + mvxins + mviins
 mv_mins = mvvmins + mvxmins + mvimins
+# extending
+vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
 
 global hazardLabel
 hazardLabel = 1
@@ -3070,7 +3072,6 @@ if __name__ == '__main__':
         maxreg = 31 # I uses registers x0-x31
 
       for extension in extensions:
-        print(extension)
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
         coverfiles = [extension]
