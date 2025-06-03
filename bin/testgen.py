@@ -433,11 +433,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if (test in "c.lwsp"):
         while (rs2 == 2):
             rs2 = randint(1, maxreg) # rs2 cannot be 2 for c.lwsp
-        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1!\n"
+        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       else:
-        lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1!!!!\n"
+        lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
-      lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1!!\n"
+      lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
         immval = 16
@@ -466,9 +466,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + storeop + " x" + str(rs2) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ")   # store value to put something in memory\n"
       if (test == "c.flwsp" or test == "c.fldsp"):
-        lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation!\n")
+        lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n")
       else:
-        lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation!!\n")
+        lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n")
     else:
       if test in ["c.li", "c.addi", "c.addiw"]:    # Add tests with signed Imm in the list
         lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + signedImm6(immval) + " # perform operation\n")
@@ -652,9 +652,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n" #!
-      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n" #!
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n" #!
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
+      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
       lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
       sigupd_count += 1
@@ -1650,7 +1650,7 @@ def make_offset_lsbs(test, xlen):
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
-    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded!!!\n"
+    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
