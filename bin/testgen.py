@@ -1542,8 +1542,8 @@ def make_imm_corners_jalr(test, xlen):
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     lines += f"li x{rs2}, 0 " + "\n"
     lines = lines + "1:\n"
-    lines = lines +  writeSIGUPD(rd) +"\n" #checking if return addres is correct
-    lines = lines +  writeSIGUPD(rs2) +"\n" #checking if jump was performed
+    lines = lines +  writeSIGUPD(rd) #checking if return addres is correct
+    lines = lines +  writeSIGUPD(rs2) #checking if jump was performed
     f.write(lines)
 
 def make_offset(test, xlen):
@@ -1590,6 +1590,11 @@ def make_offset(test, xlen):
 
   lines = lines + "3:  # done with sequence\n"
   lines = lines +  writeSIGUPD(rs1) # checking if branch was taken
+  if (test in "c.jalr" ):
+    lines = lines +  writeSIGUPD("1") # checking return value of c.jalr
+  elif (test in jalrtype):
+    lines = lines +  writeSIGUPD(rd) # checking return value of jalr
+
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):
@@ -1598,7 +1603,7 @@ def make_offset_lsbs(test, xlen):
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
-    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
+    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded!!!\n"
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
@@ -1612,30 +1617,43 @@ def make_offset_lsbs(test, xlen):
     lines = lines +  writeSIGUPD(rs1)
     lines = lines +  writeSIGUPD("1") #check return value in jalr
 
-  else: # c.jalr / c.jr #TODO Probably the same as above but jumping by 2
+  else: # c.jalr / c.jr
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb00: nop\n"
+    lines = lines + test+"lsb00: "  + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb01 # load address of label\n"
     lines = lines + "addi x3, x3, 1 # add 1 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 01\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb01: nop\n"
+    lines = lines + test+"lsb01: " + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb10 # load address of label\n"
     lines = lines + "addi x3, x3, 2 # add 2 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 10\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb10: nop\n"
+    lines = lines + test+"lsb10: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+    lines = lines + "nop\n" # c.jalr does not support 2 byte jumps, so this is a noop
     lines = lines + "la x3, "+test+"lsb11 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 11\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb11: nop\n"
+    lines = lines + test+"lsb11: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
   f.write(lines)
 
 def make_mem_hazard(test, xlen):
