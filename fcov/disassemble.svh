@@ -781,8 +781,8 @@ function string disassemble (logic [31:0] instrRaw);
     VNCLIPU_WI:   $sformat(decoded, "vnclipu.wi %s, %s, %s%s",    vd, vs2, uimm5, vm);
 
     VREDSUM_VS:   $sformat(decoded, "vredsum.vs %s, %s, %s%s",    vd, vs2, vs1, vm);
-    VWREDSUM_VS:  $sformat(decoded, "vwredsum.vs_ %s, %s, %s%s",  vd, vs2, vs1, vm);
-    VWREDSUMU_VS: $sformat(decoded, "vwredsumu.vs_ %s, %s, %s%s", vd, vs2, vs1, vm);
+    VWREDSUM_VS:  $sformat(decoded, "vwredsum.vs %s, %s, %s%s",  vd, vs2, vs1, vm);
+    VWREDSUMU_VS: $sformat(decoded, "vwredsumu.vs %s, %s, %s%s", vd, vs2, vs1, vm);
     VREDMAX_VS:   $sformat(decoded, "vredmax.vs %s, %s, %s%s",    vd, vs2, vs1, vm);
     VREDMAXU_VS:  $sformat(decoded, "vredmaxu.vs %s, %s, %s%s",   vd, vs2, vs1, vm);
     VREDMIN_VS:   $sformat(decoded, "vredmin.vs %s, %s, %s%s",    vd, vs2, vs1, vm);
