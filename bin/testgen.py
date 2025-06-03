@@ -318,7 +318,7 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
   l = l + f"li x{rs2}, 0 # branch is not taken \n"
   l = l + "1:\n"
   if (test in ["c.jalr", "c.jal"]):
-    l = l + writeSIGUPD("1")
+    l = l + writeSIGUPD(1)
   elif (test in ["jalr", "jal"]):
     l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
@@ -430,7 +430,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.addiw" and rd == 0):
       rd = 1
     if (test != "c.addi16sp"):
-      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      if (test in "c.lwsp"):
+        while (rs2 == 2):
+            rs2 = randint(1, maxreg) # rs2 cannot be 2 for c.lwsp
+        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      else:
+        lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
       lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       immval = int(signedImm6(immval)) * 16
@@ -647,9 +652,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n" #!
-      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n" #!
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n" #!
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
+      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
       lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
       sigupd_count += 1
@@ -1517,7 +1522,7 @@ def make_imm_corners_jal(test, xlen): # update these test
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
       if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
         lines = lines + f"c.li x{rs1}," + str(r) + " \n"
         lines = lines +  writeSIGUPD(rs1)
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
@@ -1527,7 +1532,7 @@ def make_imm_corners_jal(test, xlen): # update these test
     if (r>=6): # comparison is 6 because it's not r+1 this time
       if (test in ["c.jal", "c.j"]):
         lines = lines + f"c.li x{rs1}, 0 \n"
-        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
       else:
         lines = lines + f"li x{rs1}, 0 \n"
         lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
@@ -1538,7 +1543,7 @@ def make_imm_corners_jal(test, xlen): # update these test
     if (r>=6):
       if (test in ["c.jal", "c.j"]):
         lines = lines + f"c.li x{rs1}," + str(r) + "\n"
-        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
       else:
         lines = lines + f"li x{rs1}," + str(r) + "\n"
         lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
@@ -1561,7 +1566,7 @@ def make_imm_corners_jal(test, xlen): # update these test
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
         if(r>=6):
           lines = lines + f"c.li x{rs1}, 0" +"\n"
-          lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+          lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
           lines = lines + writeSIGUPD(rs1)
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
@@ -1633,7 +1638,7 @@ def make_offset(test, xlen):
   lines = lines + "3:  # done with sequence\n"
   lines = lines +  writeSIGUPD(rs1) # checking if branch was taken
   if (test in "c.jalr" ):
-    lines = lines +  writeSIGUPD("1") # checking return value of c.jalr
+    lines = lines +  writeSIGUPD(1) # checking return value of c.jalr
   elif (test in jalrtype):
     lines = lines +  writeSIGUPD(rd) # checking return value of jalr
 
@@ -1645,11 +1650,11 @@ def make_offset_lsbs(test, xlen):
   if (test in jalrtype):
     lines = lines + "la x3, jalrlsb1 # load address of label\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
-    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded!!!\n"
+    lines = lines + "jalr x1, x3, 1 # jump to label + 1, extra plus 1 should be discarded\n"
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
-    lines = lines +  writeSIGUPD("1") #check return value in jalr
+    lines = lines +  writeSIGUPD(rd) #check return value in jalr
     lines = lines + "la x3, jalrlsb2 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
@@ -1657,7 +1662,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb2: \n"
     lines = lines +  writeSIGUPD(rs1)
-    lines = lines +  writeSIGUPD("1") #check return value in jalr
+    lines = lines +  writeSIGUPD(rd) #check return value in jalr
 
   else: # c.jalr / c.jr
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
@@ -1667,7 +1672,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + ".align 2\n"
     lines = lines + test+"lsb00: "  + writeSIGUPD(rs1)
     if (test in "c.jalr"):
-      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb01 # load address of label\n"
     lines = lines + "addi x3, x3, 1 # add 1 to address\n"
     lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
@@ -1676,7 +1681,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + ".align 2\n"
     lines = lines + test+"lsb01: " + writeSIGUPD(rs1)
     if (test in "c.jalr"):
-      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb10 # load address of label\n"
     lines = lines + "addi x3, x3, 2 # add 2 to address\n"
     lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
@@ -1685,7 +1690,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + ".align 2\n"
     lines = lines + test+"lsb10: nop\n" + writeSIGUPD(rs1)
     if (test in "c.jalr"):
-      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
     lines = lines + "nop\n" # c.jalr does not support 2 byte jumps, so this is a noop
     lines = lines + "la x3, "+test+"lsb11 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
@@ -1695,7 +1700,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + ".align 2\n"
     lines = lines + test+"lsb11: nop\n" + writeSIGUPD(rs1)
     if (test in "c.jalr"):
-      lines = lines +  writeSIGUPD("1") #check return value in c.jalr
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
   f.write(lines)
 
 def make_mem_hazard(test, xlen):
