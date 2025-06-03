@@ -25,32 +25,44 @@
 covergroup SsstrictV_vcsr_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    Test: coverpoint ins.current.insn[31:29] {
-        bins one    = {3'b000};
-        bins two    = {3'b001};
-        bins three  = {3'b010};
-        bins four   = {3'b011};
-        bins five   = {3'b100};
-        bins six    = {3'b101};
-        bins seven  = {3'b110};
-        bins eight  = {3'b111};
+    test: coverpoint ins.current.insn[0] {
+        bins one    = {0};
+        bins two    = {1};
+        bins one_one    = {1'b0};
+        bins one_two    = {1'b1};
     }
+
+    // Test: coverpoint ins.current.insn[31:29] {
+    //     bins one    = {3'b000};
+    //     bins two    = {3'b001};
+    //     bins three  = {3'b010};
+    //     bins four   = {3'b011};
+    //     bins five   = {3'b100};
+    //     bins six    = {3'b101};
+    //     bins seven  = {3'b110};
+    //     bins eight  = {3'b111};
+    // }
 
 endgroup
 
 covergroup SsstrictV_instr_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    Test: coverpoint ins.current.insn[31:29] {
-        bins one    = {3'b000};
-        bins two    = {3'b001};
-        bins three  = {3'b010};
-        bins four   = {3'b011};
-        bins five   = {3'b100};
-        bins six    = {3'b101};
-        bins seven  = {3'b110};
-        bins eight  = {3'b111};
+    test: coverpoint ins.current.insn[0] {
+        bins one    = {0};
+        bins two    = {1};
     }
+
+    // Test: coverpoint ins.current.insn[31:29] {
+    //     bins one    = {3'b000};
+    //     bins two    = {3'b001};
+    //     bins three  = {3'b010};
+    //     bins four   = {3'b011};
+    //     bins five   = {3'b100};
+    //     bins six    = {3'b101};
+    //     bins seven  = {3'b110};
+    //     bins eight  = {3'b111};
+    // }
 
 endgroup
 

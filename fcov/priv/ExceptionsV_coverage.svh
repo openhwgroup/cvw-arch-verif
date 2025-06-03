@@ -27,6 +27,9 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
 
     test: coverpoint ins.current.insn[0] {
         bins one    = {0};
+        bins two    = {1};
+        bins one_one    = {1'b0};
+        bins one_two    = {1'b1};
     }
 
     // vl_ff: coverpoint ins.current.insn { //vector load fault first operation

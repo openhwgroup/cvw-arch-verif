@@ -48,8 +48,8 @@
         bins enabled = {1'b0};
     }
 
-    vd_v0: coverpoint ins.get_vr_reg(ins.current.vd) {
-        bins zero = {v0};
+    vd_v0: coverpoint ins.current.insn[11:7] {
+        bins zero = {5'b00000};
     }
 
     no_trap: coverpoint (ins.trap == 0) {
