@@ -21,12 +21,20 @@ from datetime import datetime
 from random import randint, seed, getrandbits
 
 def insertTemplate(name):
+    global signatureWords
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+    if 'D' in ext_parts_no_I:
+      ext_parts_no_I = ['D']+ext_parts_no_I
+    if 'f' in  ext_parts[0]:
+      ext_parts_no_I = ['F']+ext_parts_no_I
+    if len(ext_parts_no_I) != 0:
+      if ext_parts_no_I[-1] == 'D':
+        ext_parts_no_I = ext_parts_no_I[:-1]
     if 'V' in ext_parts_no_I:
       ext_parts_no_I = ['M'] + ext_parts_no_I
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
@@ -34,7 +42,8 @@ def insertTemplate(name):
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
-    template = template.replace("sigupd_count", str(sigupd_count))
+
+    template = template.replace("sigupd_count", str(signatureWords))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
@@ -138,18 +147,25 @@ def writeSIGUPD(rd):
     return l
 
 def writeSIGUPD_F(rd):
-    # *** write this
-    return ""
+    global sigupd_count  # Allow modification of global variable
+    global sigupd_countF
+    sigupd_count += 1  #Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_countF += 1  # Increment counter on each call since SIGUPD_F macro stores FREG
+    tempReg = 4
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    return l
 
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
     avl = 1   # Set AVL
-    lines = ""
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
@@ -256,18 +272,16 @@ def getSigInfo(floatdest):
       offsetInc = 8
   return storeinstr, offsetInc
 
-def incrementSigOffset(amount):
-  global sigOffset  # necessary to declare global so we can modify it
-  global sigTotal
-  sigOffset = sigOffset + amount
-  sigTotal = sigTotal + amount
-  maxOffset = 1800 # could go to 2048, but give room for several consecutive instructions
-  if (sigOffset >= maxOffset):
-    l = f"addi x{sigReg}, x{sigReg}, {sigOffset} # increment signature pointer and reset offset\n"
-    sigOffset = 0
-    return l
-  return ""
-
+def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
+  #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
+  signatureWords = sigupd_count
+  if sigupd_countF > 0:
+    if flen > xlen:
+      mult = flen//xlen
+      signatureWords = sigupd_count + (sigupd_countF * (mult *2-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+    else:
+      signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+  return signatureWords
 
 # writeTest appends the test to the lines.
 # When doing signature generation, it also appends
@@ -313,17 +327,8 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
   return l
 
 def writeStoreTest(lines, test, rs2, xlen, storeline):
-# writestoretest need to be replaced. -< new signature method like stores done with hamza
+#*** writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  l = l + "# STORE SIGNATURE\n"
-  writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-  if (writeTest.startswith("c.")):
-    writeTest = test[2:] # remove the c. prefix
-  floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
-  #[storeinstr, offsetInc] = getSigInfo(floatdest)
-  rdPrefix = "f" if floatdest else "x"
-  #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
-  #l = l + incrementSigOffset(offsetInc*2)
   return l
 
 
@@ -651,9 +656,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
     if (test == "c.fswsp" or test == "c.fsdsp"):
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
-      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs1) + " # move the random value into fs2\n"
+      lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
+    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + "la sp" + ", scratch" + " # base address \n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
@@ -1069,8 +1075,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     [immvala, immvalb],
                     ["perform first operation", "perform second (triggering) operation"],
                     xlen)
-    lines += writeSIGUPD(rda)
-    lines += writeSIGUPD(rdb)
+    if testa in floattypes and testa not in fTOrtype:
+      lines += writeSIGUPD_F(rda)
+    else:
+      lines += writeSIGUPD(rda)
+    if testb in floattypes and testb not in fTOrtype:
+      lines += writeSIGUPD_F(rdb)
+    else:
+      lines += writeSIGUPD(rdb)
 
   f.write(lines)
 
@@ -2682,6 +2694,11 @@ PX2Ftype = ["fmvp.d.x"] # pair of integer registers to a single fp register
 fcomptype = ["feq.s", "flt.s", "fle.s", "fltq.s", "fleq.s",
               "feq.h", "flt.h", "fle.h", "fltq.h", "fleq.h",
               "feq.d", "flt.d", "fle.d", "fltq.d", "fleq.d",]
+fTOrtype  = ["feq.s", "feq.h", "feq.d", "flt.s", "flt.h", "flt.d", "fle.s", "fle.h", "fle.d",
+             "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d", "fclass.s", "fclass.h", "fclass.d",
+              "fltq.s", "fltq.h", "fltq.d", "fleq.s", "fleq.h", "fleq.d",
+              "fmvp.x.q", "fcvtmod.w.d"]
+fTOrtype += F2Xtype # *All* floating point instructions that return to xregisters (rd)
 citype = ["c.nop", "c.lui", "c.li", "c.addi", "c.addi16sp", "c.addiw","c.lwsp","c.ldsp","c.flwsp","c.fldsp"]
 c_shiftitype = ["c.slli","c.srli","c.srai"]
 cltype = ["c.lw","c.ld","c.flw","c.fld"]
@@ -3070,7 +3087,6 @@ if __name__ == '__main__':
         maxreg = 31 # I uses registers x0-x31
 
       for extension in extensions:
-        print(extension)
       #for extension in ["I"]:  # temporary for faster run
         coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
         coverfiles = [extension]
@@ -3130,6 +3146,8 @@ if __name__ == '__main__':
         for test in coverpoints.keys():
         # print("Generating test for ", test, " with entries: ", coverpoints[test])
           sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
+          sigupd_countF = 0  #initialize signature update count for F tests
+          signatureWords = 0 #initialize signature words
           basename = "WALLY-COV-" + extension + "-" + test
           fname = pathname + "/" + basename + ".S"
           tempfname = pathname + "/" + basename + "_temp.S"
@@ -3186,6 +3204,7 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
           # print footer
+          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
           if test in vectortypes:
             insertTemplate("testgen_footer_vector2.S")
           else:
