@@ -149,8 +149,8 @@ def writeSIGUPD(rd):
 def writeSIGUPD_F(rd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
-    sigupd_count += 1  # Increment counter by 2 on each call since SIGUPD_F macro stores two registers to memory
-    sigupd_countF += 1  # Increment counter for floating point signature updates
+    sigupd_count += 1  #Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_countF += 1  # Increment counter on each call since SIGUPD_F macro stores FREG
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
@@ -283,21 +283,6 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
       signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
-
-#THIS FUNCTION IS NOT USED ANYMORE
-def incrementSigOffset(amount):
-  global sigOffset  # necessary to declare global so we can modify it
-  global sigTotal
-  sigOffset = sigOffset + amount
-  sigTotal = sigTotal + amount
-  maxOffset = 1800 # could go to 2048, but give room for several consecutive instructions
-  if (sigOffset >= maxOffset):
-    l = f"addi x{sigReg}, x{sigReg}, {sigOffset} # increment signature pointer and reset offset\n"
-    sigOffset = 0
-    return l
-  return ""
-
-
 # writeTest appends the test to the lines.
 # When doing signature generation, it also appends
 # the signature logic
@@ -340,18 +325,8 @@ def writeBranchTest(lines, rd, rs1, rs2, xlen, branchline):
   return l
 
 def writeStoreTest(lines, test, rs2, xlen, storeline):
-# writestoretest need to be replaced. -< new signature method like stores done with hamza
+#*** writestoretest need to be replaced. -< new signature method like stores done with hamza
   l = lines + storeline
-  writeTest = test # use same instruction for writing, but in non-compressed form if necessary
-  if (writeTest.startswith("c.")):
-    writeTest = test[2:] # remove the c. prefix
-  floatdest = test in ["c.fsw","c.fsd", "c.fswsp", "c.fsdsp", "fsw", "fsd", "fsh", "fsq"]
-  #[storeinstr, offsetInc] = getSigInfo(floatdest)
-  if (floatdest):
-    temp = 0
-    #TODO
-  #l = l + storeinstr + " " + rdPrefix + str(rs2) + ", " + str(sigOffset+offsetInc) + "(x" + str(sigReg) + "); nop; nop; nop # store result into signature memory\n"
-  #l = l + incrementSigOffset(offsetInc*2)
   return l
 
 
@@ -3198,8 +3173,7 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
           # print footer
-          #UPDATE SIGUPDCOUNT
-          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF)
+          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
           if test in vectortypes:
             insertTemplate("testgen_footer_vector2.S")
           else:
