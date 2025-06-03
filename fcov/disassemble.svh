@@ -164,6 +164,10 @@ function string disassemble (logic [31:0] instrRaw);
     // Supervisor Mode Instructions
     SFENCE_VMA: $sformat(decoded, "sfence.vma %s, %s", rs1, rs2);
     SRET:       $sformat(decoded, "sret");
+    // Svinval instructinos
+    SFENCE_INVAL_IR: $sformat(decoded, "sfence.inval.ir");
+    SFENCE_W_INVAL:  $sformat(decoded, "sfence.w.inval");
+    SINVAL_VMA:      $sformat(decoded, "sinval.vma %s, %s", rs1, rs2);
     // Zicboz Extension
     CBO_ZERO: $sformat(decoded, "cbo.zero (%s)", rs1);
     // Zicbom Extension

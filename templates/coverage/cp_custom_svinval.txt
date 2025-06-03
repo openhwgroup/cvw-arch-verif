@@ -1,6 +1,0 @@
-    // Custom coverpoints for svinval instructions
-
-    // Just check instruction is executed.  rd should always be 0
-    cp_custom_svinval : coverpoint ins.get_gpr_reg(ins.current.rd) iff (ins.trap == 0) {
-        bins x0 = {x0};
-    }
