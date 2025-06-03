@@ -298,7 +298,10 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
   l = l + jumpline
   l = l + f"li x{rs2}, 0 \n"
   l = l + "1:\n"
-  l = l + writeSIGUPD(rd)
+  if (test in ["c.jalr", "c.jal"]):
+    l = l + writeSIGUPD("1")
+  elif (test in ["jalr", "jal"]):
+    l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
   return l
 
@@ -480,7 +483,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif test in ["c.jalr", "c.jr"]:
       if (rs1 == 0):
         rs1 = 1
-      if (test == "c.jalr"):
+      if (test in "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = lines + f"la x{rs1}, 1f\n"
       jumpline = f"{test} x{rs1} # perform operation\n"
@@ -1479,35 +1482,47 @@ def make_imm_corners_jal(test, xlen): # update these test
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
     if (test == "jal"):
       if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"li x{rs1}," + str(r) + "\n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
       if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"c.li x{rs1}," + str(r) + " \n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+        lines = lines + f"c.li x{rs1}," + str(r) + " \n"
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
 
     if (r>=6): # comparison is 6 because it's not r+1 this time
       if (test in ["c.jal", "c.j"]):
-        lines += f"c.li x{rs1}, 0 \n"
+        lines = lines + f"c.li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
       else:
-        lines += f"li x{rs1}, 0 \n"
-      lines += writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
+
     if (r>=6):
-      lines += f"li x{rs1}," + str(r) + "\n"
-      lines = lines + writeSIGUPD(rs1) + "\n"
+      if (test in ["c.jal", "c.j"]):
+        lines = lines + f"c.li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+      else:
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
+
     if (test == "jal"):
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
       if(r>=6):
-        lines += f"li x{rs1}, 0 " + "\n"
-        lines = lines + writeSIGUPD(rs1) +"\n"
+        lines = lines + f"li x{rs1}, 0 " + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines + writeSIGUPD(rs1)
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1518,9 +1533,9 @@ def make_imm_corners_jal(test, xlen): # update these test
       else:
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
         if(r>=6):
-          lines += f"c.li x{rs1}, 0" +"\n"
-          lines += writeSIGUPD(rs1) + "\n"
-
+          lines = lines + f"c.li x{rs1}, 0" +"\n"
+          lines = lines +  writeSIGUPD("1") # checking if return address is correct for c.jal
+          lines = lines + writeSIGUPD(rs1)
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
