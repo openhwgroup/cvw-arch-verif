@@ -25,32 +25,48 @@
 covergroup SsstrictV_vcsr_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    Test: coverpoint ins.current.insn[31:29] {
-        bins one    = {3'b000};
-        bins two    = {3'b001};
-        bins three  = {3'b010};
-        bins four   = {3'b011};
-        bins five   = {3'b100};
-        bins six    = {3'b101};
-        bins seven  = {3'b110};
-        bins eight  = {3'b111};
+    test: coverpoint ins.current.insn[0] {
+        bins one    = {0};
+        bins two    = {1};
+        bins one_one    = {1'b0};
+        bins one_two    = {1'b1};
     }
+
+    // Test: coverpoint ins.current.insn[31:29] {
+    //     bins one    = {3'b000};
+    //     bins two    = {3'b001};
+    //     bins three  = {3'b010};
+    //     bins four   = {3'b011};
+    //     bins five   = {3'b100};
+    //     bins six    = {3'b101};
+    //     bins seven  = {3'b110};
+    //     bins eight  = {3'b111};
+    // }
 
 endgroup
 
 covergroup SsstrictV_instr_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
-    Test: coverpoint ins.current.insn[31:29] {
-        bins one    = {3'b000};
-        bins two    = {3'b001};
-        bins three  = {3'b010};
-        bins four   = {3'b011};
-        bins five   = {3'b100};
-        bins six    = {3'b101};
-        bins seven  = {3'b110};
-        bins eight  = {3'b111};
+    test: coverpoint ins.current.insn[0] {
+        bins one    = {0};
+        bins two    = {1};
     }
+
+    test_two: coverpoint ins.current.insn[3:0] {
+        wildcard bins range = {[3'b?00: 3'b?01], [3'b?10: 3'b?11]};
+    }
+
+    // Test: coverpoint ins.current.insn[31:29] {
+    //     bins one    = {3'b000};
+    //     bins two    = {3'b001};
+    //     bins three  = {3'b010};
+    //     bins four   = {3'b011};
+    //     bins five   = {3'b100};
+    //     bins six    = {3'b101};
+    //     bins seven  = {3'b110};
+    //     bins eight  = {3'b111};
+    // }
 
 endgroup
 
@@ -97,107 +113,6 @@ endgroup
 //     }
 
 //     lmul_vset_i_vl_i: cross vset_i_vl_i_instructions, vtype_lmul;
-
-//     //TODO
-//     vector_narrowing_instructions: coverpoint ins.current.insn {
-
-//     }
-
-//     //TODO
-//     vector_widening_instructions: coverpoint ins.current.insn {
-
-//     }
-
-//     vtype_lmul_1: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
-//         bins two = {3'b000};
-//     }
-
-//     vtype_lmul_2: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
-//         bins two = {3'b001};
-//     }
-
-//     vtype_lmul_4: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
-//         bins two = {3'b010};
-//     }
-
-//     vtype_lmul_8: coverpoint 3'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")) {
-//         bins two = {3'b011};
-//     }
-
-//     vd_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins odd = {5'b????1};
-//     }
-
-//     vd_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
-//     }
-
-//     vd_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
-//                                 5'b??101, 5'b??110, 5'b??111, 5'b??100};
-//     }
-
-//     vs1_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins odd = {5'b????1};
-//     }
-
-//     vs1_reg_notdiv_4: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
-//     }
-
-//     vs1_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
-//                                 5'b??101, 5'b??110, 5'b??111, 5'b??100};
-//     }
-
-//     vs2_reg_notdiv_2: coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins odd = {5'b????1};
-//     }
-
-//     vs2_reg_notdiv_4:coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins ndiv_4 = {5'b???01, 5'b???10, 5'b???11};
-//     }
-
-//     vs2_reg_notdiv_8: coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins ndiv_8 = {5'b??001, 5'b??010, 5'b??011,
-//                                 5'b??101, 5'b??110, 5'b??111, 5'b??100};
-//     }
-
-//     vd_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins divisible_by_2 = {5'b????0};
-//     }
-
-//     vd_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins divisible_by_4 = {5'b???00};
-//     }
-
-//     vd_reg_div_8: coverpoint ins.get_vr_reg(ins.current.vd){
-//         wildcard bins divisible_by_8 = {5'b??000};
-//     }
-
-//     vs1_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins divisible_by_2 = {5'b????0};
-//     }
-
-//     vs1_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins divisible_by_4 = {5'b???00};
-//     }
-
-//     vs1_reg_div_8: coverpoint ins.get_vr_reg(ins.current.vs1){
-//         wildcard bins divisible_by_8 = {5'b??000};
-//     }
-
-//     vs2_reg_div_2: coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins divisible_by_2 = {5'b????0};
-//     }
-
-//     vs2_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins divisible_by_4 = {5'b???00};
-//     }
-
-//     vs2_reg_div_8: coverpoint ins.get_vr_reg(ins.current.vs2){
-//         wildcard bins divisible_by_8 = {5'b??000};
-//     }
 
 //     vector_vector_arithmatic_instruction: coverpoint ins.current.insn[14:0] {
 //         bins arithmatic_vv_opcode = {15'b000_?????_1010111};
