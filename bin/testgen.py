@@ -144,6 +144,7 @@ def writeSIGUPD_F(rd):
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
+    # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
     avl = 1   # Set AVL
     lines = ""
     tempReg = 6
@@ -2725,7 +2726,7 @@ vitype = ["vadd.vi", "vrsub.vi", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vs
 vrvtype = ["vcpop.m", "vfirst.m", "vmv.vx"]
 
 vvvtype = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
-vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx","vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 vvxtype =["vmv.v.v"]
 vxxtype = ["vmv.s.x", "vmv.v.x"]
 vixtype = ["vmv.v.i"]
@@ -2766,8 +2767,8 @@ vimins = ["vadc.vim", "vmerge.vim"]
 mvvins = ["vmadc.vv", "vmsbc.vv", "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
 mvxins = ["vmadc.vx", "vmsbc.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
 mviins = ["vmadc.vi", "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
-mvvmins = ["vmadc.vvm", "vmsbc.vvm", "vmacc.vv", "vnmsac.vv", "vmadd.vv"]
-mvxmins = ["vmadc.vxm", "vmsbc.vxm", "vmacc.vx", "vnmsac.vx", "vmadd.vx"]
+mvvmins = ["vmadc.vvm", "vmsbc.vvm"]
+mvxmins = ["vmadc.vxm", "vmsbc.vxm"]
 mvimins = ["vmadc.vim"]
 mmins = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm"]
 maskins = mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
