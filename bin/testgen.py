@@ -294,9 +294,9 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
 # Ensure rs2 is not equal to rs1
   if rs2 == rs1:
     rs2 = (rs1 + 1) % 32  # pick a different register
-  l = lines + f"li x{rs2}, 1 \n"
+  l = lines + f"li x{rs2}, {rs1} # branch is taken. Value to debug what register testing\n"
   l = l + jumpline
-  l = l + f"li x{rs2}, 0 \n"
+  l = l + f"li x{rs2}, 0 # branch is not taken \n"
   l = l + "1:\n"
   if (test in ["c.jalr", "c.jal"]):
     l = l + writeSIGUPD("1")
