@@ -22,7 +22,7 @@
 
 `define COVER_EXCEPTIONSV
 
-covergroup ExceptionsV_cg with function sample(ins_t ins);
+covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0;
 
     vl_ff: coverpoint ins.current.insn { //vector load fault first operation
@@ -99,6 +99,6 @@ endgroup
 
 function void exceptionsv_sample(int hart, int issue, ins_t ins);
     // if(traceDataQ[hart][issue][0].inst_name[0] == "v") begin
-        Vector_edgecases_cg.sample(ins);
+        ExceptionsV_exceptions_cg.sample(ins);
     // end
 endfunction

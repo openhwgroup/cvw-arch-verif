@@ -24,6 +24,7 @@
 
 covergroup ZicsrV_cg with function sample(ins_t ins);
     option.per_instance = 0;
+    `include "coverage/RISCV_coverage_standard_coverpoints_vector.svh"
 
     //TODO find new home for below
 
@@ -66,7 +67,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         //autofill 000-111
     }
 
-    rs2_vtype_legal: coverpoint ins.current.rs2_val[`XLEN:8] {
+    rs2_vtype_legal: coverpoint ins.current.rs2_val[(`XLEN-1):8] {
         bins legal     =   {0};
     }
 

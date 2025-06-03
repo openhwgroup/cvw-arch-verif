@@ -48,7 +48,7 @@
         bins true = {1'b1};
     }
 
-    nontrivial: cross vtype_prev_vill_clear, vstart_zero, vl_nonzer, no_trap;
+    nontrivial: cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
 
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") ==
                         get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vlenb", "vlenb") * 8) {
@@ -90,8 +90,8 @@
 
     vd_all_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vd){
         wildcard ignore_bins end_1 = {5'b???01};
-        wildcard ignore_bins end_1 = {5'b???10};
-        wildcard ignore_bins end_1 = {5'b???11};
+        wildcard ignore_bins end_2 = {5'b???10};
+        wildcard ignore_bins end_3 = {5'b???11};
     }
 
     vd_all_reg_div_8: coverpoint ins.get_vr_reg(ins.current.vd){
@@ -110,8 +110,8 @@
 
     vs1_all_reg_div_4: coverpoint ins.get_vr_reg(ins.current.vs1){
         wildcard ignore_bins end_1 = {5'b???01};
-        wildcard ignore_bins end_1 = {5'b???10};
-        wildcard ignore_bins end_1 = {5'b???11};
+        wildcard ignore_bins end_2 = {5'b???10};
+        wildcard ignore_bins end_3 = {5'b???11};
     }
 
     vs1_all_reg_div_8: coverpoint ins.get_vr_reg(ins.current.vs1){
