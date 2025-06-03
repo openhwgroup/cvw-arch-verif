@@ -21,7 +21,7 @@ from datetime import datetime
 from random import randint, seed, getrandbits
 
 def insertTemplate(name):
-    global sigupd_count
+    global signatureWords
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
@@ -30,7 +30,6 @@ def insertTemplate(name):
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
     if 'D' in ext_parts_no_I:
       ext_parts_no_I = ['D']+ext_parts_no_I
-      sigupd_count = sigupd_count * 2 # double the space needed for double precision
     if 'f' in  ext_parts[0]:
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
@@ -44,7 +43,7 @@ def insertTemplate(name):
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
 
-    template = template.replace("sigupd_count", str(sigupd_count))
+    template = template.replace("sigupd_count", str(signatureWords))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
@@ -149,7 +148,9 @@ def writeSIGUPD(rd):
 
 def writeSIGUPD_F(rd):
     global sigupd_count  # Allow modification of global variable
-    sigupd_count += 2  # Increment counter by 2 on each call since SIGUPD_F macro stores two registers to memory
+    global sigupd_countF
+    sigupd_count += 1  # Increment counter by 2 on each call since SIGUPD_F macro stores two registers to memory
+    sigupd_countF += 1  # Increment counter for floating point signature updates
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
@@ -271,6 +272,19 @@ def getSigInfo(floatdest):
       offsetInc = 8
   return storeinstr, offsetInc
 
+def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
+  #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
+  signatureWords = sigupd_count
+  if sigupd_countF > 0:
+    if flen > xlen:
+      mult = flen//xlen
+      signatureWords = sigupd_count + (sigupd_countF * (mult *2-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+    else:
+      signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+  return signatureWords
+
+
+#THIS FUNCTION IS NOT USED ANYMORE
 def incrementSigOffset(amount):
   global sigOffset  # necessary to declare global so we can modify it
   global sigTotal
@@ -3126,6 +3140,8 @@ if __name__ == '__main__':
         for test in coverpoints.keys():
         # print("Generating test for ", test, " with entries: ", coverpoints[test])
           sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
+          sigupd_countF = 0  #initialize signature update count for F tests
+          signatureWords = 0 #initialize signature words
           basename = "WALLY-COV-" + extension + "-" + test
           fname = pathname + "/" + basename + ".S"
           tempfname = pathname + "/" + basename + "_temp.S"
@@ -3182,6 +3198,8 @@ if __name__ == '__main__':
             write_tests(coverpoints[test], test, xlen)
 
           # print footer
+          #UPDATE SIGUPDCOUNT
+          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF)
           if test in vectortypes:
             insertTemplate("testgen_footer_vector2.S")
           else:
