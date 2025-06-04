@@ -35,8 +35,6 @@ def insertTemplate(name):
     if len(ext_parts_no_I) != 0:
       if ext_parts_no_I[-1] == 'D':
         ext_parts_no_I = ext_parts_no_I[:-1]
-    if 'V' in ext_parts_no_I:
-      ext_parts_no_I = ['M'] + ext_parts_no_I
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     # Construct the regex part
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])

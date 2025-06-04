@@ -28,13 +28,6 @@ def insertTemplate(name):
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
-    if 'D' in ext_parts_no_I:
-      ext_parts_no_I = ['D']+ext_parts_no_I
-    if 'f' in  ext_parts[0]:
-      ext_parts_no_I = ['F']+ext_parts_no_I
-    if len(ext_parts_no_I) != 0:
-      if ext_parts_no_I[-1] == 'D':
-        ext_parts_no_I = ext_parts_no_I[:-1]
     if 'V' in ext_parts_no_I:
       ext_parts_no_I = ['M'] + ext_parts_no_I
     ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
@@ -275,10 +268,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
 
 # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
 def randomNonconflictingReg(test):
-  if E_ext : # Extension
-    reg = randint(1, 15)
-  else: # normal instructions
-    reg = randint(1, maxreg) # 1 to maxreg, inclusive
+  reg = randint(1, maxreg) # 1 to maxreg, inclusive
   while reg == sigReg: # resolve conflicts; *** add constReg when implemented
     reg = randomNonconflictingReg(test)
   return reg
@@ -1075,138 +1065,125 @@ if __name__ == '__main__':
 
 # generate files for each test
   for xlen in xlens:
-    # for E_ext in [False, True]:
-    for E_ext in [False]: # for testing only ***
-      if (E_ext):
-        extensions = ["E", "M", "Zca", "Zcb", "Zba", "Zbb", "Zbs"]
-        E_suffix = "e"
-        maxreg = 15 # E uses registers x0-x15
+    extensions = getExtensions() # find all extensions in
+    maxreg = 31 # I uses registers x0-x31
+
+    for extension in extensions:
+      coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+      coverfiles = [extension]
+      coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
+      pathname = f"{ARCH_VERIF}/tests/rv{xlen}/{extension}"
+      print("Generating tests for " + pathname)
+      formatstrlen = str(int(xlen/4))
+      formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
+      formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
+      if (xlen == 32):
+        storecmd = "sw"
+        wordsize = 4
       else:
-        extensions = getExtensions() # find all extensions in
-        E_suffix = ""
-        maxreg = 31 # I uses registers x0-x31
+        storecmd = "sd"
+        wordsize = 8
+      flen = 32
+      formatstrlenFP = str(int(flen/4))
+      formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
+      corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+      rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
+      if (xlen == 32):
+        corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+      else:
+        corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
+                            0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
+                            0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
+                            0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
+                            0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
+                            0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
+                            0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-      for extension in extensions:
-        coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
-        coverfiles = [extension]
-        coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
-        pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
-        print("Generating tests for " + pathname)
-        formatstrlen = str(int(xlen/4))
-        formatstr = "0x{:0" + formatstrlen + "x}" # format as xlen-bit hexadecimal number
-        formatrefstr = "{:08x}" # format as xlen-bit hexadecimal number with no leading 0x
-        if (xlen == 32):
-          storecmd = "sw"
-          wordsize = 4
+        corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+                        0b0000000000000000000000000000000000000000000000000000000000000001,
+                        0b1111111111111111111111111111111111111111111111111111111111111111,
+                        0b0000000000000000000000000000000001111111111111111111111111111111,
+                        0b1111111111111111111111111111111110000000000000000000000000000000]
+      vcorners = ["vs_corner_0", "vs_corner_1", "vs_corner_2", "vs_corner_3", "vs_corner_4", "vs_corner_5", "vs_corner_6", "vs_corner_7"]
+
+      vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
+
+      cp_vm_corners = ["cp_vm_ones", "cp_vm_zeroes", "cp_vm_random", "cp_vm_Echeckerboard", "cp_vm_Echeckerboard", "cp_vm_Ocheckerboard", "cp_vm_first_vlmax", "cp_vm_halfvlmax"]
+
+      # global NaNBox_tests
+      NaNBox_tests = False
+
+      # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
+      cmd = "mkdir -p " + pathname # make directory
+      os.system(cmd)
+      basepathname = pathname
+      includeVData = " "
+      for test in coverpoints.keys():
+      # print("Generating test for ", test, " with entries: ", coverpoints[test])
+        sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
+        sigupd_countF = 0  #initialize signature update count for F tests
+        signatureWords = 0 #initialize signature words
+        basename = "WALLY-COV-" + extension + "-" + test
+        fname = pathname + "/" + basename + ".S"
+        tempfname = pathname + "/" + basename + "_temp.S"
+
+        # print custom header part
+        f = open(tempfname, "w")
+        line = "///////////////////////////////////////////\n"
+        f.write(line)
+        line="// "+fname+ "\n// " + author + "\n"
+        f.write(line)
+        # Don't print creation date because this forces rebuild of files that are otherwise identical
+        #line ="// Created " + str(datetime.now()) + "\n"
+        #f.write(line)
+
+        # insert generic header
+        insertTemplate("testgen_header_vector.S")
+
+        sigTotal = 0 # total number of bytes in signature
+        sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
+        vRandomCounter = 0
+
+        # add assembly lines to enable fp where needed
+        if test in vfloattypes:
+          float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+          f.write(float_en)
+
+        sew_match = re.search(r"/Vx(\d+)", pathname)
+        if sew_match is None:
+          sew = 8
         else:
-          storecmd = "sd"
-          wordsize = 8
-        if (extension in ["D", "ZfaD", "ZfhD","Zcd","ZfaZfhD","ZfhminD"]):
-          flen = 64
-        elif (extension in ["Q", "ZfaQ", "ZfhQ"]):
-          flen = 128
-        else:
-          flen = 32
-        formatstrlenFP = str(int(flen/4))
-        formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
-        if (xlen == 32):
-          corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        else:
-          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
-                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+          sew = int(sew_match.group(1))
 
-          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                          0b0000000000000000000000000000000000000000000000000000000000000001,
-                          0b1111111111111111111111111111111111111111111111111111111111111111,
-                          0b0000000000000000000000000000000001111111111111111111111111111111,
-                          0b1111111111111111111111111111111110000000000000000000000000000000]
-        vcorners = ["vs_corner_0", "vs_corner_1", "vs_corner_2", "vs_corner_3", "vs_corner_4", "vs_corner_5", "vs_corner_6", "vs_corner_7"]
+        # vlen defined as max for test generation
+        vlen = 2048
+        # vl=1 for base suite
+        vl = 1
 
-        vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
+        f.write(f"\n")
+        f.write(f"// Initial set vl = 1\n")
+        vsetline1 = f"li x2, {vl}\n"
+        vsetline2 = f"vsetvli x0, x2, e{sew}, m1, tu, mu\n"
 
-        cp_vm_corners = ["cp_vm_ones", "cp_vm_zeroes", "cp_vm_random", "cp_vm_Echeckerboard", "cp_vm_Echeckerboard", "cp_vm_Ocheckerboard", "cp_vm_first_vlmax", "cp_vm_halfvlmax"]
-
-        # global NaNBox_tests
-        NaNBox_tests = False
-
-        # cmd = "mkdir -p " + pathname + " ; rm -f " + pathname + "/*" # make directory and remove old tests in dir
-        cmd = "mkdir -p " + pathname # make directory
-        os.system(cmd)
-        basepathname = pathname
-        includeVData = " "
-        for test in coverpoints.keys():
-        # print("Generating test for ", test, " with entries: ", coverpoints[test])
-          sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
-          sigupd_countF = 0  #initialize signature update count for F tests
-          signatureWords = 0 #initialize signature words
-          basename = "WALLY-COV-" + extension + "-" + test
-          fname = pathname + "/" + basename + ".S"
-          tempfname = pathname + "/" + basename + "_temp.S"
-
-          # print custom header part
-          f = open(tempfname, "w")
-          line = "///////////////////////////////////////////\n"
-          f.write(line)
-          line="// "+fname+ "\n// " + author + "\n"
-          f.write(line)
-          # Don't print creation date because this forces rebuild of files that are otherwise identical
-          #line ="// Created " + str(datetime.now()) + "\n"
-          #f.write(line)
-
-          # insert generic header
-          insertTemplate("testgen_header_vector.S")
-
-          sigTotal = 0 # total number of bytes in signature
-          sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
-          vRandomCounter = 0
-
-          # add assembly lines to enable fp where needed
-          if test in vfloattypes:
-            float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
-            f.write(float_en)
-
-          sew_match = re.search(r"/Vx(\d+)", pathname)
-          if sew_match is None:
-            sew = 8
-          else:
-            sew = int(sew_match.group(1))
-
-          # vlen defined as max for test generation
-          vlen = 2048
-          # vl=1 for base suite
-          vl = 1
-
-          f.write(f"\n")
-          f.write(f"// Initial set vl = 1\n")
-          vsetline1 = f"li x2, {vl}\n"
-          vsetline2 = f"vsetvli x0, x2, e{sew}, m1, tu, mu\n"
-
-          f.write(vsetline1)
-          f.write(vsetline2)
-          write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
-          insertTemplate("testgen_footer_vector1.S")
-          genVector(sew, vl, vlen, test)
+        f.write(vsetline1)
+        f.write(vsetline2)
+        write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
+        insertTemplate("testgen_footer_vector1.S")
+        genVector(sew, vl, vlen, test)
 
 
-          # print footer
-          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
-          insertTemplate("testgen_footer_vector2.S")
+        # print footer
+        signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
+        insertTemplate("testgen_footer_vector2.S")
 
-          # Finish
-          f.close()
-          # if new file is different from old file, replace old file with new file
-          if os.path.exists(fname):
-            if filecmp.cmp(fname, tempfname): # files are the same
-              os.system(f"rm {tempfname}") # remove temp file
-            else:
-              os.system(f"mv {tempfname} {fname}")
-              print("Updated " + fname)
+        # Finish
+        f.close()
+        # if new file is different from old file, replace old file with new file
+        if os.path.exists(fname):
+          if filecmp.cmp(fname, tempfname): # files are the same
+            os.system(f"rm {tempfname}") # remove temp file
           else:
             os.system(f"mv {tempfname} {fname}")
+            print("Updated " + fname)
+        else:
+          os.system(f"mv {tempfname} {fname}")
