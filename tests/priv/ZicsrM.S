@@ -270,10 +270,6 @@ formbits:
     fence.tso
     // Zihintpause
     pause
-    // Svinval
-    sinval.vma x0, x0
-    sfence.w.inval
-    sfence.inval.ir
 
 /////////////////////////////////
 // cp_mret
