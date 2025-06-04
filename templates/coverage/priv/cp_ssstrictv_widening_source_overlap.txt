@@ -7,8 +7,8 @@
         bins four   = {2};
     }
 
-    vs1_eq_vs2: coverpoint ins.current.vs1 == ins.current.vs2 {
+    vs2_eq_vs1: coverpoint ins.current.vs1 == ins.current.vs2 {
         bins equal = {1'b1};
     }
 
-    cp_ssstrictv_widening_source_overlap : cross std_trap_vec, lmul_1_through_4, vs1_eq_vs2;
+    cp_ssstrictv_widening_source_overlap : cross std_trap_vec, lmul_1_through_4, vs2_eq_vs1;

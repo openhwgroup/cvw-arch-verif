@@ -1,0 +1,3 @@
+    // Custom coverpoints for Vector mask load/store operations
+
+    cp_custom_maskLS_emul_ge_16 : cross std_vec, vtype_all_lmulgt1, vtype_all_sewgt8;

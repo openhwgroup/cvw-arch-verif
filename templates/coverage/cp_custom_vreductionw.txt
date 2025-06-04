@@ -1,0 +1,17 @@
+    // Custom coverpoints for Vector reduction operations
+
+    cp_custom_vreduction_vd_offgroup_lmul2:     cross std_vec, vtype_lmul_2, vd_all_reg_notdiv_2,    vs1_reg_div_2,        vs2_reg_div_2;
+    cp_custom_vreduction_vs1_offgroup_lmul2:    cross std_vec, vtype_lmul_2, vd_reg_div_2,           vs1_reg_notdiv_2,     vs2_reg_div_2;
+
+    cp_custom_vreduction_vd_offgroup_lmul4:     cross std_vec, vtype_lmul_4, vd_all_reg_notdiv_4,    vs1_reg_div_4,        vs2_reg_div_4;
+    cp_custom_vreduction_vs1_offgroup_lmul4:    cross std_vec, vtype_lmul_4, vd_reg_div_4,           vs1_all_reg_notdiv_4, vs2_reg_div_4;
+
+    cp_custom_vreduction_vd_offgroup_lmul8:     cross std_vec, vtype_lmul_8, vd_all_reg_notdiv_8,    vs1_reg_div_8,        vs2_reg_div_8;
+    cp_custom_vreduction_vs1_offgroup_lmul8:    cross std_vec, vtype_lmul_8, vd_reg_div_8,           vs1_all_reg_notdiv_8, vs2_reg_div_8;
+
+
+    cp_custom_vreduction_vd_eq_v0_masked:       cross  std_vec, vd_v0, mask_enabled;
+
+    // Custom coverpoints for Vector widening reduction operations
+
+    cp_custom_vreductionw_vd_vs1_emul_16 :      cross std_vec, vtype_lmul_8;

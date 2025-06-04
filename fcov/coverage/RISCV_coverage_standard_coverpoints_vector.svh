@@ -75,6 +75,31 @@
         // All vs2 registers
     }
 
+    vd_eq_vs1 : coverpoint (ins.current.insn[11:7] == ins.current.insn[19:15]) {
+        bins target = {1'b1};
+    }
+
+    vd_eq_vs2 : coverpoint (ins.current.insn[11:7] == ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+    vs2_eq_vs1 : coverpoint (ins.current.insn[19:15] == ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+    vd_not_eq_vs2 : coverpoint (ins.current.insn[24:20] != ins.current.insn[11:7]) {
+        bins target = {1'b1};
+    }
+
+    vd_not_eq_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[11:7]) {
+        bins target = {1'b1};
+    }
+
+    vs2_not_eq_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")
                         == get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins target = {1'b1};
@@ -85,7 +110,7 @@
         bins target = {1'b0};
     }
 
-    vtype_lmulge1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+    vtype_all_lmulge1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         bins one    = {0};
         bins two    = {1};
         bins four   = {2};
@@ -106,6 +131,45 @@
 
     vtype_lmul_8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         bins two = {3};
+    }
+
+    vtype_all_lmulgt1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
+    vtype_all_sewgt8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW16_SUPPORTED
+        bins sixteen    = {1};
+        `endif
+        `ifdef SEW32_SUPPORTED
+        bins thirtytwo  = {2};
+        `endif
+        `ifdef SEW64_SUPPORTED
+        bins sixtyfour  = {3};
+        `endif
+    }
+
+    vtype_sew_8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW8_SUPPORTED
+        bins eight      = {0};
+        `endif
+    }
+
+    vtype_all_sew_supported: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW8_SUPPORTED
+        bins eight      = {0};
+        `endif
+        `ifdef SEW16_SUPPORTED
+        bins sixteen    = {1};
+        `endif
+        `ifdef SEW32_SUPPORTED
+        bins thirtytwo  = {2};
+        `endif
+        `ifdef SEW64_SUPPORTED
+        bins sixtyfour  = {3};
+        `endif
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +203,7 @@
         wildcard ignore_bins odd = {5'b????1};
     }
 
-    vs1_all_reg_aligned_lmulv_4: coverpoint ins.current.insn[19:15] {
+    vs1_all_reg_aligned_lmul_4: coverpoint ins.current.insn[19:15] {
         wildcard ignore_bins end_1 = {5'b???01};
         wildcard ignore_bins end_2 = {5'b???10};
         wildcard ignore_bins end_3 = {5'b???11};
