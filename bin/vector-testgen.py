@@ -524,18 +524,18 @@ def make_rs1_corners_v(test, sew, vl, rng):
     desc = f"cp_rs1_corners (Test source rs1 value = " + hex(rcorner) + ")"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rcorner, imm=immval, vta=0)
 
-def make_uimm_v(test, sew, vl, rng):
+def make_imm_v(test, sew, vl):
   if (test in imm_31):
-    for immi in range(0,31):
+    for uimm in range(0,32):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cp_uimm_5 (Test uimm = " + str(immi) + ")"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immi, vta=0)
+      desc = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
+      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=uimm, vta=0)
   else:
     for imm in range(-16,16):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cp_uimm_5 (Test uimm = " + str(imm) + ")"
+      desc = "cp_imm_5bit (Test imm = " + str(imm) + ")"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=imm, vta=0)
 
 def make_rdv(test, sew, rng):
@@ -680,7 +680,7 @@ def make_vxrm_vs1_vs2_corners(test, vlen, sew, vl):
 def make_immv(test, vlen, sew, lmul, vl, rng, xlen, xtype=None, vfloattype=None):
   desc = "cp_imm_corners"
   if (test in imm_31):
-    for immc in range(0, 31):
+    for immc in range(0, 32):
       [vs1, vs2, rs1, vd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immc)
   else:
@@ -712,8 +712,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rdv(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_rs1"):
       make_rs1_v(test, sew, vl, range(maxreg+1))
-    elif (coverpoint == "cp_uimm_5"):
-      make_uimm_v(test, sew, vl, range(maxreg+1))
+    elif (coverpoint == "cp_imm_5bit") or (coverpoint == "cp_imm_5bit_u"):
+      make_imm_v(test, sew, vl)
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners_v(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd"):
