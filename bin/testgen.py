@@ -161,6 +161,7 @@ def writeSIGUPD_F(rd):
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
+    # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
     avl = 1   # Set AVL
     tempReg = 6
     while tempReg == sigReg:
@@ -295,10 +296,14 @@ def writeTest(lines, rd, xlen, floatdest, testline):
   return l
 
 
-def writeVecTest(lines, vd, sew, vlen, testline, test=None):
+def writeVecTest(lines, vd, sew, vlen, testline, test=None, rd=None):
     l = lines + testline
     if (test in widenins):
       l = l + writeSIGUPD_V(vd, 2*sew)  # EEW of vd = 2 * SEW for widening
+    elif (test in maskins):
+      l = l + writeSIGUPD_V(vd, 1)      # EEW of vd = 1 for mask
+    elif (test in vrvxtype):
+      l = l + writeSIGUPD(rd)
     else:
       l = l + writeSIGUPD_V(vd, sew)
     return l
@@ -308,11 +313,14 @@ def writeJumpTest(lines, rd, rs1, rs2, xlen, jumpline):
 # Ensure rs2 is not equal to rs1
   if rs2 == rs1:
     rs2 = (rs1 + 1) % 32  # pick a different register
-  l = lines + f"li x{rs2}, 1 \n"
+  l = lines + f"li x{rs2}, {rs1} # branch is taken. Value to debug what register testing\n"
   l = l + jumpline
-  l = l + f"li x{rs2}, 0 \n"
+  l = l + f"li x{rs2}, 0 # branch is not taken \n"
   l = l + "1:\n"
-  l = l + writeSIGUPD(rd)
+  if (test in ["c.jalr", "c.jal"]):
+    l = l + writeSIGUPD(1)
+  elif (test in ["jalr", "jal"]):
+    l = l + writeSIGUPD(rd)
   l = l + writeSIGUPD(rs2)
   return l
 
@@ -422,7 +430,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.addiw" and rd == 0):
       rd = 1
     if (test != "c.addi16sp"):
-      lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      if (test in "c.lwsp"):
+        while (rs2 == 2):
+            rs2 = randint(1, maxreg) # rs2 cannot be 2 for c.lwsp
+        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      else:
+        lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
       lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       immval = int(signedImm6(immval)) * 16
@@ -485,7 +498,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif test in ["c.jalr", "c.jr"]:
       if (rs1 == 0):
         rs1 = 1
-      if (test == "c.jalr"):
+      if (test in "c.jalr"):
         lines = lines + "li x1" + ", " + formatstr.format(rdval) + " # initialize rd (x1) to a random value that should get changed\n"
       lines = lines + f"la x{rs1}, 1f\n"
       jumpline = f"{test} x{rs1} # perform operation\n"
@@ -639,9 +652,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n" #!
-      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n" #!
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n" #!
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
+      lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
       lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
       sigupd_count += 1
@@ -800,7 +813,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
                      vfrm=None, floattype=None, xtype=None, vxsat=None, vta=None, vma=None):
 
     lines = "\n# Testcase " + str(desc) + "\n"
-    lines = handleSignaturePointerConflict(lines, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
+    lines = handleSignaturePointerConflict(lines, rd, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
     if (vl is not None) and (lmul is not None) and (sew is not None):
       lines = lines + prepBaseV(lines, sew, lmul, vl, vstart, vta, vma)
@@ -825,12 +838,14 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       # determining EEW for vs2
       if (test in wwvins) or (test in wwxins) or (test in narrowins):
         vs2eew = 2 * sew
+        vs1eew = sew
       else:
         vs2eew = sew
+        vs1eew = sew
 
       # test writing
-      if (test in vvtype):
-        lines = lines + loadVecReg(vs1, vs1val, sew)
+      if (test in vvtype) or (test in vvmtype):
+        lines = lines + loadVecReg(vs1, vs1val, vs1eew)
         lines = lines + loadVecReg(vs2, vs2val, vs2eew)
         testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       elif (test in vxtype):
@@ -849,7 +864,8 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
         testline = f"{test} v{vd}, v{vs2}, {imm}, v0\n"
       elif (test in vvvmtype):
         lines = lines + loadVecReg(vs2, vs2val, vs2eew)
-        lines = lines + loadVecReg(vs1, vs1val, sew)
+        lines = lines + loadVecReg(vs1, vs1val, vs1eew)
+        lines = lines + loadVecReg(0, "vtype_mask_corner_0", sew)
         testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
       elif (test in vxmtype):
         lines = lines + loadVecReg(vs2, vs2val, vs2eew)
@@ -866,15 +882,20 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       elif (test in vrvtype):
         testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
       elif (test in vxxtype):
+        lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
         testline = f"{test} v{vd}, x{rs1}{maskinstr}\n"
       elif (test in vvxtype):
+        lines = lines + loadVecReg(vs1, vs1val, vs1eew)
         testline = f"{test} v{vd}, v{vs1}{maskinstr}\n"
+      elif (test in vvvxtype):
+        lines = lines + loadVecReg(vs2, vs2val, vs2eew)
+        testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       elif (test in vixtype):
         testline = f"{test} v{vd}, {imm}{maskinstr}\n"
       else:
         print("Error: %s type not implemented yet" % test)
         return
-      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test)
+      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
       f.write(lines)
 
 
@@ -1137,6 +1158,8 @@ def randomNonconflictingReg(test):
   regfield3types = ciwtype + cltype + cstype + cbptype + catype + cbtype + clbtype + clhtype + csbtype + cshtype + cutype + ["c.srli", "c.srai"]
   if (test in regfield3types):
     reg = randint(8, 15) # for compressed instructions
+  elif E_ext : # Extension
+    reg = randint(1, 15)
   else: # normal instructions
     reg = randint(1, maxreg) # 1 to maxreg, inclusive
   while reg == sigReg: # resolve conflicts; *** add constReg when implemented
@@ -1491,35 +1514,47 @@ def make_imm_corners_jal(test, xlen): # update these test
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
     if (test == "jal"):
       if (r>=6): #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"li x{rs1}," + str(r) + "\n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + "jal x"+str(rd)+", f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
     elif (test in ["c.jal", "c.j"]):
       if (r>=6):  #Can only fit signature logic if jump is greater than 32 bytes (r+1=6)
-        lines += f"c.li x{rs1}," + str(r) + " \n"
-        lines = lines +  writeSIGUPD(rs1) + "\n"
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
+        lines = lines + f"c.li x{rs1}," + str(r) + " \n"
+        lines = lines +  writeSIGUPD(rs1)
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
       else:
         lines = lines + test + " f"+str(r+1)+"_"+test+" # jump to aligned address to stress immediate\n"
 
     if (r>=6): # comparison is 6 because it's not r+1 this time
       if (test in ["c.jal", "c.j"]):
-        lines += f"c.li x{rs1}, 0 \n"
+        lines = lines + f"c.li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
       else:
-        lines += f"li x{rs1}, 0 \n"
-      lines += writeSIGUPD(rs1) + "\n"
+        lines = lines + f"li x{rs1}, 0 \n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "f" +str(r)+"_"+test+":\n"
+
     if (r>=6):
-      lines += f"li x{rs1}," + str(r) + "\n"
-      lines = lines + writeSIGUPD(rs1) + "\n"
+      if (test in ["c.jal", "c.j"]):
+        lines = lines + f"c.li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
+      else:
+        lines = lines + f"li x{rs1}," + str(r) + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+      lines = lines + writeSIGUPD(rs1)
+
     if (test == "jal"):
       lines = lines + "jal x"+str(rd)+", b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
       if(r>=6):
-        lines += f"li x{rs1}, 0 " + "\n"
-        lines = lines + writeSIGUPD(rs1) +"\n"
+        lines = lines + f"li x{rs1}, 0 " + "\n"
+        lines = lines +  writeSIGUPD(rd) # checking if return address is correct for jal
+        lines = lines + writeSIGUPD(rs1)
     elif (test in ["c.jal", "c.j"]):
       if (r == 12): # temporary fix for bug in compressed branches
         if (test == "c.j"):
@@ -1530,9 +1565,9 @@ def make_imm_corners_jal(test, xlen): # update these test
       else:
         lines = lines + test + " b"+str(r-1)+"_"+test+" # jump to aligned address to stress immediate\n"
         if(r>=6):
-          lines += f"c.li x{rs1}, 0" +"\n"
-          lines += writeSIGUPD(rs1) + "\n"
-
+          lines = lines + f"c.li x{rs1}, 0" +"\n"
+          lines = lines +  writeSIGUPD(1) # checking if return address is correct for c.jal
+          lines = lines + writeSIGUPD(rs1)
     f.write(lines)
   lines = ".align " + str(maxrng-1) + "\n"
   lines = "f"+str(maxrng)+"_"+test+":\n"
@@ -1554,8 +1589,8 @@ def make_imm_corners_jalr(test, xlen):
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     lines += f"li x{rs2}, 0 " + "\n"
     lines = lines + "1:\n"
-    lines = lines +  writeSIGUPD(rd) +"\n" #checking if return addres is correct
-    lines = lines +  writeSIGUPD(rs2) +"\n" #checking if jump was performed
+    lines = lines +  writeSIGUPD(rd) #checking if return addres is correct
+    lines = lines +  writeSIGUPD(rs2) #checking if jump was performed
     f.write(lines)
 
 def make_offset(test, xlen):
@@ -1602,6 +1637,11 @@ def make_offset(test, xlen):
 
   lines = lines + "3:  # done with sequence\n"
   lines = lines +  writeSIGUPD(rs1) # checking if branch was taken
+  if (test in "c.jalr" ):
+    lines = lines +  writeSIGUPD(1) # checking return value of c.jalr
+  elif (test in jalrtype):
+    lines = lines +  writeSIGUPD(rd) # checking return value of jalr
+
   f.write(lines)
 
 def make_offset_lsbs(test, xlen):
@@ -1614,7 +1654,7 @@ def make_offset_lsbs(test, xlen):
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb1: \n"
     lines = lines +  writeSIGUPD(rs1)
-    lines = lines +  writeSIGUPD("1") #check return value in jalr
+    lines = lines +  writeSIGUPD(rd) #check return value in jalr
     lines = lines + "la x3, jalrlsb2 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
     lines = lines + f"li x{rs1}, 1" + " # branch is taken\n"
@@ -1622,32 +1662,45 @@ def make_offset_lsbs(test, xlen):
     lines = lines + f"li x{rs1}, 0" + " # branch is not taken\n"
     lines = lines + "jalrlsb2: \n"
     lines = lines +  writeSIGUPD(rs1)
-    lines = lines +  writeSIGUPD("1") #check return value in jalr
+    lines = lines +  writeSIGUPD(rd) #check return value in jalr
 
-  else: # c.jalr / c.jr #TODO Probably the same as above but jumping by 2
+  else: # c.jalr / c.jr
     lines = lines + "la x3, "+test+"lsb00 # load address of label\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 00\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb00: nop\n"
+    lines = lines + test+"lsb00: "  + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb01 # load address of label\n"
     lines = lines + "addi x3, x3, 1 # add 1 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 01\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb01: nop\n"
+    lines = lines + test+"lsb01: " + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
     lines = lines + "la x3, "+test+"lsb10 # load address of label\n"
     lines = lines + "addi x3, x3, 2 # add 2 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 10\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb10: nop\n"
+    lines = lines + test+"lsb10: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
+    lines = lines + "nop\n" # c.jalr does not support 2 byte jumps, so this is a noop
     lines = lines + "la x3, "+test+"lsb11 # load address of label\n"
     lines = lines + "addi x3, x3, 3 # add 3 to address\n"
+    lines = lines + f"c.li x{rs1}, 1" + " # branch is taken\n"
     lines = lines + test + " x3 # jump to address with bottom two lsbs = 11\n"
-    lines = lines + "c.nop # something to jump over\n"
+    lines = lines + f"c.li x{rs1}, 0" + " # branch is not taken & used as something to jump over\\n"
     lines = lines + ".align 2\n"
-    lines = lines + test+"lsb11: nop\n"
+    lines = lines + test+"lsb11: nop\n" + writeSIGUPD(rs1)
+    if (test in "c.jalr"):
+      lines = lines +  writeSIGUPD(1) #check return value in c.jalr
   f.write(lines)
 
 def make_mem_hazard(test, xlen):
@@ -1853,7 +1906,7 @@ def narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
 def make_vd(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vs2 or v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -1862,6 +1915,14 @@ def make_vd(test, sew, vl, rng):
     elif (test in wwvins):
       while (v == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in v_mins):
+      while (v == 0 or vs1 == 0 or vs2 == 0):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in mv_mins):
+      while (vs1 == 0 or vs2 == 0 or v == vs2 or v == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cp_vd (Test destination vd = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1869,7 +1930,7 @@ def make_vd(test, sew, vl, rng):
 def make_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins) or (test in wvxins):
+    if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins):
       while (v == vd or vd == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
@@ -1877,6 +1938,17 @@ def make_vs2(test, sew, vl, rng):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in wwvins):
       while (v == vs1 or v == (vs1-1) or vd == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in v_mins):
+      while (vd == 0 or vs1 == 0 or v == 0):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in mv_mins):
+      while (vs1 == 0 or v == 0 or vd == v or vd == vs1):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
+    elif (test in wvsins):
+      while (v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, v, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
@@ -1887,14 +1959,20 @@ def make_vs1(test, sew, vl, rng):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     while (v == vs2):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins):
-      while (v == vd or v == vs1):
+    if (test in wvvins) or (test in mvvins):
+      while (v == vd or v == vs2):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
       while (v == vs2 or v == (vs2+1) or vd == (vs2+1)):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in wwvins):
       while (v == vs2 or v == (vs2+1) or v == vd):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in v_mins):
+      while (vd == 0 or v == 0 or vs2 == 0):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in mv_mins):
+      while (v == 0 or vs2 == 0 or vd == vs2 or vd == v):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
     writeCovVector_V(desc, v, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
@@ -1906,6 +1984,8 @@ def make_vd_vs2(test, sew, vl, rng):
     if (test in wwvins):
       while (v == vs1):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in vvvxtype): # vmv<nr>r.v
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
     writeCovVector_V(desc, vs1, v, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -1930,7 +2010,7 @@ def make_vd_vs1_vs2(test, sew, vl, rng):
 def make_vs1_vs2(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvvins):
+    if (test in wvvins) or (test in mvvins) or (test in mvvmins):
       while (v == vd):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
@@ -2436,20 +2516,36 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vd_widen"):
-      make_vd(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cp_vd_emul2"):
+      make_vd(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cp_vd_emul4"):
+      make_vd(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cp_vd_emul8"):
+      make_vd(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cp_vs2"):
       make_vs2(test, sew, vl, range(maxreg+1))
-    elif (coverpoint == "cp_vs2_widen"):
-      make_vs2(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cp_vs2_nv0"):
+      make_vs2(test, sew, vl, range(1,maxreg+1))
+    elif (coverpoint == "cp_vs2_emul2"):
+      make_vs2(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cp_vs2_emul4"):
+      make_vs2(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cp_vs2_emul8"):
+      make_vs2(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cp_vs1"):
       make_vs1(test, sew, vl, range(maxreg+1))
+    elif (coverpoint == "cp_vs1_nv0"):
+      make_vs1(test, sew, vl, range(1,maxreg+1))
     elif (coverpoint == "cmp_vd_vs2"):
       make_vd_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
       make_vd_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cmp_vd_vs2_widen"):
-      make_vd_vs2(test, sew, vl, range(0,maxreg,2*lmul))
+    elif (coverpoint == "cmp_vd_vs2_emul2"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,2))
+    elif (coverpoint == "cmp_vd_vs2_emul4"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,4))
+    elif (coverpoint == "cmp_vd_vs2_emul8"):
+      make_vd_vs2(test, sew, vl, range(0,maxreg,8))
     elif (coverpoint == "cmp_vd_vs1"):
       make_vd_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
@@ -2712,22 +2808,22 @@ vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx"
 vitype = ["vadd.vi", "vrsub.vi", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi",
           "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
 
-vrvtype = ["vcpop.m", "vfirst.m", "vmv.vx"]
+vrvtype = ["vcpop.m", "vfirst.m"]
 
 vvvtype = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
-vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx","vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 vvxtype =["vmv.v.v"]
 vxxtype = ["vmv.s.x", "vmv.v.x"]
 vixtype = ["vmv.v.i"]
 vrvxtype = ["vmv.x.s"]
+vvvxtype = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
 vdtype = ["vid.v"]
 vimtype = ["vadc.vim", "vsbc.vim", "vmerge.vim", "vmadc.vim"]
 vvvmtype = ["vadc.vvm", "vsbv.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm", "vsbc.vvm"]
 vxmtype = ["vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm", "vadc.vxm"]
-mvvtype = ["vnmsub.vv"]
-vvmtype = ["vmxnor.mm", "vmxor.mm", "vcompress.vm", "vmnand.mm", "vmnor.mm", "vmor.mm", "vmorn.mm"]
+vvmtype = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
-vectortypes = vvmtype + mvvtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype
+vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype + vvvxtype
 
 floattypes = frtype + fstype + fltype + fcomptype + F2Xtype + fr4type + fitype + fixtype + X2Ftype + zcftype + flitype + PX2Ftype + zcdtype #TODO: these types aren't necessary anymore, Hamza remove them
 
@@ -2757,9 +2853,18 @@ vimins = ["vadc.vim", "vmerge.vim"]
 mvvins = ["vmadc.vv", "vmsbc.vv", "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
 mvxins = ["vmadc.vx", "vmsbc.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
 mviins = ["vmadc.vi", "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
-mvvmins = ["vmadc.vvm", "vmsbc.vvm", "vmacc.vv", "vnmsac.vv", "vmadd.vv"]
-mvxmins = ["vmadc.vxm", "vmsbc.vxm", "vmacc.vx", "vnmsac.vx", "vmadd.vx"]
+mvvmins = ["vmadc.vvm", "vmsbc.vvm"]
+mvxmins = ["vmadc.vxm", "vmsbc.vxm"]
 mvimins = ["vmadc.vim"]
+mmins = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm"]
+maskins = mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
+v_mins = vvmins + vxmins + vimins
+mv_ins = mvvins + mvxins + mviins
+mv_mins = mvvmins + mvxmins + mvimins
+# extending
+vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
+# widening reduction
+wvsins = ["vwredsum.vs", "vwredsumu.vs"]
 
 global hazardLabel
 hazardLabel = 1
