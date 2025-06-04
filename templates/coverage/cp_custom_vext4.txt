@@ -1,0 +1,11 @@
+    // Custom coverpoints for Vector zext and sext operations
+
+    vs2_vd_overlap_lmul4: coverpoint (ins.current.insn[24:22] == ins.current.insn[11:9]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs2_mod4_3: coverpoint ins.current.insn[16:15] {
+        bins odd = {2'b11};
+    }
+
+    cp_custom_vext4_overlapping_vd_vs2:    cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vs2_mod4_3;

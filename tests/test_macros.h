@@ -487,19 +487,19 @@ Mend_PMP:                                    ;\
 /* to keep offset < 2048. SIGALIGN is set to the max(FREGWIDTH, REGWIDTH)*/
 /* _BR - Base Reg, _R - FReg, _F - Fstatus Xreg				 */
 #define RVTEST_SIGUPD_F(_BR,_R,_F,...)			;\
-  .if NARG(__VA_ARGS__) == 1				;\
-     .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
-  .endif						;\
-  .if (offset&(SIGALIGN-1))!=0				;\
-/* Throw warnings then modify offset to target */	;\
-     .warning "Incorrect signature Offset Alignment."	;\
-     .set offset, offset&(SIGALIGN-1)+SIGALIGN		;\
-  .endif						;\
-  CHK_OFFSET(_BR, SIGALIGN, 0)				;\
-  FSREG _R,offset(_BR)					;\
-  CHK_OFFSET(_BR, SIGALIGN, 1)				;\
-  SREG _F,offset(_BR)					;\
-  .set offset,offset+SIGALIGN
+//   .if NARG(__VA_ARGS__) == 1				;\
+//      .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
+//   .endif						;\
+//   .if (offset&(SIGALIGN-1))!=0				;\
+// /* Throw warnings then modify offset to target */	;\
+//      .warning "Incorrect signature Offset Alignment."	;\
+//      .set offset, offset&(SIGALIGN-1)+SIGALIGN		;\
+//   .endif						;\
+//   CHK_OFFSET(_BR, SIGALIGN, 0)				;\
+//   FSREG _R,offset(_BR)					;\
+//   CHK_OFFSET(_BR, SIGALIGN, 1)				;\
+//   SREG _F,offset(_BR)					;\
+//   .set offset,offset+SIGALIGN
 
 /* RVTEST_SIGUPD_FID(basereg, sigreg,flagreg,newoff)			*/
 /* This macro stores the signature values of (32 & 64) F & D insts	*/

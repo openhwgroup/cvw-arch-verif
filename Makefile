@@ -41,8 +41,9 @@ priv: privheaders | $(PRIVDIR64) $(PRIVDIR32)
 covergroupgen: bin/covergroupgen.py
 	bin/covergroupgen.py
 
-testgen: covergroupgen bin/testgen.py bin/combinetests.py
+testgen: covergroupgen bin/testgen.py bin/vector-testgen.py bin/combinetests.py
 	bin/testgen.py
+	bin/vector-testgen.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 # bin/combinetests.py
 
@@ -53,6 +54,8 @@ riscv-arch: testgen
 riscv-arch-%: testgen
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
+	mkdir -p ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
+	mkdir -p ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
 	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 

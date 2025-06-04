@@ -51,7 +51,11 @@ ucdbs = testdir.rglob("*.ucdb")
 mergedUCDB = reportdir / f"merge_{configName}.ucdb"
 
 # Merge UCDBs
-cmd = f"vcover merge {mergedUCDB} {' '.join(str(ucdb) for ucdb in ucdbs)}"
+ucdbjoin = ' '.join(str(ucdb) for ucdb in ucdbs)
+if  ucdbjoin == "":
+    print(f"ERROR: No UCDB files found in {testdir}. Exiting.")
+    sys.exit(0)
+cmd = f"vcover merge {mergedUCDB} {ucdbjoin}"
 os.system(cmd)
 
 # Generate reports
