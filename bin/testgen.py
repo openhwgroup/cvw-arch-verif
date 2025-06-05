@@ -20,8 +20,9 @@ import filecmp
 from datetime import datetime
 from random import randint, seed, getrandbits
 
-def insertTemplate(name):
-    global signatureWords
+def insertTemplate(name, is_custom=False):
+    global signatureWords, sigupd_count
+
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
@@ -40,11 +41,29 @@ def insertTemplate(name):
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
-
     template = template.replace("sigupd_count", str(signatureWords))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
+
+    if is_custom:
+      if name == "sw.S": #This will be generalized to all custom tests, and will be removed once we switch to the new signature logic for all
+        # Count occurrences and check consistency
+        incsigcount_count = template.count("INCSIGCOUNT")
+        sbincrement_count = template.count("SBINCREMENT")
+        if incsigcount_count != sbincrement_count:
+          print(f"Error: INCSIGCOUNT ({incsigcount_count}) != SBINCREMENT ({sbincrement_count}) in template '{name}'")
+          print(f"Error: Custom test '{name}' has a mismatch between the number of signature memory allocations (INCSIGCOUNT) and signature pointer increments (SBINCREMENT).")
+          print("This will cause a mismatch between the signature data written and the memory allocated for it")
+          print("Refer to the warning label at the top of the custom test file (e.g., sw.S) for required macro usage guidance.")
+          sys.exit(1)
+
+        #For Custom tests, adding signature logic (Replacing the placeholders):
+        template = template.replace("SIGPOINTER", f"x{sigReg}") # global signature pointer
+        template = template.replace("SBINCREMENT", "REGWIDTH")
+        if ("INCSIGCOUNT"):
+          sigupd_count +=1 # increment sigupd_count\
+
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -554,8 +573,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(sigReg) + ") # perform operation \n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + str(int(unsignedImm5(immval))*mul)  + " \n"
-    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
-    lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  # Incrementing base register\n"
     sigupd_count += 1
   elif (test in cutype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
@@ -572,8 +590,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
-      lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
       sigupd_count += 1
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
@@ -856,9 +873,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
+    lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
     if haz_type != "war":
       rs1a = rda
       rs2a = 0
+      if haz_type == "raw":
+        rda = rs1b
+        rdb = rs2b
+        rs1a = rs1b
     lines += writeSingleInstructionSequence(desc,
                 [testa, testb],
                 [regconfig2, regconfig],
@@ -867,15 +889,14 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                 [immvala, immvalb],
                 ["perform first operation", "perform second (triggering) operation"],
                 xlen)
+    lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     # Use FLEN/8 if it's a float store, else REGWIDTH
     if testa in fstype or testb in fstype:
       flen_bytes = 8 #Im trying to implement this using FLEN MACRO -> 1*FLEN/8
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(flen_bytes)+ "\n"
     else:
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
-    lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     lines += writeSIGUPD(rda)
-    lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
     sigupd_count += 1
 
   elif testb in btype:
@@ -1630,7 +1651,7 @@ def make_nanbox(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_custom(test, xlen):
-    insertTemplate(f"{test}.S")
+    insertTemplate(f"{test}.S", is_custom=True)
 
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
@@ -2448,11 +2469,12 @@ if __name__ == '__main__':
           #line ="// Created " + str(datetime.now()) + "\n"
           #f.write(line)
 
-          # insert generic header
-          insertTemplate("testgen_header.S")
 
           sigTotal = 0 # total number of bytes in signature
           sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
+
+          # insert generic header
+          insertTemplate("testgen_header.S")
 
           # add assembly lines to enable fp where needed
           if test in floattypes:
