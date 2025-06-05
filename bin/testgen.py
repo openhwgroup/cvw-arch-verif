@@ -158,6 +158,14 @@ def writeSIGUPD_F(rd):
     l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
     return l
 
+def writeFcsrSIG():
+      tempReg = 5
+      while tempReg == sigReg or tempReg == sigReg:
+          tempReg = randint(1,31)
+      l =  f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+      l = l + writeSIGUPD(tempReg)
+      return l
+
 def writeSIGUPD_V(vd, sew):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1  # Increment counter on each call
@@ -243,7 +251,7 @@ def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
   global sigReg # this function can modify the signature register
   l = lines
   oldSigReg = sigReg
-  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3):
+  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3 or sigReg == 2): #avoid conflict with the test registers and stackpointer since it is used for loads
     sigReg = randint(1,31)
 
   if (sigReg != oldSigReg):
@@ -408,6 +416,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fixtype):
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fitype):
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -431,8 +440,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 1
     if (test != "c.addi16sp"):
       if (test in "c.lwsp"):
-        while (rs2 == 2):
-            rs2 = randint(1, maxreg) # rs2 cannot be 2 for c.lwsp
         lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       else:
         lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
@@ -767,10 +774,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, False)
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
@@ -1190,10 +1199,16 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     rd = rs1
     while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
       rd = randomNonconflictingReg(test)
-    rs1val = randint(0, 2**xlen-1)
-    rs2val = randint(0, 2**xlen-1)
-    immval = randint(0, 2**xlen-1)
-    rdval = randint(0, 2**xlen-1)
+    if test in floattypes:
+      rs1val = randint(0, 2**flen-1)
+      rs2val = randint(0, 2**flen-1)
+      immval = randint(0, 2**flen-1)
+      rdval = randint(0, 2**flen-1)
+    else:
+      rs1val = randint(0, 2**xlen-1)
+      rs2val = randint(0, 2**xlen-1)
+      immval = randint(0, 2**xlen-1)
+      rdval = randint(0, 2**xlen-1)
     if (rs3 is None): return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
     else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
