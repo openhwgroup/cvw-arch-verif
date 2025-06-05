@@ -1,3 +1,3 @@
     // Custom coverpoints for Vector vrgather instruction excluding vrgatherei16
 
-    cp_ssstrictv_vrgather_vs2_vs1_eq : cross std_vec, vs1_all_reg, vs2_eq_vs1, vd_not_eq_vs1, vtype_lmul_1;
+    cp_custom_vrgather_vs2_vs1_eq : cross std_vec, vs1_all_reg, vs2_eq_vs1, vd_ne_vs1, vtype_lmul_1;

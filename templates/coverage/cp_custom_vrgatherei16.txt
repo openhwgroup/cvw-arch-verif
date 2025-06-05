@@ -93,7 +93,7 @@
     `endif
 
     //////////////////////////////////////////////////////////////////////////////////
-    // cp_ssstrictv_vrgatherei16_vs2_vs1_eq
+    // cp_custom_vrgatherei16_vs2_vs1_eq
     //////////////////////////////////////////////////////////////////////////////////
 
-    cp_ssstrictv_vrgatherei16_vs2_vs1_eq : cross std_vec, vs1_all_reg_aligned_lmul_4, vs2_eq_vs1, vd_not_eq_vs1, vtype_lmul_4;
+    cp_custom_vrgatherei16_vs2_vs1_eq : cross std_vec, vs1_all_reg_aligned_lmul_4, vs2_eq_vs1, vd_ne_vs1, vtype_lmul_4;

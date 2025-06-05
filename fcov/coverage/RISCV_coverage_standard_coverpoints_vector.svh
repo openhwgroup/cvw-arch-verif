@@ -87,15 +87,15 @@
         bins target = {1'b1};
     }
 
-    vd_not_eq_vs2 : coverpoint (ins.current.insn[24:20] != ins.current.insn[11:7]) {
+    vd_ne_vs2 : coverpoint (ins.current.insn[24:20] != ins.current.insn[11:7]) {
         bins target = {1'b1};
     }
 
-    vd_not_eq_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[11:7]) {
+    vd_ne_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[11:7]) {
         bins target = {1'b1};
     }
 
-    vs2_not_eq_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[24:20]) {
+    vs2_ne_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[24:20]) {
         bins target = {1'b1};
     }
 
