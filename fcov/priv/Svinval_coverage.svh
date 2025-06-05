@@ -21,30 +21,55 @@
 `define COVER_SVINVAL
 covergroup Svinval_sfence_inval_ir_cg with function sample(ins_t ins);
     option.per_instance = 0;
-    cp_asm_count : coverpoint ins.ins_str == "sfence.inval.ir"  iff (ins.trap == 0 )  {
-        //Number of times instruction is executed
-        bins count[]  = {1};
+    cp_asm_count : coverpoint ins.ins_str == "sfence.inval.ir" {
+        bins goal = {1};
+    }
+    priv_tvm : coverpoint {ins.prev.mode, ins.prev.csr[12'h300][20]} {
+        bins M_mode     = {3'b11_0};
+        bins S_mode     = {3'b01_0};
+        bins S_mode_tvm = {3'b01_1};
+        bins U_mode     = {3'b00_0};
+    }
+    cr_instr_mode : cross cp_asm_count, priv_tvm {
+        // instruction executed in each mode
     }
  endgroup
 // ---------------------
 covergroup Svinval_sfence_w_inval_cg with function sample(ins_t ins);
     option.per_instance = 0;
-    cp_asm_count : coverpoint ins.ins_str == "sfence.w.inval"  iff (ins.trap == 0 )  {
-        //Number of times instruction is executed
-        bins count[]  = {1};
+    cp_asm_count : coverpoint ins.ins_str == "sfence.w.inval"  {
+        bins goal = {1};
+    }
+    priv_tvm : coverpoint {ins.prev.mode, ins.prev.csr[12'h300][20]} {
+        bins M_mode     = {3'b11_0};
+        bins S_mode     = {3'b01_0};
+        bins S_mode_tvm = {3'b01_1};
+        bins U_mode     = {3'b00_0};
+    }
+    cr_instr_mode : cross cp_asm_count, priv_tvm {
+        // instruction executed in each mode
     }
 endgroup
 // ---------------------
 covergroup Svinval_sinval_vma_cg with function sample(ins_t ins);
     option.per_instance = 0;
-    cp_asm_count : coverpoint ins.ins_str == "sinval.vma"  iff (ins.trap == 0 )  {
-        //Number of times instruction is executed
-        bins count[]  = {1};
+    cp_asm_count : coverpoint ins.ins_str == "sinval.vma"   {
+        bins goal = {1};
+    }
+    priv_tvm : coverpoint {ins.prev.mode, ins.prev.csr[12'h300][20]} {
+        bins M_mode     = {3'b11_0};
+        bins S_mode     = {3'b01_0};
+        bins S_mode_tvm = {3'b01_1};
+        bins U_mode     = {3'b00_0};
+    }
+    cr_instr_mode : cross cp_asm_count, priv_tvm {
+        // instruction executed in each mode
     }
 endgroup
 // ---------------------
 function void svinval_sample(int hart, int issue, ins_t ins);
 
+    //$display("Svinval coverage: ins_str %s ins,prev.mode %b tvm %b", ins.ins_str, ins.prev.mode, ins.prev.csr[12'h300][20]);
     case (traceDataQ[hart][issue][0].inst_name)
         "sfence.inval.ir"     : begin
             Svinval_sfence_inval_ir_cg.sample(ins);
