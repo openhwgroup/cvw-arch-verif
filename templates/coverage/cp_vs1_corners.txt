@@ -1,0 +1,3 @@
+    cp_vs1_corners : coverpoint vs_corners_check(ins.hart, ins.issue, ins.current.vs1_val, "1")  iff (ins.trap == 0 )  {
+        // Corners values of vs1, assuming vl = 1
+    }

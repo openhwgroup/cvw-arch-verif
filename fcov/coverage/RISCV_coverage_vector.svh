@@ -56,3 +56,129 @@ function get_vlmax(int hart, int issue, int prev);
     return vlmax;
 
 endfunction
+
+
+typedef enum {
+    zero, //     = {(`SEW){1'b0}},
+    one, //      = {(`SEW-1){1'b0}, {1'b1}},
+    two, //      = {(`SEW-2){1'b0}, {2'b10}},
+    min, //      = {{1'b1}, (`SEW-1){1'b0}},
+    minp1, //    = {{1'b1}, (`SEW-2){1'b0}, {1'b1}},
+    max, //      = {{1'b0}, (`SEW-1){1'b1}},
+    maxm1, //    = {{1'b0}, (`SEW-2){1'b1}, {1'b0}},
+    ones, //     = {(`SEW){1'b1}},
+    onesm1, //   = {(`SEW-1){1'b1}, {1'b0}},
+    walkeodd, // = {(`SEW/2){2'b10}},
+    walkeven, // = {(`SEW/2){2'b01}},
+    random
+} corner_vs_values_t;
+
+// Check for vector operand corner values, assuming vl = 1
+function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val, string sew_multiplier);
+  `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
+  int sew = 2 ** (3 + unsigned'(vsew[2:0]));
+  int eew;
+
+  case (sew_multiplier)
+    "1":     eew = sew;
+    "2":     eew = 2 * sew;
+    "4":     eew = 4 * sew;
+    "8":     eew = 8 * sew;
+    "f2":    eew = sew / 2;
+    "f4":    eew = sew / 4;
+    "f8":    eew = sew / 8;
+    "m":     eew = 1;
+    default: begin
+      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
+      $finish(-1);
+    end
+  endcase
+
+  case (eew)
+    1:   return vs_corners_check_eew_1(val);
+    8:   return vs_corners_check_eew_8(val);
+    16:  return vs_corners_check_eew_16(val);
+    32:  return vs_corners_check_eew_32(val);
+    64:  return vs_corners_check_eew_64(val);
+    default: begin
+      $display("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
+      $finish(-1);
+    end
+  endcase
+endfunction
+
+function corner_vs_values_t vs_corners_check_eew_1(`VLEN_BITS val);
+    casez (val)
+      {{(`VLEN-1){1'b?}}, {1'b0}}:  return zero;
+      {{(`VLEN-1){1'b?}}, {1'b1}}:  return one;
+      default:                      return random;
+    endcase
+endfunction
+
+function corner_vs_values_t vs_corners_check_eew_8(`VLEN_BITS val);
+    casez (val)
+      {{(`VLEN-8){1'b?}},         {(8){1'b0}}}:            return zero;
+      {{(`VLEN-8){1'b?}},         {(8-1){1'b0}}, {1'b1}}:  return one;
+      {{(`VLEN-8){1'b?}},         {(8-2){1'b0}}, {2'b10}}: return two;
+      {{(`VLEN-8){1'b?}}, {1'b1}, {(8-1){1'b0}}}:          return min;
+      {{(`VLEN-8){1'b?}}, {1'b1}, {(8-2){1'b0}}, {1'b1}}:  return minp1;
+      {{(`VLEN-8){1'b?}}, {1'b0}, {(8-1){1'b1}}}        :  return max;
+      {{(`VLEN-8){1'b?}}, {1'b0}, {(8-2){1'b1}}, {1'b0}}:  return maxm1;
+      {{(`VLEN-8){1'b?}},         {(8){1'b1}}}:            return ones;
+      {{(`VLEN-8){1'b?}},         {(8-1){1'b1}}, {1'b0}}:  return onesm1;
+      {{(`VLEN-8){1'b?}},         {(8/2){2'b10}}}:         return walkeodd;
+      {{(`VLEN-8){1'b?}},         {(8/2){2'b01}}}:         return walkeven;
+      default:                                             return random;
+    endcase
+endfunction
+
+function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
+    casez (val)
+      {{(`VLEN-16){1'b?}},         {(16){1'b0}}}:            return zero;
+      {{(`VLEN-16){1'b?}},         {(16-1){1'b0}}, {1'b1}}:  return one;
+      {{(`VLEN-16){1'b?}},         {(16-2){1'b0}}, {2'b10}}: return two;
+      {{(`VLEN-16){1'b?}}, {1'b1}, {(16-1){1'b0}}}:          return min;
+      {{(`VLEN-16){1'b?}}, {1'b1}, {(16-2){1'b0}}, {1'b1}}:  return minp1;
+      {{(`VLEN-16){1'b?}}, {1'b0}, {(16-1){1'b1}}}        :  return max;
+      {{(`VLEN-16){1'b?}}, {1'b0}, {(16-2){1'b1}}, {1'b0}}:  return maxm1;
+      {{(`VLEN-16){1'b?}},         {(16){1'b1}}}:            return ones;
+      {{(`VLEN-16){1'b?}},         {(16-1){1'b1}}, {1'b0}}:  return onesm1;
+      {{(`VLEN-16){1'b?}},         {(16/2){2'b10}}}:         return walkeodd;
+      {{(`VLEN-16){1'b?}},         {(16/2){2'b01}}}:         return walkeven;
+      default:                                             return random;
+    endcase
+endfunction
+
+function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
+    casez (val)
+      {{(`VLEN-32){1'b?}},         {(32){1'b0}}}:            return zero;
+      {{(`VLEN-32){1'b?}},         {(32-1){1'b0}}, {1'b1}}:  return one;
+      {{(`VLEN-32){1'b?}},         {(32-2){1'b0}}, {2'b10}}: return two;
+      {{(`VLEN-32){1'b?}}, {1'b1}, {(32-1){1'b0}}}:          return min;
+      {{(`VLEN-32){1'b?}}, {1'b1}, {(32-2){1'b0}}, {1'b1}}:  return minp1;
+      {{(`VLEN-32){1'b?}}, {1'b0}, {(32-1){1'b1}}}        :  return max;
+      {{(`VLEN-32){1'b?}}, {1'b0}, {(32-2){1'b1}}, {1'b0}}:  return maxm1;
+      {{(`VLEN-32){1'b?}},         {(32){1'b1}}}:            return ones;
+      {{(`VLEN-32){1'b?}},         {(32-1){1'b1}}, {1'b0}}:  return onesm1;
+      {{(`VLEN-32){1'b?}},         {(32/2){2'b10}}}:         return walkeodd;
+      {{(`VLEN-32){1'b?}},         {(32/2){2'b01}}}:         return walkeven;
+      default:                                             return random;
+    endcase
+endfunction
+
+function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
+    casez (val)
+      {{(`VLEN-64){1'b?}},         {(64){1'b0}}}:            return zero;
+      {{(`VLEN-64){1'b?}},         {(64-1){1'b0}}, {1'b1}}:  return one;
+      {{(`VLEN-64){1'b?}},         {(64-2){1'b0}}, {2'b10}}: return two;
+      {{(`VLEN-64){1'b?}}, {1'b1}, {(64-1){1'b0}}}:          return min;
+      {{(`VLEN-64){1'b?}}, {1'b1}, {(64-2){1'b0}}, {1'b1}}:  return minp1;
+      {{(`VLEN-64){1'b?}}, {1'b0}, {(64-1){1'b1}}}        :  return max;
+      {{(`VLEN-64){1'b?}}, {1'b0}, {(64-2){1'b1}}, {1'b0}}:  return maxm1;
+      {{(`VLEN-64){1'b?}},         {(64){1'b1}}}:            return ones;
+      {{(`VLEN-64){1'b?}},         {(64-1){1'b1}}, {1'b0}}:  return onesm1;
+      {{(`VLEN-64){1'b?}},         {(64/2){2'b10}}}:         return walkeodd;
+      {{(`VLEN-64){1'b?}},         {(64/2){2'b01}}}:         return walkeven;
+      default:                                             return random;
+    endcase
+endfunction
