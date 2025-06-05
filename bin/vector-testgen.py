@@ -897,14 +897,14 @@ def genVector(sew, vl, vlen, test):
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vmadc.vv", "vredmax.vs", "vredmaxu.vs", "vredsum.vs", "vwaddu.wv",
+vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vmadc.vv", "vredmax.vs", "vredmaxu.vs", "vredsum.vs", "vwaddu.wv", "vwsubu.wv",
           "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmseq.vv", "vmsne.vv", "vredmin.vs", "vredminu.vs", "vwadd.wv", "vwredsum.vs", "vwredsumu.vs",
           "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vredor.vs", "vredxor.vs",
           "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
           "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
           "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
 
-vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwaddu.wx",
+vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwaddu.wx", "vwsubu.wx",
           "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
           "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx",
           "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx",
@@ -948,8 +948,8 @@ narrowins = wvins + wxins + wiins
 # widening
 wvvins = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
 wvxins = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
-wwvins = ["vwadd.wv", "vwaddu.wv", "vwsub.wv"]
-wwxins = ["vwadd.wx", "vwaddu.wx", "vwsub.wx"]
+wwvins = ["vwadd.wv", "vwaddu.wv", "vwsub.wv", "vwsubu.wv"]
+wwxins = ["vwadd.wx", "vwaddu.wx", "vwsub.wx", "vwsubu.wx"]
 widenins = wvvins + wvxins + wwvins + wwxins
 vs2wideins = narrowins + wwvins + wwxins
 # masking
