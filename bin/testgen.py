@@ -624,11 +624,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
-    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
-    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + "mv sp" + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    sigupd_count += 1
+
+
+
   elif (test in csbtype + cshtype):
     if (test in csbtype):
       offset = unsignedImm2(immval)
