@@ -3,4 +3,4 @@
         bins zero = {0};
     }
 
-    cp_custom_reduction_vl_0 : cross std_vec, vl_0, vd_ne_vs1;
+    cp_custom_gprWriting_vstart_eq_vl : cross vtype_prev_vill_clear, vstart_zero, no_trap, vl_0;

@@ -1,2 +1,0 @@
-
-    cp_custom_vreduction_vd_eq_vs2 : cross std_vec, vd_eq_vs2;

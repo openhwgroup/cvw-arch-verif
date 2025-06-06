@@ -3,4 +3,4 @@
         bins minus_1 = {-1};
     }
 
-    cp_custom_reduction_fully_masked : std_vec, vd_eq_minus1, vd_ne_vs1;
+    cp_custom_fullyMasked : std_vec, vd_eq_minus1, vd_ne_vs1;
