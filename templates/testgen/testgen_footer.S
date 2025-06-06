@@ -15,8 +15,8 @@ RVTEST_DATA_BEGIN
 .align 4
 
 rvtest_data:
-.word 0xbabecafe
-.word 0xbabecafe
+.word 0xb0bacafe
+.word 0xb0bacafe
 RVTEST_DATA_END
 
 
