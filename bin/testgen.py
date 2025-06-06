@@ -47,22 +47,42 @@ def insertTemplate(name, is_custom=False):
     template = template.replace("Instruction", test)
 
     if is_custom:
-      if name == "sw.S": #This will be generalized to all custom tests, and will be removed once we switch to the new signature logic for all
-        # Count occurrences and check consistency
-        incsigcount_count = template.count("INCSIGCOUNT")
-        sbincrement_count = template.count("SBINCREMENT")
-        if incsigcount_count != sbincrement_count:
-          print(f"Error: INCSIGCOUNT ({incsigcount_count}) != SBINCREMENT ({sbincrement_count}) in template '{name}'")
-          print(f"Error: Custom test '{name}' has a mismatch between the number of signature memory allocations (INCSIGCOUNT) and signature pointer increments (SBINCREMENT).")
-          print("This will cause a mismatch between the signature data written and the memory allocated for it")
-          print("Refer to the warning label at the top of the custom test file (e.g., sw.S) for required macro usage guidance.")
-          sys.exit(1)
+      if name == "sw.S":
+        # Extract the argument from SIG_POINTER_INCREMENT(n)
+        match = re.search(r"SIG_POINTER_INCREMENT\((\d+)\)", template)
+        sig_pointer_incr = int(match.group(1)) if match else 0  # Value
+        # Validation: SIG_POINTER_INCREMENT must exist and be > 0
+        if sig_pointer_incr == 0:
+          print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
+          print(f"Warning: This will possible break your signature coverage for this custom test '{name}'.")
+          # Remove the SIG_POINTER_INCREMENT line from the template
+          template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
+          #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
+        else:
+          # Replace macros in template
+          template = re.sub(r"^\s*SIG_POINTER_INCREMENT\(\d*\)\s*$\n?", "", template, flags=re.MULTILINE) #Remove the macro once used
+          template = template.replace("SIGPOINTER", f"x{sigReg}")
 
-        #For Custom tests, adding signature logic (Replacing the placeholders):
-        template = template.replace("SIGPOINTER", f"x{sigReg}") # global signature pointer
-        template = template.replace("SBINCREMENT", "REGWIDTH")
-        if ("INCSIGCOUNT"):
-          sigupd_count +=1 # increment sigupd_count\
+          indent = "    "  # 4 spaces
+          lines = []
+          half = sig_pointer_incr // 2
+          lines.append(f"{indent}li t0, REGWIDTH")
+          if sig_pointer_incr == 1:
+              # If only one increment, just add REGWIDTH once
+              lines.append(f"{indent}addi x{sigReg}, x{sigReg}, t0  # increment pointer by REGWIDTH * {sig_pointer_incr}")
+          else:
+            for _ in range(half):
+                lines.append(f"{indent}slli t0, t0, 1") # Add (REGWIDTH << 1) multiple times
+            # If odd, add one more REGWIDTH:
+            if sig_pointer_incr % 2 == 1:
+                lines.append(f"{indent}addi t0, t0, REGWIDTH \n")
+            # Final pointer update
+            lines.append(f"{indent}add x{sigReg}, x{sigReg}, t0  # increment pointer by REGWIDTH * {sig_pointer_incr}")
+          # Join and add to template
+          template += "\n".join(lines) + "\n"
+
+          # Update sigupd_count
+          sigupd_count += sig_pointer_incr
 
     f.write(template)
 
