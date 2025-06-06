@@ -613,6 +613,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
       sigupd_count += 1
   elif (test in csstype):
+    while (rs2 == 2):
+      rs2 = randomNonconflictingReg(test)
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
