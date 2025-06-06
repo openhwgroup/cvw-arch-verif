@@ -882,8 +882,8 @@ def genVector(sew, vl, vlen, test):
 
   maxVtests = 700
   # TODO: Fix this temporary arbitrary number
-  num_words = vlen // 32
-  # num_words = math.ceil((vl * sew) / 32)
+  # num_words = vlen // 32
+  num_words = math.ceil((vl * sew) / 32)
   for t in range(maxVtests):
       f.write(f"v_random_{t:03d}:\n")
       for i in range(num_words):
@@ -938,7 +938,9 @@ def genVsCorners(sew, vl, vlen, test, emul):
     "min":    2**(eew - 1),
     "minm1":  2**(eew - 1) + 1,
     "max":    2**(eew - 1) - 1,
-    "maxm1":  2**(eew - 1) - 2
+    "maxm1":  2**(eew - 1) - 2,
+    "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
+    "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
   }
 
   for corner in v_register_corners:
@@ -1163,12 +1165,11 @@ if __name__ == '__main__':
       flen = 32
       formatstrlenFP = str(int(flen/4))
       formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-      corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
       rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
       if (xlen == 32):
-        corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+        rcornersv = rcornersv + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
       else:
-        corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
+        rcornersv = rcornersv + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
                             0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
                             0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
                             0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
@@ -1176,18 +1177,14 @@ if __name__ == '__main__':
                             0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                             0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-        corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                        0b0000000000000000000000000000000000000000000000000000000000000001,
-                        0b1111111111111111111111111111111111111111111111111111111111111111,
-                        0b0000000000000000000000000000000001111111111111111111111111111111,
-                        0b1111111111111111111111111111111110000000000000000000000000000000]
 
-      vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1", "vs_corner_max", "vs_corner_maxm1"]
-      vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners]
-      vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners]
-      vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners]
-      vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
-      vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
+      vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
+                       "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd"]
+      vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"] # TODO: change 700 to maxVtests later
+      vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+      vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+      vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+      vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
       vcornerseew1 = [(vcorner + "_eew1") for vcorner in vectorcorners]
 
 
