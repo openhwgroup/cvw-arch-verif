@@ -103,8 +103,6 @@ class RISCV_instruction
           break;
         end
       end
-      // $display("indirect ins_str(%s) op[0](%0s).key(%s) op[1](%s).key(%s) op[2](%s).key(%s) op[3](%s).key(%s)",
-      //    ins_str, op[0], this.ops[0].key, op[1], this.ops[1].key, op[2], this.ops[2].key, op[3], this.ops[3].key);
     end
 
     // Parse operands and get values of relevant registers if needed

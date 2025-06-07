@@ -1,0 +1,8 @@
+    // Custom coverpoints for fence.i
+
+    // the test should do some self-modifying code and then a fence.i and then run the code
+    // this is too complicated to express with a coverpoint, so just check that the fence.i
+    // is executed, and leave it to the test code to do the right thing
+    cp_custom_fencei : coverpoint (ins.current.inst_name == "fence.i") {
+        bins count[]  = {1};
+    }

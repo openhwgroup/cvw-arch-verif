@@ -83,7 +83,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 
 # Compile tests
 %.elf: $$(SOURCEFILE)
-	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause -mabi=$(MABI) -mcmodel=medany \
+	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause_svinval -mabi=$(MABI) -mcmodel=medany \
 	-nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 	$(MAKE) $@.objdump $@.memfile
 
@@ -97,7 +97,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv32gc $(TESTDIR)/rv32/I/WALLY-COV-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(TESTDIR)/rv32/I/WALLY-COV-I-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 
 	$(MAKE) merge
 

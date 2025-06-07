@@ -86,6 +86,9 @@
 `ifdef ZICOND_COVERAGE
   `include "Zicond_coverage.svh"
 `endif
+`ifdef ZIFENCEI_COVERAGE
+  `include "Zifencei_coverage.svh"
+`endif
 `ifdef ZCA_COVERAGE
   `include "Zca_coverage.svh"
 `endif
@@ -137,6 +140,9 @@
 `endif
 `ifdef ZALRSC_COVERAGE
   `include "Zalrsc_coverage.svh"
+`endif
+`ifdef SVINVAL_COVERAGE
+  `include "Svinval_coverage.svh"
 `endif
 
 // Privileged extensions
