@@ -108,77 +108,76 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
 endfunction
 
 function corner_vs_values_t vs_corners_check_eew_1(`VLEN_BITS val);
-    casez (val)
-      {{(`VLEN-1){1'b?}}, {1'b0}}:  return zero;
-      {{(`VLEN-1){1'b?}}, {1'b1}}:  return one;
-      default:                      return random;
-    endcase
+  casez (val)
+    {{(`VLEN-1){1'b?}}, {1'b1}}:  return one;
+    default:                      return zero;
+  endcase
 endfunction
 
 function corner_vs_values_t vs_corners_check_eew_8(`VLEN_BITS val);
-    casez (val)
-      {{(`VLEN-8){1'b?}},         {(8){1'b0}}}:            return zero;
-      {{(`VLEN-8){1'b?}},         {(8-1){1'b0}}, {1'b1}}:  return one;
-      {{(`VLEN-8){1'b?}},         {(8-2){1'b0}}, {2'b10}}: return two;
-      {{(`VLEN-8){1'b?}}, {1'b1}, {(8-1){1'b0}}}:          return min;
-      {{(`VLEN-8){1'b?}}, {1'b1}, {(8-2){1'b0}}, {1'b1}}:  return minp1;
-      {{(`VLEN-8){1'b?}}, {1'b0}, {(8-1){1'b1}}}        :  return max;
-      {{(`VLEN-8){1'b?}}, {1'b0}, {(8-2){1'b1}}, {1'b0}}:  return maxm1;
-      {{(`VLEN-8){1'b?}},         {(8){1'b1}}}:            return ones;
-      {{(`VLEN-8){1'b?}},         {(8-1){1'b1}}, {1'b0}}:  return onesm1;
-      {{(`VLEN-8){1'b?}},         {(8/2){2'b10}}}:         return walkeodd;
-      {{(`VLEN-8){1'b?}},         {(8/2){2'b01}}}:         return walkeven;
-      default:                                             return random;
-    endcase
+  casez (val)
+    {{(`VLEN-8){1'b?}},         {(8){1'b0}}}:            return zero;
+    {{(`VLEN-8){1'b?}},         {(8-1){1'b0}}, {1'b1}}:  return one;
+    {{(`VLEN-8){1'b?}},         {(8-2){1'b0}}, {2'b10}}: return two;
+    {{(`VLEN-8){1'b?}}, {1'b1}, {(8-1){1'b0}}}:          return min;
+    {{(`VLEN-8){1'b?}}, {1'b1}, {(8-2){1'b0}}, {1'b1}}:  return minp1;
+    {{(`VLEN-8){1'b?}}, {1'b0}, {(8-1){1'b1}}}        :  return max;
+    {{(`VLEN-8){1'b?}}, {1'b0}, {(8-2){1'b1}}, {1'b0}}:  return maxm1;
+    {{(`VLEN-8){1'b?}},         {(8){1'b1}}}:            return ones;
+    {{(`VLEN-8){1'b?}},         {(8-1){1'b1}}, {1'b0}}:  return onesm1;
+    {{(`VLEN-8){1'b?}},         {(8/2){2'b10}}}:         return walkeodd;
+    {{(`VLEN-8){1'b?}},         {(8/2){2'b01}}}:         return walkeven;
+    default:                                             return random;
+  endcase
 endfunction
 
 function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
-    casez (val)
-      {{(`VLEN-16){1'b?}},         {(16){1'b0}}}:            return zero;
-      {{(`VLEN-16){1'b?}},         {(16-1){1'b0}}, {1'b1}}:  return one;
-      {{(`VLEN-16){1'b?}},         {(16-2){1'b0}}, {2'b10}}: return two;
-      {{(`VLEN-16){1'b?}}, {1'b1}, {(16-1){1'b0}}}:          return min;
-      {{(`VLEN-16){1'b?}}, {1'b1}, {(16-2){1'b0}}, {1'b1}}:  return minp1;
-      {{(`VLEN-16){1'b?}}, {1'b0}, {(16-1){1'b1}}}        :  return max;
-      {{(`VLEN-16){1'b?}}, {1'b0}, {(16-2){1'b1}}, {1'b0}}:  return maxm1;
-      {{(`VLEN-16){1'b?}},         {(16){1'b1}}}:            return ones;
-      {{(`VLEN-16){1'b?}},         {(16-1){1'b1}}, {1'b0}}:  return onesm1;
-      {{(`VLEN-16){1'b?}},         {(16/2){2'b10}}}:         return walkeodd;
-      {{(`VLEN-16){1'b?}},         {(16/2){2'b01}}}:         return walkeven;
-      default:                                             return random;
-    endcase
+  casez (val)
+    {{(`VLEN-16){1'b?}},         {(16){1'b0}}}:            return zero;
+    {{(`VLEN-16){1'b?}},         {(16-1){1'b0}}, {1'b1}}:  return one;
+    {{(`VLEN-16){1'b?}},         {(16-2){1'b0}}, {2'b10}}: return two;
+    {{(`VLEN-16){1'b?}}, {1'b1}, {(16-1){1'b0}}}:          return min;
+    {{(`VLEN-16){1'b?}}, {1'b1}, {(16-2){1'b0}}, {1'b1}}:  return minp1;
+    {{(`VLEN-16){1'b?}}, {1'b0}, {(16-1){1'b1}}}        :  return max;
+    {{(`VLEN-16){1'b?}}, {1'b0}, {(16-2){1'b1}}, {1'b0}}:  return maxm1;
+    {{(`VLEN-16){1'b?}},         {(16){1'b1}}}:            return ones;
+    {{(`VLEN-16){1'b?}},         {(16-1){1'b1}}, {1'b0}}:  return onesm1;
+    {{(`VLEN-16){1'b?}},         {(16/2){2'b10}}}:         return walkeodd;
+    {{(`VLEN-16){1'b?}},         {(16/2){2'b01}}}:         return walkeven;
+    default:                                               return random;
+  endcase
 endfunction
 
 function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
-    casez (val)
-      {{(`VLEN-32){1'b?}},         {(32){1'b0}}}:            return zero;
-      {{(`VLEN-32){1'b?}},         {(32-1){1'b0}}, {1'b1}}:  return one;
-      {{(`VLEN-32){1'b?}},         {(32-2){1'b0}}, {2'b10}}: return two;
-      {{(`VLEN-32){1'b?}}, {1'b1}, {(32-1){1'b0}}}:          return min;
-      {{(`VLEN-32){1'b?}}, {1'b1}, {(32-2){1'b0}}, {1'b1}}:  return minp1;
-      {{(`VLEN-32){1'b?}}, {1'b0}, {(32-1){1'b1}}}        :  return max;
-      {{(`VLEN-32){1'b?}}, {1'b0}, {(32-2){1'b1}}, {1'b0}}:  return maxm1;
-      {{(`VLEN-32){1'b?}},         {(32){1'b1}}}:            return ones;
-      {{(`VLEN-32){1'b?}},         {(32-1){1'b1}}, {1'b0}}:  return onesm1;
-      {{(`VLEN-32){1'b?}},         {(32/2){2'b10}}}:         return walkeodd;
-      {{(`VLEN-32){1'b?}},         {(32/2){2'b01}}}:         return walkeven;
-      default:                                             return random;
-    endcase
+  casez (val)
+    {{(`VLEN-32){1'b?}},         {(32){1'b0}}}:            return zero;
+    {{(`VLEN-32){1'b?}},         {(32-1){1'b0}}, {1'b1}}:  return one;
+    {{(`VLEN-32){1'b?}},         {(32-2){1'b0}}, {2'b10}}: return two;
+    {{(`VLEN-32){1'b?}}, {1'b1}, {(32-1){1'b0}}}:          return min;
+    {{(`VLEN-32){1'b?}}, {1'b1}, {(32-2){1'b0}}, {1'b1}}:  return minp1;
+    {{(`VLEN-32){1'b?}}, {1'b0}, {(32-1){1'b1}}}        :  return max;
+    {{(`VLEN-32){1'b?}}, {1'b0}, {(32-2){1'b1}}, {1'b0}}:  return maxm1;
+    {{(`VLEN-32){1'b?}},         {(32){1'b1}}}:            return ones;
+    {{(`VLEN-32){1'b?}},         {(32-1){1'b1}}, {1'b0}}:  return onesm1;
+    {{(`VLEN-32){1'b?}},         {(32/2){2'b10}}}:         return walkeodd;
+    {{(`VLEN-32){1'b?}},         {(32/2){2'b01}}}:         return walkeven;
+    default:                                               return random;
+  endcase
 endfunction
 
 function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
-    casez (val)
-      {{(`VLEN-64){1'b?}},         {(64){1'b0}}}:            return zero;
-      {{(`VLEN-64){1'b?}},         {(64-1){1'b0}}, {1'b1}}:  return one;
-      {{(`VLEN-64){1'b?}},         {(64-2){1'b0}}, {2'b10}}: return two;
-      {{(`VLEN-64){1'b?}}, {1'b1}, {(64-1){1'b0}}}:          return min;
-      {{(`VLEN-64){1'b?}}, {1'b1}, {(64-2){1'b0}}, {1'b1}}:  return minp1;
-      {{(`VLEN-64){1'b?}}, {1'b0}, {(64-1){1'b1}}}        :  return max;
-      {{(`VLEN-64){1'b?}}, {1'b0}, {(64-2){1'b1}}, {1'b0}}:  return maxm1;
-      {{(`VLEN-64){1'b?}},         {(64){1'b1}}}:            return ones;
-      {{(`VLEN-64){1'b?}},         {(64-1){1'b1}}, {1'b0}}:  return onesm1;
-      {{(`VLEN-64){1'b?}},         {(64/2){2'b10}}}:         return walkeodd;
-      {{(`VLEN-64){1'b?}},         {(64/2){2'b01}}}:         return walkeven;
-      default:                                             return random;
-    endcase
+  casez (val)
+    {{(`VLEN-64){1'b?}},         {(64){1'b0}}}:            return zero;
+    {{(`VLEN-64){1'b?}},         {(64-1){1'b0}}, {1'b1}}:  return one;
+    {{(`VLEN-64){1'b?}},         {(64-2){1'b0}}, {2'b10}}: return two;
+    {{(`VLEN-64){1'b?}}, {1'b1}, {(64-1){1'b0}}}:          return min;
+    {{(`VLEN-64){1'b?}}, {1'b1}, {(64-2){1'b0}}, {1'b1}}:  return minp1;
+    {{(`VLEN-64){1'b?}}, {1'b0}, {(64-1){1'b1}}}        :  return max;
+    {{(`VLEN-64){1'b?}}, {1'b0}, {(64-2){1'b1}}, {1'b0}}:  return maxm1;
+    {{(`VLEN-64){1'b?}},         {(64){1'b1}}}:            return ones;
+    {{(`VLEN-64){1'b?}},         {(64-1){1'b1}}, {1'b0}}:  return onesm1;
+    {{(`VLEN-64){1'b?}},         {(64/2){2'b10}}}:         return walkeodd;
+    {{(`VLEN-64){1'b?}},         {(64/2){2'b01}}}:         return walkeven;
+    default:                                               return random;
+  endcase
 endfunction
