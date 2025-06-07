@@ -12,6 +12,7 @@ import os
 import csv
 import re
 import sys
+import math
 
 ##################################
 # Functions
@@ -89,7 +90,8 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     template = template.replace("ARCHUPPER", arch.upper())
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
-    template = template.replace("EFFEW", effew)
+    if (effew != ""):
+        template = template.replace("EFFEW", str(int(math.log2(int(effew)))-3))
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64
@@ -128,7 +130,9 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
-            if arch != "E": # E currently breaks coverage
+            if arch.startswith("Vx") or arch.startswith("Zv"):
+                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector", arch, instr))
+            elif arch != "E": # E currently breaks coverage
                 f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
 
 def writeInstructionSampleFunction(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
@@ -180,7 +184,10 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
 
                 # Covergroup sample functions: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
-                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header", arch, "NA3"))
+                if arch.startswith("Vx") or arch.startswith("Zv"):
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header_vector", arch, "NA3", effew=effew))
+                else:
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header", arch, "NA3"))
                 writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, True, True)
                 if (anyExclusion("RV64", k, tp)):
                     f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
@@ -190,7 +197,10 @@ def writeCovergroups(testPlans, covergroupTemplates):
                     f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
                     writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
                     f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
-                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))
+                if arch.startswith("Vx") or arch.startswith("Zv"):
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end_vector", arch, "NA3"))
+                else:
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))
 
                 # Instruction sample function: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
                 writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, True, True)

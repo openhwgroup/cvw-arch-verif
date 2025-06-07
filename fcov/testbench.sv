@@ -37,7 +37,7 @@ module testbench;
   localparam FLEN = 32;
 `endif
 
-  localparam VLEN = 256; // TODO: Make configurable (maybe just use the macro directly)
+  localparam VLEN = 512; // TODO: Make configurable (maybe just use the macro directly)
 
   localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
   localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
@@ -182,7 +182,7 @@ module testbench;
           end
           "CSR": begin
             num = $sscanf(val, "%h", regNum);
-            $display("CSR: %h", regNum);
+            // $display("CSR: %h", regNum);
             val = words.pop_front();
             num = $sscanf(val, "%h", regVal);
             csr[regNum] = regVal;

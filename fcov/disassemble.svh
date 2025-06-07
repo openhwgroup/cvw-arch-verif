@@ -701,7 +701,7 @@ function string disassemble (logic [31:0] instrRaw);
     VMAXU_VX:     $sformat(decoded, "vmaxu.vx %s, %s, %s%s",      vd, vs2, rs1, vm);
 
     VMUL_VV:      $sformat(decoded, "vmul.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
-    VMUL_VX:      $sformat(decoded, "vmul.vv %s, %s, %s%s",       vd, vs2, rs1, vm);
+    VMUL_VX:      $sformat(decoded, "vmul.vx %s, %s, %s%s",       vd, vs2, rs1, vm);
     VMULH_VV:     $sformat(decoded, "vmulh.vv %s, %s, %s%s",      vd, vs2, vs1, vm);
     VMULH_VX:     $sformat(decoded, "vmulh.vx %s, %s, %s%s",      vd, vs2, rs1, vm);
     VMULHU_VV:    $sformat(decoded, "vmulhu.vv %s, %s, %s%s",     vd, vs2, vs1, vm);
