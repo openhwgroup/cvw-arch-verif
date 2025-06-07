@@ -180,13 +180,10 @@ module testbench;
             val = words.pop_front();
             num = $sscanf(val, "%h", vRegVal);
             v_wdata[regNum] = vRegVal;
-            $display("VLEN: %0d", VLEN);
-            $display("v_wdata: %h", vRegVal);
             v_wb |= (1 << regNum);
           end
           "CSR": begin
             num = $sscanf(val, "%h", regNum);
-            $display("CSR: %h", regNum);
             val = words.pop_front();
             num = $sscanf(val, "%h", xRegVal);
             csr[regNum] = xRegVal;
