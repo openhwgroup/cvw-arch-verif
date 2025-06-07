@@ -156,7 +156,7 @@ def genFrmTests(testInstr, rd, floatdest, vector=None):
 
 def genVxrmTests(testline, lines, vd, sew, lmul):
   vxrm = ["rod", "rdn", "rne", "rnu"]
-  csrXrm = ["0x6", "0x4", "0x2", "0x0"] # vcsr[2:1] -> 11 , 10, 01, 00
+  csrVxrm = ["0x6", "0x4", "0x2", "0x0"] # vcsr[2:1] -> 11 , 10, 01, 00
   for roundingMode in vxrm:
     lines = writeVecTest(lines, vd, sew, vlen, f"{testline} {roundingMode} # perform operation\n")
   for csrMode in csrVxrm:
@@ -374,6 +374,32 @@ def narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
   return [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval]
 
+def avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval):
+  if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins) or (test in vupgatherins) or (test in vmlogicalins):
+    while (vd == vs2 or vd == vs1):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in narrowins):
+    while (vd == (vs2+1) or vs1 == vs2 or vs1 == (vs2+1)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in wwvins):
+    while (vd == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in v_mins):
+    while (vd == 0 or vs1 == 0 or vs2 == 0):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in mv_mins):
+    while (vs1 == 0 or vs2 == 0 or vd == vs2 or vd == vs1):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in vcompressins):
+    while (vd == vs1 or vd == vs2 or vs1 == vs2):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  elif (test in vvvxtype): # vmv<nr>r.v
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
+  else:
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+  return [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval]
+
+
 def make_vd(test, sew, vl, rng):
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -503,7 +529,7 @@ def make_vs1_vs2(test, sew, vl, rng):
 def make_vs2_corners(test, sew, vl, vcorners):
   for v in vcorners:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_vs2_corners (Test source vs2 value = " + v + ")"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, v, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
@@ -511,21 +537,21 @@ def make_vs2_corners(test, sew, vl, vcorners):
 def make_vs1_corners(test, sew, vl, vcorners):
   for v in vcorners:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_vs1_corners (Test source vs1 value = " + v + ")"
     writeCovVector_V(desc, vs1, vs2, vd, v, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
 def make_rs1_v(test, sew, vl, rng):
   for r in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_rs1 (Test rs1 = " + str(r) + ")"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=r, rd=rd, rs1val=rs1val, imm=immval, vta=0)
 
 def make_rs1_corners_v(test, sew, vl, rng):
   for rcorner in rcornersv:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_rs1_corners (Test source rs1 value = " + hex(rcorner) + ")"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rcorner, imm=immval, vta=0)
 
@@ -533,13 +559,13 @@ def make_imm_v(test, sew, vl):
   if (test in imm_31):
     for uimm in range(0,32):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=uimm, vta=0)
   else:
     for imm in range(-16,16):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cp_imm_5bit (Test imm = " + str(imm) + ")"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=imm, vta=0)
 
@@ -651,9 +677,9 @@ def make_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
   for v1 in vs1corners:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       while vs1 == vs2:
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cr_vs2_vs1_corners"
       writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew, vta=0)
 
@@ -661,7 +687,7 @@ def make_vs2_rs1_corners(test, sew, vl, vs2corners):
   for r1 in rcornersv:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cr_vs2_rs1_corners"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, rs1=rs1, rs1val=r1, vta=0)
 
@@ -669,7 +695,7 @@ def make_vs2_imm_corners(test, sew, vl, vs2corners):
   for imm in immcornersv:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = narrowWidenConflictReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cr_vs2_imm_corners"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, imm=imm, vta=0)
 
@@ -696,18 +722,6 @@ def make_vxrm_vs1_vs2_corners(test, vlen, sew, vl, vs2corners, vs1corners):
       desc = "cp_vxrm_vs1_vs2_corners"
       writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vxrm=True, vta=0)
       # should sweep the rounding modes, and coverpoints should check they are hit
-
-
-def make_immv(test, vlen, sew, lmul, vl, rng, xlen, xtype=None, vfloattype=None):
-  desc = "cp_imm_corners"
-  if (test in imm_31):
-    for immc in range(0, 32):
-      [vs1, vs2, rs1, vd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immc)
-  else:
-    for immc in range(-16, 16):
-      [vs1, vs2, rs1, vd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=immc)
 
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
@@ -791,25 +805,43 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vs2_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cp_vs2_corners_emul2"):
       make_vs2_corners(test, sew, vl, vcornersemul2)
+    elif (coverpoint == "cp_vs2_corners_emul4"):
+      make_vs2_corners(test, sew, vl, vcornersemul4)
+    elif (coverpoint == "cp_vs2_corners_emul8"):
+      make_vs2_corners(test, sew, vl, vcornersemul8)
+    elif (coverpoint == "cp_vs2_corners_emulf2"):
+      make_vs2_corners(test, sew, vl, vcornersemulf2)
+    elif (coverpoint == "cp_vs2_corners_emulf4"):
+      make_vs2_corners(test, sew, vl, vcornersemulf4)
+    elif (coverpoint == "cp_vs2_corners_emulf8"):
+      make_vs2_corners(test, sew, vl, vcornersemulf8)
+    elif (coverpoint == "cp_vs2_corners_eew1"):
+      make_vs2_corners(test, sew, vl, vcornerseew1)
     elif (coverpoint == "cp_vs1_corners"):
       make_vs1_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cp_vs1_corners_emul2"):
       make_vs1_corners(test, sew, vl, vcornersemul2)
+    elif (coverpoint == "cp_vs1_corners_eew1"):
+      make_vs1_corners(test, sew, vl, vcornerseew1)
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners_v(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cr_vs2_vs1_corners"):
       make_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul1)
     elif (coverpoint == "cr_vs2_vs1_corners_wv"):
       make_vs2_vs1_corners(test, sew, vl, vcornersemul2, vcornersemul1)
+    elif (coverpoint == "cr_vs2_vs1_corners_wred"):
+      make_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul2)
+    elif (coverpoint == "cr_vs2_vs1_corners_mm"):
+      make_vs2_vs1_corners(test, sew, vl, vcornerseew1, vcornerseew1)
     elif (coverpoint == "cr_vs2_rs1_corners"):
       make_vs2_rs1_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cr_vs2_rs1_corners_wx"):
       make_vs2_rs1_corners(test, sew, vl, vcornersemul2)
-    elif (coverpoint == "cp_imm_corners_5bit"):
+    elif (coverpoint == "cp_imm_corners_5bit" or coverpoint == "cp_imm_corners_5bit_u"):
       pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
-    elif (coverpoint == "cr_vs2_imm_corners"):
+    elif (coverpoint == "cr_vs2_imm_corners" or coverpoint == "cr_vs2_imm_corners_u"):
       make_vs2_imm_corners(test, sew, vl, vcornersemul1)
-    elif (coverpoint == "cr_vs2_imm_corners_wi"):
+    elif (coverpoint == "cr_vs2_imm_corners_wi" or coverpoint == "cr_vs2_imm_corners_wiu"):
       make_vs2_imm_corners(test, sew, vl, vcornersemul2)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
@@ -916,11 +948,15 @@ def genVector(sew, vl, vlen, test):
 
 def genVsCorners(sew, vl, vlen, test, emul):
   def convert(val, bitwidth):
-        return [f"0x{(val >> (eew * i)) & 0xFFFFFFFF:08x}" for i
-                in range((bitwidth + (eew-1)) // eew)]
+    if (sew == 64):
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
+              in range((bitwidth + (eew - 1)) // eew)]
+    else:
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFF:08x}" for i
+              in range((bitwidth + (eew-1)) // eew)]
 
   if (emul[0] == "f"):
-    eew = sew / int(emul[1])
+    eew = int(sew / int(emul[1]))
     ending = "emul" + emul
   elif (emul == "eew1"):
     eew = 1
@@ -929,25 +965,34 @@ def genVsCorners(sew, vl, vlen, test, emul):
     eew = sew * int(emul)
     ending = "emul" + emul
 
-  v_register_corners = {
-    "zero":   0,
-    "one":    1,
-    "two":    2,
-    "ones":   -1,
-    "onesm1": -2,
-    "min":    2**(eew - 1),
-    "minm1":  2**(eew - 1) + 1,
-    "max":    2**(eew - 1) - 1,
-    "maxm1":  2**(eew - 1) - 2,
-    "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
-    "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
-  }
+  if (eew == 1):
+    v_register_corners = {
+      "zero":   0,
+      "one":    1
+    }
+  else:
+    v_register_corners = {
+      "zero":   0,
+      "one":    1,
+      "two":    2,
+      "ones":   -1,
+      "onesm1": -2,
+      "min":    2**(eew - 1),
+      "minm1":  2**(eew - 1) + 1,
+      "max":    2**(eew - 1) - 1,
+      "maxm1":  2**(eew - 1) - 2,
+      "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
+      "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
+    }
 
   for corner in v_register_corners:
       val = v_register_corners[corner]
       val &= (1 << eew) - 1
       f.write(f"vs_corner_{corner}_{ending}:\n")
       for w in convert(val, eew):
+        if (sew == 64):
+          f.write(f"    .dword {w}\n")
+        else:
           f.write(f"    .word {w}\n")
 
 #
@@ -987,7 +1032,7 @@ vimtype = ["vadc.vim", "vsbc.vim", "vmerge.vim", "vmadc.vim"]
 vvvmtype = ["vadc.vvm", "vsbv.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm", "vsbc.vvm"]
 vxmtype = ["vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm", "vadc.vxm"]
 vvmtype = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
-imm_31 = ["vnclip.wi", "vnclipu.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
+imm_31 = ["vnclip.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
 vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype + vvvxtype
 
 vfloattypes = ["vfadd.vv"]
@@ -1178,16 +1223,6 @@ if __name__ == '__main__':
                             0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
 
-      vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
-                       "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd"]
-      vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"] # TODO: change 700 to maxVtests later
-      vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
-      vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
-      vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
-      vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
-      vcornerseew1 = [(vcorner + "_eew1") for vcorner in vectorcorners]
-
-
       vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
 
       cp_vm_corners = ["cp_vm_ones", "cp_vm_zeroes", "cp_vm_random", "cp_vm_Echeckerboard", "cp_vm_Echeckerboard", "cp_vm_Ocheckerboard", "cp_vm_first_vlmax", "cp_vm_halfvlmax"]
@@ -1204,9 +1239,23 @@ if __name__ == '__main__':
       # print("Generating test for ", test, " with entries: ", coverpoints[test])
 
         if (test in imm_31):
-          immcornersv = [0, 1, 2, 14, 15, 16, 17, 30, 31]
+          immcornersv = [0, 1, 2, 15, 16, 30, 31]
         else:
           immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
+
+        if (test in mmins) or (test in vmlogicalins) or (test in vrvtype):
+          vectorcorners = ["vs_corner_zero", "vs_corner_one"]
+        else:
+          vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
+                          "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd"]
+        vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"] # TODO: change 700 to maxVtests later
+        vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornersemul4 = [(vcorner + "_emul4") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornersemul8 = [(vcorner + "_emul8") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners] + [f"v_random_{randint(1, 700):03d}"]
+        vcornerseew1 = [(vcorner + "_eew1") for vcorner in vectorcorners]
 
         sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
         sigupd_countF = 0  #initialize signature update count for F tests
@@ -1258,14 +1307,16 @@ if __name__ == '__main__':
         write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
         insertTemplate("testgen_footer_vector1.S")
         genVector(sew, vl, vlen, test)
-        genVsCorners(sew, vl, vlen, test, "1")
+
         if (test in narrowins) or (test in widenins) or (test in wvsins):
           genVsCorners(sew, vl, vlen, test, "2")
+          genVsCorners(sew, vl, vlen, test, "1")
         elif (test in vextins):
           genVsCorners(sew, vl, vlen, test, test[-2:])
         elif (test in mmins) or (test in vrvtype) or (test in vmlogicalins):
           genVsCorners(sew, vl, vlen, test, "eew1")
-
+        else:
+          genVsCorners(sew, vl, vlen, test, "1")
 
 
         # print footer
