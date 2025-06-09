@@ -184,7 +184,6 @@ module testbench;
           end
           "CSR": begin
             num = $sscanf(val, "%h", regNum);
-            // $display("CSR: %h", regNum);
             val = words.pop_front();
             num = $sscanf(val, "%h", xRegVal);
             csr[regNum] = xRegVal;
