@@ -33,7 +33,7 @@ interface dm
   parameter int ILEN   = 32,  // Instruction length in bits
   parameter int XLEN   = 32,  // GPR length in bits
   parameter int FLEN   = 32,  // FPR length in bits
-  parameter int VLEN   = 256, // Vector register size in bits
+  parameter int VLEN   = 512, // Vector register size in bits
   parameter int NHART  = 1,   // Number of harts reported
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 );
@@ -55,7 +55,7 @@ interface rvviTrace
   parameter int ILEN   = 32,  // Instruction length in bits
   parameter int XLEN   = 32,  // GPR length in bits
   parameter int FLEN   = 32,  // FPR length in bits
-  parameter int VLEN   = 256, // Vector register size in bits
+  parameter int VLEN   = 512, // Vector register size in bits
   parameter int NHART  = 1,   // Number of harts reported
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 );
