@@ -185,6 +185,25 @@ def writeSIGUPD_F(rd):
     l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
     return l
 
+def writeFcsrSIG():
+      tempReg = 5
+      while tempReg == sigReg or tempReg == sigReg:
+          tempReg = randint(1,31)
+      l =  f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
+      l = l + writeSIGUPD(tempReg)
+      return l
+
+def writeSIGUPD_V(vd, sew):
+    global sigupd_count  # Allow modification of global variable
+    sigupd_count += 1  # Increment counter on each call
+    # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
+    avl = 1   # Set AVL
+    tempReg = 6
+    while tempReg == sigReg:
+      tempReg = randint(1,31)
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    return lines
+
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   global sigReg # this function can modify the signature register
@@ -226,7 +245,7 @@ def handleSignaturePointerConflict(lines, rs1, rs2, rd, rs3=None):
   global sigReg # this function can modify the signature register
   l = lines
   oldSigReg = sigReg
-  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3):
+  while (sigReg == rs1 or sigReg == rs2 or sigReg == rd or sigReg == rs3 or sigReg == 2): #avoid conflict with the test registers and stackpointer since it is used for loads
     sigReg = randint(1,31)
 
   if (sigReg != oldSigReg):
@@ -337,6 +356,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n")
   elif (test in frtype):
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     if not frm:
@@ -345,8 +365,10 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in fixtype):
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fitype):
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
@@ -370,8 +392,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       rd = 1
     if (test != "c.addi16sp"):
       if (test in "c.lwsp"):
-        while (rs2 == 2):
-            rs2 = randint(1, maxreg) # rs2 cannot be 2 for c.lwsp
         lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       else:
         lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
@@ -713,6 +733,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
       rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
@@ -720,10 +741,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} x{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, False)
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
@@ -984,7 +1008,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
 def findInstype(key, instruction, insMap):
     # within sublists with the key provided, find the first instance of the instruction
-
     for k, v in insMap.items():
       if hasattr(v, "__getitem__"):
         if instruction in v[key]:
@@ -1063,10 +1086,16 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     rd = rs1
     while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
       rd = randomNonconflictingReg(test)
-    rs1val = randint(0, 2**xlen-1)
-    rs2val = randint(0, 2**xlen-1)
-    immval = randint(0, 2**xlen-1)
-    rdval = randint(0, 2**xlen-1)
+    if test in floattypes:
+      rs1val = randint(0, 2**flen-1)
+      rs2val = randint(0, 2**flen-1)
+      immval = randint(0, 2**flen-1)
+      rdval = randint(0, 2**flen-1)
+    else:
+      rs1val = randint(0, 2**xlen-1)
+      rs2val = randint(0, 2**xlen-1)
+      immval = randint(0, 2**xlen-1)
+      rdval = randint(0, 2**xlen-1)
     if (rs3 is None): return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
     else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
@@ -1604,7 +1633,7 @@ def make_cr_fs1_fs2_corners(test, xlen, frm = False):
       while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
       desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
-      desc = desc + "\nfsflagsi 0b00000 # clear all fflags"
+
       #f.write("fsflagsi 0b00000 # clear all fflags\n")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
@@ -1631,7 +1660,6 @@ def make_fs1_corners(test, xlen, fcorners, frm = False):
       desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
       desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
-    desc = desc + "\nfsflagsi 0b00000 # clear all fflags"
     #f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
