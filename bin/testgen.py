@@ -71,9 +71,6 @@ def insertTemplate(name, is_custom=False):
           sigupd_count += count # Update sigupd_count
           lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
           template += "\n".join(lines) + "\n"
-          print("count:", count)
-          print("sigupd_count before:", sigupd_count)
-          print("sigupd_count after:", sigupd_count)
     f.write(template)
 
 def shiftImm(imm, xlen):
