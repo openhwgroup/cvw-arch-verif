@@ -68,7 +68,7 @@ def writeSIGUPD_V(vd, sew):
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
     return lines
 
 def loadVFloatReg(reg, val, sew):
