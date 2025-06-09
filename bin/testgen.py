@@ -20,8 +20,9 @@ import filecmp
 from datetime import datetime
 from random import randint, seed, getrandbits
 
-def insertTemplate(name):
-    global signatureWords
+def insertTemplate(name, is_custom=False):
+    global signatureWords, sigupd_count
+
     f.write(f"\n# {name}\n")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
@@ -40,11 +41,39 @@ def insertTemplate(name):
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
     # Replace placeholders
-
     template = template.replace("sigupd_count", str(signatureWords))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
+
+    if is_custom:
+      if name == "sw.S":
+        # Extract the argument from SIG_POINTER_INCREMENT(n)
+        match = re.search(r"SIG_POINTER_INCREMENT\((\d+)\)", template)
+        sig_pointer_incr = int(match.group(1)) if match else 0  # Value
+        # Validation: SIG_POINTER_INCREMENT must exist and be > 0
+        if sig_pointer_incr == 0:
+          print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
+          print(f"Warning: This will possible break your signature coverage for this custom test '{name}, if you have instructions in it.")
+          # Remove the SIG_POINTER_INCREMENT line from the template
+          template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
+          #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
+        else:
+          # Replace macros in template# Remove the macro line
+          template = re.sub(r"[ \t]*SIG_POINTER_INCREMENT\(\d+\).*?\n", "", template)
+
+          template = template.replace("SIGPOINTER", f"x{sigReg}")
+
+          indent = "    "  # 4 spaces
+          lines = []
+          # Generate the increment logic:input in bytes, output in increments of REGWIDTH
+          count = sig_pointer_incr//(4*(xlen//32)) # count is the number of increments
+          sigupd_count += count # Update sigupd_count
+          lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
+          template += "\n".join(lines) + "\n"
+          print("count:", count)
+          print("sigupd_count before:", sigupd_count)
+          print("sigupd_count after:", sigupd_count)
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -526,34 +555,40 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + storeop + " x" + str(rs2) + ", " + str(int(unsignedImm1(immval))*mul) +"(x" + str(rs1) + ") # store value to put something in memory\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + str(int(unsignedImm1(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n")
   elif (test in cstype):
-    while (rs1 == rs2):
-      rs1 = randomNonconflictingReg(test)
+    if (rs1 != 0):
+      while (rs1 == rs2):
+        rs1 = randomNonconflictingReg(test)
     mul = 4 if (test in ["c.sw", "c.fsw"]) else 8
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address\n"
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2 with random value\n"
+    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
+    sigReg = rs1
+    #lines = lines + "la x" + str(rs1) + ", scratch" + " # base address\n"
     if (test in ["c.fsw", "c.fsd"]):
       if ((test == "c.fsd") and (flen > xlen)):
         temp = 8
-        while (temp in [rs1, rs2]):
+        while (temp in [sigReg, rs2]):
           temp = randomNonconflictingReg(test)
         lines = lines + "li x" + str(temp) +", " + formatstr.format(rs1val) + " # initialize x" + str(temp) + " with random value{formatstr.format(rs1val)}\n"
-        lines = lines + "sw x" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # store " + hex(rs2val) + " in memory\n"
-        lines = lines + "sw x" + str(temp) + ", 4(x" + str(rs1) + ")" + " # store " + hex(rs1val) + " in memory\n"
-        lines = lines + "fld f" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # load " + hex(rs1val) + hex(rs2val)[2:] + " from memory into fs2\n"
-        lines = lines + "sw x0, 0(x" + str(rs1) + ")" + " # clearing the random value store at scratch\n"
-        lines = lines + "sw x0, 4(x" + str(rs1) + ")" + " # clearing the random value store at 4(scratch)\n"
+        lines = lines + "sw x" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # store " + hex(rs2val) + " in memory\n"
+        lines = lines + "sw x" + str(temp) + ", 4(x" + str(sigReg) + ")" + " # store " + hex(rs1val) + " in memory\n"
+        lines = lines + "fld f" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # load " + hex(rs1val) + hex(rs2val)[2:] + " from memory into fs2\n"
+        lines = lines + "sw x0, 0(x" + str(sigReg) + ")" + " # clearing the random value store at scratch\n"
+        lines = lines + "sw x0, 4(x" + str(sigReg) + ")" + " # clearing the random value store at 4(scratch)\n"
       else:
         size = "w" if test == "c.fsw" else "d"
-        lines = lines + "s" + size + " x" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # store " + hex(rs2val) + " in memory\n"
-        lines = lines + "fl" + size + " f" + str(rs2) + ", 0(x" + str(rs1) + ")" + " # load " + hex(rs2val) + " from memory into fs2\n"
-        lines = lines + "s" + size + " x0, 0(x" + str(rs1) + ")" + " # clearing the random value store at scratch\n"
-    lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
-    storeline = test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation \n"
+        lines = lines + "s" + size + " x" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # store " + hex(rs2val) + " in memory\n"
+        lines = lines + "fl" + size + " f" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # load " + hex(rs2val) + " from memory into fs2\n"
+        lines = lines + "s" + size + " x0, 0(x" + str(sigReg) + ")" + " # clearing the random value store at scratch\n"
+    lines = lines + "addi x" + str(sigReg) + ", x" + str(sigReg) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
+    storeline = test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(sigReg) + ") # perform operation \n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + str(int(unsignedImm5(immval))*mul)  + " \n"
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  # Incrementing base register\n"
+    sigupd_count += 1
   elif (test in cutype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + " # perform operation\n")
-  elif (test in stype):#["sb", "sh", "sw", "sd"]
+  elif (test in stype): #["sb", "sh", "sw", "sd"]
     if (rs1 != 0):
       if (rs2 == rs1): # make sure registers are different so they don't conflict
           rs2 = (rs1 + 1) % (maxreg+1)
@@ -562,13 +597,18 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
+      if (immval == -2048):
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*(-2047), 12, True) + " \n"
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*(-1), 12, True) + " \n"
+      else:
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  \n"
-      lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
       sigupd_count += 1
   elif (test in csstype):
+    while (rs2 == 2):
+      rs2 = randomNonconflictingReg(test)
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
@@ -580,11 +620,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
     # Determine where to store
-    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
-    lines = lines + "la sp" + ", scratch" + " # base address \n"
+    lines = lines + "mv sp" + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    sigupd_count += 1
+
+
+
   elif (test in csbtype + cshtype):
     if (test in csbtype):
       offset = unsignedImm2(immval)
@@ -846,30 +891,48 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     hazardLabel += 1
 
   elif insMap[instype].get('loadstore', 0) == 'store':
+
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
     if haz_type != "war":
       rs1a = rda
       rs2a = 0
-    lines += writeSingleInstructionSequence(desc,
-                [testa, testb],
-                [regconfig2, regconfig],
-                [rda, rdb], [rs1a, rs1b],
-                [rs2a, rs2b], [rs3a, rs3b],
-                [immvala, immvalb],
-                ["perform first operation", "perform second (triggering) operation"],
-                xlen)
+      if haz_type == "nohaz":
+        lines = lines + "li x" + str(rda) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
+      else:
+        lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
+      #only generate one instrution
+      lines += writeSingleInstructionSequence(desc,
+                  [testb],
+                  [regconfig],
+                  [rdb], [rs1b],
+                  [rs2b], [rs3b],
+                  [immvalb],
+                  ["perform second (triggering) operation"],
+                  xlen)
+    else:
+      lines += writeSingleInstructionSequence(desc,
+                  [testa, testb],
+                  [regconfig2, regconfig],
+                  [rda, rdb], [rs1a, rs1b],
+                  [rs2a, rs2b], [rs3a, rs3b],
+                  [immvala, immvalb],
+                  ["perform first operation", "perform second (triggering) operation"],
+                  xlen)
+    lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     # Use FLEN/8 if it's a float store, else REGWIDTH
     if testa in fstype or testb in fstype:
       flen_bytes = 8 #Im trying to implement this using FLEN MACRO -> 1*FLEN/8
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(flen_bytes)+ "\n"
     else:
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
-    lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
-    lines += writeSIGUPD(rda)
-    lines = lines + "CHK_OFFSET(sigReg, XLEN/4, True)      # updating sigoffset \n"
-    sigupd_count += 1
+    if haz_type == "nohaz":
+      lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    else:
+      lines += "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    sigupd_count += 2
 
   elif testb in btype:
     if rs2b == rda:
@@ -1623,7 +1686,7 @@ def make_nanbox(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_custom(test, xlen):
-    insertTemplate(f"{test}.S")
+    insertTemplate(f"{test}.S", is_custom=True)
 
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
@@ -2441,11 +2504,12 @@ if __name__ == '__main__':
           #line ="// Created " + str(datetime.now()) + "\n"
           #f.write(line)
 
-          # insert generic header
-          insertTemplate("testgen_header.S")
 
           sigTotal = 0 # total number of bytes in signature
           sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
+
+          # insert generic header
+          insertTemplate("testgen_header.S")
 
           # add assembly lines to enable fp where needed
           if test in floattypes:
