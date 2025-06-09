@@ -47,6 +47,8 @@
 `endif
 `ifdef VLEN512
   `define VLEN 512
+`else
+  `define VLEN 8
 `endif
 
 
