@@ -891,25 +891,35 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     hazardLabel += 1
 
   elif insMap[instype].get('loadstore', 0) == 'store':
+
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
-    lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
     if haz_type != "war":
       rs1a = rda
       rs2a = 0
-      if haz_type == "raw":
-        rda = rs1b
-        rdb = rs2b
-        rs1a = rs1b
-    lines += writeSingleInstructionSequence(desc,
-                [testa, testb],
-                [regconfig2, regconfig],
-                [rda, rdb], [rs1a, rs1b],
-                [rs2a, rs2b], [rs3a, rs3b],
-                [immvala, immvalb],
-                ["perform first operation", "perform second (triggering) operation"],
-                xlen)
+      if haz_type == "nohaz":
+        lines = lines + "li x" + str(rda) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
+      else:
+        lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
+      #only generate one instrution
+      lines += writeSingleInstructionSequence(desc,
+                  [testb],
+                  [regconfig],
+                  [rdb], [rs1b],
+                  [rs2b], [rs3b],
+                  [immvalb],
+                  ["perform second (triggering) operation"],
+                  xlen)
+    else:
+      lines += writeSingleInstructionSequence(desc,
+                  [testa, testb],
+                  [regconfig2, regconfig],
+                  [rda, rdb], [rs1a, rs1b],
+                  [rs2a, rs2b], [rs3a, rs3b],
+                  [immvala, immvalb],
+                  ["perform first operation", "perform second (triggering) operation"],
+                  xlen)
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     # Use FLEN/8 if it's a float store, else REGWIDTH
     if testa in fstype or testb in fstype:
@@ -917,8 +927,12 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(flen_bytes)+ "\n"
     else:
       lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
-    lines += writeSIGUPD(rda)
-    sigupd_count += 1
+    if haz_type == "nohaz":
+      lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    else:
+      lines += "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    sigupd_count += 2
 
   elif testb in btype:
     if rs2b == rda:
