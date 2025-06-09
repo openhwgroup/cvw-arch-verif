@@ -54,7 +54,7 @@ def insertTemplate(name, is_custom=False):
         # Validation: SIG_POINTER_INCREMENT must exist and be > 0
         if sig_pointer_incr == 0:
           print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
-          print(f"Warning: This will possible break your signature coverage for this custom test '{name}'.")
+          print(f"Warning: This will possible break your signature coverage for this custom test '{name}, if you have instructions in it.")
           # Remove the SIG_POINTER_INCREMENT line from the template
           template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
           #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
@@ -65,25 +65,13 @@ def insertTemplate(name, is_custom=False):
 
           indent = "    "  # 4 spaces
           lines = []
-          half = sig_pointer_incr // 2
-          lines.append(f"{indent}li t0, REGWIDTH")
-          if sig_pointer_incr == 1:
-              # If only one increment, just add REGWIDTH once
-              lines.append(f"{indent}addi x{sigReg}, x{sigReg}, t0  # increment pointer by REGWIDTH * {sig_pointer_incr}")
-          else:
-            for _ in range(half):
-                lines.append(f"{indent}slli t0, t0, 1") # Add (REGWIDTH << 1) multiple times
-            # If odd, add one more REGWIDTH:
-            if sig_pointer_incr % 2 == 1:
-                lines.append(f"{indent}addi t0, t0, REGWIDTH \n")
-            # Final pointer update
-            lines.append(f"{indent}add x{sigReg}, x{sigReg}, t0  # increment pointer by REGWIDTH * {sig_pointer_incr}")
-          # Join and add to template
+          # Generate the increment logic:input in bytes, output in increments of REGWIDTH
+          count = sig_pointer_incr//(4*(xlen//32)) # count is the number of increments
+          lines.append(f"{indent}li t0, {sig_pointer_incr}")  # Load the increment value (in bytes)
+          lines.append(f"{indent}add x{sigReg}, x{sigReg}, t0  # increment pointer {sig_pointer_incr} bytes") # Final pointer update
           template += "\n".join(lines) + "\n"
 
-          # Update sigupd_count
-          sigupd_count += sig_pointer_incr
-
+          sigupd_count += count # Update sigupd_count
     f.write(template)
 
 def shiftImm(imm, xlen):
