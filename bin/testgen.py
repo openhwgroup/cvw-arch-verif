@@ -678,7 +678,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in fstype):#["fsw"]
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = lines + f"la x{rs1}, scratch # base address\n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
