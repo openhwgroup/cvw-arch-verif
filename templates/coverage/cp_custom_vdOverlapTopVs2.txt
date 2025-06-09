@@ -1,5 +1,3 @@
-    // Custom coverpoints for Vector narrowing operations
-
     vs2_vd_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
         bins overlapping = {1'b1};
     }
@@ -8,8 +6,4 @@
         bins overlapping = {1'b1};
     }
 
-    vd_even: coverpoint ins.current.insn[7] {
-        bins even = {1'b0};
-    }
-
-    cp_custom_vnarrow_overlapping_vd_vs2:  cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_even;
+    cp_custom_vdOverlapTopVs2_vd_vs2_lmul1: cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_reg_aligned_lmul_2;
