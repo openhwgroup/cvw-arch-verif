@@ -181,3 +181,19 @@ function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
     default:                                               return random;
   endcase
 endfunction
+
+function logic[63:0] get_vr_element_zero(`VLEN_BITS val);
+    `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
+
+    case (sew)
+    8:   return {56'b0, val[7:0]};
+    16:  return {48'b0, val[15:0]};
+    32:  return {32'b0, val[31:0]};
+    64:  return val[63:0];
+    default: begin
+      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", sew);
+      $finish(-1);
+    end
+  endcase
+
+endfunction
