@@ -5,8 +5,6 @@
 # - Use SIGPOINTER for all signature memory accesses.
 #   Internally replaced by x{sigReg}.
 #
-# - Do NOT use t0 — reserved by the test generator.
-#
 # - After writing to signature memory, use:
 #     SIG_POINTER_INCREMENT(n)
 #   where n = number of **bytes** written (not instructions).
@@ -26,6 +24,4 @@
     sw t3, 4(SIGPOINTER)
     # increment pointer after since we are storing two words using offset 0 and 4.
     # the offset would be off, if the increments were added in between
-
-    # number must be the total amount of space used in bytes by all of the insturctions added
-    SIG_POINTER_INCREMENT(8)
+    SIG_POINTER_INCREMENT(8) # number - total amount of space used (in bytes) by all of the instructions being tested

@@ -59,19 +59,21 @@ def insertTemplate(name, is_custom=False):
           template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
           #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
         else:
-          # Replace macros in template
-          template = re.sub(r"^\s*SIG_POINTER_INCREMENT\(\d*\)\s*$\n?", "", template, flags=re.MULTILINE) #Remove the macro once used
+          # Replace macros in template# Remove the macro line
+          template = re.sub(r"[ \t]*SIG_POINTER_INCREMENT\(\d+\).*?\n", "", template)
+
           template = template.replace("SIGPOINTER", f"x{sigReg}")
 
           indent = "    "  # 4 spaces
           lines = []
           # Generate the increment logic:input in bytes, output in increments of REGWIDTH
           count = sig_pointer_incr//(4*(xlen//32)) # count is the number of increments
-          lines.append(f"{indent}li t0, {sig_pointer_incr}")  # Load the increment value (in bytes)
-          lines.append(f"{indent}add x{sigReg}, x{sigReg}, t0  # increment pointer {sig_pointer_incr} bytes") # Final pointer update
-          template += "\n".join(lines) + "\n"
-
           sigupd_count += count # Update sigupd_count
+          lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
+          template += "\n".join(lines) + "\n"
+          print("count:", count)
+          print("sigupd_count before:", sigupd_count)
+          print("sigupd_count after:", sigupd_count)
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -595,7 +597,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
       lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
       sigReg = rs1
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
+      if (immval == -2048):
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*(-2047), 12, True) + " \n"
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*(-1), 12, True) + " \n"
+      else:
+        lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
