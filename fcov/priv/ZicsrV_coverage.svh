@@ -34,7 +34,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     }
 
     //////////////////////////////////////////////////////////////////////////////////
-    // cp_vcsrrwc
+    // cp_vcsrrswc
     // writing setting and clearing all vector csrs
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +54,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011};
     }
 
-    cp_vcsrrwc: cross vcsrs, csrops;
+    cp_vcsrrswc: cross vcsrs, csrops;
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_sew_lmul_vset*
