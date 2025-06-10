@@ -724,7 +724,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + f"la x{rs1}, scratch # base address\n"
+    lines = lines + f"mv x{rs1}, x{str(sigReg)}\n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
@@ -732,6 +732,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    lines = lines + f"addi x{str(sigReg)}, x{str(sigReg)}, REGWIDTH # Incrementing base register\n"
   elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
