@@ -71,9 +71,6 @@ def insertTemplate(name, is_custom=False):
           sigupd_count += count # Update sigupd_count
           lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
           template += "\n".join(lines) + "\n"
-          print("count:", count)
-          print("sigupd_count before:", sigupd_count)
-          print("sigupd_count after:", sigupd_count)
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -627,8 +624,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
       sigupd_count += 1
   elif (test in csstype):
-    while (rs2 == 2):
-      rs2 = randomNonconflictingReg(test)
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
