@@ -68,7 +68,7 @@ def writeSIGUPD_V(vd, sew):
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})\n"
+    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
     return lines
 
 def loadVFloatReg(reg, val, sew):
@@ -195,10 +195,13 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     elif (vxrm is not None):
       lines = lines + genVxrmTests(lines, vd, sew, lmul, vxrm)
 
-    # determining EEW for vs2
+    # determining EEW for vs2 and vs1
     if (test in wwvins) or (test in wwxins) or (test in narrowins):
       vs2eew = 2 * sew
       vs1eew = sew
+    elif (test in wvsins):
+      vs2eew = sew
+      vs1eew = 2 * sew
     else:
       vs2eew = sew
       vs1eew = sew
@@ -303,7 +306,10 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
 def randomizeVectorV(test, lmul=1, vd=None, vs1=None, vs2=None, vs3=None, rs1=None, rd=None, allunique=True):
     global vs1RandomCounter, vs2RandomCounter
     if vs1 is None:
-      vs1 = randomNonconflictingVecReg(test, lmul)
+      if (test in wvsins):
+        vs1 = randomNonconflictingVecReg(test, 2*lmul)
+      else:
+        vs1 = randomNonconflictingVecReg(test, lmul)
     if vs2 is None:
       if (test in vs2wideins):
         vs2 = randomNonconflictingVecReg(test, 2*lmul)
@@ -787,6 +793,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vs1_nv0"):
       make_vs1(test, sew, vl, range(1,maxreg+1))
+    elif (coverpoint == "cp_vs1_emul2"):
+      make_vs1(test, sew, vl, range(0,maxreg,2))
     elif (coverpoint == "cmp_vd_vs2"):
       make_vd_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
@@ -801,6 +809,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd_vs1(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
       make_vd_vs1(test, sew, vl, range(1,maxreg+1))
+    elif (coverpoint == "cmp_vd_vs1_emul2"):
+      make_vd_vs1(test, sew, vl, range(0,maxreg,2))
     elif (coverpoint == "cmp_vs1_vs2"):
       make_vs1_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vs1_vs2_nv0"):
@@ -1351,9 +1361,14 @@ if __name__ == '__main__':
         write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
         insertTemplate("testgen_footer_vector1.S")
 
-        if (test in narrowins) or (test in widenins) or (test in wvsins):
+        if (test in narrowins) or (test in widenins):
           genVector(sew, vl, vlen, test, vs="vs2", emul=2)
           genVector(sew, vl, vlen, test, vs="vs1")
+          genVsCorners(sew, vl, vlen, test, "2")
+          genVsCorners(sew, vl, vlen, test, "1")
+        elif (test in wvsins):
+          genVector(sew, vl, vlen, test, vs="vs2")
+          genVector(sew, vl, vlen, test, vs="vs1", emul=2)
           genVsCorners(sew, vl, vlen, test, "2")
           genVsCorners(sew, vl, vlen, test, "1")
         else:
