@@ -60,8 +60,24 @@
     }
 
     // ensures vd updates
-    std_vec: cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
-    std_trap_vec : cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+    //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
+    std_vec: coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0 &
+                        ins.trap == 0
+                    }
+    {
+        bins true = {1'b1};
+    }
+
+    //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+    std_trap_vec : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0
+                    }
+    {
+        bins true = {1'b1};
+    }
 
     vd_all_reg : coverpoint ins.current.insn[11:7] {
         // All vector destination registers
@@ -173,10 +189,20 @@
     }
 
     //////////////////////////////////////////////////////////////////////////////////
+    // Vector csr common coverpoints
+    //////////////////////////////////////////////////////////////////////////////////
+
+    misa_v_active : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "misa", "exts")[21] {
+        bins vector = {1};
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
     // Vector register groups coverpoints
     // all_reg_aligned: every register that is a multiple of lmul
     // all_reg_unaligned: every register that is not a multiple of lmul
     // reg_aligned: any register that is a multiple of lmul
+    // overlap: make sure register groups overlap at a specific lmul
+    // no_overlap: make sure register groups do not overlap at a specific lmul
     //////////////////////////////////////////////////////////////////////////////////
 
     vd_all_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
@@ -325,4 +351,16 @@
 
     vd_reg_unaligned_lmul_8: coverpoint ins.current.insn[11:7] {
         wildcard bins range = {[5'b??001: 5'b??111]};
+    }
+
+    vs2_vd_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs1_vd_no_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs1_vd_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b1};
     }
