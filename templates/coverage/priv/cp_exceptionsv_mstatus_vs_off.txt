@@ -3,7 +3,9 @@
     }
 
     vsstatus_vs_active : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vsstatus", "vs") {
-        ignore_bins active = {0};
+        bins init   = {1};
+        bins clean  = {2};
+        bins dirty  = {3};
     }
 
     cp_exceptionsv_mstatus_vs_off : cross std_trap_vec, misa_v_active, mstatus_vs_inactive, vsstatus_vs_active;
