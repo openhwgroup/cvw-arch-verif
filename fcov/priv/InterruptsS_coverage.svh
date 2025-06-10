@@ -41,7 +41,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins one = {1};
     }
     mstatus_mie_rise: coverpoint ins.current.csr[12'h300][3] {
-        wildcard bins rise = (0 => 1);
+        bins rise = (0 => 1);
     }
     mstatus_sie: coverpoint ins.current.csr[12'h300][1] {
         // autofill 0/1
@@ -74,14 +74,14 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins zero = {0};
     }
     mideleg_zeros: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
+        bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
     }
     mideleg_ones: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
+        bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
     }
     mideleg_ones_zeros: coverpoint ins.current.csr[12'h303][15:0] {
-        wildcard bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
-        wildcard bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
+        bins ones  = {16'b0000001000100010}; //  ones in every field that is not tied to zero (only supervisor delegable)
+        bins zeros = {16'b0000000000000000}; // zeros in every field that is not tied to zero
     }
     mie_msie: coverpoint ins.current.csr[12'h304][3] {
         // autofill 0/1
@@ -135,7 +135,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
         bins one = {1};
     }
     mip_seip_rise: coverpoint ins.current.csr[12'h344][9] {
-        wildcard bins rise = (0 => 1);
+        bins rise = (0 => 1);
     }
     mip_meip_one: coverpoint ins.current.csr[12'h344][11] {
         bins one = {1};

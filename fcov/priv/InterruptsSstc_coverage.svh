@@ -68,7 +68,7 @@ covergroup InterruptsSstc_cg with function sample(ins_t ins);
         }
     `endif
     csrr: coverpoint ins.current.insn[6:0] {
-        wildcard bins csrr = {7'b1110011};
+        bins csrr = {7'b1110011};
     }
     read_stimecmp: coverpoint ins.current.insn[31:20] {
         bins read_stimecmp = {12'h14D};
