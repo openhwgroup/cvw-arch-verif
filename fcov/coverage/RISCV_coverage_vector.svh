@@ -97,9 +97,15 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
   case (eew)
     1:   return vs_corners_check_eew_1(val);
     8:   return vs_corners_check_eew_8(val);
+    `ifdef SEW16_SUPPORTED
     16:  return vs_corners_check_eew_16(val);
+    `endif
+    `ifdef SEW32_SUPPORTED
     32:  return vs_corners_check_eew_32(val);
+    `endif
+    `ifdef SEW64_SUPPORTED
     64:  return vs_corners_check_eew_64(val);
+    `endif
     default: begin
       $display("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
       $finish(-1);
@@ -131,6 +137,7 @@ function corner_vs_values_t vs_corners_check_eew_8(`VLEN_BITS val);
   endcase
 endfunction
 
+`ifdef SEW16_SUPPORTED
 function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-16){1'b?}},         {(16){1'b0}}}:            return zero;
@@ -147,7 +154,8 @@ function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
     default:                                               return random;
   endcase
 endfunction
-
+`endif
+`ifdef SEW32_SUPPORTED
 function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-32){1'b?}},         {(32){1'b0}}}:            return zero;
@@ -164,7 +172,8 @@ function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
     default:                                               return random;
   endcase
 endfunction
-
+`endif
+`ifdef SEW64_SUPPORTED
 function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-64){1'b?}},         {(64){1'b0}}}:            return zero;
@@ -181,17 +190,24 @@ function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
     default:                                               return random;
   endcase
 endfunction
+`endif
 
-function logic[63:0] get_vr_element_zero(`VLEN_BITS val);
+function logic[63:0] get_vr_element_zero(hart, issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
-    case (sew)
-    8:   return {56'b0, val[7:0]};
-    16:  return {48'b0, val[15:0]};
-    32:  return {32'b0, val[31:0]};
-    64:  return val[63:0];
+    case (vsew)
+    2'b00:   return {56'b0, val[7:0]};
+    `ifdef SEW16_SUPPORTED
+    2'b01:  return {48'b0, val[15:0]};
+    `endif
+    `ifdef SEW32_SUPPORTED
+    2'b10:  return {32'b0, val[31:0]};
+    `endif
+    `ifdef SEW64_SUPPORTED
+    2'b11:  return val[63:0];
+    `endif
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", sew);
+      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", vsew);
       $finish(-1);
     end
   endcase
