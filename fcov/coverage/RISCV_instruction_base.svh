@@ -527,6 +527,11 @@ class RISCV_instruction
     current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
   endfunction
 
+  virtual function void add_v0(int offset);
+    current.has_v0 = 1;
+    current.v0_val = prev.v_wdata[0];
+  endfunction
+
   virtual function void add_vm(int offset);
     current.vm = get_vm(ops[offset].key);
   endfunction

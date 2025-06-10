@@ -369,8 +369,13 @@ endfunction
 
 function bit get_vm(string s);
   case (s)
-    "v0.t": return 1'b0;
-    "": return 1'b1;
+    "v0.t" : return 1'b0;
+    "v0"   : return 1'b0;
+    ""     : return 1'b1;
+    default: begin
+      $display("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
+      $finish(-1);
+    end
   endcase
 endfunction
 

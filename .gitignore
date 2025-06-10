@@ -44,5 +44,7 @@ tests/priv/headers
 tests/priv/rv32
 tests/priv/rv64
 
+testplans/Vx.csv
+
 wkdir
 fcov_ucdb
