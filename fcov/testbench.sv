@@ -37,7 +37,7 @@ module testbench;
   localparam FLEN = 32;
 `endif
 
-  localparam VLEN = 256; // TODO: Make configurable (maybe just use the macro directly)
+  localparam VLEN = 512; // TODO: Make configurable (maybe just use the macro directly)
 
   localparam PA_BITS = (XLEN==32 ? 32'd34 : 32'd56);
   localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
@@ -50,7 +50,9 @@ module testbench;
   string  words[$];
   int     order;
   int     regNum;
-  logic [(XLEN-1):0] regVal;
+  logic [(XLEN-1):0] xRegVal;
+  logic [(FLEN-1):0] fRegVal;
+  logic [(VLEN-1):0] vRegVal;
 
   // RVVI Trace interface signals
   // Basic signals
@@ -162,30 +164,29 @@ module testbench;
           "X": begin
             num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            num = $sscanf(val, "%h", regVal);
-            x_wdata[regNum] = regVal;
+            num = $sscanf(val, "%h", xRegVal);
+            x_wdata[regNum] = xRegVal;
             x_wb |= (1 << regNum);
           end
           "F": begin
             num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            num = $sscanf(val, "%h", regVal);
-            f_wdata[regNum] = regVal;
+            num = $sscanf(val, "%h", fRegVal);
+            f_wdata[regNum] = fRegVal;
             f_wb |= (1 << regNum);
           end
           "V": begin
             num = $sscanf(val, "%d", regNum);
             val = words.pop_front();
-            num = $sscanf(val, "%h", regVal);
-            v_wdata[regNum] = regVal;
+            num = $sscanf(val, "%h", vRegVal);
+            v_wdata[regNum] = vRegVal;
             v_wb |= (1 << regNum);
           end
           "CSR": begin
             num = $sscanf(val, "%h", regNum);
-            $display("CSR: %h", regNum);
             val = words.pop_front();
-            num = $sscanf(val, "%h", regVal);
-            csr[regNum] = regVal;
+            num = $sscanf(val, "%h", xRegVal);
+            csr[regNum] = xRegVal;
             csr_wb |= (1 << regNum);
           end
           default: begin

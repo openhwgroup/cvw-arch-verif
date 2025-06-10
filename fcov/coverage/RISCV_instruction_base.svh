@@ -25,7 +25,7 @@ class RISCV_instruction
   parameter int ILEN   = 32,  // Instruction length in bits
   parameter int XLEN   = 32,  // GPR length in bits
   parameter int FLEN   = 32,  // FPR length in bits
-  parameter int VLEN   = 256, // Vector register size in bits
+  parameter int VLEN   = 512, // Vector register size in bits
   parameter int NHART  = 1,   // Number of harts reported
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 );
@@ -158,9 +158,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup vector register value
-
-  //TODO bad "bit [VLEN-1:0]"
-  function bit [VLEN-1:0] get_vr_val(int hart, int issue, string key, int prev);
+  function `SIGNED_VLEN_BITS get_vr_val(int hart, int issue, string key, int prev);
     int idx = get_vr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].v_wdata[idx];

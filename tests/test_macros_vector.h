@@ -62,16 +62,14 @@
 // SEW defines the element size in bits (8, 16, 32, or 64)
 // VREG is a VR that holds the data
 // offset will be updated (to the next 8-byte boundary)
-
-//#define RVTEST_SIGUPD_V(AVL, SEW, VREG)                                 \
-//    CHK_OFFSET(SIG_BASE, REGWIDTH, 0) ;                                 \
-//    addi HELPER_GPR, SIG_BASE, offset ;                                 \
-//    vse ## SEW ##.v VREG, (HELPER_GPR) ;                                \
-//    .set offset, offset + (AVL * SEW / 8) ;                             \
-//    .if (offset & 7) > 0 ;                                              \
-//    .set offset, (offset + 8) & ~7 ;                                    \
-//    .endif ;
-#define RVTEST_SIGUPD_V(_BR,_R,_F,...)			;\
+#define RVTEST_SIGUPD_V(AVL, SEW, VREG)                                 \
+    CHK_OFFSET(SIG_BASE, REGWIDTH, 0) ;                                 \
+    addi HELPER_GPR, SIG_BASE, offset ;                                 \
+    vse ## SEW ##.v VREG, (HELPER_GPR) ;                                \
+    .set offset, offset + (AVL * SEW / 8) ;                             \
+    .if (offset & 7) > 0 ;                                              \
+    .set offset, (offset + 8) & ~7 ;                                    \
+    .endif ;
 
 // Emit a run-time test for (VLENB<(AVL*SEW/8)) and jump to SKIP_LABEL if so
 // This macro implicitly assumes that LMUL=1
