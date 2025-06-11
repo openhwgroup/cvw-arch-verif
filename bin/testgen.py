@@ -368,7 +368,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fitype):
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
-    #lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
+    lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     # Do operation twice to make sure flags set the first time and remain set the second time
     #lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation first time to set flags\n")
     if not frm:
