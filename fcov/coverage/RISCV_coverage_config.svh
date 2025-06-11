@@ -242,6 +242,12 @@
 `ifdef EXCEPTIONSVM_COVERAGE
   `include "ExceptionsVM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSVMZAAMO_COVERAGE
+  `include "ExceptionsVMZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSVMZALRSC_COVERAGE
+  `include "ExceptionsVMZalrsc_coverage.svh"
+`endif
 `ifdef SSSTRICTS_COVERAGE
   `include "SsstrictS_coverage.svh"
 `endif
