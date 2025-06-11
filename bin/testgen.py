@@ -278,7 +278,7 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   if sigupd_countF > 0:
     if flen > xlen:
       mult = flen//xlen
-      signatureWords = sigupd_count + (sigupd_countF * (mult *2-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+      signatureWords = sigupd_count + (sigupd_countF * ((mult*2)-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
     else:
       signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
@@ -621,7 +621,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(-1*immval, 12, True) + " \n"
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
-      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+      if test == "sd":
+        WIDTH = 64
+      else:
+        WIDTH = 32
+      lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register \n"
       sigupd_count += 1
   elif (test in csstype):
     if (test == "c.swsp" or test == "c.fswsp"):
@@ -640,7 +644,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
-    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    if test in ["c.sd", "c.fsd","c.sdsp", "c.fsdsp"]:
+        WIDTH = 64
+    else:
+        WIDTH = 32
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
 
 
@@ -720,7 +728,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + f"la x{rs1}, scratch # base address\n"
+    lines = lines + f"mv x{rs1}, x{str(sigReg)}  #copy sigpointer to temporary register\n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
@@ -728,6 +736,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    if test == "fsd":
+        WIDTH = 64
+    else:
+        WIDTH = 32
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
+    sigupd_count += 1
   elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
@@ -941,12 +955,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                   ["perform first operation", "perform second (triggering) operation"],
                   xlen)
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
-    # Use FLEN/8 if it's a float store, else REGWIDTH
-    if testa in fstype or testb in fstype:
-      flen_bytes = 8 #Im trying to implement this using FLEN MACRO -> 1*FLEN/8
-      lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(flen_bytes)+ "\n"
-    else:
-      lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
+    lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
     if haz_type == "nohaz":
       lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
     else:
@@ -1001,7 +1010,9 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += writeSIGUPD_F(rdb)
     else:
       lines += writeSIGUPD(rdb)
-
+  if sigReg == 2:
+    lines += "mv x3" +", x" + str(sigReg) + " # move sigreg out of x2 to avoid sp conflicts\n"
+    sigReg = 3
   f.write(lines)
 
 def findInstype(key, instruction, insMap):
