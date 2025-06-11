@@ -34,7 +34,7 @@ function int get_vlmax(int hart, int issue, int prev);
         3'b110: begin end
         3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax_params lmul is undefined (%0s)", vlmul);
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)", vlmul);
             $finish(-1);
         end
     endcase
@@ -45,10 +45,15 @@ function int get_vlmax(int hart, int issue, int prev);
         3'b010: begin end
         3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax_params sew is undefined (%0s)", vsew);
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)", vsew);
             $finish(-1);
         end
     endcase
+
+  if(get_csr_val(hart, issue, prev, "vtype", "vill") == 1) begin
+    $display("ERROR: SystemVerilog Functional Coverage: vlmax undefined, vill bit is set");
+    $finish(-1);
+  end
 
   return get_vlmax_params(hart, issue, vsew, vlmul);
 endfunction

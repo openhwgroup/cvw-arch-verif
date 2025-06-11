@@ -234,10 +234,60 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     cp_vset_i_vli_rd_x0_rs1_x0 : cross vset_i_vli_instructions, vl_nonzero, rd_x0, rs1_x0, vset_i_vli_vlmax_unchanged;
 
     //////////////////////////////////////////////////////////////////////////////////
-    // cp_vsetvl_i_rd_*_rs1_*
-    // avl setting corner cases
+    // cp_vsetvl_i_avl_*
+    // tests corner case avl behavior on the vset instructions
     //////////////////////////////////////////////////////////////////////////////////
 
+    rs1_le_vlmax : coverpoint (ins.current.rs1_val <= get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+        bins true = {1};
+    }
+
+    rs1_lt_2x_vlmax_gt_vlmax : coverpoint (ins.current.rs1_val < 2 * get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
+                                        & ins.current.rs1_val > get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+        bins true = {1};
+    }
+
+    rs1_ge_2x_vlmax : coverpoint (ins.current.rs1_val >= 2 * get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+        bins true = {1};
+    }
+
+    vsetvl_i_instructions: coverpoint ins.current.insn {
+        wildcard bins vsetvli   =   {32'b0000_?_?_???_???_?????_111_?????_1010111};
+        wildcard bins vsetvl    =   {32'b1000000_?????_?????_111_?????_1010111};
+    }
+
+    vsetivli_instruction : coverpoint ins.current.insn {
+        wildcard bins vsetivli  =   {32'b1100_?_?_???_???_?????_111_?????_1010111};
+    }
+
+    imm5_corners : coverpoint ins.current.insn[19:15] {
+        // all generated bins for imm corners
+    }
+
+    cp_vsetvl_i_avl_le_vlmax    : cross vsetvl_i_instructions, rs1_le_vlmax;
+    cp_vsetvl_i_avl_lt_2x_vlmax : cross vsetvl_i_instructions, rs1_lt_2x_vlmax_gt_vlmax;
+    cp_vsetvl_i_avl_ge_2x_vlmax : cross vsetvl_i_instructions, rs1_ge_2x_vlmax;
+
+    cp_vsetivli_avl_corners     : cross vsetivli_instruction, vtype_all_sew_supported, imm5_corners, vtype_lmul_1;
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // cp_vstart_out_of_bounds
+    // attempts to write an unwritable bit of vstart csr
+    //////////////////////////////////////////////////////////////////////////////////
+
+    vstart_csr: coverpoint ins.current.insn[31:20] {
+        bins vstart = {12'h008};
+    }
+
+    csr_write: coverpoint ins.current.insn {
+        wildcard bins csrrw     = {32'b????????????_?????_001_?????_1110011};
+    }
+
+    rs1_2_to_16 : coverpoint (ins.current.rs1_val == 2 ** 16) {
+        bins true = {1'b1};
+    }
+
+    cp_vstart_out_of_bounds : cross vstart_csr, csr_write, rs1_2_to_16;
 
 endgroup
 
