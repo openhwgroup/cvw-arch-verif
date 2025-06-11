@@ -27,6 +27,7 @@
 
 `define G 4				// Set G as needed (0, 1, 2, etc.)
 `define g (2**(`G+2))	// Region size = 2^(G+2)
+`define k ((`G > 1) ? (`G - 1) : 0)
 
 // Define PMP_16 or PMP_64
 `define PMP_16
@@ -37,7 +38,7 @@
 `define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
 
 // NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**(`G-1) - 1) // yyyy...0111
+`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
 
 //------------------------------------------------------------
 
@@ -391,6 +392,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		bins NAPOT = {2'b11};
 	}
 
+	// Initial value in pmpcfg which we will attempt to clear when L = {1/0}
 	pmpcfg_xwr: coverpoint ins.prev.csr[12'h3A1][2:0] { // Region 1
 		bins XWR = {3'b111};
 	}
@@ -399,6 +401,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		bins XWR = {3'b000};
 	}
 
+	// Initial value in pmpaddr which we will attempt to clear when L = {1/0}
 	val_in_pmpaddr: coverpoint ins.prev.csr[12'h3B1] { // Region 1
 		bins hex_0x100 = {256};
 	}
@@ -705,43 +708,43 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		bins pmp_entry = {105'b111111111111111_111111111111111111111111111111_111111111111111_000111000111000_11_01_00_11_01_00_11_01_00_11_01_00_11_01_00};
 	}
 
-	// if G = 4, then smallest region will be of 64 bytes
+	// if G = 1, then smallest standard region will be of 8 bytes and each subsequent region will be twice.
 	overlapping_regions: coverpoint pack_pmpaddr {
-		bins twice_subsequent_regions = {(`REGIONSTART >> 2) | (2**(`G+13)-1),		// 1048576 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+12)-1),		// 524288 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+11)-1),		// 262144 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+10)-1),		// 131072 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+9)-1),		// 65536 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+8)-1),		// 32768 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+7)-1),		// 16384 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+6)-1),		// 8192 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+5)-1),		// 4096 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+4)-1),		// 2048 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+3)-1),		// 1024 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+2)-1),		// 512 bytes
-										 (`REGIONSTART >> 2) | (2**(`G+1)-1),		// 256 bytes
-										 (`REGIONSTART >> 2) | (2**(`G)-1),			// 128 bytes
-										 (`REGIONSTART >> 2) | (2**(`G-1)-1)		// 64 bytes
+		bins twice_subsequent_regions = {(`REGIONSTART >> 2) | (2**(`k+14)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+13)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+12)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+11)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+10)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+9)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+8)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+7)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+6)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+5)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+4)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+3)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+2)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+1)-1),
+										 (`REGIONSTART >> 2) | (2**(`k)-1)
 										 };
 	}
 
-	// Addresses at end of each region - 8
+	// Addresses at end of each twice subsequent standard region - 8
 	addr_in_overlapping_region: coverpoint (ins.current.imm + ins.current.rs1_val) {
-		bins addr_in_region14  = {`REGIONSTART + 1048568};
-		bins addr_in_region13  = {`REGIONSTART + 524280};
-		bins addr_in_region12  = {`REGIONSTART + 262136};
-		bins addr_in_region11  = {`REGIONSTART + 131064};
-		bins addr_in_region10  = {`REGIONSTART + 65528};
-		bins addr_in_region9   = {`REGIONSTART + 32760};
-		bins addr_in_region8   = {`REGIONSTART + 16376};
-		bins addr_in_region7   = {`REGIONSTART + 8184};
-		bins addr_in_region6   = {`REGIONSTART + 4088};
-		bins addr_in_region5   = {`REGIONSTART + 2040};
-		bins addr_in_region4   = {`REGIONSTART + 1016};
-		bins addr_in_region3   = {`REGIONSTART + 504};
-		bins addr_in_region2   = {`REGIONSTART + 248};
-		bins addr_in_region1   = {`REGIONSTART + 120};
-		bins addr_in_region0   = {`REGIONSTART + 56};
+		bins addr_in_region14  = {`REGIONSTART + (2**(`k+17))-8};
+		bins addr_in_region13  = {`REGIONSTART + (2**(`k+16))-8};
+		bins addr_in_region12  = {`REGIONSTART + (2**(`k+15))-8};
+		bins addr_in_region11  = {`REGIONSTART + (2**(`k+14))-8};
+		bins addr_in_region10  = {`REGIONSTART + (2**(`k+13))-8};
+		bins addr_in_region9   = {`REGIONSTART + (2**(`k+12))-8};
+		bins addr_in_region8   = {`REGIONSTART + (2**(`k+11))-8};
+		bins addr_in_region7   = {`REGIONSTART + (2**(`k+10))-8};
+		bins addr_in_region6   = {`REGIONSTART + (2**(`k+9))-8};
+		bins addr_in_region5   = {`REGIONSTART + (2**(`k+8))-8};
+		bins addr_in_region4   = {`REGIONSTART + (2**(`k+7))-8};
+		bins addr_in_region3   = {`REGIONSTART + (2**(`k+6))-8};
+		bins addr_in_region2   = {`REGIONSTART + (2**(`k+5))-8};
+		bins addr_in_region1   = {`REGIONSTART + (2**(`k+4))-8};
+		bins addr_in_region0   = {`REGIONSTART + (2**(`k+3))-8};
 	}
 
 //-------------------------------------------------------
@@ -793,8 +796,8 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_cfg_L_access_write: cross priv_mode_m, write_instr, RWX000, addr_in_region ;
 
 	cp_cfg_L_modify: cross priv_mode_m, lock_checking, pmp_region, write_pmp_csr, pmpcfg_xwr, val_in_pmpaddr ;
-	// If pmpcfg.A = TOR and pmpcfg.L = 1, pmpaddr_i-1 will be unchange but not pmpcfg_i-1.
 
+	// If pmpcfg.A = TOR and pmpcfg.L = 1, pmpaddr_i-1 will be unchange but not pmpcfg_i-1.
 	cp_cfg_L_modify_TOR_pmpaddr: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpaddr, rs1_val_for_pmpaddr, lower_pmpcfg_xwr, val_in_pmpaddr ;
 	cp_cfg_L_modify_TOR_pmpcfg: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpcfg, rs1_val_for_pmpcfg, lower_pmpcfg_xwr, val_in_pmpaddr ;
 
@@ -1485,4 +1488,5 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_rw, pmpcfg_RW, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
+	$display("PMPADDR = %h",`STANDARD_REGION);
 endfunction
