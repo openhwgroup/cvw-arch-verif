@@ -234,7 +234,8 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     elif (test in vvvmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
-      lines = lines + loadVecReg(0, "vtype_mask_corner_0", sew)
+      if maskval is None:
+        lines = lines + loadVecReg(0, "vtype_mask_corner_0", sew)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
     elif (test in vxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
@@ -1037,13 +1038,14 @@ def genVMaskCorners(sew, vl, vlen, test):
   # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
   vlmax = int(vlen/sew)
   cp_mask_corners_data = {
-    "cp_mask_ones": (1 << vlen) - 1,
+    "cp_mask_ones": (1 << vlmax) - 1,
     "cp_mask_zeroes": 0,
-    "cp_mask_random": getrandbits(vlen),
-    "cp_mask_Echeckerboard": (((1 << vlen) // 3) & ((1 << vlen) - 1)),
-    "cp_mask_Ocheckerboard": (((1 << (vlen + 1)) // 3) & ((1 << vlen) - 1)),
+    "cp_mask_Echeckerboard": (((1 << vlmax) // 3) & ((1 << vlmax) - 1)),
+    "cp_mask_Ocheckerboard": (((1 << (vlmax + 1)) // 3) & ((1 << vlmax) - 1)),
     "cp_mask_first_vlmax": ((1 << (vlmax - 1)) - 1),
     "cp_mask_halfvlmax": (1 << ((vlmax // 2) + 1)) - 1}
+  while (r := getrandbits(vlmax)) in set(cp_mask_corners_data.values()): pass
+  cp_mask_corners_data["cp_mask_random"] = r
 
   for name in cp_mask_corners_data:
     val = cp_mask_corners_data[name]
