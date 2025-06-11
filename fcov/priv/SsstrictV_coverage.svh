@@ -114,21 +114,21 @@ endgroup
 
 //     lmul_vset_i_vl_i: cross vset_i_vl_i_instructions, vtype_lmul;
 
-//     vector_vector_arithmatic_instruction: coverpoint ins.current.insn[14:0] {
-//         bins arithmatic_vv_opcode = {15'b000_?????_1010111};
+//     vector_vector_arithmetic_instruction: coverpoint ins.current.insn[14:0] {
+//         bins arithmetic_vv_opcode = {15'b000_?????_1010111};
 //     }
 
-//     lmul2_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_2, vs1_reg_div_2, vs2_reg_div_2, vtype_prev_vill_clear;
-//     lmul2_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_notdiv_2, vs2_reg_div_2, vtype_prev_vill_clear;
-//     lmul2_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_2, vs1_reg_div_2, vs2_reg_notdiv_2, vtype_prev_vill_clear;
+//     lmul2_vd_off_group:   cross vector_vector_arithmetic_instruction, vd_reg_notdiv_2, vs1_reg_div_2, vs2_reg_div_2, vtype_prev_vill_clear;
+//     lmul2_vs1_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_2, vs1_reg_notdiv_2, vs2_reg_div_2, vtype_prev_vill_clear;
+//     lmul2_vs2_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_2, vs1_reg_div_2, vs2_reg_notdiv_2, vtype_prev_vill_clear;
 
-//     lmul4_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_4, vs1_reg_div_4, vs2_reg_div_4, vtype_prev_vill_clear;
-//     lmul4_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_notdiv_4, vs2_reg_div_4, vtype_prev_vill_clear;
-//     lmul4_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_4, vs1_reg_div_4, vs2_reg_notdiv_4, vtype_prev_vill_clear;
+//     lmul4_vd_off_group:   cross vector_vector_arithmetic_instruction, vd_reg_notdiv_4, vs1_reg_div_4, vs2_reg_div_4, vtype_prev_vill_clear;
+//     lmul4_vs1_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_4, vs1_reg_notdiv_4, vs2_reg_div_4, vtype_prev_vill_clear;
+//     lmul4_vs2_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_4, vs1_reg_div_4, vs2_reg_notdiv_4, vtype_prev_vill_clear;
 
-//     lmul8_vd_off_group:   cross vector_vector_arithmatic_instruction, vd_reg_notdiv_8, vs1_reg_div_8, vs2_reg_div_8, vtype_prev_vill_clear;
-//     lmul8_vs1_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_notdiv_8, vs2_reg_div_8, vtype_prev_vill_clear;
-//     lmul8_vs2_off_group:  cross vector_vector_arithmatic_instruction, vd_reg_div_8, vs1_reg_div_8, vs2_reg_notdiv_8, vtype_prev_vill_clear;
+//     lmul8_vd_off_group:   cross vector_vector_arithmetic_instruction, vd_reg_notdiv_8, vs1_reg_div_8, vs2_reg_div_8, vtype_prev_vill_clear;
+//     lmul8_vs1_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_8, vs1_reg_notdiv_8, vs2_reg_div_8, vtype_prev_vill_clear;
+//     lmul8_vs2_off_group:  cross vector_vector_arithmetic_instruction, vd_reg_div_8, vs1_reg_div_8, vs2_reg_notdiv_8, vtype_prev_vill_clear;
 
 //     vector_load: coverpoint ins.current.insn {
 //         wildcard bins vle_v    =  {32'b???_?_00_?_00000_?????_???_?????_0000111};
