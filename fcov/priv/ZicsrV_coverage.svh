@@ -225,10 +225,13 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         bins zero = {0};
     }
 
-    // vset_i_vli
+    vset_i_vli_vlmax_unchanged : coverpoint (get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
+                                        == get_vlmax_params(ins.hart, ins.issue, ins.current.insn[25:23], ins.current.insn[22:20])) {
+                                            bins true = {1};
+                                        }
 
     cp_vset_i_vli_rd_n0_rs1_x0 : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_all_sew_supported, vtype_all_lmul_supported;
-    cp_vset_i_vli_rd_x0_rs1_x0 : cross vset_i_vli_instructions, vl_nonzero, rd_x0, rs1_x0;
+    cp_vset_i_vli_rd_x0_rs1_x0 : cross vset_i_vli_instructions, vl_nonzero, rd_x0, rs1_x0, vset_i_vli_vlmax_unchanged;
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vsetvl_i_rd_*_rs1_*
