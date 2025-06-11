@@ -45,6 +45,11 @@
 `else
   `define FLEN 32
 `endif
+`ifdef VLEN512
+  `define VLEN 512
+`else
+  `define VLEN 8
+`endif
 
 
 // Set register type length
@@ -52,6 +57,8 @@
 `define SIGNED_XLEN_BITS  bit signed [`XLEN-1:0]
 `define FLEN_BITS         bit        [`FLEN-1:0]
 `define SIGNED_FLEN_BITS  bit signed [`FLEN-1:0]
+`define VLEN_BITS         bit        [`VLEN-1:0]
+`define SIGNED_VLEN_BITS  bit signed [`VLEN-1:0]
 
 // Instruction operand data structure
 typedef struct {

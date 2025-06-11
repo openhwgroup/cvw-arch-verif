@@ -60,8 +60,24 @@
     }
 
     // ensures vd updates
-    std_vec: cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
-    std_trap_vec : cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+    //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
+    std_vec: coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0 &
+                        ins.trap == 0
+                    }
+    {
+        bins true = {1'b1};
+    }
+
+    //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+    std_trap_vec : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0
+                    }
+    {
+        bins true = {1'b1};
+    }
 
     vd_all_reg : coverpoint ins.current.insn[11:7] {
         // All vector destination registers
@@ -75,6 +91,31 @@
         // All vs2 registers
     }
 
+    vd_eq_vs1 : coverpoint (ins.current.insn[11:7] == ins.current.insn[19:15]) {
+        bins target = {1'b1};
+    }
+
+    vd_eq_vs2 : coverpoint (ins.current.insn[11:7] == ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+    vs2_eq_vs1 : coverpoint (ins.current.insn[19:15] == ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+    vd_ne_vs2 : coverpoint (ins.current.insn[24:20] != ins.current.insn[11:7]) {
+        bins target = {1'b1};
+    }
+
+    vd_ne_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[11:7]) {
+        bins target = {1'b1};
+    }
+
+    vs2_ne_vs1 : coverpoint (ins.current.insn[19:15] != ins.current.insn[24:20]) {
+        bins target = {1'b1};
+    }
+
+
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")
                         == get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins target = {1'b1};
@@ -85,7 +126,7 @@
         bins target = {1'b0};
     }
 
-    vtype_lmulge1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+    vtype_all_lmulge1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         bins one    = {0};
         bins two    = {1};
         bins four   = {2};
@@ -108,11 +149,60 @@
         bins two = {3};
     }
 
+    vtype_all_lmulgt1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
+    vtype_all_sewgt8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW16_SUPPORTED
+        bins sixteen    = {1};
+        `endif
+        `ifdef SEW32_SUPPORTED
+        bins thirtytwo  = {2};
+        `endif
+        `ifdef SEW64_SUPPORTED
+        bins sixtyfour  = {3};
+        `endif
+    }
+
+    vtype_sew_8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW8_SUPPORTED
+        bins eight      = {0};
+        `endif
+    }
+
+    vtype_all_sew_supported: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW8_SUPPORTED
+        bins eight      = {0};
+        `endif
+        `ifdef SEW16_SUPPORTED
+        bins sixteen    = {1};
+        `endif
+        `ifdef SEW32_SUPPORTED
+        bins thirtytwo  = {2};
+        `endif
+        `ifdef SEW64_SUPPORTED
+        bins sixtyfour  = {3};
+        `endif
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // Vector csr common coverpoints
+    //////////////////////////////////////////////////////////////////////////////////
+
+    misa_v_active : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "misa", "exts")[21] {
+        bins vector = {1};
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
     // Vector register groups coverpoints
     // all_reg_aligned: every register that is a multiple of lmul
     // all_reg_unaligned: every register that is not a multiple of lmul
     // reg_aligned: any register that is a multiple of lmul
+    // overlap: make sure register groups overlap at a specific lmul
+    // no_overlap: make sure register groups do not overlap at a specific lmul
     //////////////////////////////////////////////////////////////////////////////////
 
     vd_all_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
@@ -139,7 +229,7 @@
         wildcard ignore_bins odd = {5'b????1};
     }
 
-    vs1_all_reg_aligned_lmulv_4: coverpoint ins.current.insn[19:15] {
+    vs1_all_reg_aligned_lmul_4: coverpoint ins.current.insn[19:15] {
         wildcard ignore_bins end_1 = {5'b???01};
         wildcard ignore_bins end_2 = {5'b???10};
         wildcard ignore_bins end_3 = {5'b???11};
@@ -261,4 +351,16 @@
 
     vd_reg_unaligned_lmul_8: coverpoint ins.current.insn[11:7] {
         wildcard bins range = {[5'b??001: 5'b??111]};
+    }
+
+    vs2_vd_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs1_vd_no_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs1_vd_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b1};
     }

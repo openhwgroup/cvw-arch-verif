@@ -19,7 +19,7 @@ def sailLog2Trace(inputLogFile, outputTraceFile):
 
     # Regular expressions to match register updates
     reg_patterns = {
-        'CSR': re.compile(r'CSR .* \(0x(\d+)\) <- (0x[0-9a-fA-F]+)'),
+        'CSR': re.compile(r'CSR .* \((0x[0-9a-fA-F]+)\) (?:<-|->) (0x[0-9a-fA-F]+)'),
         'X': re.compile(r'x(\d+) <- (0x[0-9a-fA-F]+)'),
         'F': re.compile(r'f(\d+) <- (0x[0-9a-fA-F]+)'),
         'V': re.compile(r'v(\d+) <- (0x[0-9a-fA-F]+)'),
