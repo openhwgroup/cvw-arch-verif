@@ -129,7 +129,13 @@ outfile.close
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
 sys.stdout = outfile
-gen("compressed00", "EEEEEEEEEEEEEE00", 16)
+gen("compressed00", "EEEEEEEEEEEEEE00", 16,
+    ["X01XXXXXXXXXXX00", # skip c.fld and c.fsd  because they throw  exceptions for bad address
+     "X10XXXXXXXXXXX00", # skip c.lw and c.sw because they throw exceptions for bad address
+     "10000XXXXXXXXX00", # skip c.lbu, c.lh, c.lhu because they throw exceptions for bad address
+     "100010XXXXXXXX00", # skip c.sb because they throw exceptions for bad address
+     "100011XXX0XXXX00"  # skip c.sh because they throw exceptions for bad address
+        ])
 gen("compressed01", "EEEEEEEEEEEEEE01", 16,
     ["101XXXXXXXXXXX01", # skip c.j because it causes the test program to go to a random place
      "11XXXXXXXXXXXX01", # skip c.beqz and c.bnez because they cause program to go to a random place
@@ -138,8 +144,26 @@ gen("compressed01", "EEEEEEEEEEEEEE01", 16,
 gen("compressed10", "EEEEEEEEEEEEEE10", 16,
     ["1000XXXXX0000010", # skip c.jr because it causes the test program to go to a random place
      "1001XXXXX0000010", # skip c.jalr because it causes the test program to go to a random place
-     "1001000000000010"
+     "X01XXXXXXXXXXX10", # skip c.fldsp / c.fsdsp because they throw exceptions for bad address
+     "X10XXXXXXXXXXX10", # skip c.swsp and c.lwsp because it throws exceptions for bad address
+     "1001000000000010"  # skip c.ebreak, which is legal and tested elsewhere
                ])
+
+# The following memory instructions were excluded to prevent a bunch of bad addresses.  Test one for sanity.
+print("\t.hword 0b0010000000000000 # test one c.fld")
+print("\t.hword 0b1010000000000000 # test one c.fsd")
+print("\t.hword 0b0100000000000000 # test one c.lw")
+print("\t.hword 0b1100000000000000 # test one c.sw")
+print("\t.hword 0b1000000000000000 # test one c.lbu")
+print("\t.hword 0b1000010000000000 # test one c.lhu")
+print("\t.hword 0b1000010001000000 # test one c.lh")
+print("\t.hword 0b1000100000000000 # test one c.sb")
+print("\t.hword 0b1000110000000000 # test one c.sh")
+print("\t.hword 0b0100100000000010 # test one c.lwsp")
+print("\t.hword 0b1100000000000010 # test one c.swsp")
+print("\t.hword 0b0010000000000010 # test one c.fldsp")
+print("\t.hword 0b1010000000000010 # test one c.fsdsp")
+
 print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal")
-print("\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so should be illegal")
+print("#\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so this is an ebreak instead, which is tested elsewhere")
 outfile.close
