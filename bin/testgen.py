@@ -2176,11 +2176,7 @@ insMap = {
   #   once the instruction is expanded
   'rtype' : {'instructions' : rtype, 'regconfig' : 'xxx_'},
   'i1type' : {'instructions' : i1type, 'regconfig' : 'xx__'},
-  'rbtype' : {'instructions' : rbtype, 'regconfig' : 'xxx_'},
   'irtype' : {'instructions' : irtype, 'regconfig' : 'xx__'},
-  'lrtype' : {'instructions' : lrtype, 'regconfig' : 'xx__'},
-  'sctype' : {'instructions' : sctype, 'regconfig' : 'xxx_'},
-  'amotype' : {'instructions' : amotype, 'regconfig' : 'xxx_'},
   'loaditype' : {'instructions' : loaditype, 'regconfig' : 'xxi_', 'loadstore' : 'load'},
   'shiftiwtype' : {'instructions' : shiftiwtype, 'regconfig' : 'xxi_'},
   'shiftitype' : {'instructions' : shiftitype, 'regconfig' : 'xxi_'},
