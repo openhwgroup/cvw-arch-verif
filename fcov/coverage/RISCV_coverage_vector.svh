@@ -21,34 +21,39 @@
 //
 
 function get_vlmax(int hart, int issue, int prev);
+  return get_vlmax_params(get_csr_val(hart, issue, prev, "vtype", "vsew")[1:0], get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0]);
+endfunction
 
-    int vlen = get_csr_val(hart, issue, prev, "vlenb", "vlenb") * 8;
-    int vlen_div_sew;
+
+function get_vlmax_params(logic[1:0] vsew, logic[2:0] vlmul)
+
+    int vlen = get_csr_val(hart, issue, 0, "vlenb", "vlenb") * 8;
+    int vlen_times_lmul;
     int vlmax;
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vsew")[1:0])
-        2'b00: vlen_div_sew = vlen / 8;
-        2'b01: vlen_div_sew = vlen / 16;
-        2'b10: vlen_div_sew = vlen / 32;
-        2'b11: vlen_div_sew = vlen / 64;
+    case (vlmul)
+        3'b000: vlen_times_lmul = vlen;
+        3'b001: vlen_times_lmul = vlen * 2;
+        3'b010: vlen_times_lmul = vlen * 4;
+        3'b011: vlen_times_lmul = vlen * 8;
+        3'b101: vlen_times_lmul = vlen / 8; // 1/8
+        3'b110: vlen_times_lmul = vlen / 4; // 1/4
+        3'b111: vlen_times_lmul = vlen / 2; // 1/2
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vsew"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax_params lmul is undefined (%0s)",
+                    get_csr_val(hart, issue, prev, "vtype", "vlmul"));
             $finish(-1);
         end
     endcase
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0])
-        3'b000: vlmax = vlen_div_sew;
-        3'b001: vlmax = vlen_div_sew * 2;
-        3'b010: vlmax = vlen_div_sew * 4;
-        3'b011: vlmax = vlen_div_sew * 8;
-        3'b101: vlmax = vlen_div_sew / 8; // 1/8
-        3'b110: vlmax = vlen_div_sew / 4; // 1/4
-        3'b111: vlmax = vlen_div_sew / 2; // 1/2
+    case (vsew)
+        2'b00: vlmax = vlen_times_lmul / 8;
+        2'b01: vlmax = vlen_times_lmul / 16;
+        2'b10: vlmax = vlen_times_lmul / 32;
+        2'b11: vlmax = vlen_times_lmul / 64;
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vlmul"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax_params sew is undefined (%0s)",
+                    get_csr_val(hart, issue, prev, "vtype", "vsew"));
             $finish(-1);
         end
     endcase
