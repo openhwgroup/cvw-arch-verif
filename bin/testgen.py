@@ -71,9 +71,6 @@ def insertTemplate(name, is_custom=False):
           sigupd_count += count # Update sigupd_count
           lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
           template += "\n".join(lines) + "\n"
-          print("count:", count)
-          print("sigupd_count before:", sigupd_count)
-          print("sigupd_count after:", sigupd_count)
     f.write(template)
 
 def shiftImm(imm, xlen):
@@ -627,8 +624,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
       sigupd_count += 1
   elif (test in csstype):
-    while (rs2 == 2):
-      rs2 = randomNonconflictingReg(test)
     if (test == "c.swsp" or test == "c.fswsp"):
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
@@ -658,11 +653,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     while (rs1 == rs2):
       rs2 = randomNonconflictingReg(test)
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # base address \n"
+    lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", -" + offset + " # sub immediate from rs1 to counter offset\n"
-    #lines = lines + test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
     storeline = test + " x" + str(rs2) + ", " + offset + "(x" + str(rs1) + ") # perform operation \n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+    sigupd_count += 1
   elif (test in btype):#["beq", "bne", "blt", "bge", "bltu", "bgeu"]
     for same in [False, True]:
       if (same):
@@ -2011,9 +2007,9 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
                          "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
                          "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
       pass # Zalrsc coverpoints handled custom
-    elif (coverpoint == "cp_custom_aqrl"):
+    elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei"]):
       make_custom(test, xlen)
-    elif (coverpoint == "cp_align_byte", "cp_align_word", "cp_align_hword"):
+    elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)

@@ -110,6 +110,7 @@ class riscvTraceData
   bit                       has_vs1;
   bit                       has_vs2;
   bit                       has_vs3;
+  bit                       has_v0;
 
   string                    rd;
   string                    rs1;
@@ -143,6 +144,7 @@ class riscvTraceData
   bit [(VLEN-1):0]          vs1_val;
   bit [(VLEN-1):0]          vs2_val;
   bit [(VLEN-1):0]          vs3_val;
+  bit [(VLEN-1):0]          v0_val;
   bit                       vm;
 
   bit [(XLEN-1):0]          imm;

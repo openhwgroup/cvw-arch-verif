@@ -103,8 +103,6 @@ class RISCV_instruction
           break;
         end
       end
-      // $display("indirect ins_str(%s) op[0](%0s).key(%s) op[1](%s).key(%s) op[2](%s).key(%s) op[3](%s).key(%s)",
-      //    ins_str, op[0], this.ops[0].key, op[1], this.ops[1].key, op[2], this.ops[2].key, op[3], this.ops[3].key);
     end
 
     // Parse operands and get values of relevant registers if needed
@@ -525,6 +523,11 @@ class RISCV_instruction
     current.has_vs3 = 1;
     current.vs3 = ops[offset].key;
     current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_v0();
+    current.has_v0 = 1;
+    current.v0_val = prev.v_wdata[0];
   endfunction
 
   virtual function void add_vm(int offset);
