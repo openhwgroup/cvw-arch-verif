@@ -193,6 +193,7 @@ def writeSIGUPD_F(rd):
       tempReg = randint(1,31)
     l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
     l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    l = l + "fsflagsi 0b00000  # clear all fflags\n"
     return l
 
 def writeFcsrSIG():
@@ -366,7 +367,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + " # perform operation\n")
   elif (test in frtype):
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+   # lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     if not frm:
@@ -375,12 +376,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}, f{rs2}"
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in fixtype):
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+    #lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) +  " # perform operation\n")
     lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fitype):
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+   # lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     # Do operation twice to make sure flags set the first time and remain set the second time
     #lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", f" + str(rs1) +  " # perform operation first time to set flags\n")
@@ -390,8 +391,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       testInstr = f"{test} f{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in csrtype):
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+      lines = lines + "csrw " + "mscratch" + ", x" + str(rs2) + " # Add random immediate into mscratch\n"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, x{rs1} # perform operation\n")
+      lines = lines + "csrr x" + str(rs2) + ", mscratch #Reading the updated mscratch value \n"
+      lines += writeSIGUPD(rs2)
+      sigupd_count += 1
   elif (test in csritype):
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, {unsignedImm5(immval)} # perform operation\n")
@@ -744,7 +750,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in F2Xtype):
     while (rs2 == rs1):
       rs2 = randomNonconflictingReg(test)
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+    #lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
       rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
@@ -754,13 +760,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr, rd, False)
     lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif (test in fcomptype): # ["feq.s", "flt.s", "fle.s"]
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+  #  lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + ", f" + str(rs2) + " # perform operation\n")
     lines = lines + writeFcsrSIG() # write fcsr to signature register
   elif test in X2Ftype: # ["fcvt.s.w", "fcvt.s.wu", "fmv.w.x"]
-    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+   # lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + f"li x{rs1}, {formatstr.format(rs1val)} # load immediate value into integer register\n"
     testInstr = f"{test} f{rd}, x{rs1}"
     if not frm:
