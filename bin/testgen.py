@@ -964,9 +964,9 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
         WIDTH = 32
     lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(WIDTH)  + " # Increment base Register\n"
     if haz_type == "nohaz":
-      lines +=  "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+      lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
     else:
-      lines +=  "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+      lines += "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
     lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", 32 # Increment base Register\n"
     sigupd_count += 2
 
