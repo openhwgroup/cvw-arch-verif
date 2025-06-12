@@ -393,17 +393,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} f{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, True)
-  elif (test in csrtype):
+  elif (test in csrtype or csritype):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       lines = lines + "csrw " + "mscratch" + ", x" + str(rs2) + " # Write random immediate into mscratch\n"
-      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-      lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, x{rs1} # perform operation\n")
+      if (test in csrtype):
+        lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
+        lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, x{rs1} # perform operation\n")
+      else:
+        lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, {unsignedImm5(immval)} # perform operation\n")
       lines = lines + "csrr x" + str(rs2) + ", mscratch #Reading the updated mscratch value \n"
       lines += writeSIGUPD(rs2)
-      sigupd_count += 1
-  elif (test in csritype):
-      lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
-      lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, {unsignedImm5(immval)} # perform operation\n")
   elif (test in citype):
     if(test == "c.lui" and rd == 2): # rd ==2 is illegal operand
       rd = 9 # change to arbitrary other register
@@ -947,7 +946,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     hazardLabel += 1
 
   elif insMap[instype].get('loadstore', 0) == 'store':
-
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
@@ -1016,6 +1014,10 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
+    if (test in csrtype or csritype):
+      lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+      lines = lines + "csrw " + "mscratch" + ", x" + str(rs3b) + " # Write random immediate into mscratch\n"
+
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
@@ -1030,6 +1032,12 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += writeSIGUPD(rda)
     if testb in floattypes and testb not in fTOrtype:
       lines += writeSIGUPD_F(rdb)
+    if (test in csrtype or csritype):
+      lines += "# orignal mscratch value: \n"
+      lines += writeSIGUPD(rdb)
+      lines += "csrr x" + str(rdb) + ", mscratch #Reading the updated mscratch value \n"
+      lines += "# updated mscratch value: \n"
+      lines += writeSIGUPD(rdb)
     else:
       lines += writeSIGUPD(rdb)
   if sigReg == 2:
