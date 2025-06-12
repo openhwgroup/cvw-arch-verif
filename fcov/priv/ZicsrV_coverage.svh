@@ -26,13 +26,6 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints_vector.svh"
 
-    test: coverpoint ins.current.insn[0] {
-        bins one    = {0};
-        bins two    = {1};
-        bins one_one    = {1'b0};
-        bins one_two    = {1'b1};
-    }
-
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vcsrrswc
     // writing setting and clearing all vector csrs
@@ -62,7 +55,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     //////////////////////////////////////////////////////////////////////////////////
 
     vector_vector_arithmetic_instruction: coverpoint ins.current.insn[14:0] {
-        bins arithmetic_vv_opcode = {15'b000_?????_1010111};
+        wildcard bins arithmetic_vv_opcode = {15'b000_?????_1010111};
     }
 
     mstatus_vs_initial_clean : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "mstatus", "vs") {
@@ -74,8 +67,15 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         wildcard bins vsetvli   =   {32'b0000_?_?_???_???_?????_111_?????_1010111};
     }
 
-    cp_mstatus_vs_set_dirty_arithmetic  : cross std_vec,        vector_vector_arithmetic_instruction,  mstatus_vs_initial_clean;
-    cp_mstatus_vs_set_dirty_csr         : cross std_vec,        vsetvli_instruction,                   mstatus_vs_initial_clean;
+    mstatus_vs_inactive    : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "mstatus", "vs") {
+        bins inactive = {0};
+    }
+
+    cp_mstatus_vs_set_dirty_arithmetic  : cross std_vec,        vector_vector_arithmetic_instruction,   mstatus_vs_initial_clean;
+    cp_mstatus_vs_set_dirty_csr         : cross std_vec,        vsetvli_instruction,                    mstatus_vs_initial_clean;
+
+    cp_mstatus_vs_off_arithmetic        : cross std_trap_vec,   misa_v_active, mstatus_vs_inactive,     vector_vector_arithmetic_instruction;
+    cp_mstatus_vs_off_csr               : cross std_trap_vec,   misa_v_active, mstatus_vs_inactive,     vsetvli_instruction;
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_misa_v
