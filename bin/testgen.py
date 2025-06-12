@@ -42,7 +42,7 @@ def insertTemplate(name, is_custom=False):
         ext_parts_no_I = ext_parts_no_I[:-1]
     #ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     raw_ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
-    ISAEXT = insert_second_Z_underscore(raw_ISAEXT)
+    ISAEXT = insert_all_Z_underscores_after_first(raw_ISAEXT)
     # Construct the regex part
     ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
     test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
@@ -79,11 +79,15 @@ def insertTemplate(name, is_custom=False):
           template += "\n".join(lines) + "\n"
     f.write(template)
 
-def insert_second_Z_underscore(s):
-    z_indices = [i for i, c in enumerate(s) if c == 'Z']
-    if len(z_indices) >= 2:
-        idx = z_indices[1]
-        return s[:idx] + '_' + s[idx:]
+def insert_all_Z_underscores_after_first(s):
+    matches = list(re.finditer(r'Z[a-z]+', s))
+    if len(matches) <= 1:
+        return s
+    offset = 0
+    for m in matches[1:]:
+        insert_pos = m.start() + offset
+        s = s[:insert_pos] + '_' + s[insert_pos:]
+        offset += 1  # for each underscore added
     return s
 
 def shiftImm(imm, xlen):
