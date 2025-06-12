@@ -22,39 +22,92 @@
 
 function int get_vlmax(int hart, int issue, int prev);
 
-    int vlen = get_csr_val(hart, issue, prev, "vlenb", "vlenb") * 8;
-    int vlen_div_sew;
-    int vlmax;
+  logic[2:0] vsew  = get_csr_val(hart, issue, prev, "vtype", "vsew") [2:0];
+  logic[2:0] vlmul = get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0];
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vsew")[1:0])
-        2'b00: vlen_div_sew = vlen / 8;
-        2'b01: vlen_div_sew = vlen / 16;
-        2'b10: vlen_div_sew = vlen / 32;
-        2'b11: vlen_div_sew = vlen / 64;
+  case (vlmul)
+        3'b000: begin end
+        3'b001: begin end
+        3'b010: begin end
+        3'b011: begin end
+        3'b101: begin end
+        3'b110: begin end
+        3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vsew"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)", vlmul);
             $finish(-1);
         end
     endcase
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0])
-        3'b000: vlmax = vlen_div_sew;
-        3'b001: vlmax = vlen_div_sew * 2;
-        3'b010: vlmax = vlen_div_sew * 4;
-        3'b011: vlmax = vlen_div_sew * 8;
-        3'b101: vlmax = vlen_div_sew / 8; // 1/8
-        3'b110: vlmax = vlen_div_sew / 4; // 1/4
-        3'b111: vlmax = vlen_div_sew / 2; // 1/2
+    case (vsew)
+        3'b000: begin end
+        3'b001: begin end
+        3'b010: begin end
+        3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vlmul"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)", vsew);
             $finish(-1);
+        end
+    endcase
+
+  if(get_csr_val(hart, issue, prev, "vtype", "vill") == 1) begin
+    $display("ERROR: SystemVerilog Functional Coverage: vlmax undefined, vill bit is set");
+    $finish(-1);
+  end
+
+  return get_vlmax_params(hart, issue, vsew, vlmul);
+endfunction
+
+
+function get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
+
+    int vlen = get_csr_val(hart, issue, 0, "vlenb", "vlenb") * 8;
+    int vlen_times_lmul;
+    int vlmax;
+
+    case (vlmul)
+        3'b000: vlen_times_lmul = vlen;
+        3'b001: vlen_times_lmul = vlen * 2;
+        3'b010: vlen_times_lmul = vlen * 4;
+        3'b011: vlen_times_lmul = vlen * 8;
+        3'b101: vlen_times_lmul = vlen / 8; // 1/8
+        3'b110: vlen_times_lmul = vlen / 4; // 1/4
+        3'b111: vlen_times_lmul = vlen / 2; // 1/2
+        default: begin
+          return -1;
+        end
+    endcase
+
+    case (vsew)
+        3'b000: vlmax = vlen_times_lmul / 8;
+        3'b001: vlmax = vlen_times_lmul / 16;
+        3'b010: vlmax = vlen_times_lmul / 32;
+        3'b011: vlmax = vlen_times_lmul / 64;
+        default: begin
+          return -1;
         end
     endcase
 
     return vlmax;
 
+endfunction
+
+function logic check_vtype_sew_supported(`XLEN_BITS vsew);
+
+   `ifdef SEW8_SUPPORTED
+    if (sew == 0) return 1'b1;
+    `endif
+    `ifdef SEW16_SUPPORTED
+    if (sew == 1) return 1'b1;
+    `endif
+    `ifdef SEW32_SUPPORTED
+    if (sew == 2) return 1'b1;
+    `endif
+    `ifdef SEW64_SUPPORTED
+    if (sew == 3) return 1'b1;
+    `endif
+
+    return 1'b0;
 endfunction
 
 

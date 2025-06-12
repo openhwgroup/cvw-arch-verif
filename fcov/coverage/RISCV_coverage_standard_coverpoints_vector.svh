@@ -133,6 +133,22 @@
         bins eight  = {3};
     }
 
+    vtype_all_lmul_supported : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        `ifdef LMULf8_SUPPORTED
+        bins eigth  = {5};
+        `endif
+        `ifdef LMULf4_SUPPORTED
+        bins fourth = {6};
+        `endif
+        `ifdef LMULf2_SUPPORTED
+        bins half   = {7};
+        `endif
+        bins one    = {0};
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
     vtype_lmul_1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         bins one = {0};
     }
@@ -186,6 +202,10 @@
         `ifdef SEW64_SUPPORTED
         bins sixtyfour  = {3};
         `endif
+    }
+
+    vtype_sew_supported : coverpoint check_vtype_sew_supported(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")) {
+        bins supported = {1};
     }
 
     //////////////////////////////////////////////////////////////////////////////////
