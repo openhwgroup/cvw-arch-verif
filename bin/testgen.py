@@ -722,7 +722,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store x3 (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
       lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
       lines = lines + f"{storeop} x{tempreg2}, {signedImm12(immval)}(x{rs1}) # store x4 (0x{formatstrFP.format(rs2val)[10:18]}) in memory 4 bytes after x3\n"
-      lines = lines + f"addi x{rs1}, x{rs1}, - 4 # move back to scratch\n"
+      lines = lines + f"addi x{rs1}, x{rs1}, -4 # move back to scratch\n"
     else:
       lines = lines + f"li x{tempreg1}, {formatstrFP.format(rs2val)} # load x3 with value {formatstrFP.format(rs2val)}\n"
       lines = lines + f"{storeop} x{tempreg1}, {signedImm12(immval)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
@@ -928,7 +928,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     hazardLabel += 1
 
   elif insMap[instype].get('loadstore', 0) == 'store':
-
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
@@ -938,7 +937,18 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       if haz_type == "nohaz":
         lines = lines + "li x" + str(rda) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
       else:
-        lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
+        if testb == "fsw" and haz_type == "raw":  #have to load value into freg to have read after write be same reg
+            tempReg = 3
+            tempReg2 = 4
+            while tempReg == sigReg or tempReg == rs2b or tempReg2 == sigReg or tempReg2 == rs2b:
+                tempReg += 1
+                tempReg2 += 1
+            lines = lines + f"la x{tempReg2}, scratch\n"
+            lines = lines + f"li x{tempReg}, {formatstrFP.format(immvalb)} # load x{tempReg} with value {formatstrFP.format(immvalb)}\n"
+            lines = lines + f"sw x{tempReg}, 0(x{tempReg2}) # store {formatstrFP.format(immvalb)} in memory\n"
+            lines = lines + f"flw f{rs2b}, 0(x{tempReg2}) # load {formatstrFP.format(immvalb)} from memory into f{rs2b}\n"
+        else:
+          lines = lines + "li x" + str(rs2b) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
       #only generate one instrution
       lines += writeSingleInstructionSequence(desc,
                   [testb],
