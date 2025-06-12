@@ -393,7 +393,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     else:
       testInstr = f"{test} f{rd}, f{rs1}"
       lines = lines + genFrmTests(testInstr, rd, True)
-  elif (test in csrtype or csritype):
+  elif (test in csrtype or test in csritype):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
       lines = lines + "csrw " + "mscratch" + ", x" + str(rs2) + " # Write random immediate into mscratch\n"
       if (test in csrtype):
@@ -1014,7 +1014,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       if haz_type == "raw":
         rs1a = rda
         rs2a = 0
-    if (test in csrtype or csritype):
+    if (test in csrtype or test in csritype):
       lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
       lines = lines + "csrw " + "mscratch" + ", x" + str(rs3b) + " # Write random immediate into mscratch\n"
 
@@ -1032,7 +1032,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += writeSIGUPD(rda)
     if testb in floattypes and testb not in fTOrtype:
       lines += writeSIGUPD_F(rdb)
-    if (test in csrtype or csritype):
+    if (test in csrtype or test in csritype):
       lines += "# orignal mscratch value: \n"
       lines += writeSIGUPD(rdb)
       lines += "csrr x" + str(rdb) + ", mscratch #Reading the updated mscratch value \n"
