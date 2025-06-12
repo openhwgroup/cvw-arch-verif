@@ -281,8 +281,6 @@ typedef enum {
 // Check for vector operand corner values, assuming vl = 1
 function corner_mask_values_t mask_corners_check(hart, issue, `VLEN_BITS mask_val);
   int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
-  $display("mask_val: %h", mask_val);
-  $display("mask_one: %h", ((2 ** (vlmax)) - 1) * 2 / 3);
 
   if      (mask_val == 0) return mask_zero;
   else if (mask_val == ((2 ** (vlmax)) - 1)) return mask_ones;
@@ -292,4 +290,35 @@ function corner_mask_values_t mask_corners_check(hart, issue, `VLEN_BITS mask_va
   else if (mask_val == ((2 ** (vlmax/2+1)) - 1)) return mask_vlmaxd2p1ones;
   else                                                                    return mask_random;
 
+endfunction
+
+typedef enum {
+  vl_zero,
+  vl_one,
+  vl_vlmax,
+  vl_vlmaxm1,
+  vl_vlmaxd2p1,
+  vl_legal,
+  vl_other
+} vl_t;
+
+function vl_t vl_check(hart, issue);
+  `XLEN_BITS vl = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vl", "vl");
+  `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
+  int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
+  bit legal;
+  if (vl <= vlmax & vl > vstart) legal = 1'b1; // check legal condition
+  else             legal = 1'b0;
+
+  case(vl)
+    0:         return vl_zero;
+    1:         return vl_one;
+    vlmax/2+1: return vl_vlmaxd2p1;
+    vlmax-1:   return vl_vlmaxm1;
+    vlmax:     return vl_vlmax;
+    default: begin
+      if (legal) return vl_legal;
+      else       return vl_other;
+    end
+  endcase
 endfunction

@@ -91,7 +91,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
     if (effew != ""):
-        template = template.replace("EFFEW", str(int(math.log2(int(effew)))-3))
+        template = template.replace("TWOEFFEW", str(2 * int(effew)))
+        template = template.replace("EFFEW", str(int(effew)))
+        template = template.replace("EFFVSEW", str(int(math.log2(int(effew)))-3))
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64
@@ -160,13 +162,16 @@ def writeCovergroups(testPlans, covergroupTemplates):
             with open(os.path.join(covergroupDir,"unpriv",file), "w") as f:
                 finit = open(os.path.join(covergroupDir,"unpriv",initfile), "w")
                 #print(covergroupTemplates)
-                f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
-                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
-                k = list(tp.keys())
-                k.sort()
-
                 if arch.startswith("Vx"):
                     effew = arch[2:]  # e.g. "8" from "Vx8"
+                    f.write(customizeTemplate(covergroupTemplates,"header_vector", arch, "", effew=effew))
+                else:
+                    f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
+                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
+
+                k = list(tp.keys())
+                k.sort()
+                if arch.startswith("Vx"):
                     k = [instr for instr in k if f"EFFEW{effew}" in tp[instr]]
 
                 writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)

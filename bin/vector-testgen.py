@@ -260,12 +260,17 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     elif (test in vvvxtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
+      if (lmul != 1):
+        evl = int(int(test[3]) * vlen / sew)
+        testline = testline + prepBaseV(lines, sew, 1, evl, vstart, vta, vma)
+        vl = evl
     elif (test in vixtype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
       print("Error: %s type not implemented yet" % test)
       return
-    if maskval is not None:
+
+    if (maskval is not None) or (vl is not None):
       lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd, vl=vl)
     else:
       lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
@@ -279,7 +284,7 @@ def randomNonconflictingReg(test):
   return reg
 
 def randomNonconflictingVecReg(test, emul):
-  if (emul >= 1):
+  if (emul > 1):
     reg = emul * randint(1, math.floor(maxreg/emul))
   else: # normal instructions
     reg = randint(1, maxreg) # 1 to maxreg, inclusive
@@ -313,8 +318,8 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
   lines = f"li x{tempReg}, {vl}                       # Load desired vl value\n" # put desired vl into an integer register
   lines = lines + f"vsetvli x0, x{tempReg}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
   if (vstart == True):   # if vstart specified
-    lines = lines + f"li x8, {vstart}               # Load desired vstart value\n"
-    lines = lines + f"csrw vstart, x8\n"
+    lines = lines + f"li x{tempReg}, {vstart}               # Load desired vstart value\n"
+    lines = lines + f"csrw vstart, x{tempReg}\n"
   return lines
 
 def vsAddressCount(suite="base"):
@@ -385,29 +390,30 @@ def make_custom(test, xlen):
 def insertTest(test):
   f.write(f"\n# Stub for {test}")
 
-def avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, suite="base"):
+def avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=1, suite="base"):
   if (test in wvvins) or (test in wvxins) or (test in mv_ins) or (test in vextins) or (test in vupgatherins) or (test in vmlogicalins):
     while (vd == vs2 or vd == vs1):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in narrowins):
-    while (vd == (vs2+1) or vs1 == vs2 or vs1 == (vs2+1)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+    while (vd == (vs2+1*lmul) or vs1 == vs2 or vs1 == (vs2+1*lmul)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in wwvins):
-    while (vd == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+    while (vd == vs1 or vs1 == vs2 or vs1 == (vs2+1*lmul)):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in v_mins):
     while (vd == 0 or vs1 == 0 or vs2 == 0):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in mv_mins):
     while (vs1 == 0 or vs2 == 0 or vd == vs2 or vd == vs1):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in vcompressins):
     while (vd == vs1 or vd == vs2 or vs1 == vs2):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in vvvxtype): # vmv<nr>r.v
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]), suite=suite)
+    emul = lmul if lmul > int(test[3]) else int(test[3])
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=emul, suite=suite)
   else:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite=suite)
+    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   vsAddressCount(suite=suite)
   return [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval]
 
@@ -748,34 +754,24 @@ def make_vstart(test, vlen, sew, rng):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vstart=vstart)
 
 
-def make_vl(test, vlen, sew, rng):
-  for l in range(4):
+def make_vl(test, vlen, sew, maxlmul=8):
+  numlmul = int(math.log2(maxlmul)+1)
+  for l in range(numlmul):
     for k in range(3):
       for t in range(2):
-        #creating lmul first:
-        if (l == 0):
-          lmul = 1
-        elif (l == 1):
-          lmul = 2
-        elif (l == 2):
-          lmul = 4
-        else:
-          lmul = 8
-        vlmax = int(vlen*(lmul/sew)) # added this as a guard
-        if vlmax <= 1:
+        lmul = 2 ** l # creating lmul first
+        vlmax = int(vlen*lmul/sew)
+        if vlmax <= 1: # added this as a guard
+          print("Warning: vlmax is not valid.")
           return
-        if (k == 0): #creating vl:
-          vl = vlmax
-        elif (k == 1):
-          vl = int(vlmax - 1)
-        else:
-          vl = int(1 + (vlmax/2))
-        if (t == 0): #creating vta:
-          vta = 0
-        else:
-          vta = 1
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-        desc = "cp_vl"
+
+        vlval = [vlmax, vlmax-1, int(vlmax/2+1)]
+        vl = vlval[k]
+        vta = t
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
+
+        desc = f"cp_csr_vl (Test lmul = {lmul}, vl = {vl}, vta = {vta})"
         writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
 
 def make_mask_corners(test, vlen, sew):
@@ -785,6 +781,7 @@ def make_mask_corners(test, vlen, sew):
   cp_mask_corners_data = ["cp_mask_ones", "cp_mask_zeroes", "cp_mask_random", "cp_mask_Echeckerboard",
                           "cp_mask_Ocheckerboard", "cp_mask_first_vlmax", "cp_mask_halfvlmax"]
   if vlmax <= 1:
+    print("Warning: vlmax is not valid.")
     return
 
   for m in cp_mask_corners_data:
@@ -811,6 +808,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     # hashval = hash(testname) # doesn't work because of Python hash randomization
     seed(hashval)
     #seed(hash(test + coverpoint))
+    ############################# base suite #############################
     if (coverpoint == "cp_asm_count"):
       pass
     elif (coverpoint == "cp_rd"):
@@ -871,8 +869,6 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd_vs1_vs2(test, sew, vl, range(1,maxreg+1))
     elif (coverpoint == "cp_vm"):
       make_vm(test, vlen, sew, range(1,maxreg+1))
-    elif (coverpoint == "cp_vl"):
-      make_vl(test, vlen, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vtype"):
       make_vtype(test, vlen, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vs2_corners"):
@@ -931,8 +927,18 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vxrm_vs2_imm_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cr_vxrm_vs2_imm_corners_wi"):
       make_vxrm_vs2_imm_corners(test, sew, vl, vcornersemul2)
+    ############################ length suite ############################
     elif (coverpoint == "cp_mask_corners"):
       make_mask_corners(test, vlen, sew)
+    elif (coverpoint in ["cp_csr_vtype_vlmul_intgt2", "cp_csr_vtype_vlmul_intgt2_n8", "cp_csr_vtype_vta", "cp_csr_vl_corners_lmul1",
+                         "cp_csr_vl_corners_lmul2", "cp_csr_vl_corners_lmulgt2"]):
+      pass # helper coverpoints, crossed in cp_csr_vl
+    elif (coverpoint == "cp_csr_vl_lmul1" or coverpoint == "cp_csr_vl_lmul2"):
+      pass # to not create three copies of the same tests
+    elif (coverpoint == "cp_csr_vl_lmulgt2"):
+      make_vl(test, vlen, sew)            # includes tests for LMUL = 1,2,4,8
+    elif (coverpoint == "cp_csr_vl_lmulgt2_n8"):
+      make_vl(test, vlen, sew, maxlmul=4) # includes tests for LMUL = 1,2,4
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1095,7 +1101,7 @@ def genVsCorners(sew, vl, vlen, test, emul):
       "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
       "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
     }
-    while (r := randint(0, 2**eew - 1)) in set(v_register_corners.values()): pass
+    while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
     v_register_corners["random"] = r
 
   f.write(f"    .align 3\n")
