@@ -328,12 +328,14 @@ def genFrmTests(testInstr, rd, floatdest):
   frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
   csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
   for roundingMode in frm:
-    lines = writeTest(lines, rd, xlen, True, f"{testInstr}, {roundingMode} # perform operation\n")
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
+    lines = writeTest(lines, rd, xlen, True, f"{testInstr}, {roundingMode} # perform operation\n")
   for csrMode in csrFrm:
     lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
     lines = lines + f"fsrmi {csrMode}\n"
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = writeTest(lines, rd, xlen, floatdest, f"{testInstr} # perform operation\n")
+    lines = lines + writeFcsrSIG() # write fcsr to signature register
   lines = lines + "\n"
   return lines
 
