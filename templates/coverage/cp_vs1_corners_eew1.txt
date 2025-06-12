@@ -1,13 +1,3 @@
     cp_vs1_corners_eew1 : coverpoint vs_corners_check(ins.hart, ins.issue, ins.current.vs1_val, "m")  iff (ins.trap == 0 )  {
-        // Corners values of vs1 (eew = 1), assuming vl = 1
-        ignore_bins vs_two = {vs_two};
-        ignore_bins vs_min = {vs_min};
-        ignore_bins vs_minp1 = {vs_minp1};
-        ignore_bins vs_max = {vs_max};
-        ignore_bins vs_maxm1 = {vs_maxm1};
-        ignore_bins vs_ones = {vs_ones};
-        ignore_bins vs_onesm1 = {vs_onesm1};
-        ignore_bins vs_walkeodd = {vs_walkeodd};
-        ignore_bins vs_walkeven = {vs_walkeven};
-        ignore_bins vs_random = {vs_random};
+        // Corners values of vs1 (eew = 1), assuming vl = 8
     }

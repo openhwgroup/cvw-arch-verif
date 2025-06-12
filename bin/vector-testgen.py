@@ -606,7 +606,7 @@ def make_vs2_corners(test, sew, vl, vcorners):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_vs2_corners (Test source vs2 value = " + v + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, v, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    writeCovVector_V(desc, vs1, vs2, vd, vs1val, v, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
     basetest_count += 1
 
 def make_vs1_corners(test, sew, vl, vcorners):
@@ -615,7 +615,7 @@ def make_vs1_corners(test, sew, vl, vcorners):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
     desc = f"cp_vs1_corners (Test source vs1 value = " + v + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, v, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    writeCovVector_V(desc, vs1, vs2, vd, v, vs2val, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
     basetest_count += 1
 
 def make_rs1_corners_v(test, sew, vl, rng):
@@ -635,7 +635,7 @@ def make_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
       while vs1 == vs2:
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
       desc = "cr_vs2_vs1_corners"
-      writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew, vta=0)
+      writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vl=vl, vta=0)
 
 def make_vs2_rs1_corners(test, sew, vl, vs2corners):
   for r1 in rcornersv:
@@ -754,7 +754,7 @@ def make_vstart(test, vlen, sew, rng):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vstart=vstart)
 
 
-def make_vl(test, vlen, sew, maxlmul=8):
+def make_vl_lmul(test, vlen, sew, maxlmul=8):
   numlmul = int(math.log2(maxlmul)+1)
   for l in range(numlmul):
     for k in range(3):
@@ -771,24 +771,24 @@ def make_vl(test, vlen, sew, maxlmul=8):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
 
-        desc = f"cp_csr_vl (Test lmul = {lmul}, vl = {vl}, vta = {vta})"
+        desc = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl}, vta = {vta})"
         writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
 
 def make_mask_corners(test, vlen, sew):
   lmul = 1
   vlmax = int((vlen*lmul)/sew)
   vma = randint(0,1)
-  cp_mask_corners_data = ["cp_mask_ones", "cp_mask_zeroes", "cp_mask_random", "cp_mask_Echeckerboard",
+  cp_masking_corners_data = ["cp_mask_ones", "cp_mask_zeroes", "cp_mask_random", "cp_mask_Echeckerboard",
                           "cp_mask_Ocheckerboard", "cp_mask_first_vlmax", "cp_mask_halfvlmax"]
   if vlmax <= 1:
     print("Warning: vlmax is not valid.")
     return
 
-  for m in cp_mask_corners_data:
+  for m in cp_masking_corners_data:
     vma = randint(0,1)
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite="length")
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, suite="length")
-    desc = "cp_mask_corners"
+    desc = "cp_masking_corners"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl=vlmax, maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
@@ -886,13 +886,13 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_vs2_corners_emulf8"):
       make_vs2_corners(test, sew, vl, vcornersemulf8)
     elif (coverpoint == "cp_vs2_corners_eew1"):
-      make_vs2_corners(test, sew, vl, vcornerseew1)
+      make_vs2_corners(test, sew, 8, vcornerseew1)
     elif (coverpoint == "cp_vs1_corners"):
       make_vs1_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cp_vs1_corners_emul2"):
       make_vs1_corners(test, sew, vl, vcornersemul2)
     elif (coverpoint == "cp_vs1_corners_eew1"):
-      make_vs1_corners(test, sew, vl, vcornerseew1)
+      make_vs1_corners(test, sew, 8, vcornerseew1)
     elif (coverpoint == "cp_rs1_corners"):
       make_rs1_corners_v(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cr_vs2_vs1_corners"):
@@ -902,7 +902,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cr_vs2_vs1_corners_wred"):
       make_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul2)
     elif (coverpoint == "cr_vs2_vs1_corners_mm"):
-      make_vs2_vs1_corners(test, sew, vl, vcornerseew1, vcornerseew1)
+      make_vs2_vs1_corners(test, sew, 8, vcornerseew1, vcornerseew1)
     elif (coverpoint == "cr_vs2_rs1_corners"):
       make_vs2_rs1_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cr_vs2_rs1_corners_wx"):
@@ -928,7 +928,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cr_vxrm_vs2_imm_corners_wi"):
       make_vxrm_vs2_imm_corners(test, sew, vl, vcornersemul2)
     ############################ length suite ############################
-    elif (coverpoint == "cp_mask_corners"):
+    elif (coverpoint == "cp_masking_corners"):
       make_mask_corners(test, vlen, sew)
     elif (coverpoint in ["cp_csr_vtype_vlmul_intgt2", "cp_csr_vtype_vlmul_intgt2_n8", "cp_csr_vtype_vta", "cp_csr_vl_corners_lmul1",
                          "cp_csr_vl_corners_lmul2", "cp_csr_vl_corners_lmulgt2"]):
@@ -936,9 +936,9 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_csr_vl_lmul1" or coverpoint == "cp_csr_vl_lmul2"):
       pass # to not create three copies of the same tests
     elif (coverpoint == "cp_csr_vl_lmulgt2"):
-      make_vl(test, vlen, sew)            # includes tests for LMUL = 1,2,4,8
+      make_vl_lmul(test, vlen, sew)            # includes tests for LMUL = 1,2,4,8
     elif (coverpoint == "cp_csr_vl_lmulgt2_n8"):
-      make_vl(test, vlen, sew, maxlmul=4) # includes tests for LMUL = 1,2,4
+      make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for LMUL = 1,2,4
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1043,18 +1043,18 @@ def genVMaskCorners(sew, vl, vlen, test):
           f.write(f"    .word 0x{i:08x}\n")
   # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
   vlmax = int(vlen/sew)
-  cp_mask_corners_data = {
+  cp_masking_corners_data = {
     "cp_mask_ones": (1 << vlmax) - 1,
     "cp_mask_zeroes": 0,
     "cp_mask_Echeckerboard": (((1 << vlmax) // 3) & ((1 << vlmax) - 1)),
     "cp_mask_Ocheckerboard": (((1 << (vlmax + 1)) // 3) & ((1 << vlmax) - 1)),
     "cp_mask_first_vlmax": ((1 << (vlmax - 1)) - 1),
     "cp_mask_halfvlmax": (1 << ((vlmax // 2) + 1)) - 1}
-  while (r := getrandbits(vlmax)) in set(cp_mask_corners_data.values()): pass
-  cp_mask_corners_data["cp_mask_random"] = r
+  while (r := getrandbits(vlmax)) in set(cp_masking_corners_data.values()): pass
+  cp_masking_corners_data["cp_mask_random"] = r
 
-  for name in cp_mask_corners_data:
-    val = cp_mask_corners_data[name]
+  for name in cp_masking_corners_data:
+    val = cp_masking_corners_data[name]
     f.write(f"{name}:\n")
     for i in range(num_words):
         word = (val >> (32 * i)) & 0xFFFFFFFF
@@ -1076,33 +1076,27 @@ def genVsCorners(sew, vl, vlen, test, emul):
     eew = int(sew / int(emul[1]))
     ending = "emul" + emul
   elif (emul == "eew1"):
-    eew = 1
+    eew = 8
     ending = "eew1"
   else:
     eew = sew * int(emul)
     ending = "emul" + emul
 
-  if (eew == 1):
-    v_register_corners = {
-      "zero":   0,
-      "one":    1
-    }
-  else:
-    v_register_corners = {
-      "zero":   0,
-      "one":    1,
-      "two":    2,
-      "ones":   -1,
-      "onesm1": -2,
-      "min":    2**(eew - 1),
-      "minm1":  2**(eew - 1) + 1,
-      "max":    2**(eew - 1) - 1,
-      "maxm1":  2**(eew - 1) - 2,
-      "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
-      "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
-    }
-    while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
-    v_register_corners["random"] = r
+  v_register_corners = {
+    "zero":   0,
+    "one":    1,
+    "two":    2,
+    "ones":   -1,
+    "onesm1": -2,
+    "min":    2**(eew - 1),
+    "minm1":  2**(eew - 1) + 1,
+    "max":    2**(eew - 1) - 1,
+    "maxm1":  2**(eew - 1) - 2,
+    "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
+    "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
+  }
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
+  v_register_corners["random"] = r
 
   f.write(f"    .align 3\n")
   for corner in v_register_corners:
@@ -1362,11 +1356,8 @@ if __name__ == '__main__':
         else:
           immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
 
-        if (test in mmins) or (test in vmlogicalins) or (test in vrvtype):
-          vectorcorners = ["vs_corner_zero", "vs_corner_one"]
-        else:
-          vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
-                          "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
+        vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
+                         "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
         vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners]
         vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners]
         vcornersemul4 = [(vcorner + "_emul4") for vcorner in vectorcorners]
