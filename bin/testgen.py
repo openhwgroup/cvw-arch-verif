@@ -329,6 +329,7 @@ def genFrmTests(testInstr, rd, floatdest):
   csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
   for roundingMode in frm:
     lines = writeTest(lines, rd, xlen, True, f"{testInstr}, {roundingMode} # perform operation\n")
+    lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
   for csrMode in csrFrm:
     lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
     lines = lines + f"fsrmi {csrMode}\n"
@@ -955,12 +956,19 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                   ["perform first operation", "perform second (triggering) operation"],
                   xlen)
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
-    lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + "REGWIDTH\n"
-    if haz_type == "nohaz":
-      lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    if testb in ['sd', 'fsd', 'c.sdsp', 'c.fsdsp', 'c.fsd', 'c.sd']:
+       WIDTH = 64
+       storeTest = 'sd'
     else:
-      lines += "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
-    lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH   # Incrementing base register\n"
+        WIDTH = 32
+        storeTest = 'sw'
+    lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(WIDTH)  + " # Increment base Register\n"
+    if haz_type == "nohaz":
+      lines += storeTest+ " x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+    else:
+      lines += storeTest+ " x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+
+    lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)  + " # Increment base Register\n"
     sigupd_count += 2
 
   elif testb in btype:
