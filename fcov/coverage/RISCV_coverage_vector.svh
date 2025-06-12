@@ -59,7 +59,7 @@ function int get_vlmax(int hart, int issue, int prev);
 endfunction
 
 
-function get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
+function int get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
 
     int vlen = get_csr_val(hart, issue, 0, "vlenb", "vlenb") * 8;
     int vlen_times_lmul;
@@ -94,17 +94,17 @@ endfunction
 
 function logic check_vtype_sew_supported(`XLEN_BITS vsew);
 
-   `ifdef SEW8_SUPPORTED
-    if (sew == 0) return 1'b1;
+    `ifdef SEW8_SUPPORTED
+    if (vsew == 0) return 1'b1;
     `endif
     `ifdef SEW16_SUPPORTED
-    if (sew == 1) return 1'b1;
+    if (vsew == 1) return 1'b1;
     `endif
     `ifdef SEW32_SUPPORTED
-    if (sew == 2) return 1'b1;
+    if (vsew == 2) return 1'b1;
     `endif
     `ifdef SEW64_SUPPORTED
-    if (sew == 3) return 1'b1;
+    if (vsew == 3) return 1'b1;
     `endif
 
     return 1'b0;
