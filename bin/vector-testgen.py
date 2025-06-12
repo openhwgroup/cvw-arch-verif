@@ -756,23 +756,24 @@ def make_vstart(test, vlen, sew, rng):
 
 def make_vl_lmul(test, vlen, sew, maxlmul=8):
   numlmul = int(math.log2(maxlmul)+1)
-  for l in range(numlmul):
+  minlmul = -3 # TODO: make this check with vlen and lmul and sew
+  for l in range(minlmul, numlmul):
     for k in range(3):
-      for t in range(2):
-        lmul = 2 ** l # creating lmul first
-        vlmax = int(vlen*lmul/sew)
-        if vlmax <= 1: # added this as a guard
-          print("Warning: vlmax is not valid.")
-          return
+      lmul = 2 ** l # creating lmul first
+      vlmax = int(vlen*lmul/sew)
+      if vlmax <= 1: # added this as a guard
+        print("Warning: vlmax is not valid.")
+        return
 
-        vlval = [vlmax, vlmax-1, int(vlmax/2+1)]
-        vl = vlval[k]
-        vta = t
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
+      vlrand = randint(2, vlmax-1) if vlmax > 2 else 1
+      vlval = [vlmax, 1, vlrand]
+      vl = vlval[k]
+      vta = randint(0,1)
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
 
-        desc = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl}, vta = {vta})"
-        writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
+      desc = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
+      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
 
 def make_mask_corners(test, vlen, sew):
   lmul = 1
@@ -930,15 +931,12 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     ############################ length suite ############################
     elif (coverpoint == "cp_masking_corners"):
       make_mask_corners(test, vlen, sew)
-    elif (coverpoint in ["cp_csr_vtype_vlmul_intgt2", "cp_csr_vtype_vlmul_intgt2_n8", "cp_csr_vtype_vta", "cp_csr_vl_corners_lmul1",
-                         "cp_csr_vl_corners_lmul2", "cp_csr_vl_corners_lmulgt2"]):
-      pass # helper coverpoints, crossed in cp_csr_vl
-    elif (coverpoint == "cp_csr_vl_lmul1" or coverpoint == "cp_csr_vl_lmul2"):
-      pass # to not create three copies of the same tests
-    elif (coverpoint == "cp_csr_vl_lmulgt2"):
-      make_vl_lmul(test, vlen, sew)            # includes tests for LMUL = 1,2,4,8
-    elif (coverpoint == "cp_csr_vl_lmulgt2_n8"):
-      make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for LMUL = 1,2,4
+    elif (coverpoint in ["cp_csr_vtype_lmul_all", "cp_csr_vtype_lmul_all_nlmul8", "cp_csr_vl_corners"]):
+      pass # helper coverpoints, crossed in cr_vl_lmul
+    elif (coverpoint == "cr_vl_lmul"):
+      make_vl_lmul(test, vlen, sew)            # includes tests for legal LMUL up to 8
+    elif (coverpoint == "cr_vl_lmul_nlmul8"):
+      make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for legal LMUL up to 4
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
