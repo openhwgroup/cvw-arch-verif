@@ -395,7 +395,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + genFrmTests(testInstr, rd, True)
   elif (test in csrtype):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-      lines = lines + "csrw " + "mscratch" + ", x" + str(rs2) + " # Add random immediate into mscratch\n"
+      lines = lines + "csrw " + "mscratch" + ", x" + str(rs2) + " # Write random immediate into mscratch\n"
       lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
       lines = writeTest(lines, rd, xlen, False, f"{test} x{rd}, mscratch, x{rs1} # perform operation\n")
       lines = lines + "csrr x" + str(rs2) + ", mscratch #Reading the updated mscratch value \n"
