@@ -71,12 +71,28 @@
   `define VLEN 64
 `elsif VLEN32
   `define VLEN 32
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN32
+  `endif
 `elsif VLEN16
   `define VLEN 16
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+  `endif
+  `ifdef VX32_COVERAGE
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+  `endif
 `elsif VLEN8
   `define VLEN 8
-`else
-  `define VLEN 8
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
+  `ifdef VX32_COVERAGE
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
+  `ifdef VX16_COVERAGE
+    `VX16_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
 `endif
 
 // supported SEWs based on what coverages are enabled

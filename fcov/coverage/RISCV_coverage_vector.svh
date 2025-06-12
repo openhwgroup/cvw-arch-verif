@@ -59,7 +59,7 @@ function int get_vlmax(int hart, int issue, int prev);
 endfunction
 
 
-function get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
+function int get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
 
     int vlen = get_csr_val(hart, issue, 0, "vlenb", "vlenb") * 8;
     int vlen_times_lmul;
