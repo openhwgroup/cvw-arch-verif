@@ -94,17 +94,17 @@ endfunction
 
 function logic check_vtype_sew_supported(`XLEN_BITS vsew);
 
-   `ifdef SEW8_SUPPORTED
-    if (sew == 0) return 1'b1;
+    `ifdef SEW8_SUPPORTED
+    if (vsew == 0) return 1'b1;
     `endif
     `ifdef SEW16_SUPPORTED
-    if (sew == 1) return 1'b1;
+    if (vsew == 1) return 1'b1;
     `endif
     `ifdef SEW32_SUPPORTED
-    if (sew == 2) return 1'b1;
+    if (vsew == 2) return 1'b1;
     `endif
     `ifdef SEW64_SUPPORTED
-    if (sew == 3) return 1'b1;
+    if (vsew == 3) return 1'b1;
     `endif
 
     return 1'b0;
