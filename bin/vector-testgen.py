@@ -170,12 +170,22 @@ def genVxsatTests(lines):
   lines = lines + f"sw t1, 0(t2)"
   return lines
 
+def genIfdefs(lmul):
+  ifdef = ""
+  if (lmul == 0.5):
+    ifdef = "`ifdef LMULf2_SUPPORTED\n"
+  elif (lmul == 0.25):
+    ifdef = "`ifdef LMULf4_SUPPORTED\n"
+  elif (lmul == 0.125):
+    ifdef = "`ifdef LMULf8_SUPPORTED\n"
+  return ifdef
 
 def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1, vl=None, vstart=None,
                      rs1=None, fs1=None, rd=None, rs1val=None, fs1val=None, imm=None, maskval=None, vxrm=None,
                      vfrm=None, vfloattype=None, xtype=None, vxsat=None, vta=None, vma=None):
 
-    lines = "\n# Testcase " + str(desc) + "\n"
+    lines = "\n" + genIfdefs(lmul)
+    lines = lines + "# Testcase " + str(desc) + "\n"
     lines = handleSignaturePointerConflict(lines, rd, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
     if (vl is not None) and (lmul is not None) and (sew is not None):
@@ -235,7 +245,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       if maskval is None:
-        lines = lines + loadVecReg(0, "vtype_mask_corner_0", sew)
+        lines = lines + loadVecReg(0, "cp_mask_zeroes", sew)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
     elif (test in vxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
@@ -274,6 +284,9 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd, vl=vl)
     else:
       lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
+
+    if (genIfdefs(lmul) != ""):
+      lines = lines + "`endif\n"
     f.write(lines)
 
 # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
@@ -688,46 +701,30 @@ def make_vxrm_vs2_imm_corners(test, sew, vl, vs2corners):
 
 ##################################### length suite (vl!=1) test generation #####################################
 
-def make_vtype(test, vlen, sew, rng):
-  legallmuls = [1, 2, 4, 8] # create lmul of [1 random_legal]
-  if sew >= 16:
-    legallmuls.append(0.5)
-  if sew >= 32:
-    legallmuls.append(0.25)
-  if sew >= 64:
-    legallmuls.append(0.125)
-  for l in range(2):
-    #check lmul first - can either be 1 or a random legal value
-    for k in range(3):
-      # check vl next - can either be 1, vlmax, or a random legal value > vstart
-      for vm in range(3): # check for vm - can either be random single bit, VLEN 1s, or random
-        if (l == 0):
-          lmul = 1
-        else:
-          ## pick random lmul from legallmuls
-          lmul = legallmuls[randint(1, len(legallmuls)-1)]
-        vlmax = int(vlen*(lmul/sew))
-        if vlmax <= 1:
-          return
-        #creating vl:
-        if (k == 0):
-          vl = 1
-        elif (k == 1):
-          vl = vlmax
-        else:
-          vl = randint(0, vlmax-1)
-        if (vm == 0):
-          m = vtype_maskcorners[0]
-        elif (vm == 1):
-          m = vtype_maskcorners[1]
-        else:
-          m = vtype_maskcorners[2]
-        vma = randint(0,1)
-        vta = randint(0,1)
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-        desc = "cp_vtype"
-        writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, vstart=0, maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vma=vma, vta=vta)
+def getLegalVlmul(elen, sewmin, sew):
+  lmulmin = sewmin / elen
+  legalvlmuls = [0, 1, 2, 3]
+  # A given supported fractional LMUL setting must support SEW settings between SEWMIN and LMUL * ELEN
+  if (lmulmin <= 0.5) and (sew in [8, 16, 32]):
+    legalvlmuls.append(-1)
+  if (lmulmin <= 0.25) and (sew in [8, 16]):
+    legalvlmuls.append(-2)
+  if (lmulmin <= 0.125) and (sew == 8):
+    legalvlmuls.append(-3)
+  return legalvlmuls
 
+def randomizeMask(test):
+  if (test in mv_ins) or (test in mmins) or (test in vmvins):
+    vm = 1
+  else:
+    vm = randint(0,1)
+
+  if (vm == 1):
+    maskval = None
+  else:
+    i = randint(0,2)
+    maskval = f"random_mask_{i}"
+  return maskval
 
 def make_vstart(test, vlen, sew, rng):
   legallmuls = [1, 2, 4, 8]
@@ -755,13 +752,14 @@ def make_vstart(test, vlen, sew, rng):
 
 
 def make_vl_lmul(test, vlen, sew, maxlmul=8):
+  global legalvlmuls
   numlmul = int(math.log2(maxlmul)+1)
-  minlmul = -3 # TODO: make this check with vlen and lmul and sew
+  minlmul = 4 - len(legalvlmuls)
   for l in range(minlmul, numlmul):
     for k in range(3):
       lmul = 2 ** l # creating lmul first
       vlmax = int(vlen*lmul/sew)
-      if vlmax <= 1: # added this as a guard
+      if vlmax < 1: # added this as a guard
         print("Warning: vlmax is not valid.")
         return
 
@@ -769,11 +767,13 @@ def make_vl_lmul(test, vlen, sew, maxlmul=8):
       vlval = [vlmax, 1, vlrand]
       vl = vlval[k]
       vta = randint(0,1)
+      maskval = randomizeMask(test)
+
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
 
       desc = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
+      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
 
 def make_mask_corners(test, vlen, sew):
   lmul = 1
@@ -781,7 +781,7 @@ def make_mask_corners(test, vlen, sew):
   vma = randint(0,1)
   cp_masking_corners_data = ["cp_mask_ones", "cp_mask_zeroes", "cp_mask_random", "cp_mask_Echeckerboard",
                           "cp_mask_Ocheckerboard", "cp_mask_first_vlmax", "cp_mask_halfvlmax"]
-  if vlmax <= 1:
+  if vlmax < 1:
     print("Warning: vlmax is not valid.")
     return
 
@@ -791,6 +791,31 @@ def make_mask_corners(test, vlen, sew):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, suite="length")
     desc = "cp_masking_corners"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl=vlmax, maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
+
+def make_vtype_agnostic(test, vlen, sew):
+  global legalvlmuls
+  for t in [0,1]:
+    for m in [0,1]:
+      if (test in widenins) or (test in narrowins):
+        legalvlmuls_widen = legalvlmuls[:3] + legalvlmuls[4:] # exclude LMUL = 8 for widening/narrowing instr
+        lmul = 2 ** legalvlmuls_widen[randint(0, len(legalvlmuls_widen)-1)]
+      else:
+        lmul = 2 ** legalvlmuls[randint(0, len(legalvlmuls)-1)] # pick random lmul from legal vlmul values
+
+      vlmax = int(vlen*(lmul/sew))
+      if vlmax < 1:
+        print("Warning: vlmax is not valid.")
+        return
+      vl = vlmax
+
+      maskval = randomizeMask(test)
+      vta = t
+      vma = m
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite="length")
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
+
+      desc = f"cr_vtype_agnostic (Test vta = {vta}, vma = {vma})"
+      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, vstart=0, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta, vma=vma)
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
 def myhash(s):
@@ -868,10 +893,6 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_vd_vs1_vs2(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_vs2_nv0"):
       make_vd_vs1_vs2(test, sew, vl, range(1,maxreg+1))
-    elif (coverpoint == "cp_vm"):
-      make_vm(test, vlen, sew, range(1,maxreg+1))
-    elif (coverpoint == "cp_vtype"):
-      make_vtype(test, vlen, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vs2_corners"):
       make_vs2_corners(test, sew, vl, vcornersemul1)
     elif (coverpoint == "cp_vs2_corners_emul2"):
@@ -931,12 +952,17 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     ############################ length suite ############################
     elif (coverpoint == "cp_masking_corners"):
       make_mask_corners(test, vlen, sew)
-    elif (coverpoint in ["cp_csr_vtype_lmul_all", "cp_csr_vtype_lmul_all_nlmul8", "cp_csr_vl_corners"]):
+    elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
+                         "cp_csr_vtype_lmul_all_nlmul8_sew8", "cp_csr_vtype_lmul_all_nlmul8_sew16", "cp_csr_vtype_lmul_all_nlmul8_sew32", "cp_csr_vtype_lmul_all_nlmul8_sew64"]):
       pass # helper coverpoints, crossed in cr_vl_lmul
-    elif (coverpoint == "cr_vl_lmul"):
+    elif (coverpoint in ["cr_vl_lmul_sew8", "cr_vl_lmul_sew16", "cr_vl_lmul_sew32", "cr_vl_lmul_sew64"]):
       make_vl_lmul(test, vlen, sew)            # includes tests for legal LMUL up to 8
-    elif (coverpoint == "cr_vl_lmul_nlmul8"):
+    elif (coverpoint in ["cr_vl_lmul_nlmul8_sew8", "cr_vl_lmul_nlmul8_sew16", "cr_vl_lmul_nlmul8_sew32", "cr_vl_lmul_nlmul8_sew64"]):
       make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for legal LMUL up to 4
+    elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
+      pass # helper coverpoints, crossed in cr_vtype_agnostic
+    elif (coverpoint == "cr_vtype_agnostic"):
+      make_vtype_agnostic(test, vlen, sew)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1027,18 +1053,16 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
 
 def genVMaskCorners(sew, vl, vlen, test):
   maxvlen = 2048
-  cp_vtype_mask_corners = [
-      1 << randint(0, maxvlen - 1),
-      (1 << maxvlen) - 1,
-      getrandbits(maxvlen)]
 
   num_words = math.ceil(vlen / 32)
 
   f.write(f"    .align 3\n")
-  for i, val in enumerate(cp_vtype_mask_corners):
-      f.write(f"vtype_mask_corner_{i}:\n")
-      for k in range(num_words):
-          f.write(f"    .word 0x{i:08x}\n")
+  for name in range(3):
+    f.write(f"random_mask_{name}:\n")
+    val = getrandbits(vlen)
+    for i in range(num_words):
+      word = (val >> (32 * i)) & 0xFFFFFFFF
+      f.write(f"    .word 0x{word:08x}\n")
   # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
   vlmax = int(vlen/sew)
   cp_masking_corners_data = {
@@ -1197,6 +1221,7 @@ vupgatherins = vslideupins + vrgatherins
 # mask logical
 vmlogicalins = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m"]
 
+vmvins = vvxtype + vxxtype + vixtype + vrvxtype + vvvxtype + vcompressins
 
 if __name__ == '__main__':
 
@@ -1335,9 +1360,6 @@ if __name__ == '__main__':
                             0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                             0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-
-      vtype_maskcorners = ["vtype_maskcorner_0", "vtype_maskcorner_1", "vtype_maskcorner_2", "vtype_maskcorner_3", "vtype_maskcorner_4", "vtype_maskcorner_5", "vtype_maskcorner_6", "vtype_maskcorner_7"]
-
       # global NaNBox_tests
       NaNBox_tests = False
 
@@ -1404,7 +1426,13 @@ if __name__ == '__main__':
           sew = int(sew_match.group(1))
 
         # vlen defined as max for test generation
+        # TODO: find a way to pass in VLEN, ELEN, and SEWmin
         vlen = 512
+        elen = 64
+        sewmin = 8
+
+        legalvlmuls = getLegalVlmul(elen, sewmin, sew)
+
         # vl=1 for base suite
         vl = 1
 
