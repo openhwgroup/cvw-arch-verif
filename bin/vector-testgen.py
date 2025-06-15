@@ -170,21 +170,21 @@ def genVxsatTests(lines):
   lines = lines + f"sw t1, 0(t2)"
   return lines
 
-def genIfdefs(lmul):
+def genLMULIfdefs(lmul):
   ifdef = ""
   if (lmul == 0.5):
-    ifdef = "`ifdef LMULf2_SUPPORTED\n"
+    ifdef = "#ifdef LMULf2_SUPPORTED\n"
   elif (lmul == 0.25):
-    ifdef = "`ifdef LMULf4_SUPPORTED\n"
+    ifdef = "#ifdef LMULf4_SUPPORTED\n"
   elif (lmul == 0.125):
-    ifdef = "`ifdef LMULf8_SUPPORTED\n"
+    ifdef = "#ifdef LMULf8_SUPPORTED\n"
   return ifdef
 
 def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1, vl=None, vstart=None,
                      rs1=None, fs1=None, rd=None, rs1val=None, fs1val=None, imm=None, maskval=None, vxrm=None,
                      vfrm=None, vfloattype=None, xtype=None, vxsat=None, vta=None, vma=None):
 
-    lines = "\n" + genIfdefs(lmul)
+    lines = "\n" + genLMULIfdefs(lmul)
     lines = lines + "# Testcase " + str(desc) + "\n"
     lines = handleSignaturePointerConflict(lines, rd, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
@@ -285,8 +285,8 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     else:
       lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
 
-    if (genIfdefs(lmul) != ""):
-      lines = lines + "`endif\n"
+    if (genLMULIfdefs(lmul) != ""):
+      lines = lines + "#endif\n"
     f.write(lines)
 
 # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
@@ -1443,8 +1443,22 @@ if __name__ == '__main__':
 
         f.write(vsetline1)
         f.write(vsetline2)
+
+        if (test in widenins) or (test in narrowins):
+          if (sew == 8):
+            f.write("#if ELEN > 8\n")
+          elif (sew == 16):
+            f.write("#if ELEN > 16\n")
+          elif (sew == 32):
+            f.write("#if ELEN > 32\n")
+          elif (sew == 64):
+            f.write("#if ELEN > 64\n")
+
         basetest_count = 0
         write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
+
+        if (test in widenins) or (test in narrowins):
+          f.write("#endif\n")
         insertTemplate("testgen_footer_vector1.S")
 
         if (test in narrowins) or (test in widenins):
