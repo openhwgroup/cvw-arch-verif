@@ -230,8 +230,12 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
                                             bins true = {1};
                                         }
 
-    cp_vset_i_vli_rd_n0_rs1_x0 : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_all_sew_supported, vtype_all_lmul_supported;
-    cp_vset_i_vli_rd_x0_rs1_x0 : cross vset_i_vli_instructions, vl_nonzero, rd_x0, rs1_x0, vset_i_vli_vlmax_unchanged;
+    cp_vset_i_vli_rd_n0_rs1_x0_sew8  : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_sew_8,  vtype_all_lmul_supported_sew8;
+    cp_vset_i_vli_rd_n0_rs1_x0_sew16 : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_sew_16, vtype_all_lmul_supported_sew16;
+    cp_vset_i_vli_rd_n0_rs1_x0_sew32 : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_sew_32, vtype_all_lmul_supported_sew32;
+    cp_vset_i_vli_rd_n0_rs1_x0_sew64 : cross vset_i_vli_instructions, vl_not_max, rd_n0, rs1_x0, vtype_sew_64, vtype_all_lmul_supported_sew64;
+
+    cp_vset_i_vli_rd_x0_rs1_x0       : cross vset_i_vli_instructions, vl_nonzero, rd_x0, rs1_x0, vset_i_vli_vlmax_unchanged;
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vsetvl_i_avl_*
