@@ -140,7 +140,7 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     "f2":    eew = sew / 2;
     "f4":    eew = sew / 4;
     "f8":    eew = sew / 8;
-    "m":     eew = 1;
+    "m":     eew = 8;       // vl = 8 and eew = 1 for mask (logical) instructions
     default: begin
       $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
       $finish(-1);
@@ -148,7 +148,6 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
   endcase
 
   case (eew)
-    1:   return vs_corners_check_eew_1(val);
     8:   return vs_corners_check_eew_8(val);
     `ifdef SEW16_SUPPORTED
     16:  return vs_corners_check_eew_16(val);
@@ -311,7 +310,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
   return all_values_within_range & one_value_zero;
 endfunction
 
-function logic[63:0] get_vr_element_zero(hart, issue, `VLEN_BITS val);
+function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
     case (vsew)
@@ -337,38 +336,33 @@ endfunction
 typedef enum {
     mask_zero,
     mask_ones,
-    mask_walkeodd,
-    mask_walkeven,
     mask_vlmaxm1ones,
     mask_vlmaxd2p1ones,
     mask_random
 } corner_mask_values_t;
 
 // Check for vector operand corner values, assuming vl = 1
-function corner_mask_values_t mask_corners_check(hart, issue, `VLEN_BITS mask_val);
+function corner_mask_values_t mask_corners_check(int hart, int issue, `VLEN_BITS mask_val);
   int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
 
-  if      (mask_val == 0) return mask_zero;
-  else if (mask_val == ((2 ** (vlmax)) - 1)) return mask_ones;
-  else if (mask_val == ((2 ** (vlmax)) - 1) * 2/ 3) return mask_walkeodd;
-  else if (mask_val == ((2 ** (vlmax)) - 1) / 3) return mask_walkeven;
-  else if (mask_val == ((2 ** (vlmax-1)) - 1)) return mask_vlmaxm1ones;
-  else if (mask_val == ((2 ** (vlmax/2+1)) - 1)) return mask_vlmaxd2p1ones;
-  else                                                                    return mask_random;
+  if      (mask_val == 0)                           return mask_zero;
+  else if (mask_val == ((2 ** (vlmax)) - 1))        return mask_ones;
+  else if (mask_val == ((2 ** (vlmax-1)) - 1))      return mask_vlmaxm1ones;
+  else if (mask_val == ((2 ** (vlmax/2+1)) - 1))    return mask_vlmaxd2p1ones;
+  else                                              return mask_random;
 
 endfunction
+
 
 typedef enum {
   vl_zero,
   vl_one,
   vl_vlmax,
-  vl_vlmaxm1,
-  vl_vlmaxd2p1,
   vl_legal,
   vl_other
 } vl_t;
 
-function vl_t vl_check(hart, issue);
+function vl_t vl_check(int hart, int issue);
   `XLEN_BITS vl = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vl", "vl");
   `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
   int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
@@ -379,8 +373,6 @@ function vl_t vl_check(hart, issue);
   case(vl)
     0:         return vl_zero;
     1:         return vl_one;
-    vlmax/2+1: return vl_vlmaxd2p1;
-    vlmax-1:   return vl_vlmaxm1;
     vlmax:     return vl_vlmax;
     default: begin
       if (legal) return vl_legal;
