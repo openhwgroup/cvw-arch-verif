@@ -245,6 +245,72 @@ function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
 endfunction
 `endif
 
+function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
+
+  logic all_values_within_range = 1'b1;
+  logic one_value_zero          = 1'b0;
+
+  `XLEN_BITS vsew               = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
+  int vlmax                     = get_vlmax(hart, issue, `SAMPLE_BEFORE);
+
+  //------------------------------------------
+  // Walk across VAL in chunks of size SEW
+  //------------------------------------------
+  case (vsew)
+    //--------------------------------------------------------------
+    //  8-bit elements
+    //--------------------------------------------------------------
+    0: begin : SEW8
+      for (int idx = 1; idx <= `VLEN / 8; ++idx) begin
+        logic [7:0] elem = val[idx*8 -: 8];
+
+        if (elem == 0)                          one_value_zero          = 1'b1;
+        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+      end
+    end
+    //--------------------------------------------------------------
+    // 16-bit elements
+    //--------------------------------------------------------------
+    1: begin : SEW16
+      for (int idx = 1; idx <= `VLEN / 16; ++idx) begin
+        logic [15:0] elem = val[idx*16 -: 16];
+
+        if (elem == 0)                          one_value_zero          = 1'b1;
+        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+      end
+    end
+    //--------------------------------------------------------------
+    // 32-bit elements
+    //--------------------------------------------------------------
+    2: begin : SEW32
+      for (int idx = 1; idx <= `VLEN / 32; ++idx) begin
+        logic [31:0] elem = val[idx*32 -: 32];
+
+        if (elem == 0)                          one_value_zero          = 1'b1;
+        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+      end
+    end
+    //--------------------------------------------------------------
+    // 64-bit elements
+    //--------------------------------------------------------------
+    3: begin : SEW64
+      for (int idx = 1; idx <= `VLEN / 64; ++idx) begin
+        logic [63:0] elem = val[idx*64 -: 64];
+
+        if (elem == 0)                          one_value_zero          = 1'b1;
+        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+      end
+    end
+    //--------------------------------------------------------------
+    default : begin
+      $display("ERROR: SystemVerilog Functional Coverage: Unsupported VSEW: %s", vsew);
+      $finish(-1);
+    end
+  endcase
+
+  return all_values_within_range & one_value_zero;
+endfunction
+
 function logic[63:0] get_vr_element_zero(hart, issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
