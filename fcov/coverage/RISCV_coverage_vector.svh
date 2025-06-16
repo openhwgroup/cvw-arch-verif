@@ -271,8 +271,6 @@ endfunction
 typedef enum {
     mask_zero,
     mask_ones,
-    mask_walkeodd,
-    mask_walkeven,
     mask_vlmaxm1ones,
     mask_vlmaxd2p1ones,
     mask_random
@@ -284,8 +282,6 @@ function corner_mask_values_t mask_corners_check(int hart, int issue, `VLEN_BITS
 
   if      (mask_val == 0)                           return mask_zero;
   else if (mask_val == ((2 ** (vlmax)) - 1))        return mask_ones;
-  else if (mask_val == ((2 ** (vlmax)) - 1) * 2/ 3) return mask_walkeodd;
-  else if (mask_val == ((2 ** (vlmax)) - 1) / 3)    return mask_walkeven;
   else if (mask_val == ((2 ** (vlmax-1)) - 1))      return mask_vlmaxm1ones;
   else if (mask_val == ((2 ** (vlmax/2+1)) - 1))    return mask_vlmaxd2p1ones;
   else                                              return mask_random;

@@ -62,6 +62,8 @@ def writeSIGUPD_F(rd):
 
 def writeSIGUPD_V(vd, sew, avl=1):
     global sigupd_count  # Allow modification of global variable
+    if (avl == "random" or avl == "vlmax"):
+      avl = maxVLEN     # set to max possible vl since SIGUPD_V needs AVL to be a compile-time constant
     if (avl == 1):
       sigupd_count += avl * 2  # Increment counter on each call
     else:
@@ -180,6 +182,34 @@ def genLMULIfdefs(lmul):
     ifdef = "#ifdef LMULf8_SUPPORTED\n"
   return ifdef
 
+def prepMaskV(lines, maskval, sew, tempReg):
+  if (maskval == "zeroes"):
+    lines = lines + f"vmv.v.i v0, 0                 # Set mask value to 0\n"
+  elif (maskval == "ones"):
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
+    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX) ? 1 : 0\n"
+  elif (maskval == "vlmaxm1_ones"):
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
+    lines = lines + f"addi x{tempReg}, x{tempReg}, -1                  # x{tempReg} = VLMAX - 1\n"
+    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX-1) ? 1 : 0\n"
+  elif (maskval == "vlmaxd2p1_ones"):
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
+    lines = lines + f"srli x{tempReg}, x{tempReg}, 1                  # x{tempReg} = VLMAX / 2\n"
+    lines = lines + f"addi x{tempReg}, x{tempReg}, 1                  # x{tempReg} = VLMAX / 2 + 1\n"
+    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX/2+1) ? 1 : 0\n"
+  else: # random mask
+    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"la x{tempReg}, {maskval}\n"
+    lines = lines + f"vlm.v v0, (x{tempReg})                   # Load mask value into v0\n"
+  return lines
+
+
 def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1, vl=None, vstart=None,
                      rs1=None, fs1=None, rd=None, rs1val=None, fs1val=None, imm=None, maskval=None, vxrm=None,
                      vfrm=None, vfloattype=None, xtype=None, vxsat=None, vta=None, vma=None):
@@ -188,19 +218,18 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
     lines = lines + "# Testcase " + str(desc) + "\n"
     lines = handleSignaturePointerConflict(lines, rd, rs1, 6, None) # use rs2 as a place holder for helper_gpr (x6)
 
-    if (vl is not None) and (lmul is not None) and (sew is not None):
-      lines = lines + prepBaseV(lines, sew, lmul, vl, vstart, vta, vma)
+    tempReg = 6
+    while (tempReg == sigReg) or (tempReg == rs1) or (tempReg == rd):
+      tempReg = randint(1,31)
 
     maskinstr = " "
     # If mask value specified, load to v0
     if maskval is not None:
-      tempReg = 6
-      while (tempReg == sigReg) or (tempReg == rs1) or (tempReg == rd):
-        tempReg = randint(1,31)
-      lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
-      lines = lines + f"la x{tempReg}, {maskval}\n"
-      lines = lines + f"vlm.v v0, (x{tempReg})                   # Load mask value into v0\n"
+      lines = prepMaskV(lines, maskval, sew, tempReg)
       maskinstr = ", v0.t"
+
+    if (vl is not None) and (lmul is not None) and (sew is not None):
+      lines = lines + prepBaseV(lines, sew, lmul, vl, vstart, vta, vma)
 
     if ((vfloattype is not None) and (vfrm is not None)):
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
@@ -245,7 +274,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       if maskval is None:
-        lines = lines + loadVecReg(0, "cp_mask_zeroes", sew)
+        lines = lines + prepMaskV(lines, "zeroes", sew, tempReg)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
     elif (test in vxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
@@ -271,9 +300,9 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       if (lmul != 1):
-        evl = int(int(test[3]) * vlen / sew)
-        testline = testline + prepBaseV(lines, sew, 1, evl, vstart, vta, vma)
-        vl = evl
+        #evl = int(int(test[3]) * vlen / sew)
+        #testline = testline + prepBaseV(lines, sew, 1, evl, vstart, vta, vma)
+        vl = 2048
     elif (test in vixtype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
@@ -328,8 +357,23 @@ def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
   tempReg = 6
   while tempReg == sigReg:
     tempReg = randint(1,31)
-  lines = f"li x{tempReg}, {vl}                       # Load desired vl value\n" # put desired vl into an integer register
-  lines = lines + f"vsetvli x0, x{tempReg}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
+  vlmaxReg = 7
+  while vlmaxReg == sigReg or vlmaxReg == tempReg:
+    vlmaxReg = randint(1,31)
+
+  if (vl == "random"):
+    randomVl = getrandbits(32)
+    lines = f"li x{tempReg}, {randomVl}                       # Load value for random vl preparation\n"
+    lines = lines + f"vsetvli x{vlmaxReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}               # x{vlmaxReg} = VLMAX\n"
+    lines = lines + f"remu x{tempReg}, x{tempReg}, x{vlmaxReg}                      # ensure that vl < VLMAX\n"
+    lines = lines + f"ori x{tempReg}, x{tempReg}, 0x2                     # set bit 1 to 1, ensuring 2 <= vl < VLMAX\n"
+    lines = lines + f"vsetvli x0, x{tempReg}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
+  elif (vl == "vlmax"):
+    lines = f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}     # Set vl = VLMAX, where x{vlmaxReg} = VLMAX\n"
+  else:
+    lines = f"li x{tempReg}, {vl}                       # Load desired vl value\n" # put desired vl into an integer register
+    lines = lines + f"vsetvli x0, x{tempReg}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
+
   if (vstart == True):   # if vstart specified
     lines = lines + f"li x{tempReg}, {vstart}               # Load desired vstart value\n"
     lines = lines + f"csrw vstart, x{tempReg}\n"
@@ -758,13 +802,8 @@ def make_vl_lmul(test, vlen, sew, maxlmul=8):
   for l in range(minlmul, numlmul):
     for k in range(3):
       lmul = 2 ** l # creating lmul first
-      vlmax = int(vlen*lmul/sew)
-      if vlmax < 1: # added this as a guard
-        print("Warning: vlmax is not valid.")
-        return
 
-      vlrand = randint(2, vlmax-1) if vlmax > 2 else 1
-      vlval = [vlmax, 1, vlrand]
+      vlval = ["vlmax", 1, "random"]
       vl = vlval[k]
       vta = randint(0,1)
       maskval = randomizeMask(test)
@@ -777,20 +816,15 @@ def make_vl_lmul(test, vlen, sew, maxlmul=8):
 
 def make_mask_corners(test, vlen, sew):
   lmul = 1
-  vlmax = int((vlen*lmul)/sew)
   vma = randint(0,1)
-  cp_masking_corners_data = ["cp_mask_ones", "cp_mask_zeroes", "cp_mask_random", "cp_mask_Echeckerboard",
-                          "cp_mask_Ocheckerboard", "cp_mask_first_vlmax", "cp_mask_halfvlmax"]
-  if vlmax < 1:
-    print("Warning: vlmax is not valid.")
-    return
+  cp_masking_corners_data = ["ones", "zeroes", "vlmaxm1_ones", "vlmaxd2p1_ones", "cp_mask_random"]
 
   for m in cp_masking_corners_data:
     vma = randint(0,1)
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, suite="length")
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, suite="length")
-    desc = "cp_masking_corners"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl=vlmax, maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
+    desc = f"cp_masking_corners (Test v0 = {m})"
+    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl="vlmax", maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
 
 def make_vtype_agnostic(test, vlen, sew):
   global legalvlmuls
@@ -802,12 +836,6 @@ def make_vtype_agnostic(test, vlen, sew):
       else:
         lmul = 2 ** legalvlmuls[randint(0, len(legalvlmuls)-1)] # pick random lmul from legal vlmul values
 
-      vlmax = int(vlen*(lmul/sew))
-      if vlmax < 1:
-        print("Warning: vlmax is not valid.")
-        return
-      vl = vlmax
-
       maskval = randomizeMask(test)
       vta = t
       vma = m
@@ -815,7 +843,7 @@ def make_vtype_agnostic(test, vlen, sew):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, lmul=lmul, suite="length")
 
       desc = f"cr_vtype_agnostic (Test vta = {vta}, vma = {vma})"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, vstart=0, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta, vma=vma)
+      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl="random", vstart=0, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta, vma=vma)
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
 def myhash(s):
@@ -1037,7 +1065,7 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
       vl = 1
       num_words = math.ceil((vl * eew) / 32)
     else:
-      maxVtests = 100
+      maxVtests = 50
       num_words = math.ceil(vlen / 32)
     # TODO: Fix this temporary arbitrary number
     # num_words = vlen // 32
@@ -1052,8 +1080,6 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
 
 
 def genVMaskCorners(sew, vl, vlen, test):
-  maxvlen = 2048
-
   num_words = math.ceil(vlen / 32)
 
   f.write(f"    .align 3\n")
@@ -1063,24 +1089,15 @@ def genVMaskCorners(sew, vl, vlen, test):
     for i in range(num_words):
       word = (val >> (32 * i)) & 0xFFFFFFFF
       f.write(f"    .word 0x{word:08x}\n")
-  # TODO: Fix this so that it creates a vlmax for every length suite instead of just the max vlmax of the base suite
-  vlmax = int(vlen/sew)
-  cp_masking_corners_data = {
-    "cp_mask_ones": (1 << vlmax) - 1,
-    "cp_mask_zeroes": 0,
-    "cp_mask_Echeckerboard": (((1 << vlmax) // 3) & ((1 << vlmax) - 1)),
-    "cp_mask_Ocheckerboard": (((1 << (vlmax + 1)) // 3) & ((1 << vlmax) - 1)),
-    "cp_mask_first_vlmax": ((1 << (vlmax - 1)) - 1),
-    "cp_mask_halfvlmax": (1 << ((vlmax // 2) + 1)) - 1}
-  while (r := getrandbits(vlmax)) in set(cp_masking_corners_data.values()): pass
-  cp_masking_corners_data["cp_mask_random"] = r
 
-  for name in cp_masking_corners_data:
-    val = cp_masking_corners_data[name]
-    f.write(f"{name}:\n")
-    for i in range(num_words):
-        word = (val >> (32 * i)) & 0xFFFFFFFF
-        f.write(f"    .word 0x{word:08x}\n")
+  random_mask = getrandbits(vlen)
+  while (random_mask == 0) or (random_mask % 2 == 1): # prevent overlapping with other mask corners
+    random_mask = getrandbits(vlen)
+
+  f.write(f"cp_mask_random:\n")
+  for i in range(num_words):
+      word = (random_mask >> (32 * i)) & 0xFFFFFFFF
+      f.write(f"    .word 0x{word:08x}\n")
 
   f.write("\n")
   #f.close()
@@ -1427,6 +1444,7 @@ if __name__ == '__main__':
 
         # vlen defined as max for test generation
         # TODO: find a way to pass in VLEN, ELEN, and SEWmin
+        maxVLEN = 2048
         vlen = 512
         elen = 64
         sewmin = 8
