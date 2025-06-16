@@ -1,5 +1,10 @@
 
 ///////////////////////////////////////////////////////////////
+#  Sw.S
+#
+# Written: mbellido@hmc.edu       June 10 2025
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
 # CUSTOM TESTS GUIDE (Short Version)
 #
 # - Use SIGPOINTER for all signature memory accesses.
@@ -14,8 +19,8 @@
 # DO NOT MODIFY unless you also update the test generation script.
 ///////////////////////////////////////////////////////////////
 
-# sw.S
-# Test word-aligned sw operations
+
+# SW: Test word-aligned sw operations
     li t2, 0x12345678
     li t3, 0x9ABCDEF0
 
