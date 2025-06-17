@@ -17,7 +17,7 @@
     cp_csr_vl_corners : coverpoint vl_check(ins.hart, ins.issue)  iff (ins.trap == 0 )  {
         // Corners values of VL (vector length)
         ignore_bins vl_zero   = {vl_zero};
-        ignore_bins vl_other = {vl_other};
+        ignore_bins vl_illegal = {vl_illegal};
     }
 
     cr_vl_lmul_sew16_lmul2max : cross cp_csr_vtype_lmul_all_sew16_lmul_le_2, cp_csr_vl_corners  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 1)  {

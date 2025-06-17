@@ -359,7 +359,7 @@ typedef enum {
   vl_one,
   vl_vlmax,
   vl_legal,
-  vl_other
+  vl_illegal
 } vl_t;
 
 function vl_t vl_check(int hart, int issue);
@@ -376,7 +376,7 @@ function vl_t vl_check(int hart, int issue);
     vlmax:     return vl_vlmax;
     default: begin
       if (legal) return vl_legal;
-      else       return vl_other;
+      else       return vl_illegal;
     end
   endcase
 endfunction
