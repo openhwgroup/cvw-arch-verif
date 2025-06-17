@@ -118,7 +118,7 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
-        vectorwiden = (arch.startswith("Vx") or arch.startswith("Zv")) and (instr.startswith("vw") or (".w" in instr))
+        vectorwiden = (arch.startswith("Vx")) and (instr.startswith("vw") or (".w" in instr))
         if (match32 and match64):
             if (vectorwiden):
                 effew = arch[2:]  # e.g. "8" from "Vx8"
@@ -146,7 +146,7 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
-            if arch.startswith("Vx") or arch.startswith("Zv"):
+            if arch.startswith("Vx"):
                 if instr.startswith("vw") or (".w" in instr):
                     effew = arch[2:]  # e.g. "8" from "Vx8"
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector_widen", arch, instr, effew=effew))

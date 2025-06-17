@@ -368,7 +368,7 @@ function vl_t vl_check(int hart, int issue);
   int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
   bit legal;
   if (vl <= vlmax & vl > vstart) legal = 1'b1; // check legal condition
-  else             legal = 1'b0;
+  else                           legal = 1'b0;
 
   case(vl)
     0:         return vl_zero;
