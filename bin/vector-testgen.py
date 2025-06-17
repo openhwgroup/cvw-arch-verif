@@ -132,7 +132,7 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
 
 def writeVecTest(lines, vd, sew, vlen, testline, test=None, rd=None, vl=1):
     l = lines + testline
-    if (test in widenins):
+    if (test in widenins) or (test in wvsins):
       l = l + writeSIGUPD_V(vd, 2*sew, avl=vl)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
       l = l + writeSIGUPD_V(vd, 1, avl=vl)      # EEW of vd = 1 for mask
@@ -418,7 +418,7 @@ def randomizeVectorV(test, lmul=1, vd=None, vs1=None, vs2=None, vs3=None, rs1=No
   if vd is None:
     vd = vs1
   while ((vd == vs1) or (vd == vs2) or ((vs3 is not None) and (vd == vs3))):
-    if (test in widenins):
+    if (test in widenins) or (test in wvsins):
       vd = randomNonconflictingVecReg(test, 2*lmul)
     else:
       vd = randomNonconflictingVecReg(test, lmul)
@@ -452,6 +452,9 @@ def avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
   elif (test in narrowins):
     while (vd == (vs2+1*lmul) or vs1 == vs2 or vs1 == (vs2+1*lmul)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
+  elif (test in wvsins):
+    while (vd == vs1 or vs1 == vs2 or vs2 == (vs1+1*lmul)):
+      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
   elif (test in wwvins):
     while (vd == vs1 or vs1 == vs2 or vs1 == (vs2+1*lmul)):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=lmul, suite=suite)
@@ -483,6 +486,9 @@ def make_vd(test, sew, vl, rng):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
       while (v == (vs2+1) or vs1 == vs2 or vs1 == (vs2+1)): # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wvsins):
+      while (v == vs2 or vs1 == vs2 or vs2 == (vs1+1)):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in wwvins):
       while (v == vs1 or vs1 == vs2 or vs1 == (vs2+1)):
@@ -526,7 +532,7 @@ def make_vs2(test, sew, vl, rng):
     elif (test in vvvxtype): # vmv<nr>r.v
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     elif (test in wvsins):
-      while (v == vs1):
+      while (v == vs1 or v == (vs1+1) or vd == vs2):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in vcompressins):
       while (vd == vs1 or v == vd or v == vs1):
@@ -548,6 +554,9 @@ def make_vs1(test, sew, vl, rng):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in narrowins):
       while (v == vs2 or v == (vs2+1) or vd == (vs2+1)):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wvsins):
+      while (vd == vs2 or v == (vs2-1) or v == vs2):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     elif (test in wwvins):
       while (v == vs2 or v == (vs2+1) or v == vd):
@@ -591,6 +600,9 @@ def make_vd_vs1(test, sew, vl, rng):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     if (test in wvins):
       while (v == vs2 or v == (vs2+1)):
+        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
+    elif (test in wvsins):
+      while (v == vs2 or v == (vs2-1)):
         [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
     desc = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
     writeCovVector_V(desc, v, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
@@ -794,9 +806,9 @@ def make_vstart(test, vlen, sew, rng):
 
 
 def make_vl_lmul(test, vlen, sew, maxlmul=8):
-  global legalvlmuls
+  global legalvlmuls, lengthtest_count
   numlmul = int(math.log2(maxlmul)+1)
-  minlmul = 4 - len(legalvlmuls)
+  minlmul = min(legalvlmuls)
   for l in range(minlmul, numlmul):
     for k in range(3):
       lmul = 2 ** l # creating lmul first
@@ -811,8 +823,10 @@ def make_vl_lmul(test, vlen, sew, maxlmul=8):
 
       desc = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
+      lengthtest_count += 1
 
 def make_mask_corners(test, vlen, sew):
+  global lengthtest_count
   lmul = 1
   vma = randint(0,1)
   cp_masking_corners_data = ["ones", "zeroes", "vlmaxm1_ones", "vlmaxd2p1_ones", "cp_mask_random"]
@@ -823,16 +837,16 @@ def make_mask_corners(test, vlen, sew):
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval, suite="length")
     desc = f"cp_masking_corners (Test v0 = {m})"
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl="vlmax", maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
+    lengthtest_count += 1
 
 def make_vtype_agnostic(test, vlen, sew):
-  global legalvlmuls
+  global legalvlmuls, lengthtest_count
   for t in [0,1]:
     for m in [0,1]:
-      if (test in widenins) or (test in narrowins):
-        legalvlmuls_widen = legalvlmuls[:3] + legalvlmuls[4:] # exclude LMUL = 8 for widening/narrowing instr
-        lmul = 2 ** legalvlmuls_widen[randint(0, len(legalvlmuls_widen)-1)]
+      if (test in widenins) or (test in narrowins) or (test in wvsins):
+        lmul = 2 ** randint(0, 2) # exclude LMUL = 8 for widening/narrowing instr
       else:
-        lmul = 2 ** legalvlmuls[randint(0, len(legalvlmuls)-1)] # pick random lmul from legal vlmul values
+        lmul = 2 ** randint(0, 3) # pick random integer LMUL to ensure that coverpoints are hit
 
       maskval = randomizeMask(test)
       vta = t
@@ -842,6 +856,7 @@ def make_vtype_agnostic(test, vlen, sew):
 
       desc = f"cr_vtype_agnostic (Test vta = {vta}, vma = {vma})"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl="random", vstart=0, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta, vma=vma)
+      lengthtest_count += 1
 
 # Python randomizes hashes, while we are trying to have a repeatable hash for repeatable test cases. This function gives a simple hash as a random seed.
 def myhash(s):
@@ -851,8 +866,11 @@ def myhash(s):
   return h
 
 
-def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, vl=1, lmul=1):
+def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None):
   global NaNBox_tests, basetest_count
+  # default vl and lmul settings for base suite
+  vl = 1
+  lmul = 1
   for coverpoint in coverpoints:
     # produce a deterministic seed for repeatable random numbers distinct for each instruction and coverpoint
     testname = test + coverpoint
@@ -1062,7 +1080,7 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
       vl = 1
       num_words = math.ceil((vl * eew) / 32)
     else:
-      maxVtests = 50
+      maxVtests = lengthtest_count
       num_words = math.ceil(vlen / 32)
     # TODO: Fix this temporary arbitrary number
     # num_words = vlen // 32
@@ -1440,7 +1458,6 @@ if __name__ == '__main__':
           sew = int(sew_match.group(1))
 
         # vlen defined as max for test generation
-        # TODO: find a way to pass in VLEN, ELEN, and SEWmin
         maxVLEN = 2048
         vlen = 512
         elen = 64
@@ -1459,7 +1476,7 @@ if __name__ == '__main__':
         f.write(vsetline1)
         f.write(vsetline2)
 
-        if (test in widenins) or (test in narrowins):
+        if (test in widenins) or (test in narrowins) or (test in wvsins):
           if (sew == 8):
             f.write("#if ELEN > 8\n")
           elif (sew == 16):
@@ -1470,12 +1487,14 @@ if __name__ == '__main__':
             f.write("#if ELEN > 64\n")
 
         basetest_count = 0
+        lengthtest_count = 0
         write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
 
-        if (test in widenins) or (test in narrowins):
+        if (test in widenins) or (test in narrowins) or (test in wvsins):
           f.write("#endif\n")
         insertTemplate("testgen_footer_vector1.S")
 
+        # generate vector data (random and corners)
         if (test in narrowins) or (test in widenins):
           genVector(sew, vl, vlen, test, vs="vs2", emul=2)
           if (test in vs1ins):
