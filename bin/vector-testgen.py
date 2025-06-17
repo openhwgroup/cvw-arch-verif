@@ -274,7 +274,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       if maskval is None:
-        lines = lines + prepMaskV(lines, "zeroes", sew, tempReg)
+        lines = prepMaskV(lines, "zeroes", sew, tempReg)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
     elif (test in vxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
@@ -981,11 +981,11 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_masking_corners"):
       make_mask_corners(test, vlen, sew)
     elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
-                         "cp_csr_vtype_lmul_all_nlmul8_sew8", "cp_csr_vtype_lmul_all_nlmul8_sew16", "cp_csr_vtype_lmul_all_nlmul8_sew32", "cp_csr_vtype_lmul_all_nlmul8_sew64"]):
+                         "cp_csr_vtype_lmul_all_lmul4max_sew8", "cp_csr_vtype_lmul_all_lmul4max_sew16", "cp_csr_vtype_lmul_all_lmul4max_sew32", "cp_csr_vtype_lmul_all_lmul4max_sew64"]):
       pass # helper coverpoints, crossed in cr_vl_lmul
     elif (coverpoint in ["cr_vl_lmul_sew8", "cr_vl_lmul_sew16", "cr_vl_lmul_sew32", "cr_vl_lmul_sew64"]):
       make_vl_lmul(test, vlen, sew)            # includes tests for legal LMUL up to 8
-    elif (coverpoint in ["cr_vl_lmul_nlmul8_sew8", "cr_vl_lmul_nlmul8_sew16", "cr_vl_lmul_nlmul8_sew32", "cr_vl_lmul_nlmul8_sew64"]):
+    elif (coverpoint in ["cr_vl_lmul_lmul4max_sew8", "cr_vl_lmul_lmul4max_sew16", "cr_vl_lmul_lmul4max_sew32", "cr_vl_lmul_lmul4max_sew64"]):
       make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for legal LMUL up to 4
     elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
       pass # helper coverpoints, crossed in cr_vtype_agnostic
