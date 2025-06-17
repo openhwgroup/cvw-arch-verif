@@ -301,6 +301,17 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       if (lmul != 1):
         vl = maxVLEN
+    elif (test in type_vsx):
+      lines = lines + loadVecReg(vs1, vs1val, vs1eew)
+      testline = f"{test} v{vd}, v{vs1}{maskinstr}\n"
+    elif (test in type_vsxm):
+      lines = lines + loadVecReg(vs1, vs1val, vs1eew)
+      lines = lines + loadVecReg(vs2, vs2val, vs2eew)
+
+    elif (test in type_vsxxm):
+
+    elif (test in type_vsxvm):
+
     elif (test in vixtype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
@@ -386,8 +397,51 @@ def vsAddressCount(suite="base"):
     vs1RandomCounter_base = vs1RandomCounter_base + 1
     vs2RandomCounter_base = vs2RandomCounter_base + 1
 
-def randomizeVectorV(test, lmul=1, vd=None, vs1=None, vs2=None, vs3=None, rs1=None, rd=None, allunique=True, suite="base"):
+def randomizeVectorV(test, lmul=1, allunique=True, suite="base",
+                     vd_vs2_no_overlap = False,
+                     **prespecified_variables):
   global vs1RandomCounter_base, vs2RandomCounter_base, vs1RandomCounter_length, vs2RandomCounter_length
+
+  reserved_scalar_registers         = []
+  reserved_floating_point_registers = []
+  reserved_vector_registers         = []
+
+  scalar_register_prespecified_data         = [
+    {"rd" : None,  "rd_val" : None},
+    {"rs1" : None, "rs1_val" : None},
+    {"rs2" : None, "rs2_val" : None}
+  ]
+
+  floating_point_register_prespecified_data = [
+    {"fd" : None,  "fd_val" : None},
+    {"fs1" : None, "fs1_val" : None}
+  ]
+
+  vector_register_prespecified_data         = [
+    {"vs3" : None, "vs3_val" : None, "vs3_emul" : None},
+    {"vd" : None,  "vd_val" : None,  "vd_emul" : None},
+    {"vs1" : None, "vs1_val" : None, "vs1_emul" : None},
+    {"vs2" : None, "vs2_val" : None, "vs2_emul" : None},
+  ]
+
+  vector_additional_arguements      = ["vm", "v0"]
+
+  # designate reserved scalar, floating point and vector registers
+  for varaible, value in prespecified_variables.items():
+
+    if    (varaible in vector_register_arguments) :
+      reserved_vector_registers.append(value)
+
+    elif  (varaible in scalar_register_arguments) :
+      reserved_scalar_registers.append(value)
+
+    elif  (varaible in floating_point_register_arguments) :
+      reserved_floating_point_registers.append(value)
+
+    else :
+      raise TypeError(f"Unexpected keyword argument: '{varaible}'")
+
+
   if vs1 is None:
     if (test in wvsins):
       vs1 = randomNonconflictingVecReg(test, 2*lmul)
@@ -506,6 +560,17 @@ def make_vd(test, sew, vl, rng):
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test, lmul=int(test[3]))
     desc = f"cp_vd (Test destination vd = v" + str(v) + ")"
     writeCovVector_V(desc, vs1, vs2, v, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    basetest_count += 1
+    vsAddressCount()
+
+def make_vs3(instruction, sew, rng):
+  global basetest_count
+  for v in rng:
+    instruction_variables = randomizeVectorV(test, vs3 = v)
+
+    description = f"cp_vd (Test source vs3 = v" + str(v) + ")"
+    writeCovVector_V(instruction, description, instruction_variables, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+
     basetest_count += 1
     vsAddressCount()
 
@@ -889,6 +954,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None):
       make_imm_v(test, sew, vl)
     elif (coverpoint == "cp_vd"):
       make_vd(test, sew, vl, range(maxreg+1))
+    elif (coverpoint == "cp_vs3"):
+      make_vs3(test, sew, vl, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, vl, range(1,maxreg+1))
     elif (coverpoint == "cp_vd_emul2"):
@@ -1065,13 +1132,7 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   f.write(".section .data\n\n")
   f.write(f"    .align 3\n")
   f.write("// Corner Vectors\n")
-  legallmuls = [1, 2, 4, 8]
-  if sew >= 16:
-    legallmuls.append(0.5)
-  if sew >= 32:
-    legallmuls.append(0.25)
-  if sew >= 64:
-    legallmuls.append(0.125)
+
   eew = sew * emul
 
   for suite in ["base", "length"]:
@@ -1175,6 +1236,122 @@ vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv"
           "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
           "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
           "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
+
+type_vxm = [
+    # Unit-stride loads
+    "vle8.v", "vle16.v", "vle32.v", "vle64.v",
+    "vlseg2e8.v", "vlseg2e16.v", "vlseg2e32.v", "vlseg2e64.v",
+    "vlseg3e8.v", "vlseg3e16.v", "vlseg3e32.v", "vlseg3e64.v",
+    "vlseg4e8.v", "vlseg4e16.v", "vlseg4e32.v", "vlseg4e64.v",
+    "vlseg5e8.v", "vlseg5e16.v", "vlseg5e32.v", "vlseg5e64.v",
+    "vlseg6e8.v", "vlseg6e16.v", "vlseg6e32.v", "vlseg6e64.v",
+    "vlseg7e8.v", "vlseg7e16.v", "vlseg7e32.v", "vlseg7e64.v",
+    "vlseg8e8.v", "vlseg8e16.v", "vlseg8e32.v", "vlseg8e64.v",
+    # Fault-only-first loads
+    "vle8ff.v", "vle16ff.v", "vle32ff.v", "vle64ff.v",
+    "vlseg2e8ff.v", "vlseg2e16ff.v", "vlseg2e32ff.v", "vlseg2e64ff.v",
+    "vlseg3e8ff.v", "vlseg3e16ff.v", "vlseg3e32ff.v", "vlseg3e64ff.v",
+    "vlseg4e8ff.v", "vlseg4e16ff.v", "vlseg4e32ff.v", "vlseg4e64ff.v",
+    "vlseg5e8ff.v", "vlseg5e16ff.v", "vlseg5e32ff.v", "vlseg5e64ff.v",
+    "vlseg6e8ff.v", "vlseg6e16ff.v", "vlseg6e32ff.v", "vlseg6e64ff.v",
+    "vlseg7e8ff.v", "vlseg7e16ff.v", "vlseg7e32ff.v", "vlseg7e64ff.v",
+    "vlseg8e8ff.v", "vlseg8e16ff.v", "vlseg8e32ff.v", "vlseg8e64ff.v"
+]
+
+type_vxxm = [
+    # Strided loads
+    "vlse8.v", "vlse16.v", "vlse32.v", "vlse64.v",
+    "vlsseg2e8.v", "vlsseg2e16.v", "vlsseg2e32.v", "vlsseg2e64.v",
+    "vlsseg3e8.v", "vlsseg3e16.v", "vlsseg3e32.v", "vlsseg3e64.v",
+    "vlsseg4e8.v", "vlsseg4e16.v", "vlsseg4e32.v", "vlsseg4e64.v",
+    "vlsseg5e8.v", "vlsseg5e16.v", "vlsseg5e32.v", "vlsseg5e64.v",
+    "vlsseg6e8.v", "vlsseg6e16.v", "vlsseg6e32.v", "vlsseg6e64.v",
+    "vlsseg7e8.v", "vlsseg7e16.v", "vlsseg7e32.v", "vlsseg7e64.v",
+    "vlsseg8e8.v", "vlsseg8e16.v", "vlsseg8e32.v", "vlsseg8e64.v",
+]
+
+type_vxvm = [
+    # Indexed unordered loads
+    "vluxei8.v", "vluxei16.v", "vluxei32.v", "vluxei64.v",
+    "vluxseg2ei8.v", "vluxseg2ei16.v", "vluxseg2ei32.v", "vluxseg2ei64.v",
+    "vluxseg3ei8.v", "vluxseg3ei16.v", "vluxseg3ei32.v", "vluxseg3ei64.v",
+    "vluxseg4ei8.v", "vluxseg4ei16.v", "vluxseg4ei32.v", "vluxseg4ei64.v",
+    "vluxseg5ei8.v", "vluxseg5ei16.v", "vluxseg5ei32.v", "vluxseg5ei64.v",
+    "vluxseg6ei8.v", "vluxseg6ei16.v", "vluxseg6ei32.v", "vluxseg6ei64.v",
+    "vluxseg7ei8.v", "vluxseg7ei16.v", "vluxseg7ei32.v", "vluxseg7ei64.v",
+    "vluxseg8ei8.v", "vluxseg8ei16.v", "vluxseg8ei32.v", "vluxseg8ei64.v",
+    # Indexed ordered Loads
+    "vloxei8.v", "vloxei16.v", "vloxei32.v", "vloxei64.v",
+    "vloxseg2ei8.v", "vloxseg2ei16.v", "vloxseg2ei32.v", "vloxseg2ei64.v",
+    "vloxseg3ei8.v", "vloxseg3ei16.v", "vloxseg3ei32.v", "vloxseg3ei64.v",
+    "vloxseg4ei8.v", "vloxseg4ei16.v", "vloxseg4ei32.v", "vloxseg4ei64.v",
+    "vloxseg5ei8.v", "vloxseg5ei16.v", "vloxseg5ei32.v", "vloxseg5ei64.v",
+    "vloxseg6ei8.v", "vloxseg6ei16.v", "vloxseg6ei32.v", "vloxseg6ei64.v",
+    "vloxseg7ei8.v", "vloxseg7ei16.v", "vloxseg7ei32.v", "vloxseg7ei64.v",
+    "vloxseg8ei8.v", "vloxseg8ei16.v", "vloxseg8ei32.v", "vloxseg8ei64.v"
+]
+
+type_vsxm = [
+    # Unit-stride Stores
+    "vse8.v", "vse16.v", "vse32.v", "vse64.v",
+    "vsseg2e8.v", "vsseg2e16.v", "vsseg2e32.v", "vsseg2e64.v",
+    "vsseg3e8.v", "vsseg3e16.v", "vsseg3e32.v", "vsseg3e64.v",
+    "vsseg4e8.v", "vsseg4e16.v", "vsseg4e32.v", "vsseg4e64.v",
+    "vsseg5e8.v", "vsseg5e16.v", "vsseg5e32.v", "vsseg5e64.v",
+    "vsseg6e8.v", "vsseg6e16.v", "vsseg6e32.v", "vsseg6e64.v",
+    "vsseg7e8.v", "vsseg7e16.v", "vsseg7e32.v", "vsseg7e64.v",
+    "vsseg8e8.v", "vsseg8e16.v", "vsseg8e32.v", "vsseg8e64.v"
+]
+
+type_vsxxm = [
+    # Strided Stores
+    "vsse8.v", "vsse16.v", "vsse32.v", "vsse64.v",
+    "vssseg2e8.v", "vssseg2e16.v", "vssseg2e32.v", "vssseg2e64.v",
+    "vssseg3e8.v", "vssseg3e16.v", "vssseg3e32.v", "vssseg3e64.v",
+    "vssseg4e8.v", "vssseg4e16.v", "vssseg4e32.v", "vssseg4e64.v",
+    "vssseg5e8.v", "vssseg5e16.v", "vssseg5e32.v", "vssseg5e64.v",
+    "vssseg6e8.v", "vssseg6e16.v", "vssseg6e32.v", "vssseg6e64.v",
+    "vssseg7e8.v", "vssseg7e16.v", "vssseg7e32.v", "vssseg7e64.v",
+    "vssseg8e8.v", "vssseg8e16.v", "vssseg8e32.v", "vssseg8e64.v"
+]
+
+type_vsxvm = [
+    # Indexed unordered Stores
+    "vsuxei8.v", "vsuxei16.v", "vsuxei32.v", "vsuxei64.v",
+    "vsuxseg2ei8.v", "vsuxseg2ei16.v", "vsuxseg2ei32.v", "vsuxseg2ei64.v",
+    "vsuxseg3ei8.v", "vsuxseg3ei16.v", "vsuxseg3ei32.v", "vsuxseg3ei64.v",
+    "vsuxseg4ei8.v", "vsuxseg4ei16.v", "vsuxseg4ei32.v", "vsuxseg4ei64.v",
+    "vsuxseg5ei8.v", "vsuxseg5ei16.v", "vsuxseg5ei32.v", "vsuxseg5ei64.v",
+    "vsuxseg6ei8.v", "vsuxseg6ei16.v", "vsuxseg6ei32.v", "vsuxseg6ei64.v",
+    "vsuxseg7ei8.v", "vsuxseg7ei16.v", "vsuxseg7ei32.v", "vsuxseg7ei64.v",
+    "vsuxseg8ei8.v", "vsuxseg8ei16.v", "vsuxseg8ei32.v", "vsuxseg8ei64.v",
+    # Indexed ordered Stores
+    "vsoxei8.v", "vsoxei16.v", "vsoxei32.v", "vsoxei64.v",
+    "vsoxseg2ei8.v", "vsoxseg2ei16.v", "vsoxseg2ei32.v", "vsoxseg2ei64.v",
+    "vsoxseg3ei8.v", "vsoxseg3ei16.v", "vsoxseg3ei32.v", "vsoxseg3ei64.v",
+    "vsoxseg4ei8.v", "vsoxseg4ei16.v", "vsoxseg4ei32.v", "vsoxseg4ei64.v",
+    "vsoxseg5ei8.v", "vsoxseg5ei16.v", "vsoxseg5ei32.v", "vsoxseg5ei64.v",
+    "vsoxseg6ei8.v", "vsoxseg6ei16.v", "vsoxseg6ei32.v", "vsoxseg6ei64.v",
+    "vsoxseg7ei8.v", "vsoxseg7ei16.v", "vsoxseg7ei32.v", "vsoxseg7ei64.v",
+    "vsoxseg8ei8.v", "vsoxseg8ei16.v", "vsoxseg8ei32.v", "vsoxseg8ei64.v"
+]
+
+type_vx = [
+    # Whole Register Loads
+    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v",
+    "vl1re16.v", "vl2re16.v", "vl4re16.v", "vl8re16.v",
+    "vl1re32.v", "vl2re32.v", "vl4re32.v", "vl8re32.v",
+    "vl1re64.v", "vl2re64.v", "vl4re64.v", "vl8re64.v",
+    # Mask Load
+    "vlm.v"
+]
+
+type_vsx = [
+    # Whole Register Stores
+    "vs1r.v", "vs2r.v", "vs4r.v", "vs8r.v",
+    # Mask Store
+    "vsm.v"
+]
 
 vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwaddu.wx", "vwsubu.wx",
           "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
