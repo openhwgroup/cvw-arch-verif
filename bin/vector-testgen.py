@@ -136,7 +136,7 @@ def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1):
       l = l + writeSIGUPD_V(vd, 2*sew, avl=vl)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
       l = l + writeSIGUPD_V(vd, 1, avl=vl)      # EEW of vd = 1 for mask
-    elif (test in vrvxtype):
+    elif (test in xvtype):
       l = l + writeSIGUPD(rd)
     else:
       l = l + writeSIGUPD_V(vd, sew, avl=vl)
@@ -238,7 +238,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       lines = lines + genVxsatTests(testline)
     elif (vxrm is not None):
-      lines = lines + genVxrmTests(lines, vxrm)
+      lines = genVxrmTests(lines, vxrm)
 
     # determining EEW for vs2 and vs1
     if (test in wwvins) or (test in wwxins) or (test in narrowins):
@@ -252,48 +252,50 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       vs1eew = sew
 
     # test writing
-    if (test in vvtype) or (test in vvmtype):
+    if (test in vvvmtype) or (test in vvvtype):
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
-    elif (test in vxtype):
+    if (test in vvvmrtype):
+      lines = lines + loadVecReg(vs1, vs1val, vs1eew)
+      lines = lines + loadVecReg(vs2, vs2val, vs2eew)
+      testline = f"{test} v{vd}, v{vs1}, v{vs2}{maskinstr}\n"
+    elif (test in vvxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, v{vs2}, x{rs1}{maskinstr}\n"
-    elif (test in vxvtype):
+    elif (test in vxvmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, x{rs1}, v{vs2}{maskinstr}\n"
-    elif (test in vitype):
+    elif (test in vvimtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, {imm}{maskinstr}\n"
-    elif (test in vimtype):
+    elif (test in vvivtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, {imm}, v0\n"
-    elif (test in vvvmtype):
+    elif (test in vvvvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       if maskval is None:
         lines = prepMaskV(lines, "zeroes", sew, tempReg)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
-    elif (test in vxmtype):
+    elif (test in vvxvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, v{vs2}, x{rs1}, v0\n"
-    elif (test in vrvtype) or (test in vrvxtype):
+    elif (test in xvmtype) or (test in xvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
-    elif (test in vvvtype):
+    elif (test in vvmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
-    elif (test in vdtype):
+    elif (test in vmtype):
       testline = f"{test} v{vd}{maskinstr}\n"
-    elif (test in vrvtype):
-      testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
-    elif (test in vxxtype):
+    elif (test in vxtype):
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, x{rs1}{maskinstr}\n"
-    elif (test in vvxtype):
+    elif (test in vvrtype):
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       testline = f"{test} v{vd}, v{vs1}{maskinstr}\n"
     elif (test in vvvxtype):
@@ -301,7 +303,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       if (lmul != 1):
         vl = maxVLEN
-    elif (test in vixtype):
+    elif (test in vitype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
       print("Error: %s type not implemented yet" % test)
@@ -1029,7 +1031,7 @@ def getExtensions():
   return extensions
 
 
-def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
+def genVector(test, sew, vs="vs2", emul=1):
   global basetest_count
   f.write("\n\n")
   f.write("///////////////////////////////////////////\n")
@@ -1038,15 +1040,8 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   f.write(".section .data\n\n")
   f.write(f"    .align 3\n")
   f.write("// Corner Vectors\n")
-  legallmuls = [1, 2, 4, 8]
-  if sew >= 16:
-    legallmuls.append(0.5)
-  if sew >= 32:
-    legallmuls.append(0.25)
-  if sew >= 64:
-    legallmuls.append(0.125)
-  eew = sew * emul
 
+  eew = sew * emul
   for suite in ["base", "length"]:
     if (suite == "base"):
       maxVtests = basetest_count
@@ -1054,7 +1049,7 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
       num_words = math.ceil((vl * eew) / 32)
     else:
       maxVtests = lengthtest_count
-      num_words = math.ceil(vlen / 32)
+      num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
         f.write(f"{vs}_random_{suite}_{t:03d}:\n")
         for i in range(num_words):
@@ -1065,21 +1060,22 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   #f.close()
 
 
-def genVMaskCorners(sew, vl, vlen, test):
-  num_words = math.ceil(vlen / 32)
+def genVMaskCorners(test, sew):
+  num_words = math.ceil(maxVLEN / 32)
 
+  # generating random masks for length suite
   f.write(f"    .align 3\n")
   for name in range(3):
     f.write(f"random_mask_{name}:\n")
-    val = getrandbits(vlen)
+    val = getrandbits(maxVLEN)
     for i in range(num_words):
       word = (val >> (32 * i)) & 0xFFFFFFFF
       f.write(f"    .word 0x{word:08x}\n")
 
-  random_mask = getrandbits(vlen)
+  # generating random mask for cp_masking_corners
+  random_mask = getrandbits(maxVLEN)
   while (random_mask == 0) or (random_mask % 2 == 1): # prevent overlapping with other mask corners
-    random_mask = getrandbits(vlen)
-
+    random_mask = getrandbits(maxVLEN)
   f.write(f"cp_mask_random:\n")
   for i in range(num_words):
       word = (random_mask >> (32 * i)) & 0xFFFFFFFF
@@ -1088,7 +1084,7 @@ def genVMaskCorners(sew, vl, vlen, test):
   f.write("\n")
   #f.close()
 
-def genVsCorners(sew, vl, test, emul):
+def genVsCorners(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -1140,41 +1136,46 @@ def genVsCorners(sew, vl, test, emul):
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vmadc.vv", "vredmax.vs", "vredmaxu.vs", "vredsum.vs", "vwaddu.wv", "vwsubu.wv",
-          "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmseq.vv", "vmsne.vv", "vredmin.vs", "vredminu.vs", "vwadd.wv", "vwredsum.vs", "vwredsumu.vs",
-          "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vredor.vs", "vredxor.vs",
-          "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
-          "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
-          "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
+vvvmtype  = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vwadd.wv", "vwsub.wv", "vwaddu.wv", "vwsubu.wv",
+             "vmadc.vv", "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vnsra.wv", "vnsrl.wv",
+             "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv",
+             "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv",
+             "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv", "vnclip.wv", "vnclipu.wv",
+             "vredsum.vs", "vwredsum.vs", "vwredsumu.vs", "vredmax.vs", "vredmaxu.vs", "vredmin.vs", "vredminu.vs", "vredand.vs", "vredor.vs", "vredxor.vs",
+             "vrgather.vv", "vrgatherei16.vv"]
 
-vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwaddu.wx", "vwsubu.wx",
-          "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
-          "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx",
-          "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx",
-          "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx",
-          "vssrl.vx", "vssra.vx", "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx", "vnclip.wx", "vnclipu.wx", "vnsra.wx", "vnsrl.wx"]
+vvxmtype  = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwadd.wx", "vwsub.wx", "vwaddu.wx", "vwsubu.wx",
+             "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vnsra.wx", "vnsrl.wx",
+             "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx",
+             "vmul.vx", "vmulh.vx", "vmulhu.vx", "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx",
+             "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vssrl.vx", "vssra.vx", "vnclip.wx", "vnclipu.wx",
+             "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx"]
 
-vitype = ["vadd.vi", "vrsub.vi", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi",
-          "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
+vvimtype  = ["vadd.vi", "vrsub.vi", "vmadc.vi",
+             "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vnsra.wi", "vnsrl.wi",
+             "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi",
+             "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vnclip.wi", "vnclipu.wi",
+             "vslideup.vi", "vslidedown.vi", "vrgather.vi"]
 
-vrvtype = ["vcpop.m", "vfirst.m"]
+xvmtype   = ["vcpop.m", "vfirst.m"]
 
-vvvtype = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
-vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
-vvxtype =["vmv.v.v"]
-vxxtype = ["vmv.s.x", "vmv.v.x"]
-vixtype = ["vmv.v.i"]
-vrvxtype = ["vmv.x.s"]
-vvvxtype = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
-vdtype = ["vid.v"]
-vimtype = ["vadc.vim", "vsbc.vim", "vmerge.vim", "vmadc.vim"]
-vvvmtype = ["vadc.vvm", "vsbv.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm", "vsbc.vvm"]
-vxmtype = ["vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm", "vadc.vxm"]
-vvmtype = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
+vvvmrtype = ["vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
+vvmtype   = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
+vxvmtype  = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+vvrtype   = ["vmv.v.v"]
+vxtype    = ["vmv.s.x", "vmv.v.x"]
+vitype    = ["vmv.v.i"]
+xvtype    = ["vmv.x.s"]
+vvvxtype  = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
+vmtype    = ["vid.v"]
+vvivtype  = ["vadc.vim", "vmerge.vim", "vmadc.vim"]
+vvvvtype  = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm"]
+vvxvtype  = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm"]
+vvvtype   = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
-vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype + vvvxtype
+vectortypes = vvvtype + vmtype + xvtype + vitype + vxtype + vvrtype + vvmtype + xvmtype + vvimtype + vvxmtype + vvvmtype + vvivtype + vvvvtype + vvxvtype + vxvmtype + vvvxtype + vvvmrtype
 
-vs1ins = vvtype + vvxtype + vvvmtype + vvmtype
+vs1ins = vvvmtype + vvrtype + vvvvtype + vvvtype +vvvmrtype
 vfloattypes = ["vfadd.vv"]
 
 # vector instruction groups by EEW (prefix + suffix)
@@ -1224,7 +1225,7 @@ vupgatherins = vslideupins + vrgatherins
 # mask logical
 vmlogicalins = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m"]
 
-vmvins = vvxtype + vxxtype + vixtype + vrvxtype + vvvxtype + vcompressins
+vmvins = vvrtype + vxtype + vitype + xvtype + vvvxtype + vcompressins
 
 if __name__ == '__main__':
 
@@ -1428,25 +1429,20 @@ if __name__ == '__main__':
         else:
           sew = int(sew_match.group(1))
 
-        # vlen defined as max for test generation
-        maxVLEN = 2048
-        vlen = 512
+        # Define VLEN, ELEN and SEWMIN as extremes which these tests support
+        maxVLEN = 512   # TODO: change to 2048 later, save as 512 for now for smaller files
         elen = 64
         sewmin = 8
 
         legalvlmuls = getLegalVlmul(elen, sewmin, sew)
 
-        # vl=1 for base suite
-        vl = 1
-
+        # Set up vl = 1 for base suite
         f.write(f"\n")
         f.write(f"// Initial set vl = 1\n")
-        vsetline1 = f"li x2, {vl}\n"
-        vsetline2 = f"vsetvli x0, x2, e{sew}, m1, tu, mu\n"
+        f.write(f"li x2, 1\n")
+        f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
 
-        f.write(vsetline1)
-        f.write(vsetline2)
-
+        # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
         if (test in widenins) or (test in narrowins) or (test in wvsins):
           if (sew == 8):
             f.write("#if ELEN > 8\n")
@@ -1467,28 +1463,27 @@ if __name__ == '__main__':
 
         # generate vector data (random and corners)
         if (test in narrowins) or (test in widenins):
-          genVector(sew, vl, vlen, test, vs="vs2", emul=2)
+          genVector(test, sew, vs="vs2", emul=2)
           if (test in vs1ins):
-            genVector(sew, vl, vlen, test, vs="vs1")
-          genVsCorners(sew, vl, test, "1")
-          genVsCorners(sew, vl, test, "2")
+            genVector(test, sew, vs="vs1")
+          genVsCorners(test, sew, "1")
+          genVsCorners(test, sew, "2")
         elif (test in wvsins):
-          genVector(sew, vl, vlen, test, vs="vs2")
-          genVector(sew, vl, vlen, test, vs="vs1", emul=2)
-          genVsCorners(sew, vl, test, "2")
-          genVsCorners(sew, vl, test, "1")
+          genVector(test, sew, vs="vs2")
+          genVector(test, sew, vs="vs1", emul=2)
+          genVsCorners(test, sew, "2")
+          genVsCorners(test, sew, "1")
         else:
-          genVector(sew, vl, vlen, test, vs="vs2")
+          genVector(test, sew, vs="vs2")
           if (test in vs1ins):
-            genVector(sew, vl, vlen, test, vs="vs1")
+            genVector(test, sew, vs="vs1")
           if (test in vextins):
-            genVsCorners(sew, vl, test, test[-2:])
-          elif (test in mmins) or (test in vrvtype) or (test in vmlogicalins):
-            genVsCorners(sew, vl, test, "eew1")
+            genVsCorners(test, sew, test[-2:])
+          elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
+            genVsCorners(test, sew, "eew1")
           else:
-            genVsCorners(sew, vl, test, "1")
-        genVMaskCorners(sew, vl, vlen, test)
-
+            genVsCorners(test, sew, "1")
+        genVMaskCorners(test, sew)
 
         # print footer
         signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
