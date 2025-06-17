@@ -300,9 +300,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       if (lmul != 1):
-        #evl = int(int(test[3]) * vlen / sew)
-        #testline = testline + prepBaseV(lines, sew, 1, evl, vstart, vta, vma)
-        vl = 2048
+        vl = maxVLEN
     elif (test in vixtype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
@@ -1042,7 +1040,6 @@ def getExtensions():
 
 def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   global basetest_count
-  maxvlen = 2048
   f.write("\n\n")
   f.write("///////////////////////////////////////////\n")
   f.write(f"// {test}_{vs}_data for {vs}\n")
