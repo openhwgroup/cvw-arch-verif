@@ -256,7 +256,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
-    if (test in vvvmrtype):
+    elif (test in vvvmrtype):
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs1}, v{vs2}{maskinstr}\n"
@@ -1175,7 +1175,7 @@ vvvtype   = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
 vectortypes = vvvtype + vmtype + xvtype + vitype + vxtype + vvrtype + vvmtype + xvmtype + vvimtype + vvxmtype + vvvmtype + vvivtype + vvvvtype + vvxvtype + vxvmtype + vvvxtype + vvvmrtype
 
-vs1ins = vvvmtype + vvrtype + vvvvtype + vvvtype +vvvmrtype
+vs1ins = vvvmtype + vvrtype + vvvvtype + vvvtype + vvvmrtype
 vfloattypes = ["vfadd.vv"]
 
 # vector instruction groups by EEW (prefix + suffix)
