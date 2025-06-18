@@ -53,30 +53,34 @@ def insertTemplate(name, is_custom=False):
     template = template.replace("Instruction", test)
 
     if is_custom:
-      if name == "sw.S":
+      if name == "sw.S" or name == "sh.S" or name == "sb.S":
         # Extract the argument from SIG_POINTER_INCREMENT(n)
-        match = re.search(r"SIG_POINTER_INCREMENT\((\d+)\)", template)
-        sig_pointer_incr = int(match.group(1)) if match else 0  # Value
-        # Validation: SIG_POINTER_INCREMENT must exist and be > 0
+        match = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
+
+        sig_pointer_incr = len(match)
+
         if sig_pointer_incr == 0:
           print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
           print(f"Warning: This will possible break your signature coverage for this custom test '{name}, if you have instructions in it.")
           # Remove the SIG_POINTER_INCREMENT line from the template
           template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
           #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
+
         else:
-          # Replace macros in template# Remove the macro line
-          template = re.sub(r"[ \t]*SIG_POINTER_INCREMENT\(\d+\).*?\n", "", template)
-
           template = template.replace("SIGPOINTER", f"x{sigReg}")
-
-          indent = "    "  # 4 spaces
+          indent = ""
           lines = []
-          # Generate the increment logic:input in bytes, output in increments of REGWIDTH
-          count = sig_pointer_incr//(4*(xlen//32)) # count is the number of increments
-          sigupd_count += count # Update sigupd_count
-          lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
-          template += "\n".join(lines) + "\n"
+          for m in match:
+            incr_val = int(m.group(1))
+            # Generate the addi instruction
+            addi_instr = f"{indent}addi x{sigReg}, x{sigReg}, {incr_val}  # increment pointer {incr_val} bytes"
+            # Replace only the current match (once)
+            template = template.replace(m.group(0), addi_instr, 1)
+
+            # Update sigupd count (in REGWIDTH units)
+            sigupd_count += incr_val // (4 * (xlen // 32))
+
+            template += "\n".join(lines) + "\n"
     f.write(template)
 
 def insert_all_Z_underscores_after_first(s):
@@ -643,9 +647,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       if test == "sd":
-        WIDTH = 64
+        WIDTH = 8
       else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register \n"
       sigupd_count += 1
   elif (test in csstype):
@@ -666,9 +670,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
     if test in ["c.sd", "c.fsd","c.sdsp", "c.fsdsp"]:
-        WIDTH = 64
+        WIDTH = 8
     else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
 
@@ -758,9 +762,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     if test == "fsd":
-        WIDTH = 64
+        WIDTH = 8
     else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
   elif (test in F2Xtype):
