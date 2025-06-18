@@ -431,26 +431,41 @@ def getVectorEmulMultipliers(instruction):
 
   return emul_multipliers
 
+# return         - an array of arrays containing strings, elements will be regenerated until there are no conflicts
 
+#                  Example: no_overlap = [['vs1', 'vs2_top'], ['v0', 'vd_bottom']]
+#                  all values will be continued to be randomized until there is no overlap within lists
+def getInstructionRegisterOverlapConstraints (instruction):
+  no_overlap = []
+
+  if   instruction in wvvins        : no_overlap = [['vd_bottom', 'vs2'], ['vd_bottom', 'vs1']]
+  elif instruction in vupgatherins  : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
+  elif instruction in vmlogicalins  : no_overlap = [['vd',        'vs2']                      ]
+  elif instruction in wvxins        : no_overlap = [['vd_bottom', 'vs2']                      ]
+  elif instruction in mv_ins        : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
+  elif instruction in vextins       : no_overlap = [['vd',        'vs2']                      ]
+  elif instruction in narrowins     : no_overlap = [['vd',    'vs2_top'], ['vs2',       'vs1']]
+  elif instruction in wvsins        : no_overlap = [['vd',        'vs2'], ['vs2',       'vs1']] # no "_bottom" in vd because its a reduction instruction
+  elif instruction in wwvins        : no_overlap = [['vd_bottom', 'vs1'], ['vs1',       'vs2']]
+  elif instruction in v_mins        : no_overlap = [['v0', 'vs2'], ['v0', 'vs1'], ['v0', 'vd']]
+  elif instruction in mv_mins       : no_overlap = [['vd', 'v0',  'vs2'], ['vd', 'v0',  'vs1']]
+  elif instruction in vcompressins  : no_overlap = [['vd', 'vs2', 'vs1']                      ]
+
+  return no_overlap
 
 # randomizeVectorInstructionData generates all necessary random data for an instruction following constraints
 
 # instruction        - the instruction being processed (ex. vadd.vv)
 # lmul               - the lmul set in vtype csr
-# no_overlap         - an array of arrays containing strings, elements will be regenerated in the order specified, new elements will
-#                      only follow constraints in the current array, elements will not be regenerated more than once
-
-#                      Example: no_overlap = [['vs1', 'vs2'], ['v0', 'vs1', 'vd']]
-#                      vs1 will be generated (with no constraints) followed by vs2 (where vs2 wont overlap vs1),
-#                      when enetering the second constrain array, vs1 will not be regenerated
-#                      (thus vs1 = v0 is considered valid), vd will be generated to not overlap vs1 or v0
-
 # **preset_variables - any value in preset_data can be set here, for example vd = 2 will ensure vd is set to the v2 register above all else
+# return             - returns an array of all randomized values following constraints
 
-def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap = [], **preset_variables):
+def randomizeVectorInstructionData(instruction, lmul=1, suite="base", **preset_variables):
   global vs1RandomCounter_base, vs2RandomCounter_base, vs1RandomCounter_length, vs2RandomCounter_length
 
   preset_variables.update(getVectorEmulMultipliers(instruction))
+
+  no_overlap = getInstructionRegisterOverlapConstraints(instruction)
 
   reserved_scalar_registers         = [0]
   reserved_floating_point_registers = []
@@ -524,58 +539,55 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
   floating_point_register_data         = {'fd'  : None, 'fs1' : None}
   vector_register_data                 = {'vs3' : None, "vd"  : None, 'vs1' : None, 'vs2' : None}
 
-  vector_register_data         ['vs3'] = getRandomRegister('vs3', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
-  vector_register_data         ['vd' ] = getRandomRegister('vd',  vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
-  vector_register_data         ['vs1'] = getRandomRegister('vs1', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
-  vector_register_data         ['vs2'] = getRandomRegister('vs2', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
+  register_overlap = True
 
-  scalar_register_data         ['rd' ] = getRandomRegister('rd',  xreg_count, scalar_register_preset_data, reserved_scalar_registers)
-  scalar_register_data         ['rs1'] = getRandomRegister('rs1', xreg_count, scalar_register_preset_data, reserved_scalar_registers)
+  while register_overlap:
+    vector_register_data         ['vs3'] = getRandomRegister('vs3', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
+    vector_register_data         ['vd' ] = getRandomRegister('vd',  vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
+    vector_register_data         ['vs1'] = getRandomRegister('vs1', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
+    vector_register_data         ['vs2'] = getRandomRegister('vs2', vreg_count, vector_register_preset_data, reserved_vector_registers, lmul)
 
-  floating_point_register_data ['fd' ] = getRandomRegister('fd',  freg_count, scalar_register_preset_data, reserved_scalar_registers)
-  floating_point_register_data ['fs1'] = getRandomRegister('fs1', freg_count, scalar_register_preset_data, reserved_scalar_registers)
+    scalar_register_data         ['rd' ] = getRandomRegister('rd',  xreg_count, scalar_register_preset_data, reserved_scalar_registers)
+    scalar_register_data         ['rs1'] = getRandomRegister('rs1', xreg_count, scalar_register_preset_data, reserved_scalar_registers)
 
-  for no_overlap_set in no_overlap:
-    register_type = no_overlap_set[0][0] # grab either "v" "x" or "f" to get the register type
-    additional_reserved_registers = []
-    for register in no_overlap_set:
-      if   register_type == 'x':
-        scalar_register_data[register] = getRandomRegister(register, xreg_count, scalar_register_preset_data,
-                                                           reserved_scalar_registers + additional_reserved_registers)
-        additional_reserved_registers.append(scalar_register_data[register][0]) # add register to reserved list to prevent overlap
-      elif register_type == 'f':
-        floating_point_register_data[register] = getRandomRegister(register, freg_count, floating_point_register_preset_data,
-                                                           reserved_floating_point_registers + additional_reserved_registers)
-        additional_reserved_registers.append(floating_point_register_data[register][0]) # add register to reserved list to prevent overlap
-      elif register_type == 'v':
-        if register == 'v0':
-          additional_reserved_registers.append(0)
-        else :
-          top_no_overlap = False
-          if register[:-4] == "_top": # if specifying no overlap with the top of a register
-            top_no_overlap = True     # save for reserved section below
-            register = register[:-4]  # remove "_top" from register name
+    floating_point_register_data ['fd' ] = getRandomRegister('fd',  freg_count, scalar_register_preset_data, reserved_scalar_registers)
+    floating_point_register_data ['fs1'] = getRandomRegister('fs1', freg_count, scalar_register_preset_data, reserved_scalar_registers)
 
-          bottom_no_overlap = False
-          if register[:-6] == "_bottom": # if specifying no overlap with the top of a register
-            bottom_no_overlap = True     # save for reserved section below
-            register = register[:-6]  # remove "_top" from register name
+    register_overlap = False
 
-          vector_register_data[register] = getRandomRegister(register, vreg_count, vector_register_preset_data,
-                                                            lmul = reserved_vector_registers + additional_reserved_registers,
-                                                            vreg_top_no_overlap = top_no_overlap, vreg_bottom_no_overlap = bottom_no_overlap)
+    for no_overlap_set in no_overlap:
+      register_type = no_overlap_set[0][0] # grab either "v" "x" or "f" to get the register type
+      registers_occupied = []
 
-          # once a non-conflicting register has been successfully found, save it perminantly
-          # incase its included in another non overlapping set:
-          # ex: no_overlap[[vs1, vs2], [vs2, vs3]] : we want to ensure vs2 != vs1, and vs2 != vs3, but allow vs3 = vs1,
-          # so we fix vs2 after generation
-          vector_register_preset_data[register][0] = vector_register_data[register][0]
+      for register in no_overlap_set:
+        if not register_type == register[0]:
+          raise TypeError(f"Register type mismatch from {register_type}: '{register}'")
+        elif   register_type == 'x':
+          registers_occupied.append(scalar_register_data[register][0]) # add register value to list to check for overlap
+        elif register_type == 'f':
+          registers_occupied.append(floating_point_register_data[register][0]) # add register to reserved list to prevent overlap
+        elif register_type == 'v':
+          if register == 'v0':
+            registers_occupied.append(0)
+          else:
+            top_no_overlap = False
+            if register[:-4] == "_top": # if specifying no overlap with the top of a register
+              top_no_overlap = True     # save for reserved section below
+              register = register[:-4]  # remove "_top" from register name
 
-          emul = vector_register_preset_data[register][2] * lmul
-          start_no_register_overlap = emul-lmul if top_no_overlap     else 0
-          end_register_no_overlap   = lmul      if bottom_no_overlap  else emul
-          for i in range(start_no_register_overlap, end_register_no_overlap):
-            additional_reserved_registers.append(vector_register_data[register][0] + i) # add register to reserved list to prevent overlap
+            bottom_no_overlap = False
+            if register[:-6] == "_bottom": # if specifying no overlap with the top of a register
+              bottom_no_overlap = True     # save for reserved section below
+              register = register[:-6]  # remove "_top" from register name
+
+            emul = vector_register_preset_data[register][2] * lmul  # get lmul multiplier
+            start_no_register_overlap = emul-lmul if top_no_overlap     else 0
+            end_register_no_overlap   = lmul      if bottom_no_overlap  else emul
+            for i in range(start_no_register_overlap, end_register_no_overlap):
+              registers_occupied.append(vector_register_data[register][0] + i) # add register to reserved list to prevent overlap
+
+      if len(registers_occupied) != len(set(registers_occupied)): # checks for duplicates
+        register_overlap = True
 
   if (suite == "length"):
     vs1mem = vs1RandomCounter_length
@@ -638,23 +650,7 @@ def insertTest(test):
 def make_vd(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    if (instruction in wvvins) or (instruction in wvxins) or (instruction in mv_ins) or (
-      instruction in vextins) or (instruction in vupgatherins) or (instruction in vmlogicalins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'vs2'], ['vd','vs1']])
-    elif (test in narrowins):
-      # narrowing instr can only overlap at the lowest-numbered part of source reg group, using lmul=1 in cp_vd
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'vs2_top'], ['vs2', 'vs1']])
-    elif (test in wvsins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'vs2'], ['vs2', 'vs1']]) # vs2 no "_bottom" because its a reduction
-    elif (test in wwvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'vs1'], ['vs1', 'vs2']])
-    elif (instruction in v_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['v0', 'vs2'], ['v0', 'vs1']])
-    elif (instruction in mv_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'v0', 'vs2'], ['vd', 'v0', 'vs1']])
-    elif (instruction in vcompressins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, no_overlap=[['vd', 'vs2', 'vs1']])
-    elif (instruction in vvvxtype): # vmv<nr>r.v
+    if (instruction in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v)
     else :
@@ -679,25 +675,9 @@ def make_vd(instruction, sew, rng):
 def make_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    if (instruction in wvvins) or (instruction in wvxins) or (instruction in mv_ins) or (
-      instruction in vextins) or (instruction in vupgatherins) or (instruction in vmlogicalins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['vs2', 'vd'], ['vd', 'vs1']])
-    elif (test in narrowins):
-      # source operands cannot be more than one EEW, using lmul=1 in cp_vs2
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['vs2_top', 'vd'], ['vs2', 'vs1']])
-    elif (test in wwvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['vs2', 'vs1'], ['vs2', 'vd']])
-    elif (test in v_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['v0', 'vs1'], ['v0', 'vd']])
-    elif (test in mv_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['v0', 'vs1'], ['vs2', 'vd'], ['vs1', 'vd']])
-    elif (test in vvvxtype): # vmv<nr>r.v
+    if (test in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vs2 = v)
-    elif (test in wvsins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['vs2', 'vs1'], ['vs2', 'vd']]) # vs2 no "_bottom" because its a reduction
-    elif (test in vcompressins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v, no_overlap=[['vs2', 'vs1', 'vd']])
     else :
       instruction_data = randomizeVectorInstructionData(instruction, vs2 = v)
 
@@ -710,24 +690,7 @@ def make_vs2(instruction, sew, rng):
 def make_vs1(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    if (test in wvvins) or (test in mvvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vd_bottom'], ['vs1', 'vs2']])
-    elif (test in narrowins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vs2'], ['vs2_top', 'vd']])
-    elif (test in wvsins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vs2'], ['vs2', 'vd']]) # vd no "_bottom" because its a reduction
-    elif (test in wwvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vs2'], ['vs1', 'vd_bottom']])
-    elif (test in v_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['v0', 'vs2'], ['v0', 'vd']])
-    elif (test in mv_mins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['v0', 'vs2'], ['vs1', 'vs2', 'vd']])
-    elif (test in vrgatherins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vd'], ['vd', 'vs2']])
-    elif (test in vcompressins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, no_overlap=[['vs1', 'vd', 'vs2']])
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, vs1 = v)
 
     description = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
     writeTest(description, instruction, instruction_data, sew=sew, vta=0)
@@ -738,9 +701,7 @@ def make_vs1(instruction, sew, rng):
 def make_vd_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    if (test in wwvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs2 = v, no_overlap = [['vs2', 'vs1'], ['vd_bottom', 'vs1']])
-    elif (test in vvvxtype): # vmv<nr>r.v
+    if (test in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v, vs2 = v)
     else :
@@ -755,13 +716,7 @@ def make_vd_vs2(instruction, sew, rng):
 def make_vd_vs1(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    if (test in wvins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v, no_overlap = [['vd', 'vs2'], ['vs2', 'vs1']])
-    elif (test in wvsins):
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v, no_overlap = [['vs2', 'vs1'], ['vd', 'vs2']])
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v)
 
     description = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
     writeTest(description, instruction, instruction_data, sew=sew, vta=0)
@@ -783,10 +738,7 @@ def make_vd_vs1_vs2(instruction, sew, rng):
 def make_vs1_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    if (test in wvvins) or (test in mvvins) or (test in mvvmins) or (test in vrgatherins):
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, vs2 = v, no_overlap = [['vs1', 'vd']])
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, vs2 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, vs2 = v)
 
     description = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
     writeTest(description, instruction, instruction_data, sew=sew, vta=0)
