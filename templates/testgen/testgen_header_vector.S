@@ -27,3 +27,30 @@ RVTEST_CASE(0,"TestCase",Instruction)
 RVTEST_V_ENABLE()
 RVTEST_VALBASEUPD(DATA_BASE, vector_data)
 RVTEST_SIGBASE(SIG_BASE, signature_base)
+
+#define SEWMIN 8
+#define ELEN 64
+
+#if SEWMIN == 8
+    #if ELEN == 64
+        #define LMULf8_SUPPORTED
+        #define LMULf4_SUPPORTED
+        #define LMULf2_SUPPORTED
+    #elif ELEN == 32
+        #define LMULf4_SUPPORTED
+        #define LMULf2_SUPPORTED
+    #elif ELEN == 16
+        #define LMULf2_SUPPORTED
+    #endif
+#elif SEWMIN == 16
+    #if ELEN == 64
+        #define LMULf4_SUPPORTED
+        #define LMULf2_SUPPORTED
+    #elif ELEN == 32
+        #define LMULf2_SUPPORTED
+    #endif
+#elif SEWMIN == 32
+    #if ELEN == 64
+        #define LMULf2_SUPPORTED
+    #endif
+#endif
