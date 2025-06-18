@@ -1,0 +1,3 @@
+    cp_vs2_corners_eew1 : coverpoint vs_corners_check(ins.hart, ins.issue, ins.current.vs2_val, "m")  iff (ins.trap == 0 )  {
+        // Corners values of vs2 (eew = 1), assuming vl = 8
+    }

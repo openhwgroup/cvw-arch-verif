@@ -1,0 +1,4 @@
+
+    cp_custom_vdEqVs_vd_eq_vs1 : cross std_vec, vd_eq_vs1;
+
+    cp_custom_vdEqVs_vd_eq_vs2 : cross std_vec, vd_eq_vs2;

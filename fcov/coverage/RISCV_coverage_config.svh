@@ -86,6 +86,9 @@
 `ifdef ZICOND_COVERAGE
   `include "Zicond_coverage.svh"
 `endif
+`ifdef ZIFENCEI_COVERAGE
+  `include "Zifencei_coverage.svh"
+`endif
 `ifdef ZCA_COVERAGE
   `include "Zca_coverage.svh"
 `endif
@@ -138,6 +141,9 @@
 `ifdef ZALRSC_COVERAGE
   `include "Zalrsc_coverage.svh"
 `endif
+`ifdef SVINVAL_COVERAGE
+  `include "Svinval_coverage.svh"
+`endif
 
 // Privileged extensions
 `ifdef RV64VM_COVERAGE
@@ -154,9 +160,15 @@
 `endif
 `ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
+  `include "PMPF_coverage.svh"
+  `include "PMPZaamo_coverage.svh"
+  `include "PMPZalrsc_coverage.svh"
 `endif
 `ifdef RV32PMP_COVERAGE
   `include "PMPM_coverage.svh"
+  `include "PMPF_coverage.svh"
+  `include "PMPZaamo_coverage.svh"
+  `include "PMPZalrsc_coverage.svh"
 `endif
 `ifdef RV64CBO_VM_COVERAGE
   `include "RV64CBO_VM_coverage.svh"
@@ -179,6 +191,12 @@
 `ifdef ZICSRU_COVERAGE
   `include "ZicsrU_coverage.svh"
 `endif
+`ifdef ZICSRV_COVERAGE
+  `include "ZicsrV_coverage.svh"
+`endif
+`ifdef ZICSRHV_COVERAGE
+  `include "ZicsrHV_coverage.svh"
+`endif
 `ifdef ZICSRF_COVERAGE
   `include "ZicsrF_coverage.svh"
 `endif
@@ -199,6 +217,12 @@
 `endif
 `ifdef EXCEPTIONSU_COVERAGE
   `include "ExceptionsU_coverage.svh"
+`endif
+`ifdef EXCEPTIONSV_COVERAGE
+  `include "ExceptionsV_coverage.svh"
+`endif
+`ifdef EXCEPTIONSHV_COVERAGE
+  `include "ExceptionsHV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
@@ -230,20 +254,26 @@
 `ifdef EXCEPTIONSVM_COVERAGE
   `include "ExceptionsVM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSVMZAAMO_COVERAGE
+  `include "ExceptionsVMZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSVMZALRSC_COVERAGE
+  `include "ExceptionsVMZalrsc_coverage.svh"
+`endif
 `ifdef SSSTRICTS_COVERAGE
   `include "SsstrictS_coverage.svh"
 `endif
 `ifdef SSSTRICTM_COVERAGE
   `include "SsstrictM_coverage.svh"
 `endif
+`ifdef SSSTRICTV_COVERAGE
+  `include "SsstrictV_coverage.svh"
+`endif
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZALRSC_COVERAGE
   `include "ExceptionsZalrsc_coverage.svh"
-`endif
-`ifdef EXCEPTIONSV_COVERAGE
-  `include "ExceptionsV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZICBOU_COVERAGE
   `include "ExceptionsZicboU_coverage.svh"

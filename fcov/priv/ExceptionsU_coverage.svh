@@ -138,7 +138,7 @@ covergroup ExceptionsU_exceptions_cg with function sample(ins_t ins);
     cp_load_access_fault:                    cross loadops, illegal_address, priv_mode_u;
     cp_store_address_misaligned:             cross storeops, adr_LSBs, priv_mode_u;
     cp_store_access_fault:                   cross storeops, illegal_address, priv_mode_u;
-    cp_ecall_m:                              cross ecall, priv_mode_u;
+    cp_ecall_u:                              cross ecall, priv_mode_u;
     cp_misaligned_priority_load:             cross loadops, adr_LSBs, illegal_address_priority, priv_mode_u;
     cp_misaligned_priority_store:            cross storeops, adr_LSBs, illegal_address_priority, priv_mode_u;
     cp_mstatus_ie:                           cross ecall, mstatus_MIE, priv_mode_u;

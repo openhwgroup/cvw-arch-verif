@@ -27,6 +27,7 @@
 
 `define G 4				// Set G as needed (0, 1, 2, etc.)
 `define G_IS_0			 //uncomment this when G=0
+
 `define g (2**(`G+2))	// Region size = 2^(G+2)
 `define k ((`G > 1) ? (`G - 1) : 0)
 
@@ -392,7 +393,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 //-------------------------------------------------------
 
-    legal_RWX_L_TOR: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR
+  legal_RWX_L_TOR: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR
 		wildcard bins pmp0cfg_rwx000  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????01_000000000000001};
 		wildcard bins pmp0cfg_rwx001  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????01_000000000000001};
 		wildcard bins pmp0cfg_rwx101  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????01_000000000000001};
@@ -940,6 +941,62 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		`endif
 	}
 
+	// if G = 1, then smallest standard region will be of 8 bytes and each subsequent region will be twice.
+	overlapping_regions: coverpoint pack_pmpaddr {
+		bins twice_subsequent_regions = {(`REGIONSTART >> 2) | (2**(`k+14)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+13)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+12)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+11)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+10)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+9)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+8)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+7)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+6)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+5)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+4)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+3)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+2)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+1)-1),
+										 (`REGIONSTART >> 2) | (2**(`k)-1)
+										 };
+	}
+
+	// Addresses at end of each twice subsequent standard region - 8
+	addr_in_overlapping_region: coverpoint (ins.current.imm + ins.current.rs1_val) {
+		bins addr_in_region14  = {`REGIONSTART + (2**(`k+17))-8};
+		bins addr_in_region13  = {`REGIONSTART + (2**(`k+16))-8};
+		bins addr_in_region12  = {`REGIONSTART + (2**(`k+15))-8};
+		bins addr_in_region11  = {`REGIONSTART + (2**(`k+14))-8};
+		bins addr_in_region10  = {`REGIONSTART + (2**(`k+13))-8};
+		bins addr_in_region9   = {`REGIONSTART + (2**(`k+12))-8};
+		bins addr_in_region8   = {`REGIONSTART + (2**(`k+11))-8};
+		bins addr_in_region7   = {`REGIONSTART + (2**(`k+10))-8};
+		bins addr_in_region6   = {`REGIONSTART + (2**(`k+9))-8};
+		bins addr_in_region5   = {`REGIONSTART + (2**(`k+8))-8};
+		bins addr_in_region4   = {`REGIONSTART + (2**(`k+7))-8};
+		bins addr_in_region3   = {`REGIONSTART + (2**(`k+6))-8};
+		bins addr_in_region2   = {`REGIONSTART + (2**(`k+5))-8};
+		bins addr_in_region1   = {`REGIONSTART + (2**(`k+4))-8};
+		bins addr_in_region0   = {`REGIONSTART + (2**(`k+3))-8};
+	}
+
+//-------------------------------------------------------
+
+	// {TOR, OFF, TOR, OFF} and {1111, 1000, 1101, 1000}
+	cfg_first_four_entries: coverpoint pmpcfg[0][31:0] {
+		bins cfg_regions = {32'h8F808D80};
+	}
+
+	// {all 1s, all 0s, all 1s, all 0s}
+	first_four_pmp_entries: coverpoint pack_pmpaddr[4*XLEN-1:0] {
+		`ifdef XLEN32
+			bins pmp_entries = {128'hFFFFFFFF_00000000_FFFFFFFF_00000000};
+		`endif
+		`ifdef XLEN64
+			bins pmp_entries = {256'h???FFFFFFFFFFFFF_???0000000000000000_???FFFFFFFFFFFFF_???0000000000000000};
+		`endif
+	}
+  
 //-------------------------------------------------------
 
 	all_pmp_entries_off: coverpoint {pmpcfg_a,pmpcfg_A[1:0]} { // Including Background Top PMP Entry
@@ -1020,7 +1077,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
 
-    cp_cfg_A_tor_r: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, read_instr_lw ;
+  cp_cfg_A_tor_r: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, read_instr_lw ;
 	cp_cfg_A_tor_w: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, write_instr_sw ;
 	cp_cfg_A_tor_x: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, exec_instr ;
 
@@ -1161,7 +1218,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 			cp_tor_doubleregionfail_sd: cross priv_mode_m, pmpaddr_for_double_tor, pmpcfg_double_tor_lxwr, write_instr_sd, addr_for_tor_double  ;
 		`endif
 	`endif
-
+  
 endgroup
 
 function void pmpm_sample(int hart, int issue, ins_t ins);

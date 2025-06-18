@@ -46,11 +46,138 @@
   `define FLEN 32
 `endif
 
+// VLEN as usable numbers, ifdef contents should be defined in config
+`ifdef VLEN65536
+  `define VLEN 65536
+`elsif VLEN32768
+  `define VLEN 32768
+`elsif VLEN16384
+  `define VLEN 16384
+`elsif VLEN8192
+  `define VLEN 8192
+`elsif VLEN4096
+  `define VLEN 4096
+`elsif VLEN2048
+  `define VLEN 2048
+`elsif VLEN1024
+  `define VLEN 1024
+`elsif VLEN512
+  `define VLEN 512
+`elsif VLEN256
+  `define VLEN 256
+`elsif VLEN128
+  `define VLEN 128
+`elsif VLEN64
+  `define VLEN 64
+`elsif VLEN32
+  `define VLEN 32
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN32
+  `endif
+`elsif VLEN16
+  `define VLEN 16
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+  `endif
+  `ifdef VX32_COVERAGE
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+  `endif
+`elsif VLEN8
+  `define VLEN 8
+  `ifdef VX64_COVERAGE
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
+  `ifdef VX32_COVERAGE
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
+  `ifdef VX16_COVERAGE
+    `VX16_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+  `endif
+`endif
+
+// supported SEWs based on what coverages are enabled
+`ifdef VX64_COVERAGE
+  `define SEW64_SUPPORTED
+`endif
+`ifdef VX32_COVERAGE
+  `define SEW32_SUPPORTED
+`endif
+`ifdef VX16_COVERAGE
+  `define SEW16_SUPPORTED
+`endif
+`ifdef VX8_COVERAGE
+  `define SEW8_SUPPORTED
+`endif
+
+// ELEN (max SEW) definition
+`ifdef VX64_COVERAGE
+  `define ELEN64
+`else
+  `ifdef VX32_COVERAGE
+    `define ELEN32
+  `else
+    `ifdef VX16_COVERAGE
+      `define ELEN16
+    `else
+      `define ELEN8
+    `endif
+  `endif
+`endif
+
+// corner cases
+`ifdef VLEN64
+  `ifdef ELEN64
+    `define ELEN_EQ_VLEN
+  `endif
+`endif
+`ifdef VLEN32
+  `ifdef ELEN32
+    `define ELEN_EQ_VLEN
+  `endif
+`endif
+`ifdef VLEN16
+  `ifdef ELEN16
+    `define ELEN_EQ_VLEN
+  `endif
+`endif
+`ifdef VLEN8
+  `ifdef ELEN8
+    `define ELEN_EQ_VLEN
+  `endif
+`endif
+
+// Minimum supported LMUL
+`ifdef SEW8_SUPPORTED
+  `ifdef ELEN64
+    `define LMULf8_SUPPORTED
+    `define LMULf4_SUPPORTED
+    `define LMULf2_SUPPORTED
+  `elsif ELEN32
+    `define LMULf4_SUPPORTED
+    `define LMULf2_SUPPORTED
+  `elsif ELEN16
+    `define LMULf2_SUPPORTED
+  `endif
+`elsif SEW16_SUPPORTED
+  `ifdef ELEN64
+    `define LMULf4_SUPPORTED
+    `define LMULf2_SUPPORTED
+  `elsif ELEN32
+    `define LMULf2_SUPPORTED
+  `endif
+`elsif SEW32_SUPPORTED
+  `ifdef ELEN64
+    `define LMULf2_SUPPORTED
+  `endif
+`endif
+
 // Set register type length
 `define XLEN_BITS         bit        [`XLEN-1:0]
 `define SIGNED_XLEN_BITS  bit signed [`XLEN-1:0]
 `define FLEN_BITS         bit        [`FLEN-1:0]
 `define SIGNED_FLEN_BITS  bit signed [`FLEN-1:0]
+`define VLEN_BITS         bit        [`VLEN-1:0]
+`define SIGNED_VLEN_BITS  bit signed [`VLEN-1:0]
 
 // Instruction operand data structure
 typedef struct {
@@ -361,8 +488,13 @@ endfunction
 
 function bit get_vm(string s);
   case (s)
-    "v0.t": return 1'b0;
-    "": return 1'b1;
+    "v0.t" : return 1'b0;
+    "v0"   : return 1'b0;
+    ""     : return 1'b1;
+    default: begin
+      $display("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
+      $finish(-1);
+    end
   endcase
 endfunction
 
