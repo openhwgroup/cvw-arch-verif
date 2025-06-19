@@ -227,7 +227,7 @@ def prepMaskV(lines, maskval, sew, tempReg):
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=None, vstart=None, maskval=None, vxrm=None,
-              vfrm=None, vfloattype=None, xtype=None, vxsat=None, vta=None, vma=None):
+              vfrm=None, vfloattype=None, xtype=None, vxsat=None, vta=0, vma=None):
 
     [vector_register_data, scalar_register_data, floating_point_register_data, immval] = instruction_data
 
@@ -300,20 +300,6 @@ def writeTest(description, instruction, instruction_data,
     if (genLMULIfdefs(lmul) != ""):
       lines = lines + "#endif\n"
     f.write(lines)
-
-# return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
-def randomNonconflictingReg(test):
-  reg = randint(1, maxreg) # 1 to maxreg, inclusive
-  while reg == sigReg:     # resolve conflicts
-    reg = randomNonconflictingReg(test)
-  return reg
-
-def randomNonconflictingVecReg(test, emul):
-  if (emul > 1):             # only register numbers of multiples of LMUL(EMUL) are allowed
-    reg = emul * randint(1, math.floor(maxreg/emul))
-  else:                      # normal instructions
-    reg = randint(1, maxreg) # 1 to maxreg, inclusive
-  return reg
 
 def prepBaseV(lines, sew, lmul, vl, vstart, ta, ma):
   lmulflag = lmul
@@ -460,12 +446,12 @@ def getInstructionRegisterOverlapConstraints (instruction):
 # **preset_variables - any value in preset_data can be set here, for example vd = 2 will ensure vd is set to the v2 register above all else
 # return             - returns an array of all randomized values following constraints
 
-def randomizeVectorInstructionData(instruction, lmul=1, suite="base", **preset_variables):
+def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap = [], **preset_variables):
   global vs1RandomCounter_base, vs2RandomCounter_base, vs1RandomCounter_length, vs2RandomCounter_length
 
   preset_variables.update(getVectorEmulMultipliers(instruction))
 
-  no_overlap = getInstructionRegisterOverlapConstraints(instruction)
+  no_overlap = no_overlap + getInstructionRegisterOverlapConstraints(instruction)
 
   reserved_scalar_registers         = [0]
   reserved_floating_point_registers = []
@@ -488,6 +474,8 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", **preset_v
     'vs1' : {'vs1' : None, 'vs1_val' : None, 'vs1_emul_multiplier' : 1},
     'vs2' : {'vs2' : None, 'vs2_val' : None, 'vs2_emul_multiplier' : 1},
   }
+
+  immediate_preset_data             = None
 
   vector_additional_arguements      = ['v0']
 
@@ -524,7 +512,9 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", **preset_v
       found = True
       break
 
-    if varaible in vector_additional_arguements :
+    if   varaible == 'imm':
+      immediate_preset_data = value
+    elif varaible in vector_additional_arguements :
       found = True
 
     if not found :
@@ -600,10 +590,14 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", **preset_v
   vs2val = f"vs2_random_{suite}_{vs2mem:03d}"
   vdval  = "vd_val_random"
 
-  if (instruction in imm_31):
-    immval = randint(0,31)
+  # immediate handling
+  if immediate_preset_data is not None:
+    if (instruction in imm_31):
+      immval = randint(0,31)
+    else:
+      immval = randint(-16,15)
   else:
-    immval = randint(-16,15)
+    immval = immediate_preset_data
 
   return [vector_register_data, scalar_register_data, floating_point_register_data, immval]
 
@@ -650,39 +644,30 @@ def insertTest(test):
 def make_vd(instruction, sew, rng):
   global basetest_count
   for v in rng:
+    description = f"cp_vd (Test destination vd = v" + str(v) + ")"
+
     if (instruction in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v)
     else :
       instruction_data = randomizeVectorInstructionData(instruction, vd = v)
 
-    description = f"cp_vd (Test destination vd = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
-
-# def make_vs3(instruction, sew, rng):
-#   global basetest_count
-#   for v in rng:
-#     instruction_variables = randomizeVectorV(test, vs3 = v)
-
-#     description = f"cp_vd (Test source vs3 = v" + str(v) + ")"
-#     writeCovVector_V(instruction, description, instruction_variables, sew=sew, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
-
-#     basetest_count += 1
-#     vsAddressCount()
 
 def make_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
+    description = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
+
     if (test in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vs2 = v)
     else :
       instruction_data = randomizeVectorInstructionData(instruction, vs2 = v)
 
-    description = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
@@ -690,10 +675,10 @@ def make_vs2(instruction, sew, rng):
 def make_vs1(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    instruction_data = randomizeVectorInstructionData(instruction, vs1 = v)
+    description       = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vs1 = v)
 
-    description = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
@@ -701,14 +686,15 @@ def make_vs1(instruction, sew, rng):
 def make_vd_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
+    description = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
+
     if (test in vvvxtype): # vmv<nr>r.v
       lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
       instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v, vs2 = v)
     else :
       instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs2 = v)
 
-    description = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
@@ -716,10 +702,10 @@ def make_vd_vs2(instruction, sew, rng):
 def make_vd_vs1(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v)
+    description       = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vd = v, vs1 = v)
 
-    description = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
@@ -727,10 +713,10 @@ def make_vd_vs1(instruction, sew, rng):
 def make_vd_vs1_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs1 = v, vs2 = v)
+    description       = f"cmp_vd_vs1_vs2 (Test vd = vs1 = vs2 = v" + str(v) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vd = v, vs1 = v, vs2 = v)
 
-    description = f"cmp_vd_vs1_vs2 (Test vd = vs1 = vs2 = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
@@ -738,100 +724,96 @@ def make_vd_vs1_vs2(instruction, sew, rng):
 def make_vs1_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
-    instruction_data = randomizeVectorInstructionData(instruction, vs1 = v, vs2 = v)
+    description       = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vs1 = v, vs2 = v)
 
-    description = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
-    writeTest(description, instruction, instruction_data, sew=sew, vta=0)
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
-def make_rs1_v(test, sew, rng):
+def make_rs1_v(instruction, sew, rng):
   global basetest_count
   for r in rng:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-    desc = f"cp_rs1 (Test rs1 = " + str(r) + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=r, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    description       = f"cp_rs1 (Test rs1 = " + str(r) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, rs1 = r)
+
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
 
-def make_imm_v(test, sew):
+def make_imm_v(instruction, sew):
   global basetest_count
   if (test in imm_31):
     for uimm in range(0,32):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=uimm, vta=0)
-      basetest_count += 1
+      description       = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
+      instruction_data  = randomizeVectorInstructionData(instruction, imm = uimm)
   else:
     for imm in range(-16,16):
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cp_imm_5bit (Test imm = " + str(imm) + ")"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, imm=imm, vta=0)
-      basetest_count += 1
+      description       = "cp_imm_5bit (Test imm = " + str(imm) + ")"
+      instruction_data  = randomizeVectorInstructionData(instruction, imm = imm)
+
+  writeTest(description, instruction, instruction_data, sew=sew)
+  basetest_count += 1
 
 def make_rdv(instruction, sew, rng):
   global basetest_count
   for r in rng:
-    instruction_data = randomizeVectorInstructionData(instruction, rd = r, no_overlap=)
-    desc = "cp_rd (Test rd = " + str(rd) + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rd=r, imm=immval, vta=0)
+    description       = "cp_rd (Test rd = " + str(r) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, rd = r)
+
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
     vsAddressCount()
 
-def make_vs2_corners(test, sew, vcorners, vl=1):
+def make_vs2_corners(instruction, sew, vcorners, vl=1):
   global basetest_count
   for v in vcorners:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-    desc = f"cp_vs2_corners (Test source vs2 value = " + v + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, v, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    description       = f"cp_vs2_corners (Test source vs2 value = " + v + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v)
+
+    writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
     basetest_count += 1
 
-def make_vs1_corners(test, sew, vcorners, vl=1):
+def make_vs1_corners(instruction, sew, vcorners, vl=1):
   global basetest_count
   for v in vcorners:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-    desc = f"cp_vs1_corners (Test source vs1 value = " + v + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, v, vs2val, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
+    description       = f"cp_vs1_corners (Test source vs1 value = " + v + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, vs1 = v)
+
+    writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
     basetest_count += 1
 
-def make_rs1_corners_v(test, sew, rng):
+def make_rs1_corners_v(instruction, sew, rng):
   global basetest_count
   for rcorner in rcornersv:
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-    desc = f"cp_rs1_corners (Test source rs1 value = " + hex(rcorner) + ")"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rcorner, imm=immval, vta=0)
+    description       = f"cp_rs1_corners (Test source rs1 value = " + hex(rcorner) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, rs1 = rcorner)
+
+    writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
 
-def make_vs2_vs1_corners(test, sew, vs2corners, vs1corners, vl=1):
+def make_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners, vl=1):
   for v1 in vs1corners:
     for v2 in vs2corners:
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      while vs1 == vs2:
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cr_vs2_vs1_corners"
-      writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vl=vl, vta=0)
+      description = "cr_vs2_vs1_corners"
+      instruction_data  = randomizeVectorInstructionData(instruction, vs1 = v1, vs2 = v2, no_overlap = ['vs1', 'vs2'])
 
-def make_vs2_rs1_corners(test, sew, vs2corners):
+      writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
+
+def make_vs2_rs1_corners(instruction, sew, vs2corners):
   for r1 in rcornersv:
     for v2 in vs2corners:
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cr_vs2_rs1_corners"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, rs1=rs1, rs1val=r1, vta=0)
+      description = "cr_vs2_rs1_corners"
+      instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v2, rs1 = r1)
 
-def make_vs2_imm_corners(test, sew, vs2corners):
+      writeTest(description, instruction, instruction_data, sew=sew)
+
+def make_vs2_imm_corners(instruction, sew, vs2corners):
   for imm in immcornersv:
     for v2 in vs2corners:
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-      [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-      desc = "cr_vs2_imm_corners"
-      writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, imm=imm, vta=0)
+      description = "cr_vs2_imm_corners"
+      instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v2, imm = imm)
+
+      writeTest(description, instruction, instruction_data, sew=sew)
 
 # vxrm tests
 vxrmList = {"rod": "0x6",
@@ -839,32 +821,32 @@ vxrmList = {"rod": "0x6",
             "rne": "0x2",
             "rnu": "0x0"} # vcsr[2:1] -> 11 , 10, 01, 00
 
-def make_vxrm_vs2_vs1_corners(test, sew, vs2corners, vs1corners):
+def make_vxrm_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners):
   for vxrm in vxrmList:
     for v1 in vs1corners:
       for v2 in vs2corners:
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-        desc = "cr_vxrm_vs2_vs1_corners (Test vxrm = " + vxrm + ")"
-        writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vxrm=vxrm, vta=0)
+        description = "cr_vxrm_vs2_vs1_corners (Test vxrm = " + vxrm + ")"
+        instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v2, vs1 = v1)
 
-def make_vxrm_vs2_rs1_corners(test, sew, vs2corners):
+        writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+
+def make_vxrm_vs2_rs1_corners(instruction, sew, vs2corners):
   for vxrm in vxrmList:
     for r1 in rcornersv:
       for v2 in vs2corners:
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-        desc = "cr_vxrm_vs2_rs1_corners (Test vxrm = " + vxrm + ")"
-        writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, rs1=rs1, rs1val=r1, vxrm=vxrm, vta=0)
+        description = "cr_vxrm_vs2_rs1_corners (Test vxrm = " + vxrm + ")"
+        instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v2, rs1 = r1)
 
-def make_vxrm_vs2_imm_corners(test, sew, vs2corners):
+        writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+
+def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
   for vxrm in vxrmList:
     for imm in immcornersv:
       for v2 in vs2corners:
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-        [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval)
-        desc = "cr_vxrm_vs2_imm_corners (Test vxrm = " + vxrm + ")" + str(imm)
-        writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, imm=imm, vxrm=vxrm, vta=0)
+        description = "cr_vxrm_vs2_imm_corners (Test vxrm = " + vxrm + ")" + str(imm)
+        instruction_data  = randomizeVectorInstructionData(instruction, vs2 = v2, imm = imm)
+
+        writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
 
 ##################################### length suite (vl!=1) test generation #####################################
 
