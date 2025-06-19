@@ -44,37 +44,38 @@ def insertTemplate(name):
 
 def writeSIGUPD(rd):
     global sigupd_count  # Allow modification of global variable
-    sigupd_count += 1  # Increment counter on each call
+    sigupd_count += 1    # Increment counter on each call
     l = f"RVTEST_SIGUPD(x{sigReg}, x{rd})\n"
     return l
 
 def writeSIGUPD_F(rd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
-    sigupd_count += 1  #Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
-    sigupd_countF += 1  # Increment counter on each call since SIGUPD_F macro stores FREG
+    sigupd_count += 1    # Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_countF += 1   # Increment counter on each call since SIGUPD_F macro stores FREG
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    l = f"csrr x{tempReg}, fcsr\n" # Get fcsr into a temp register
-    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  #x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
+    l = f"csrr x{tempReg}, fcsr\n"                              # Get fcsr into a temp register
+    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
     return l
 
 def writeSIGUPD_V(vd, sew, avl=1):
-    global sigupd_count  # Allow modification of global variable
+    global sigupd_count        # Allow modification of global variable
     if (avl == "random" or avl == "vlmax"):
-      avl = maxVLEN     # set to max possible vl since SIGUPD_V needs AVL to be a compile-time constant
+      avl = maxVLEN            # set to max possible vl since SIGUPD_V needs AVL to be a compile-time constant
     if (avl == 1):
       sigupd_count += avl * 2  # Increment counter on each call
     else:
       sigupd_count += avl
-    # TO-DO: sigupd_count modify to vl, sew, lmul, etc.
+
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
     lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
     return lines
 
+# TODO: will be used and tested for vector FP
 def loadVFloatReg(reg, val, sew):
   lines = ""
   if sew == 16:
@@ -95,15 +96,14 @@ def loadVFloatReg(reg, val, sew):
   lines = lines + f"{loadop} v{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into v{reg}\n"
   return lines
 
-# uses x8 for placing value into vector reg
 def loadVecReg(reg, pointer, sew):
     loadop = f"vle{sew}.v"
     lines = ""
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = lines + f"la x{tempReg}, {pointer}          # Load address of desired value\n"
-    lines = lines + f"{loadop} v{reg}, (x{tempReg})              # Load desired value from memory into v{reg}\n"
+    lines = lines + f"la x{tempReg}, {pointer}             # Load address of desired value\n"
+    lines = lines + f"{loadop} v{reg}, (x{tempReg})                       # Load desired value from memory into v{reg}\n"
     return lines
 
 # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
@@ -130,35 +130,35 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   return signatureWords
 
 
-def writeVecTest(lines, vd, sew, vlen, testline, test=None, rd=None, vl=1):
+def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1):
     l = lines + testline
     if (test in widenins) or (test in wvsins):
       l = l + writeSIGUPD_V(vd, 2*sew, avl=vl)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
       l = l + writeSIGUPD_V(vd, 1, avl=vl)      # EEW of vd = 1 for mask
-    elif (test in vrvxtype):
+    elif (test in xvtype):
       l = l + writeSIGUPD(rd)
     else:
       l = l + writeSIGUPD_V(vd, sew, avl=vl)
     return l
 
 
-# TODO : Check this works with vector (didn't have vector ops in csv yet)
+# TODO : Check this works with vector FP
 def genFrmTests(testInstr, rd, floatdest, vector=None):
   lines = ""
   frm = ["dyn", "rdn", "rmm", "rne", "rtz", "rup"]
   csrFrm = ["0x4", "0x3", "0x2", "0x1", "0x0"]
   for roundingMode in frm:
-    lines = writeVecTest(lines, vd, sew, vlen, f"{testline} {roundingMode} # perform operation\n")
+    lines = writeVecTest(lines, vd, sew, f"{testline} {roundingMode} # perform operation\n")
   for csrMode in csrFrm:
     lines = lines + f"\n # set fcsr.frm to {csrMode} \n"
     lines = lines + f"fsrmi {csrMode}\n"
-    lines = writeVecTest(lines, vd, sew, vlen, f"{testline} # perform operation\n")
+    lines = writeVecTest(lines, vd, sew, f"{testline} # perform operation\n")
   lines = lines + "\n"
   return lines
 
 
-def genVxrmTests(lines, vd, sew, lmul, vxrm):
+def genVxrmTests(lines, vxrm):
   lines = lines + f"# set vcsr.vxrm to {vxrm}\n"
   lines = lines + f"li t0, {vxrmList[vxrm]}\n"
   lines = lines + f"csrw vcsr, t0\n"
@@ -186,27 +186,27 @@ def prepMaskV(lines, maskval, sew, tempReg):
   if (maskval == "zeroes"):
     lines = lines + f"vmv.v.i v0, 0                 # Set mask value to 0\n"
   elif (maskval == "ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
-    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
+    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
     lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX) ? 1 : 0\n"
   elif (maskval == "vlmaxm1_ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
     lines = lines + f"addi x{tempReg}, x{tempReg}, -1                  # x{tempReg} = VLMAX - 1\n"
-    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
     lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX-1) ? 1 : 0\n"
   elif (maskval == "vlmaxd2p1_ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma               # x{tempReg} = VLMAX\n"
-    lines = lines + f"srli x{tempReg}, x{tempReg}, 1                  # x{tempReg} = VLMAX / 2\n"
-    lines = lines + f"addi x{tempReg}, x{tempReg}, 1                  # x{tempReg} = VLMAX / 2 + 1\n"
-    lines = lines + f"vid.v v1                   # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
+    lines = lines + f"srli x{tempReg}, x{tempReg}, 1                   # x{tempReg} = VLMAX / 2\n"
+    lines = lines + f"addi x{tempReg}, x{tempReg}, 1                   # x{tempReg} = VLMAX / 2 + 1\n"
+    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
+    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
     lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX/2+1) ? 1 : 0\n"
   else: # random mask
-    lines = lines + f"vmv.v.i v0, 0                 # Reset mask value to 0\n"
+    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
     lines = lines + f"la x{tempReg}, {maskval}\n"
-    lines = lines + f"vlm.v v0, (x{tempReg})                   # Load mask value into v0\n"
+    lines = lines + f"vlm.v v0, (x{tempReg})             # Load mask value into v0\n"
   return lines
 
 
@@ -238,7 +238,7 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
       lines = lines + genVxsatTests(testline)
     elif (vxrm is not None):
-      lines = lines + genVxrmTests(lines, vd, sew, lmul, vxrm)
+      lines = genVxrmTests(lines, vxrm)
 
     # determining EEW for vs2 and vs1
     if (test in wwvins) or (test in wwxins) or (test in narrowins):
@@ -252,48 +252,50 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       vs1eew = sew
 
     # test writing
-    if (test in vvtype) or (test in vvmtype):
+    if (test in vvvmtype) or (test in vvvtype):
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}{maskinstr}\n"
-    elif (test in vxtype):
+    elif (test in vvvmrtype):
+      lines = lines + loadVecReg(vs1, vs1val, vs1eew)
+      lines = lines + loadVecReg(vs2, vs2val, vs2eew)
+      testline = f"{test} v{vd}, v{vs1}, v{vs2}{maskinstr}\n"
+    elif (test in vvxmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, v{vs2}, x{rs1}{maskinstr}\n"
-    elif (test in vxvtype):
+    elif (test in vxvmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, x{rs1}, v{vs2}{maskinstr}\n"
-    elif (test in vitype):
+    elif (test in vvimtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, {imm}{maskinstr}\n"
-    elif (test in vimtype):
+    elif (test in vvivtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}, {imm}, v0\n"
-    elif (test in vvvmtype):
+    elif (test in vvvvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       if maskval is None:
         lines = prepMaskV(lines, "zeroes", sew, tempReg)
       testline = f"{test} v{vd}, v{vs2}, v{vs1}, v0\n"
-    elif (test in vxmtype):
+    elif (test in vvxvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, v{vs2}, x{rs1}, v0\n"
-    elif (test in vrvtype) or (test in vrvxtype):
+    elif (test in xvmtype) or (test in xvtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
-    elif (test in vvvtype):
+    elif (test in vvmtype):
       lines = lines + loadVecReg(vs2, vs2val, vs2eew)
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
-    elif (test in vdtype):
+    elif (test in vmtype):
       testline = f"{test} v{vd}{maskinstr}\n"
-    elif (test in vrvtype):
-      testline = f"{test} x{rd}, v{vs2}{maskinstr}\n"
-    elif (test in vxxtype):
+    elif (test in vxtype):
       lines = lines + f"li x{rs1}, {formatstr.format(rs1val)}             # Load immediate value into integer register\n"
       testline = f"{test} v{vd}, x{rs1}{maskinstr}\n"
-    elif (test in vvxtype):
+    elif (test in vvrtype):
       lines = lines + loadVecReg(vs1, vs1val, vs1eew)
       testline = f"{test} v{vd}, v{vs1}{maskinstr}\n"
     elif (test in vvvxtype):
@@ -301,16 +303,16 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
       testline = f"{test} v{vd}, v{vs2}{maskinstr}\n"
       if (lmul != 1):
         vl = maxVLEN
-    elif (test in vixtype):
+    elif (test in vitype):
       testline = f"{test} v{vd}, {imm}{maskinstr}\n"
     else:
       print("Error: %s type not implemented yet" % test)
       return
 
     if (maskval is not None) or (vl is not None):
-      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd, vl=vl)
+      lines = writeVecTest(lines, vd, sew, testline, test=test, rd=rd, vl=vl)
     else:
-      lines = writeVecTest(lines, vd, sew, vlen, testline, test=test, rd=rd)
+      lines = writeVecTest(lines, vd, sew, testline, test=test, rd=rd)
 
     if (genLMULIfdefs(lmul) != ""):
       lines = lines + "#endif\n"
@@ -319,14 +321,14 @@ def writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=None, lmul=1,
 # return a random register from 1 to maxreg that does not conflict with the signature pointer (or later constant pointer)
 def randomNonconflictingReg(test):
   reg = randint(1, maxreg) # 1 to maxreg, inclusive
-  while reg == sigReg: # resolve conflicts; *** add constReg when implemented
+  while reg == sigReg:     # resolve conflicts
     reg = randomNonconflictingReg(test)
   return reg
 
 def randomNonconflictingVecReg(test, emul):
-  if (emul > 1):
+  if (emul > 1):             # only register numbers of multiples of LMUL(EMUL) are allowed
     reg = emul * randint(1, math.floor(maxreg/emul))
-  else: # normal instructions
+  else:                      # normal instructions
     reg = randint(1, maxreg) # 1 to maxreg, inclusive
   return reg
 
@@ -477,7 +479,7 @@ def avoidConflictingVecReg(test, vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, 
 
 ##################################### base suite (vl=1) test generation #####################################
 
-def make_vd(test, sew, vl, rng):
+def make_vd(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -510,7 +512,7 @@ def make_vd(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vs2(test, sew, vl, rng):
+def make_vs2(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -543,7 +545,7 @@ def make_vs2(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vs1(test, sew, vl, rng):
+def make_vs1(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -579,7 +581,7 @@ def make_vs1(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vd_vs2(test, sew, vl, rng):
+def make_vd_vs2(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -594,7 +596,7 @@ def make_vd_vs2(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vd_vs1(test, sew, vl, rng):
+def make_vd_vs1(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -610,7 +612,7 @@ def make_vd_vs1(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vd_vs1_vs2(test, sew, vl, rng):
+def make_vd_vs1_vs2(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -620,7 +622,7 @@ def make_vd_vs1_vs2(test, sew, vl, rng):
     vsAddressCount()
 
 
-def make_vs1_vs2(test, sew, vl, rng):
+def make_vs1_vs2(test, sew, rng):
   global basetest_count
   for v in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -632,7 +634,7 @@ def make_vs1_vs2(test, sew, vl, rng):
     basetest_count += 1
     vsAddressCount()
 
-def make_rs1_v(test, sew, vl, rng):
+def make_rs1_v(test, sew, rng):
   global basetest_count
   for r in rng:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -641,7 +643,7 @@ def make_rs1_v(test, sew, vl, rng):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=r, rd=rd, rs1val=rs1val, imm=immval, vta=0)
     basetest_count += 1
 
-def make_imm_v(test, sew, vl):
+def make_imm_v(test, sew):
   global basetest_count
   if (test in imm_31):
     for uimm in range(0,32):
@@ -667,7 +669,7 @@ def make_rdv(test, sew, rng):
     basetest_count += 1
     vsAddressCount()
 
-def make_vs2_corners(test, sew, vl, vcorners):
+def make_vs2_corners(test, sew, vcorners, vl=1):
   global basetest_count
   for v in vcorners:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -676,7 +678,7 @@ def make_vs2_corners(test, sew, vl, vcorners):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, v, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
     basetest_count += 1
 
-def make_vs1_corners(test, sew, vl, vcorners):
+def make_vs1_corners(test, sew, vcorners, vl=1):
   global basetest_count
   for v in vcorners:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -685,7 +687,7 @@ def make_vs1_corners(test, sew, vl, vcorners):
     writeCovVector_V(desc, vs1, vs2, vd, v, vs2val, test, sew=sew, vl=vl, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0)
     basetest_count += 1
 
-def make_rs1_corners_v(test, sew, vl, rng):
+def make_rs1_corners_v(test, sew, rng):
   global basetest_count
   for rcorner in rcornersv:
     [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -694,7 +696,7 @@ def make_rs1_corners_v(test, sew, vl, rng):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, rs1=rs1, rd=rd, rs1val=rcorner, imm=immval, vta=0)
     basetest_count += 1
 
-def make_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
+def make_vs2_vs1_corners(test, sew, vs2corners, vs1corners, vl=1):
   for v1 in vs1corners:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -704,7 +706,7 @@ def make_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
       desc = "cr_vs2_vs1_corners"
       writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vl=vl, vta=0)
 
-def make_vs2_rs1_corners(test, sew, vl, vs2corners):
+def make_vs2_rs1_corners(test, sew, vs2corners):
   for r1 in rcornersv:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -712,7 +714,7 @@ def make_vs2_rs1_corners(test, sew, vl, vs2corners):
       desc = "cr_vs2_rs1_corners"
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, rs1=rs1, rs1val=r1, vta=0)
 
-def make_vs2_imm_corners(test, sew, vl, vs2corners):
+def make_vs2_imm_corners(test, sew, vs2corners):
   for imm in immcornersv:
     for v2 in vs2corners:
       [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
@@ -726,7 +728,7 @@ vxrmList = {"rod": "0x6",
             "rne": "0x2",
             "rnu": "0x0"} # vcsr[2:1] -> 11 , 10, 01, 00
 
-def make_vxrm_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
+def make_vxrm_vs2_vs1_corners(test, sew, vs2corners, vs1corners):
   for vxrm in vxrmList:
     for v1 in vs1corners:
       for v2 in vs2corners:
@@ -735,7 +737,7 @@ def make_vxrm_vs2_vs1_corners(test, sew, vl, vs2corners, vs1corners):
         desc = "cr_vxrm_vs2_vs1_corners (Test vxrm = " + vxrm + ")"
         writeCovVector_V(desc, vs1, vs2, vd, v1, v2, test, sew=sew, vxrm=vxrm, vta=0)
 
-def make_vxrm_vs2_rs1_corners(test, sew, vl, vs2corners):
+def make_vxrm_vs2_rs1_corners(test, sew, vs2corners):
   for vxrm in vxrmList:
     for r1 in rcornersv:
       for v2 in vs2corners:
@@ -744,7 +746,7 @@ def make_vxrm_vs2_rs1_corners(test, sew, vl, vs2corners):
         desc = "cr_vxrm_vs2_rs1_corners (Test vxrm = " + vxrm + ")"
         writeCovVector_V(desc, vs1, vs2, vd, vs1val, v2, test, sew=sew, rs1=rs1, rs1val=r1, vxrm=vxrm, vta=0)
 
-def make_vxrm_vs2_imm_corners(test, sew, vl, vs2corners):
+def make_vxrm_vs2_imm_corners(test, sew, vs2corners):
   for vxrm in vxrmList:
     for imm in immcornersv:
       for v2 in vs2corners:
@@ -780,32 +782,7 @@ def randomizeMask(test):
     maskval = f"random_mask_{i}"
   return maskval
 
-def make_vstart(test, vlen, sew, rng):
-  legallmuls = [1, 2, 4, 8]
-  if sew >= 16:
-    legallmuls.append(0.5)
-  if sew >= 32:
-    legallmuls.append(0.25)
-  if sew >= 64:
-    legallmuls.append(0.125)
-  for s in range(3):
-    # creating lmul - any legal
-    lmul = legallmuls[randint(1, len(legallmuls)-1)]
-    vlmax = int(vlen*(lmul/sew))
-    if vlmax <= 1:
-      return
-    if s == 0:
-      vstart = 2
-    elif s == 1:
-      vstart = 1 + (vlmax/2)
-    else:
-      vstart = vlmax - 1
-    [vs1, vs2, rs1, vd, rd, vs1val, vs2val, rs1val, immval, vdval] = randomizeVectorV(test)
-    desc = "cp_vstart"
-    writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vstart=vstart)
-
-
-def make_vl_lmul(test, vlen, sew, maxlmul=8):
+def make_vl_lmul(test, sew, maxlmul=8):
   global legalvlmuls, lengthtest_count
   numlmul = int(math.log2(maxlmul)+1)
   minlmul = min(legalvlmuls)
@@ -825,7 +802,7 @@ def make_vl_lmul(test, vlen, sew, maxlmul=8):
       writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=lmul, vl=vl, maskval=maskval, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=vta)
       lengthtest_count += 1
 
-def make_mask_corners(test, vlen, sew):
+def make_mask_corners(test, sew):
   global lengthtest_count
   lmul = 1
   vma = randint(0,1)
@@ -839,7 +816,7 @@ def make_mask_corners(test, vlen, sew):
     writeCovVector_V(desc, vs1, vs2, vd, vs1val, vs2val, test, sew=sew, lmul=1, vl="vlmax", maskval=m, rs1=rs1, rd=rd, rs1val=rs1val, imm=immval, vta=0, vma=vma)
     lengthtest_count += 1
 
-def make_vtype_agnostic(test, vlen, sew):
+def make_vtype_agnostic(test, sew):
   global legalvlmuls, lengthtest_count
   for t in [0,1]:
     for m in [0,1]:
@@ -866,11 +843,9 @@ def myhash(s):
   return h
 
 
-def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None):
+def write_tests(coverpoints, test, sew=None):
   global NaNBox_tests, basetest_count
   # default vl and lmul settings for base suite
-  vl = 1
-  lmul = 1
   for coverpoint in coverpoints:
     # produce a deterministic seed for repeatable random numbers distinct for each instruction and coverpoint
     testname = test + coverpoint
@@ -884,129 +859,129 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None):
     elif (coverpoint == "cp_rd"):
       make_rdv(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_rs1"):
-      make_rs1_v(test, sew, vl, range(maxreg+1))
+      make_rs1_v(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_imm_5bit") or (coverpoint == "cp_imm_5bit_u"):
-      make_imm_v(test, sew, vl)
+      make_imm_v(test, sew)
     elif (coverpoint == "cp_vd"):
-      make_vd(test, sew, vl, range(maxreg+1))
+      make_vd(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
-      make_vd(test, sew, vl, range(1,maxreg+1))
+      make_vd(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vd_emul2"):
-      make_vd(test, sew, vl, range(0,maxreg,2))
+      make_vd(test, sew, range(0,maxreg,2))
     elif (coverpoint == "cp_vd_emul4"):
-      make_vd(test, sew, vl, range(0,maxreg,4))
+      make_vd(test, sew, range(0,maxreg,4))
     elif (coverpoint == "cp_vd_emul8"):
-      make_vd(test, sew, vl, range(0,maxreg,8))
+      make_vd(test, sew, range(0,maxreg,8))
     elif (coverpoint == "cp_vs2"):
-      make_vs2(test, sew, vl, range(maxreg+1))
+      make_vs2(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_vs2_nv0"):
-      make_vs2(test, sew, vl, range(1,maxreg+1))
+      make_vs2(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vs2_emul2"):
-      make_vs2(test, sew, vl, range(0,maxreg,2))
+      make_vs2(test, sew, range(0,maxreg,2))
     elif (coverpoint == "cp_vs2_emul4"):
-      make_vs2(test, sew, vl, range(0,maxreg,4))
+      make_vs2(test, sew, range(0,maxreg,4))
     elif (coverpoint == "cp_vs2_emul8"):
-      make_vs2(test, sew, vl, range(0,maxreg,8))
+      make_vs2(test, sew, range(0,maxreg,8))
     elif (coverpoint == "cp_vs1"):
-      make_vs1(test, sew, vl, range(maxreg+1))
+      make_vs1(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_vs1_nv0"):
-      make_vs1(test, sew, vl, range(1,maxreg+1))
+      make_vs1(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vs1_emul2"):
-      make_vs1(test, sew, vl, range(0,maxreg,2))
+      make_vs1(test, sew, range(0,maxreg,2))
     elif (coverpoint == "cmp_vd_vs2"):
-      make_vd_vs2(test, sew, vl, range(maxreg+1))
+      make_vd_vs2(test, sew, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
-      make_vd_vs2(test, sew, vl, range(1,maxreg+1))
+      make_vd_vs2(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cmp_vd_vs2_emul2"):
-      make_vd_vs2(test, sew, vl, range(0,maxreg,2))
+      make_vd_vs2(test, sew, range(0,maxreg,2))
     elif (coverpoint == "cmp_vd_vs2_emul4"):
-      make_vd_vs2(test, sew, vl, range(0,maxreg,4))
+      make_vd_vs2(test, sew, range(0,maxreg,4))
     elif (coverpoint == "cmp_vd_vs2_emul8"):
-      make_vd_vs2(test, sew, vl, range(0,maxreg,8))
+      make_vd_vs2(test, sew, range(0,maxreg,8))
     elif (coverpoint == "cmp_vd_vs1"):
-      make_vd_vs1(test, sew, vl, range(maxreg+1))
+      make_vd_vs1(test, sew, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
-      make_vd_vs1(test, sew, vl, range(1,maxreg+1))
+      make_vd_vs1(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_emul2"):
-      make_vd_vs1(test, sew, vl, range(0,maxreg,2))
+      make_vd_vs1(test, sew, range(0,maxreg,2))
     elif (coverpoint == "cmp_vs1_vs2"):
-      make_vs1_vs2(test, sew, vl, range(maxreg+1))
+      make_vs1_vs2(test, sew, range(maxreg+1))
     elif (coverpoint == "cmp_vs1_vs2_nv0"):
-      make_vs1_vs2(test, sew, vl, range(1,maxreg+1))
+      make_vs1_vs2(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_vs2"):
-      make_vd_vs1_vs2(test, sew, vl, range(maxreg+1))
+      make_vd_vs1_vs2(test, sew, range(maxreg+1))
     elif (coverpoint == "cmp_vd_vs1_vs2_nv0"):
-      make_vd_vs1_vs2(test, sew, vl, range(1,maxreg+1))
+      make_vd_vs1_vs2(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vs2_corners"):
-      make_vs2_corners(test, sew, vl, vcornersemul1)
+      make_vs2_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cp_vs2_corners_emul2"):
-      make_vs2_corners(test, sew, vl, vcornersemul2)
+      make_vs2_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cp_vs2_corners_emul4"):
-      make_vs2_corners(test, sew, vl, vcornersemul4)
+      make_vs2_corners(test, sew, vcornersemul4)
     elif (coverpoint == "cp_vs2_corners_emul8"):
-      make_vs2_corners(test, sew, vl, vcornersemul8)
+      make_vs2_corners(test, sew, vcornersemul8)
     elif (coverpoint == "cp_vs2_corners_emulf2"):
-      make_vs2_corners(test, sew, vl, vcornersemulf2)
+      make_vs2_corners(test, sew, vcornersemulf2)
     elif (coverpoint == "cp_vs2_corners_emulf4"):
-      make_vs2_corners(test, sew, vl, vcornersemulf4)
+      make_vs2_corners(test, sew, vcornersemulf4)
     elif (coverpoint == "cp_vs2_corners_emulf8"):
-      make_vs2_corners(test, sew, vl, vcornersemulf8)
+      make_vs2_corners(test, sew, vcornersemulf8)
     elif (coverpoint == "cp_vs2_corners_eew1"):
-      make_vs2_corners(test, sew, 8, vcornerseew1)
+      make_vs2_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
     elif (coverpoint == "cp_vs1_corners"):
-      make_vs1_corners(test, sew, vl, vcornersemul1)
+      make_vs1_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cp_vs1_corners_emul2"):
-      make_vs1_corners(test, sew, vl, vcornersemul2)
+      make_vs1_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cp_vs1_corners_eew1"):
-      make_vs1_corners(test, sew, 8, vcornerseew1)
+      make_vs1_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
     elif (coverpoint == "cp_rs1_corners"):
-      make_rs1_corners_v(test, sew, vl, range(maxreg+1))
+      make_rs1_corners_v(test, sew, range(maxreg+1))
     elif (coverpoint == "cr_vs2_vs1_corners"):
-      make_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul1)
+      make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
     elif (coverpoint == "cr_vs2_vs1_corners_wv"):
-      make_vs2_vs1_corners(test, sew, vl, vcornersemul2, vcornersemul1)
+      make_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
     elif (coverpoint == "cr_vs2_vs1_corners_wred"):
-      make_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul2)
+      make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul2)
     elif (coverpoint == "cr_vs2_vs1_corners_mm"):
-      make_vs2_vs1_corners(test, sew, 8, vcornerseew1, vcornerseew1)
+      make_vs2_vs1_corners(test, sew, vcornerseew1, vcornerseew1, vl=8)
     elif (coverpoint == "cr_vs2_rs1_corners"):
-      make_vs2_rs1_corners(test, sew, vl, vcornersemul1)
+      make_vs2_rs1_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cr_vs2_rs1_corners_wx"):
-      make_vs2_rs1_corners(test, sew, vl, vcornersemul2)
+      make_vs2_rs1_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cp_imm_corners_5bit" or coverpoint == "cp_imm_corners_5bit_u"):
       pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
     elif (coverpoint == "cp_csr_vxrm"):
       pass # already tested in cross coverpoints with vs2 and vs1/rs1/imm
     elif (coverpoint == "cr_vs2_imm_corners" or coverpoint == "cr_vs2_imm_corners_u"):
-      make_vs2_imm_corners(test, sew, vl, vcornersemul1)
+      make_vs2_imm_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cr_vs2_imm_corners_wi" or coverpoint == "cr_vs2_imm_corners_wiu"):
-      make_vs2_imm_corners(test, sew, vl, vcornersemul2)
+      make_vs2_imm_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cr_vxrm_vs2_vs1_corners"):
-      make_vxrm_vs2_vs1_corners(test, sew, vl, vcornersemul1, vcornersemul1)
+      make_vxrm_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
     elif (coverpoint == "cr_vxrm_vs2_vs1_corners_wv"):
-      make_vxrm_vs2_vs1_corners(test, sew, vl, vcornersemul2, vcornersemul1)
+      make_vxrm_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
     elif (coverpoint == "cr_vxrm_vs2_rs1_corners"):
-      make_vxrm_vs2_rs1_corners(test, sew, vl, vcornersemul1)
+      make_vxrm_vs2_rs1_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cr_vxrm_vs2_rs1_corners_wx"):
-      make_vxrm_vs2_rs1_corners(test, sew, vl, vcornersemul2)
+      make_vxrm_vs2_rs1_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cr_vxrm_vs2_imm_corners"):
-      make_vxrm_vs2_imm_corners(test, sew, vl, vcornersemul1)
+      make_vxrm_vs2_imm_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cr_vxrm_vs2_imm_corners_wi"):
-      make_vxrm_vs2_imm_corners(test, sew, vl, vcornersemul2)
+      make_vxrm_vs2_imm_corners(test, sew, vcornersemul2)
     ############################ length suite ############################
     elif (coverpoint == "cp_masking_corners"):
-      make_mask_corners(test, vlen, sew)
+      make_mask_corners(test, sew)
     elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
                          "cp_csr_vtype_lmul_all_lmul4max_sew8", "cp_csr_vtype_lmul_all_lmul4max_sew16", "cp_csr_vtype_lmul_all_lmul4max_sew32", "cp_csr_vtype_lmul_all_lmul4max_sew64"]):
       pass # helper coverpoints, crossed in cr_vl_lmul
     elif (coverpoint in ["cr_vl_lmul_sew8", "cr_vl_lmul_sew16", "cr_vl_lmul_sew32", "cr_vl_lmul_sew64"]):
-      make_vl_lmul(test, vlen, sew)            # includes tests for legal LMUL up to 8
+      make_vl_lmul(test, sew)            # includes tests for legal LMUL up to 8
     elif (coverpoint in ["cr_vl_lmul_lmul4max_sew8", "cr_vl_lmul_lmul4max_sew16", "cr_vl_lmul_lmul4max_sew32", "cr_vl_lmul_lmul4max_sew64"]):
-      make_vl_lmul(test, vlen, sew, maxlmul=4) # includes tests for legal LMUL up to 4
+      make_vl_lmul(test, sew, maxlmul=4) # includes tests for legal LMUL up to 4
     elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
       pass # helper coverpoints, crossed in cr_vtype_agnostic
     elif (coverpoint == "cr_vtype_agnostic"):
-      make_vtype_agnostic(test, vlen, sew)
+      make_vtype_agnostic(test, sew)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -1056,7 +1031,7 @@ def getExtensions():
   return extensions
 
 
-def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
+def genVector(test, sew, vs="vs2", emul=1):
   global basetest_count
   f.write("\n\n")
   f.write("///////////////////////////////////////////\n")
@@ -1065,15 +1040,8 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   f.write(".section .data\n\n")
   f.write(f"    .align 3\n")
   f.write("// Corner Vectors\n")
-  legallmuls = [1, 2, 4, 8]
-  if sew >= 16:
-    legallmuls.append(0.5)
-  if sew >= 32:
-    legallmuls.append(0.25)
-  if sew >= 64:
-    legallmuls.append(0.125)
-  eew = sew * emul
 
+  eew = sew * emul
   for suite in ["base", "length"]:
     if (suite == "base"):
       maxVtests = basetest_count
@@ -1081,9 +1049,7 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
       num_words = math.ceil((vl * eew) / 32)
     else:
       maxVtests = lengthtest_count
-      num_words = math.ceil(vlen / 32)
-    # TODO: Fix this temporary arbitrary number
-    # num_words = vlen // 32
+      num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
         f.write(f"{vs}_random_{suite}_{t:03d}:\n")
         for i in range(num_words):
@@ -1094,21 +1060,22 @@ def genVector(sew, vl, vlen, test, vs="vs2", emul=1):
   #f.close()
 
 
-def genVMaskCorners(sew, vl, vlen, test):
-  num_words = math.ceil(vlen / 32)
+def genVMaskCorners(test, sew):
+  num_words = math.ceil(maxVLEN / 32)
 
+  # generating random masks for length suite
   f.write(f"    .align 3\n")
   for name in range(3):
     f.write(f"random_mask_{name}:\n")
-    val = getrandbits(vlen)
+    val = getrandbits(maxVLEN)
     for i in range(num_words):
       word = (val >> (32 * i)) & 0xFFFFFFFF
       f.write(f"    .word 0x{word:08x}\n")
 
-  random_mask = getrandbits(vlen)
+  # generating random mask for cp_masking_corners
+  random_mask = getrandbits(maxVLEN)
   while (random_mask == 0) or (random_mask % 2 == 1): # prevent overlapping with other mask corners
-    random_mask = getrandbits(vlen)
-
+    random_mask = getrandbits(maxVLEN)
   f.write(f"cp_mask_random:\n")
   for i in range(num_words):
       word = (random_mask >> (32 * i)) & 0xFFFFFFFF
@@ -1117,7 +1084,7 @@ def genVMaskCorners(sew, vl, vlen, test):
   f.write("\n")
   #f.close()
 
-def genVsCorners(sew, vl, vlen, test, emul):
+def genVsCorners(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -1169,41 +1136,46 @@ def genVsCorners(sew, vl, vlen, test, emul):
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 
-vvtype = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vmadc.vv", "vredmax.vs", "vredmaxu.vs", "vredsum.vs", "vwaddu.wv", "vwsubu.wv",
-          "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmseq.vv", "vmsne.vv", "vredmin.vs", "vredminu.vs", "vwadd.wv", "vwredsum.vs", "vwredsumu.vs",
-          "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vredor.vs", "vredxor.vs",
-          "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vwsub.wv", "vrgatherei16.vv",
-          "vremu.vv", "vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv", "vsadd.vv", "vredand.vs","vrgather.vv",
-          "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv","vnclip.wv", "vnclipu.wv", "vnsra.wv", "vnsrl.wv"]
+vvvmtype  = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vwadd.wv", "vwsub.wv", "vwaddu.wv", "vwsubu.wv",
+             "vmadc.vv", "vmsbc.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vnsra.wv", "vnsrl.wv",
+             "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv",
+             "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv",
+             "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv", "vnclip.wv", "vnclipu.wv",
+             "vredsum.vs", "vwredsum.vs", "vwredsumu.vs", "vredmax.vs", "vredmaxu.vs", "vredmin.vs", "vredminu.vs", "vredand.vs", "vredor.vs", "vredxor.vs",
+             "vrgather.vv", "vrgatherei16.vv"]
 
-vxtype = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwaddu.wx", "vwsubu.wx",
-          "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vwadd.wx", "vwsub.wx",
-          "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx",
-          "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx",
-          "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx",
-          "vssrl.vx", "vssra.vx", "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx", "vnclip.wx", "vnclipu.wx", "vnsra.wx", "vnsrl.wx"]
+vvxmtype  = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwadd.wx", "vwsub.wx", "vwaddu.wx", "vwsubu.wx",
+             "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vnsra.wx", "vnsrl.wx",
+             "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx",
+             "vmul.vx", "vmulh.vx", "vmulhu.vx", "vmulhsu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx",
+             "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vssrl.vx", "vssra.vx", "vnclip.wx", "vnclipu.wx",
+             "vslideup.vx", "vslidedown.vx", "vslide1up.vx", "vslide1down.vx", "vrgather.vx"]
 
-vitype = ["vadd.vi", "vrsub.vi", "vmadc.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vmseq.vi", "vmsne.vi", "vrgather.vi",
-          "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vslideup.vi", "vslidedown.vi", "vgathervi","vnclip.wi", "vnclipu.wi", "vnsra.wi", "vnsrl.wi"]
+vvimtype  = ["vadd.vi", "vrsub.vi", "vmadc.vi",
+             "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vnsra.wi", "vnsrl.wi",
+             "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi",
+             "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi", "vnclip.wi", "vnclipu.wi",
+             "vslideup.vi", "vslidedown.vi", "vrgather.vi"]
 
-vrvtype = ["vcpop.m", "vfirst.m"]
+xvmtype   = ["vcpop.m", "vfirst.m"]
 
-vvvtype = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
-vxvtype = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
-vvxtype =["vmv.v.v"]
-vxxtype = ["vmv.s.x", "vmv.v.x"]
-vixtype = ["vmv.v.i"]
-vrvxtype = ["vmv.x.s"]
-vvvxtype = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
-vdtype = ["vid.v"]
-vimtype = ["vadc.vim", "vsbc.vim", "vmerge.vim", "vmadc.vim"]
-vvvmtype = ["vadc.vvm", "vsbv.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm", "vsbc.vvm"]
-vxmtype = ["vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm", "vadc.vxm"]
-vvmtype = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
+vvvmrtype = ["vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
+vvmtype   = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
+vxvmtype  = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+vvrtype   = ["vmv.v.v"]
+vxtype    = ["vmv.s.x", "vmv.v.x"]
+vitype    = ["vmv.v.i"]
+xvtype    = ["vmv.x.s"]
+vvvxtype  = ["vmv1r.v", "vmv2r.v", "vmv4r.v", "vmv8r.v"]
+vmtype    = ["vid.v"]
+vvivtype  = ["vadc.vim", "vmerge.vim", "vmadc.vim"]
+vvvvtype  = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm"]
+vvxvtype  = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm"]
+vvvtype   = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
-vectortypes = vvmtype + vdtype + vrvxtype + vixtype + vxxtype + vvxtype + vvvtype + vrvtype + vitype + vxtype + vvtype + vimtype + vvvmtype + vxmtype + vxvtype + vvvxtype
+vectortypes = vvvtype + vmtype + xvtype + vitype + vxtype + vvrtype + vvmtype + xvmtype + vvimtype + vvxmtype + vvvmtype + vvivtype + vvvvtype + vvxvtype + vxvmtype + vvvxtype + vvvmrtype
 
-vs1ins = vvtype + vvxtype + vvvmtype + vvmtype
+vs1ins = vvvmtype + vvrtype + vvvvtype + vvvtype + vvvmrtype
 vfloattypes = ["vfadd.vv"]
 
 # vector instruction groups by EEW (prefix + suffix)
@@ -1253,7 +1225,7 @@ vupgatherins = vslideupins + vrgatherins
 # mask logical
 vmlogicalins = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m"]
 
-vmvins = vvxtype + vxxtype + vixtype + vrvxtype + vvvxtype + vcompressins
+vmvins = vvrtype + vxtype + vitype + xvtype + vvvxtype + vcompressins
 
 if __name__ == '__main__':
 
@@ -1457,25 +1429,20 @@ if __name__ == '__main__':
         else:
           sew = int(sew_match.group(1))
 
-        # vlen defined as max for test generation
-        maxVLEN = 2048
-        vlen = 512
+        # Define VLEN, ELEN and SEWMIN as extremes which these tests support
+        maxVLEN = 512   # TODO: change to 2048 later, save as 512 for now for smaller files
         elen = 64
         sewmin = 8
 
         legalvlmuls = getLegalVlmul(elen, sewmin, sew)
 
-        # vl=1 for base suite
-        vl = 1
-
+        # Set up vl = 1 for base suite
         f.write(f"\n")
         f.write(f"// Initial set vl = 1\n")
-        vsetline1 = f"li x2, {vl}\n"
-        vsetline2 = f"vsetvli x0, x2, e{sew}, m1, tu, mu\n"
+        f.write(f"li x2, 1\n")
+        f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
 
-        f.write(vsetline1)
-        f.write(vsetline2)
-
+        # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
         if (test in widenins) or (test in narrowins) or (test in wvsins):
           if (sew == 8):
             f.write("#if ELEN > 8\n")
@@ -1488,7 +1455,7 @@ if __name__ == '__main__':
 
         basetest_count = 0
         lengthtest_count = 0
-        write_tests(coverpoints[test], test, xlen, vlen=vlen, sew=sew)
+        write_tests(coverpoints[test], test, sew=sew)
 
         if (test in widenins) or (test in narrowins) or (test in wvsins):
           f.write("#endif\n")
@@ -1496,28 +1463,27 @@ if __name__ == '__main__':
 
         # generate vector data (random and corners)
         if (test in narrowins) or (test in widenins):
-          genVector(sew, vl, vlen, test, vs="vs2", emul=2)
+          genVector(test, sew, vs="vs2", emul=2)
           if (test in vs1ins):
-            genVector(sew, vl, vlen, test, vs="vs1")
-          genVsCorners(sew, vl, vlen, test, "1")
-          genVsCorners(sew, vl, vlen, test, "2")
+            genVector(test, sew, vs="vs1")
+          genVsCorners(test, sew, "1")
+          genVsCorners(test, sew, "2")
         elif (test in wvsins):
-          genVector(sew, vl, vlen, test, vs="vs2")
-          genVector(sew, vl, vlen, test, vs="vs1", emul=2)
-          genVsCorners(sew, vl, vlen, test, "2")
-          genVsCorners(sew, vl, vlen, test, "1")
+          genVector(test, sew, vs="vs2")
+          genVector(test, sew, vs="vs1", emul=2)
+          genVsCorners(test, sew, "2")
+          genVsCorners(test, sew, "1")
         else:
-          genVector(sew, vl, vlen, test, vs="vs2")
+          genVector(test, sew, vs="vs2")
           if (test in vs1ins):
-            genVector(sew, vl, vlen, test, vs="vs1")
+            genVector(test, sew, vs="vs1")
           if (test in vextins):
-            genVsCorners(sew, vl, vlen, test, test[-2:])
-          elif (test in mmins) or (test in vrvtype) or (test in vmlogicalins):
-            genVsCorners(sew, vl, vlen, test, "eew1")
+            genVsCorners(test, sew, test[-2:])
+          elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
+            genVsCorners(test, sew, "eew1")
           else:
-            genVsCorners(sew, vl, vlen, test, "1")
-        genVMaskCorners(sew, vl, vlen, test)
-
+            genVsCorners(test, sew, "1")
+        genVMaskCorners(test, sew)
 
         # print footer
         signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
