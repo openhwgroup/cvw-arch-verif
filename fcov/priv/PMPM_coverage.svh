@@ -26,6 +26,7 @@
 `define REGIONSTART `SAFEREGIONSTART
 
 `define G 4				// Set G as needed (0, 1, 2, etc.)
+//`define G_IS_0			 // Uncomment this when G=0
 `define g (2**(`G+2))	// Region size = 2^(G+2)
 `define k ((`G > 1) ? (`G - 1) : 0)
 
@@ -80,6 +81,8 @@ covergroup PMPM_cg with function sample(
   		// this should also fault as “outside”, but loads beyond this should succeed
   		bins just_beyond  = {`REGIONSTART+`g};
 
+        bins just_close  = {`REGIONSTART-`g};
+
 		//last word inside region
 		bins highest_word  = {`REGIONSTART +`g-4};
 	}
@@ -130,6 +133,163 @@ covergroup PMPM_cg with function sample(
 		wildcard bins cfg_l100 = {8'b10011100};
 		wildcard bins cfg_l101 = {8'b10011101};
 		wildcard bins cfg_l111 = {8'b10011111};
+	}
+
+//-------------------------------------------------------
+//addresses for TOR regions moving up by g*i
+	cp_cfg_A_tor_all_region0: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION};
+	}
+	cp_cfg_A_tor_all_region1: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + `g};
+	}
+	cp_cfg_A_tor_all_region2: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 3*`g};
+	}
+	cp_cfg_A_tor_all_region3: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 6*`g};
+	}
+	cp_cfg_A_tor_all_region4: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 10*`g};
+	}
+	cp_cfg_A_tor_all_region5: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 15*`g};
+	}
+	cp_cfg_A_tor_all_region6: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 21*`g};
+	}
+	cp_cfg_A_tor_all_region7: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 28*`g};
+	}
+	cp_cfg_A_tor_all_region8: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 36*`g};
+	}
+	cp_cfg_A_tor_all_region9: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 45*`g};
+	}
+	cp_cfg_A_tor_all_region10: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 55*`g};
+	}
+	cp_cfg_A_tor_all_region11: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 66*`g};
+	}
+	cp_cfg_A_tor_all_region12: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 78*`g};
+	}
+	cp_cfg_A_tor_all_region13: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 91*`g};
+	}
+	cp_cfg_A_tor_all_region14: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`NON_STANDARD_REGION + 105*`g};
+	}
+
+	//tor regions increasing size by g*i
+
+	pmpaddr_for_tor_region0: coverpoint {pmpaddr[1], pmpaddr[0]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 1*`g, `NON_STANDARD_REGION};
+ 	}
+	pmpaddr_for_tor_region1: coverpoint {pmpaddr[2], pmpaddr[1]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 6*`g, `NON_STANDARD_REGION + 3*`g};
+ 	}
+	pmpaddr_for_tor_region2: coverpoint {pmpaddr[3], pmpaddr[2]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 10*`g, `NON_STANDARD_REGION + 6*`g};
+ 	}
+	pmpaddr_for_tor_region3: coverpoint {pmpaddr[4], pmpaddr[3]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 15*`g, `NON_STANDARD_REGION + 10*`g};
+ 	}
+	pmpaddr_for_tor_region4: coverpoint {pmpaddr[5], pmpaddr[4]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 21*`g, `NON_STANDARD_REGION + 15*`g};
+ 	}
+	pmpaddr_for_tor_region5: coverpoint {pmpaddr[6], pmpaddr[5]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 28*`g, `NON_STANDARD_REGION + 21*`g};
+ 	}
+	pmpaddr_for_tor_region6: coverpoint {pmpaddr[7], pmpaddr[6]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 36*`g, `NON_STANDARD_REGION + 28*`g};
+ 	}
+	pmpaddr_for_tor_region7: coverpoint {pmpaddr[8], pmpaddr[7]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 45*`g, `NON_STANDARD_REGION + 36*`g};
+ 	}
+	pmpaddr_for_tor_region8: coverpoint {pmpaddr[9], pmpaddr[8]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 55*`g, `NON_STANDARD_REGION + 45*`g};
+ 	}
+	pmpaddr_for_tor_region9: coverpoint {pmpaddr[10], pmpaddr[9]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 66*`g, `NON_STANDARD_REGION + 55*`g};
+ 	}
+	pmpaddr_for_tor_region10: coverpoint {pmpaddr[11], pmpaddr[10]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 78*`g, `NON_STANDARD_REGION + 66*`g};
+ 	}
+	pmpaddr_for_tor_region11: coverpoint {pmpaddr[12], pmpaddr[11]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 91*`g, `NON_STANDARD_REGION + 78*`g};
+ 	}
+	pmpaddr_for_tor_region12: coverpoint {pmpaddr[13], pmpaddr[12]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 105*`g, `NON_STANDARD_REGION + 91*`g};
+ 	}
+	pmpaddr_for_tor_region13: coverpoint {pmpaddr[14], pmpaddr[13]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 120*`g, `NON_STANDARD_REGION + 105*`g};
+ 	}
+	pmpaddr_for_tor_region14: coverpoint {pmpaddr[15], pmpaddr[14]}  {
+		bins tor0  = {`NON_STANDARD_REGION + 120*`g, `NON_STANDARD_REGION + 105*`g};
+ 	}
+   //15 configuartions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
+
+	RWXL_i001_pmp0cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp0cfg_rwx000  = { 75'b????????????????????????????00_??????????????0_??????????????1_000000000000001 };
+	}
+
+	RWXL_i001_pmp1cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp1cfg_rwx100  = { 75'b??????????????????????????10??_?????????????0?_?????????????1?_000000000000010 };
+	}
+
+	RWXL_i001_pmp2cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp2cfg_rwx000  = { 75'b????????????????????????00????_????????????0??_????????????1??_000000000000100 };
+	}
+
+	RWXL_i001_pmp3cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp3cfg_rwx100  = { 75'b??????????????????????10??????_???????????0???_???????????1???_000000000001000 };
+	}
+
+	RWXL_i001_pmp4cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp4cfg_rwx000  = { 75'b????????????????????00????????_??????????0????_??????????1????_000000000010000 };
+	}
+
+	RWXL_i001_pmp5cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp5cfg_rwx100  = { 75'b??????????????????10??????????_?????????0?????_?????????1?????_000000000100000 };
+	}
+
+	RWXL_i001_pmp6cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp6cfg_rwx000  = { 75'b????????????????00????????????_????????0??????_????????1??????_000000001000000 };
+	}
+
+	RWXL_i001_pmp7cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp7cfg_rwx100  = { 75'b??????????????10??????????????_???????0???????_???????1???????_000000010000000 };
+	}
+
+	RWXL_i001_pmp8cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp8cfg_rwx000  = { 75'b????????????00????????????????_??????0????????_??????1????????_000000100000000 };
+	}
+
+	RWXL_i001_pmp9cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp9cfg_rwx100  = { 75'b??????????10??????????????????_?????0?????????_?????1?????????_000001000000000 };
+	}
+
+	RWXL_i001_pmp10cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp10cfg_rwx000 = { 75'b????????00????????????????????_????0??????????_????1??????????_000010000000000 };
+	}
+
+	RWXL_i001_pmp11cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp11cfg_rwx100 = { 75'b??????10??????????????????????_???0???????????_???1???????????_000100000000000 };
+	}
+
+	RWXL_i001_pmp12cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp12cfg_rwx000 = { 75'b????00????????????????????????_??0????????????_??1????????????_001000000000000 };
+	}
+
+	RWXL_i001_pmp13cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp13cfg_rwx100 = { 75'b??10??????????????????????????_?0?????????????_?1?????????????_010000000000000 };
+	}
+
+	RWXL_i001_pmp14cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
+	    wildcard bins pmp14cfg_rwx000 = { 75'b00????????????????????????????_0??????????????_1??????????????_100000000000000 };
 	}
 
 //-------------------------------------------------------
@@ -205,6 +365,55 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 //-------------------------------------------------------
 
+	pmpcfg_for_tor0: coverpoint {pmpcfg[0][7:0]} {
+		wildcard bins pmp0cfg_rwx000  = {8'b10001000}; //L=1,A=TOR,XWR=000
+	}
+
+	pmpcfg_tor_bot_L0: coverpoint { pmpcfg[0][15:0] } {
+    	bins pmp_cfg_tor1 =  {16'b1000110100000000}; //L=0 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+	}
+
+	pmpcfg_tor_bot_L1: coverpoint { pmpcfg[0][15:0] } {
+		bins pmp_cfg_tor1 =  {16'b1000110110000000}; //L=1 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+	}
+
+	pmp_addr_for_tor: coverpoint {pmpaddr[1],pmpaddr[0]} {
+		bins range = {`NON_STANDARD_REGION+`g,`NON_STANDARD_REGION};
+	}
+
+	pmp_addr_for_tor_bot: coverpoint {pmpaddr[1],pmpaddr[0]} {  //pmpaddr0 = pmpaddr1-g
+		bins range = {`NON_STANDARD_REGION,`NON_STANDARD_REGION-`g};
+	}
+
+	pmp_addr_for_tor0: coverpoint {pmpaddr[0]} {
+		bins range = {`NON_STANDARD_REGION};
+	}
+
+	addr_for_tor_bot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins pmpaddr0_4 = {((`NON_STANDARD_REGION-`g)<<2)-4}; //pmpaddr0-4
+		bins pmpaddr0 = {(`NON_STANDARD_REGION-`g)<<2}; //pmpaddr0
+		bins pmpaddr1_4 = {`REGIONSTART-4}; //pmpaddr1-4 NOTE: REGIONSTART<<2 => NON_STANDARD_REGION (pmp encoded address)
+		bins pmpaddr1 = {`REGIONSTART};
+	}
+
+	pmp_addr_for_tor_nonoverlap: coverpoint {pmpaddr[1], pmpaddr[0]} { // pmpaddr0 >= pmpaddr1.
+  		bins range1 = {`NON_STANDARD_REGION, `NON_STANDARD_REGION};
+		bins range2 = {`NON_STANDARD_REGION, `NON_STANDARD_REGION+`g};
+		bins range3 = {`NON_STANDARD_REGION, {$bits(pmpaddr[0]){1'b1}}}; //pmpaddr0 = all 1s
+ 	}
+
+	pmpcfg_tor_nonoverlap: coverpoint { pmpcfg[0][15:0] } {
+    	bins pmp_cfg_tor1 =  {16'b0000100010001000}; //L=0 for pmpcfg1 and L=0 for pmpcfg1,A=TOR(both),XWR=000(both)
+	}
+
+	addr_for_tor_nonoverlap: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins addr1 = {(`NON_STANDARD_REGION)<<2}; //pmpaddr1
+		bins addr2 = {((`NON_STANDARD_REGION)<<2)+4}; //pmpaddr1+4
+		bins addr3 = {((`NON_STANDARD_REGION)<<2)-4}; //pmpaddr1-4
+	}
+
+//-------------------------------------------------------
+
 	RWXL000: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0
 		wildcard bins pmp0cfg_rwx000  = {75'b????????????????????????????00_??????????????0_??????????????0_000000000000001};
 		wildcard bins pmp1cfg_rwx000  = {75'b??????????????????????????00??_?????????????0?_?????????????0?_000000000000010};
@@ -224,6 +433,15 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 //-------------------------------------------------------
+
+  	legal_RWX_L_TOR: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR
+		wildcard bins pmp0cfg_rwx000  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????01_000000000000001};
+		wildcard bins pmp0cfg_rwx001  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????01_000000000000001};
+		wildcard bins pmp0cfg_rwx101  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????01_000000000000001};
+		wildcard bins pmp0cfg_rwx011  = {105'b????????????????????????????01_??????????????1_??????????????1_????????????????????????????01_000000000000001};
+		wildcard bins pmp0cfg_rwx100  = {105'b????????????????????????????10_??????????????0_??????????????1_????????????????????????????01_000000000000001};
+		wildcard bins pmp0cfg_rwx111  = {105'b????????????????????????????11_??????????????1_??????????????1_????????????????????????????01_000000000000001};
+	}
 
   legal_RWX_L_NAPOT: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 3 for region pmp0
 		wildcard bins pmp0cfg_rwxl0001  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????11_000000000000001};
@@ -764,6 +982,62 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		`endif
 	}
 
+	// if G = 1, then smallest standard region will be of 8 bytes and each subsequent region will be twice.
+	overlapping_regions: coverpoint pack_pmpaddr {
+		bins twice_subsequent_regions = {(`REGIONSTART >> 2) | (2**(`k+14)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+13)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+12)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+11)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+10)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+9)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+8)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+7)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+6)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+5)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+4)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+3)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+2)-1),
+										 (`REGIONSTART >> 2) | (2**(`k+1)-1),
+										 (`REGIONSTART >> 2) | (2**(`k)-1)
+										 };
+	}
+
+	// Addresses at end of each twice subsequent standard region - 8
+	addr_in_overlapping_region: coverpoint (ins.current.imm + ins.current.rs1_val) {
+		bins addr_in_region14  = {`REGIONSTART + (2**(`k+17))-8};
+		bins addr_in_region13  = {`REGIONSTART + (2**(`k+16))-8};
+		bins addr_in_region12  = {`REGIONSTART + (2**(`k+15))-8};
+		bins addr_in_region11  = {`REGIONSTART + (2**(`k+14))-8};
+		bins addr_in_region10  = {`REGIONSTART + (2**(`k+13))-8};
+		bins addr_in_region9   = {`REGIONSTART + (2**(`k+12))-8};
+		bins addr_in_region8   = {`REGIONSTART + (2**(`k+11))-8};
+		bins addr_in_region7   = {`REGIONSTART + (2**(`k+10))-8};
+		bins addr_in_region6   = {`REGIONSTART + (2**(`k+9))-8};
+		bins addr_in_region5   = {`REGIONSTART + (2**(`k+8))-8};
+		bins addr_in_region4   = {`REGIONSTART + (2**(`k+7))-8};
+		bins addr_in_region3   = {`REGIONSTART + (2**(`k+6))-8};
+		bins addr_in_region2   = {`REGIONSTART + (2**(`k+5))-8};
+		bins addr_in_region1   = {`REGIONSTART + (2**(`k+4))-8};
+		bins addr_in_region0   = {`REGIONSTART + (2**(`k+3))-8};
+	}
+
+//-------------------------------------------------------
+
+	// {TOR, OFF, TOR, OFF} and {1111, 1000, 1101, 1000}
+	cfg_first_four_entries: coverpoint pmpcfg[0][31:0] {
+		bins cfg_regions = {32'h8F808D80};
+	}
+
+	// {all 1s, all 0s, all 1s, all 0s}
+	first_four_pmp_entries: coverpoint pack_pmpaddr[4*XLEN-1:0] {
+		`ifdef XLEN32
+			bins pmp_entries = {128'hFFFFFFFF_00000000_FFFFFFFF_00000000};
+		`endif
+		`ifdef XLEN64
+			bins pmp_entries = {256'h???FFFFFFFFFFFFF_???0000000000000000_???FFFFFFFFFFFFF_???0000000000000000};
+		`endif
+	}
+
 //-------------------------------------------------------
 
 	all_pmp_entries_off: coverpoint {pmpcfg_a,pmpcfg_A[1:0]} { // Including Background Top PMP Entry
@@ -844,6 +1118,59 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		ignore_bins ig6  = binsof(addr_offset.highest_word);
 	}
 
+	cp_cfg_A_tor_r: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, read_instr_lw ;
+	cp_cfg_A_tor_w: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, write_instr_sw ;
+	cp_cfg_A_tor_x: cross addr_offset, pmp_addr_for_tor, legal_RWX_L_TOR, exec_instr ;
+
+	cp_cfg_A_tor0_r: cross addr_offset, pmp_addr_for_tor0, pmp_addr_for_tor, read_instr_lw {
+		ignore_bins ig1 = binsof(addr_offset.above_base);
+		ignore_bins ig2 = binsof(addr_offset.just_beyond);
+		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig4 = binsof(addr_offset.highest_word);
+	}
+
+	cp_cfg_A_tor0_w: cross addr_offset, pmp_addr_for_tor0, pmp_addr_for_tor, write_instr_sw {
+		ignore_bins ig1 = binsof(addr_offset.above_base);
+		ignore_bins ig2 = binsof(addr_offset.just_beyond);
+		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig4 = binsof(addr_offset.highest_word);
+	}
+
+	cp_cfg_A_tor0_x: cross addr_offset, pmp_addr_for_tor0, pmp_addr_for_tor, exec_instr {
+		ignore_bins ig1 = binsof(addr_offset.above_base);
+		ignore_bins ig2 = binsof(addr_offset.just_beyond);
+		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig4 = binsof(addr_offset.highest_word);
+	}
+
+	cp_cfg_A_tor_all0: cross cp_cfg_A_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i001_pmp0cfg, read_instr_lw;
+	cp_cfg_A_tor_all1: cross cp_cfg_A_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
+	cp_cfg_A_tor_all2: cross cp_cfg_A_tor_all_region2, pmpaddr_for_tor_region2, RWXL_i001_pmp2cfg, read_instr_lw;
+	cp_cfg_A_tor_all3: cross cp_cfg_A_tor_all_region3, pmpaddr_for_tor_region3, RWXL_i001_pmp3cfg, read_instr_lw;
+	cp_cfg_A_tor_all4: cross cp_cfg_A_tor_all_region4, pmpaddr_for_tor_region4, RWXL_i001_pmp4cfg, read_instr_lw;
+	cp_cfg_A_tor_all5: cross cp_cfg_A_tor_all_region5, pmpaddr_for_tor_region5, RWXL_i001_pmp5cfg, read_instr_lw;
+	cp_cfg_A_tor_all6: cross cp_cfg_A_tor_all_region6, pmpaddr_for_tor_region6, RWXL_i001_pmp6cfg, read_instr_lw;
+	cp_cfg_A_tor_all7: cross cp_cfg_A_tor_all_region7, pmpaddr_for_tor_region7, RWXL_i001_pmp7cfg, read_instr_lw;
+	cp_cfg_A_tor_all8: cross cp_cfg_A_tor_all_region8, pmpaddr_for_tor_region8, RWXL_i001_pmp8cfg, read_instr_lw;
+	cp_cfg_A_tor_all9: cross cp_cfg_A_tor_all_region9, pmpaddr_for_tor_region9, RWXL_i001_pmp9cfg, read_instr_lw;
+	cp_cfg_A_tor_all10: cross cp_cfg_A_tor_all_region10, pmpaddr_for_tor_region10, RWXL_i001_pmp10cfg, read_instr_lw;
+	cp_cfg_A_tor_all11: cross cp_cfg_A_tor_all_region11, pmpaddr_for_tor_region11, RWXL_i001_pmp11cfg, read_instr_lw;
+	cp_cfg_A_tor_all12: cross cp_cfg_A_tor_all_region12, pmpaddr_for_tor_region12, RWXL_i001_pmp12cfg, read_instr_lw;
+	cp_cfg_A_tor_all13: cross cp_cfg_A_tor_all_region13, pmpaddr_for_tor_region13, RWXL_i001_pmp13cfg, read_instr_lw;
+	cp_cfg_A_tor_all14: cross cp_cfg_A_tor_all_region14, pmpaddr_for_tor_region14, RWXL_i001_pmp14cfg, read_instr_lw;
+
+	cp_cfg_A_tor_bot_L0_x: cross addr_for_tor_bot, pmpcfg_tor_bot_L0, pmp_addr_for_tor_bot, exec_instr;
+	cp_cfg_A_tor_bot_L0_w: cross addr_for_tor_bot, pmpcfg_tor_bot_L0, pmp_addr_for_tor_bot, write_instr_sw;
+	cp_cfg_A_tor_bot_L0_r: cross addr_for_tor_bot, pmpcfg_tor_bot_L0, pmp_addr_for_tor_bot, read_instr_lw;
+
+	cp_cfg_A_tor_bot_L1_x: cross addr_for_tor_bot, pmpcfg_tor_bot_L1, pmp_addr_for_tor_bot, exec_instr;
+	cp_cfg_A_tor_bot_L1_w: cross addr_for_tor_bot, pmpcfg_tor_bot_L1, pmp_addr_for_tor_bot, write_instr_sw;
+	cp_cfg_A_tor_bot_L1_r: cross addr_for_tor_bot, pmpcfg_tor_bot_L1, pmp_addr_for_tor_bot, read_instr_lw;
+
+	cp_cfg_A_tor_nonoverlap_x: cross addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, exec_instr;
+	cp_cfg_A_tor_nonoverlap_w: cross addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, write_instr_sw;
+	cp_cfg_A_tor_nonoverlap_r: cross addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, read_instr_lw;
+
 	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpaddr_entries ;
 	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpcfg_entries_even ;
 	`ifdef XLEN32
@@ -866,9 +1193,92 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
+    `ifdef XLEN64
+		`ifdef G_IS_0
+			pmpaddr_for_na4_even: coverpoint {pmpaddr[0]}  {
+				bins address_even = {`NON_STANDARD_REGION};
+			}
+
+			pmpaddr_for_na4_odd: coverpoint {pmpaddr[1]}  {
+				bins address_odd = {`NON_STANDARD_REGION+4};
+			}
+
+			pmpcfg_na4_lxwr_even: coverpoint pmpcfg[0][7:0]  {
+				bins locked_na4_region = {8'b10010111};
+			}
+
+			pmpcfg_na4_lxwr_odd: coverpoint pmpcfg[0][15:8]  {
+				bins locked_na4_region = {8'b10010111};
+			}
+
+			addr_for_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
+				bins address_to_access = {`NON_STANDARD_REGION<<2};
+			}
+
+			pmpaddr_for_tor_even: coverpoint {pmpaddr[1],pmpaddr[0]}  {
+				bins four_byte_tor = {`NON_STANDARD_REGION+4,`NON_STANDARD_REGION};
+			}
+
+			pmpaddr_for_tor_odd: coverpoint {pmpaddr[3],pmpaddr[2]}  {
+				bins four_byte_tor = {`NON_STANDARD_REGION+16,`NON_STANDARD_REGION+12};
+			}
+
+			addr_for_tor_odd: coverpoint (ins.current.rs1_val + ins.current.imm) {
+				bins address_to_access = {(`NON_STANDARD_REGION<<2)+8};
+			}
+
+			addr_for_tor_even: coverpoint (ins.current.rs1_val + ins.current.imm) {
+				bins address_to_access = {`NON_STANDARD_REGION<<2};
+			}
+
+			pmpcfg_tor_lxwr_even: coverpoint pmpcfg[0][15:0]  {
+				bins locked_tor_region = {16'b1000111100000111};
+			}
+
+			pmpcfg_tor_lxwr_odd: coverpoint pmpcfg[0][31:16]  {
+				bins locked_tor_region = {16'b1000111100000111};
+			}
+
+			pmpaddr_for_double_tor: coverpoint {pmpaddr[5],pmpaddr[4],pmpaddr[3]}  {
+				bins byte_double_tor = {`NON_STANDARD_REGION+24,`NON_STANDARD_REGION+20,`NON_STANDARD_REGION+16};
+			}
+
+			pmpcfg_double_tor_lxwr: coverpoint pmpcfg[0][47:32]  {
+				bins locked_tor_region = {16'b1000111110001111};
+			}
+
+			addr_for_tor_double: coverpoint (ins.current.rs1_val + ins.current.imm) {
+				bins address_to_access = {(`NON_STANDARD_REGION<<2)+16};
+			}
+
+			read_instr_ld: coverpoint ins.current.insn {
+    			wildcard bins ld = {32'b?????????????????_011?????_0000011};
+			}
+
+			write_instr_sd: coverpoint ins.current.insn {
+				wildcard bins sd = {32'b?????????????????_011?????_0100011};
+			}
+
+			cp_na4_boundary_ld_even: cross priv_mode_m, pmpaddr_for_na4_even, pmpcfg_na4_lxwr_even, read_instr_ld, addr_for_na4 ;
+			cp_na4_boundary_ld_odd: cross priv_mode_m, pmpaddr_for_na4_odd, pmpcfg_na4_lxwr_odd, read_instr_ld, addr_for_na4 ;
+
+			cp_na4_boundary_sd_even: cross priv_mode_m, pmpaddr_for_na4_even, pmpcfg_na4_lxwr_even, write_instr_sd, addr_for_na4  ;
+			cp_na4_boundary_sd_odd: cross priv_mode_m, pmpaddr_for_na4_odd, pmpcfg_na4_lxwr_odd, write_instr_sd, addr_for_na4  ;
+
+			cp_tor_boundary_ld_even: cross priv_mode_m, pmpaddr_for_tor_even, pmpcfg_tor_lxwr_even, read_instr_ld, addr_for_tor_even ;
+			cp_tor_boundary_ld_odd: cross priv_mode_m, pmpaddr_for_tor_odd, pmpcfg_tor_lxwr_odd, read_instr_ld, addr_for_tor_odd ;
+
+			cp_tor_boundary_sd_even: cross priv_mode_m, pmpaddr_for_tor_even, pmpcfg_tor_lxwr_even, write_instr_sd, addr_for_tor_even  ;
+			cp_tor_boundary_sd_odd: cross priv_mode_m, pmpaddr_for_tor_odd, pmpcfg_tor_lxwr_odd, write_instr_sd, addr_for_tor_odd  ;
+
+			cp_tor_doubleregionfail_ld: cross priv_mode_m, pmpaddr_for_double_tor, pmpcfg_double_tor_lxwr, read_instr_ld, addr_for_tor_double ;
+			cp_tor_doubleregionfail_sd: cross priv_mode_m, pmpaddr_for_double_tor, pmpcfg_double_tor_lxwr, write_instr_sd, addr_for_tor_double  ;
+		`endif
+	`endif
+
 endgroup
 
-function void pmpm_sample(int hart, int issue, ins_t ins);
+function void pmp_sample(int hart, int issue, ins_t ins);
 
 	logic [XLEN-1:0] pmpcfg [15:0];
 	logic [XLEN-1:0] pmpaddr [62:0];
