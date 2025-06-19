@@ -82,7 +82,7 @@
   `ifdef VX32_COVERAGE
     `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
   `endif
-`elsif VLEN8
+`else
   `define VLEN 8
   `ifdef VX64_COVERAGE
     `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
@@ -94,6 +94,7 @@
     `VX16_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
   `endif
 `endif
+
 
 // supported SEWs based on what coverages are enabled
 `ifdef VX64_COVERAGE
