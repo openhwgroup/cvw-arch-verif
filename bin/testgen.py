@@ -33,6 +33,10 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
+    if 'Zalrsc' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
+      ext_parts_no_I = ['A']#+ext_parts_no_I
+    if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
+      ext_parts_no_I = ['A']#+ext_parts_no_I
     if 'f' in  ext_parts[0]:
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
@@ -53,13 +57,21 @@ def insertTemplate(name, is_custom=False):
     template = template.replace("Instruction", test)
 
     if is_custom:
-      if name == "sw.S" or name == "sh.S" or name == "sb.S":
+      sigupd_countcustom = template.count("RVTEST_SIGUPD(")
+      if sigupd_count > 0:
+          template = template.replace("SIGPOINTER", f"x{sigReg}")
+
+          sigupd_count += sigupd_countcustom
+          lines =[]
+          template += "\n".join(lines) + "\n"
+
+      elif name == "sw.S" or name == "sh.S" or name == "sb.S"  :
         # Extract the argument from SIG_POINTER_INCREMENT(n)
         match = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
 
         sig_pointer_incr = len(match)
 
-        if sig_pointer_incr == 0:
+        if sig_pointer_incr == 0 and "RVTEST_SIGUPD(" not in template:
           print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
           print(f"Warning: This will possible break your signature coverage for this custom test '{name}, if you have instructions in it.")
           # Remove the SIG_POINTER_INCREMENT line from the template
@@ -807,11 +819,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!! \n"
+    lines = lines + f"sw x{rs2}, 0(x{rs1}) # store word for RV32\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in sctype:
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!!! \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
@@ -1021,14 +1035,18 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     if (test in csrtype or test in csritype):
       lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
       lines = lines + "csrw " + "mscratch" + ", x" + str(rs3b) + " # Write random immediate into mscratch\n"
-
+    if (test in sctype):
+      lines = lines + "li x" + str(rs1b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+    if (test in lrtype):
+      lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+      lines = lines + f"sw x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # storing imm into scratch\n"
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
                     [rda, rdb], [rs1a, rs1b],
                     [rs2a, rs2b], [rs3a, rs3b],
                     [immvala, immvalb],
-                    ["perform first operation", "perform second (triggering) operation"],
+                    ["perform first operation", "perform second (triggering) operation!!!"],
                     xlen)
     if testa in floattypes and testa not in fTOrtype:
       lines += writeSIGUPD_F(rda)

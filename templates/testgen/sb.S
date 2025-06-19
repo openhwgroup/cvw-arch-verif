@@ -1,6 +1,5 @@
 # sb.S
 # test all 8 byte alignments
-    //la t0, scratch
     li t1, 0x9ABCDEF0
     li t2, 0x12345678
     sw t1, 0(SIGPOINTER)  // Initialize memory
