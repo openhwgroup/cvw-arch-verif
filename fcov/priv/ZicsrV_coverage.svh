@@ -225,7 +225,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         bins zero = {0};
     }
 
-    vset_i_vli_vlmax_unchanged : coverpoint (get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
+    vset_i_vli_vlmax_unchanged : coverpoint (get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
                                         == get_vlmax_params(ins.hart, ins.issue, ins.current.insn[25:23], ins.current.insn[22:20])) {
                                             bins true = {1};
                                         }
@@ -238,16 +238,16 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     // tests corner case avl behavior on the vset instructions
     //////////////////////////////////////////////////////////////////////////////////
 
-    rs1_le_vlmax : coverpoint (ins.current.rs1_val <= get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+    rs1_le_vlmax : coverpoint (ins.current.rs1_val <= get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins true = {1};
     }
 
-    rs1_lt_2x_vlmax_gt_vlmax : coverpoint (ins.current.rs1_val < 2 * get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
-                                        & ins.current.rs1_val > get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+    rs1_lt_2x_vlmax_gt_vlmax : coverpoint (ins.current.rs1_val < 2 * get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)
+                                        & ins.current.rs1_val > get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins true = {1};
     }
 
-    rs1_ge_2x_vlmax : coverpoint (ins.current.rs1_val >= 2 * get_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
+    rs1_ge_2x_vlmax : coverpoint (ins.current.rs1_val >= 2 * get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins true = {1};
     }
 
