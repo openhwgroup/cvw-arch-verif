@@ -300,31 +300,33 @@ def writeTest(description, instruction, instruction_data,
       print("Error: %s type not implemented yet" % instruction)
       return
 
-    testline = instruction
+    testline = instruction + " "
 
-    for arguemnt in instruction_arguments:
-      if   arguemnt == 'vm':
+    for arguement in instruction_arguments:
+      if   arguement == 'vm':
         if maskval is not None:
           testline = testline + "v0.t"
-      elif arguemnt == 'v0':
+        else:
+          testline = testline[:-2] # remove the ", " since theres no argument
+      elif arguement == 'v0':
         testline = testline + "v0"
-      elif arguemnt == 'imm':
+      elif arguement == 'imm':
         testline = testline + f"{imm_val}"
-      elif arguemnt[0] == 'v':
-        lines, scalar_registers_used = loadVecReg(lines, arguemnt, vector_register_data, sew, *scalar_registers_used)
-        testline = testline + f"v{vector_register_data[arguemnt]['reg']}"
-      elif arguemnt[0] == 'r':
-        lines = loadScalarReg(lines, arguemnt, scalar_register_data)
-        testline = testline + f"x{scalar_register_data[arguemnt]['reg']}"
-      elif arguemnt[0] == 'f':
+      elif arguement[0] == 'v':
+        lines, scalar_registers_used = loadVecReg(lines, arguement, vector_register_data, sew, *scalar_registers_used)
+        testline = testline + f"v{vector_register_data[arguement]['reg']}"
+      elif arguement[0] == 'r':
+        lines = loadScalarReg(lines, arguement, scalar_register_data)
+        testline = testline + f"x{scalar_register_data[arguement]['reg']}"
+      elif arguement[0] == 'f':
         # TODO : implement load value for floating point
-        testline = testline + f"f{floating_point_register_data[arguemnt]['reg']}"
+        testline = testline + f"f{floating_point_register_data[arguement]['reg']}"
       else:
-        raise TypeError(f"Instruction Argument type not supported: '{arguemnt}'")
+        raise TypeError(f"Instruction Argument type not supported: '{arguement}'")
 
       testline = testline + ", "
 
-    testline = testline[:-2] # remove the ", " at the end of the test
+    testline = testline[:-2] + "\n" # remove the ", " at the end of the test
 
     if (maskval is not None) or (vl is not None):
       lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, vl=vl)
@@ -398,9 +400,9 @@ def vsAddressCount(suite="base"):
     base_suite_test_count = base_suite_test_count + 1
 
 
-def randomizeRegister(register_argument_name: str, maxreg: int, register_preset_data, lmul = 1) :
+def randomizeRegister(register_argument_name: str, reg_count: int, register_preset_data, lmul = 1) :
 
-  register_data   = register_preset_data[register_argument_name]
+  register_data   = register_preset_data[register_argument_name].copy()
   register_type   = register_argument_name[0]
 
   register        = register_data['reg']
@@ -408,12 +410,12 @@ def randomizeRegister(register_argument_name: str, maxreg: int, register_preset_
   if register is None: # if the register is a vector register
     if register_type == "v":
       # scalar and mask holding registers only take up 1 register no matter the lmul
-      emul = register_data['size_multiplier'] * lmul if register_data['reg_type'] == "scalar" or \
-                                                        register_data['reg_type'] == "mask" else 1
-
-      register = emul * randint(0, math.floor(maxreg/emul)) # only register numbers of multiples of LMUL(EMUL) are allowed
+      emul = int(register_data['size_multiplier'] * lmul) # need to avoid 1.0
+      if register_data['reg_type'] == "scalar" or register_data['reg_type'] == "mask" or emul < 1:
+        emul = 1
+      register = emul * randint(0, int(reg_count/emul) - 1) # only register numbers of multiples of LMUL(EMUL) are allowed
     else: # normal instructions
-      register = randint(0, maxreg) # 0 to maxreg, inclusive
+      register = randint(0, reg_count-1) # 0 to maxreg, inclusive
 
   register_data['reg'] = register
 
@@ -462,7 +464,7 @@ def getVectorEmulMultipliers(instruction):
 #                  Example: no_overlap = [['vs1', 'vs2_top'], ['v0', 'vd_bottom']]
 #                  all values will be continued to be randomized until there is no overlap within lists
 def getInstructionRegisterOverlapConstraints (instruction):
-  no_overlap = []
+  no_overlap = None
 
   if   instruction in wvvins        : no_overlap = [['vd_bottom', 'vs2'], ['vd_bottom', 'vs1']]
   elif instruction in vupgatherins  : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
@@ -485,10 +487,15 @@ def getInstructionRegisterOverlapConstraints (instruction):
 # lmul               - the lmul set in vtype csr
 # **preset_variables - any value in preset_data can be set here, for example vd = 2 will ensure vd is set to the v2 register above all else
 # return             - returns an array of all randomized values following constraints
-def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap = [], **preset_variables):
-
+def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional_no_overlap = None, **preset_variables):
   preset_variables.update(getVectorEmulMultipliers(instruction))
-  no_overlap = [no_overlap] + getInstructionRegisterOverlapConstraints(instruction)
+  no_overlap = []
+
+  instruction_overlap_constaints = getInstructionRegisterOverlapConstraints(instruction)
+  if additional_no_overlap is not None:
+    no_overlap = no_overlap + additional_no_overlap
+  if instruction_overlap_constaints is not None:
+    no_overlap = no_overlap + instruction_overlap_constaints
 
   scalar_register_preset_data         = {
     'rd'  : {'reg' : None, 'val' : None},
@@ -517,9 +524,9 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
   # designate reserved scalar, floating point and vector registers
   ####################################################################################
 
-  scalar_register_data                 = scalar_register_preset_data
-  floating_point_register_data         = floating_point_register_preset_data
-  vector_register_data                 = vector_register_preset_data
+  scalar_register_data                 = scalar_register_preset_data.copy()
+  floating_point_register_data         = floating_point_register_preset_data.copy()
+  vector_register_data                 = vector_register_preset_data.copy()
 
   for variable, value in preset_variables.items():
     found = False
@@ -567,7 +574,7 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
 
   register_overlap = True
 
-  if no_overlap == [[]] or True:
+  if no_overlap == []:
     register_overlap = False
 
     vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
@@ -584,8 +591,9 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
   ####################################################################################
   # check and resolve and register overlap
   ####################################################################################
-
+  count = 0
   while register_overlap:
+
     vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
     vector_register_data         ['vd' ] = randomizeRegister('vd',  vreg_count, vector_register_preset_data, lmul)
     vector_register_data         ['vs1'] = randomizeRegister('vs1', vreg_count, vector_register_preset_data, lmul)
@@ -598,7 +606,6 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
     floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
 
     register_overlap = False
-
     for no_overlap_set in no_overlap:
       register_type = no_overlap_set[0][0] # grab either "v" "x" or "f" to get the register type
       registers_occupied = []
@@ -615,26 +622,26 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
             registers_occupied.append(0)
           else:
             top_no_overlap = False
-            if register[:-4] == "_top": # if specifying no overlap with the top of a register
+            if register[-4:] == "_top": # if specifying no overlap with the top of a register
               top_no_overlap = True     # save for reserved section below
               register = register[:-4]  # remove "_top" from register name
 
             bottom_no_overlap = False
-            if register[:-7] == "_bottom": # if specifying no overlap with the top of a register
+            if register[-7:] == "_bottom": # if specifying no overlap with the top of a register
               bottom_no_overlap = True     # save for reserved section below
               register = register[:-7]  # remove "_top" from register name
 
-            if vector_register_preset_data[register]['reg_type'] == "scalar" or vector_register_preset_data[register]['reg_type'] == "mask":
+            emul = int(vector_register_preset_data[register]['size_multiplier'] * lmul)  # need to avoid 1.0
+            if vector_register_preset_data[register]['reg_type'] == "scalar" or vector_register_preset_data[register]['reg_type'] == "mask" or emul < 1:
               start_no_register_overlap = 0
               end_register_no_overlap   = 1
             else:
-              emul = vector_register_preset_data[register]['size_multiplier'] * lmul  # get lmul multiplier
-              start_no_register_overlap = emul-lmul if top_no_overlap     else 0
-              end_register_no_overlap   = lmul      if bottom_no_overlap  else emul
+              start_no_register_overlap = emul-lmul if top_no_overlap    and lmul >= 1 else 0
+              end_register_no_overlap   = lmul      if bottom_no_overlap and lmul >= 1 else emul
             for i in range(start_no_register_overlap, end_register_no_overlap):
               registers_occupied.append(vector_register_data[register]['reg'] + i) # add register to reserved list to prevent overlap
 
-      if len(registers_occupied) != len(set(registers_occupied)): # checks for duplicates
+      if not len(registers_occupied) == len(set(registers_occupied)): # checks for duplicates
         register_overlap = True
 
   ####################################################################################
@@ -652,7 +659,7 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
   # TODO : implement floating point data address
 
   # immediate handling
-  if immediate_preset_data is not None:
+  if immediate_preset_data is None:
     if (instruction in imm_31):
       immval = randint(0,31)
     else:
@@ -822,7 +829,7 @@ def make_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners, vl=1):
   for v1 in vs1corners:
     for v2 in vs2corners:
       description = "cr_vs2_vs1_corners"
-      instruction_data  = randomizeVectorInstructionData(instruction, vs1_val_pointer = v1, vs2_val_pointer = v2, no_overlap = ['vs1', 'vs2'])
+      instruction_data  = randomizeVectorInstructionData(instruction, vs1_val_pointer = v1, vs2_val_pointer = v2, additional_no_overlap=[['vs1', 'vs2']])
 
       writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
 
@@ -913,10 +920,12 @@ def make_vl_lmul(instruction, sew, maxlmul=8):
       vlval = ["vlmax", 1, "random"]
       vl = vlval[k]
       vta = randint(0,1)
+
       maskval = randomizeMask(test)
+      no_overlap = [['vs1', 'v0'], ['vs2', 'v0']] if maskval is not None else None
 
       description = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
-      instruction_data  = randomizeVectorInstructionData(instruction, suite="length")
+      instruction_data  = randomizeVectorInstructionData(instruction, lmul = lmul, suite="length", additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl=vl, maskval=maskval, vta=vta)
       lengthtest_count += 1
@@ -931,7 +940,7 @@ def make_mask_corners(instruction, sew):
     vma = randint(0,1)
 
     description = f"cp_masking_corners (Test v0 = {m})"
-    instruction_data  = randomizeVectorInstructionData(instruction, suite="length")
+    instruction_data  = randomizeVectorInstructionData(instruction, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0']])
 
     writeTest(description, instruction, instruction_data, sew=sew, vl="vlmax", maskval=m, vma=vma)
     lengthtest_count += 1
@@ -946,11 +955,12 @@ def make_vtype_agnostic(instruction, sew):
         lmul = 2 ** randint(0, 3) # pick random integer LMUL to ensure that coverpoints are hit
 
       maskval = randomizeMask(instruction)
+      no_overlap = [['vs1', 'v0'], ['vs2', 'v0']] if maskval is not None else None
       vta = t
       vma = m
 
       description = f"cr_vtype_agnostic (Test vta = {vta}, vma = {vma})"
-      instruction_data  = randomizeVectorInstructionData(instruction, suite="length")
+      instruction_data  = randomizeVectorInstructionData(instruction, lmul = lmul, suite="length", additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="random", maskval=maskval, vta=vta, vma=vma)
       lengthtest_count += 1
@@ -1700,6 +1710,8 @@ if __name__ == '__main__':
         insertTemplate("testgen_footer_vector1.S")
 
         # generate vector data (random and corners)
+        if (test not in xvtype and test not in xvmtype) :
+          genVector(test, sew, vs="vd")
         if (test in narrowins) or (test in vd_widen_ins):
           genVector(test, sew, vs="vs2", emul=2)
           if (test in vs1ins):
