@@ -591,7 +591,7 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
   ####################################################################################
   # check and resolve and register overlap
   ####################################################################################
-  count = 0
+
   while register_overlap:
 
     vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
@@ -613,7 +613,7 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
       for register in no_overlap_set:
         if not register_type == register[0]:
           raise TypeError(f"Register type mismatch from {register_type}: '{register}'")
-        elif   register_type == 'x':
+        elif register_type == 'x':
           registers_occupied.append(scalar_register_data[register]['reg']) # add register value to list to check for overlap
         elif register_type == 'f':
           registers_occupied.append(floating_point_register_data[register]['reg']) # add register to reserved list to prevent overlap
@@ -651,10 +651,10 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
   else:
     test_count = base_suite_test_count
 
-  vector_register_data['vs3']['val_pointer'] = f"vs3_random_{suite}_{test_count:03d}"
-  vector_register_data['vd' ]['val_pointer'] = f" vd_random_{suite}_{test_count:03d}"
-  vector_register_data['vs1']['val_pointer'] = f"vs1_random_{suite}_{test_count:03d}"
-  vector_register_data['vs2']['val_pointer'] = f"vs2_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs3']['val_pointer'] is None: vector_register_data['vs3']['val_pointer'] = f"vs3_random_{suite}_{test_count:03d}"
+  if vector_register_data['vd' ]['val_pointer'] is None: vector_register_data['vd' ]['val_pointer'] = f" vd_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs1']['val_pointer'] is None: vector_register_data['vs1']['val_pointer'] = f"vs1_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs2']['val_pointer'] is None: vector_register_data['vs2']['val_pointer'] = f"vs2_random_{suite}_{test_count:03d}"
 
   # TODO : implement floating point data address
 
