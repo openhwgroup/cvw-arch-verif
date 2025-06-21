@@ -6,8 +6,11 @@
     la t0, scratch
     li t2, 0x123456789ABCDEF0
     sc.d t1, t2, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t1)
     sc.d.rl t1, t2, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t1)
     sc.d.aqrl t1, t2, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t1)
 
 # cp_custom_sc_lrsc
     li t3, 0x2345678998765432
@@ -17,19 +20,24 @@
     # should succeed
     lr.d t1, (t0)
     sc.d t2, t3, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t2)
 
     # should succeed
     lr.w t1, (t0)
     sc.d t2, t4, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t2)
 
     # should succeed
     lr.d t1, (t0)
     sc.w t2, t5, (t0)
+    RVTEST_SIGUPD(SIGPOINTER, t2)
 
     # should fail because of intervening sc
     lr.d t1, (t0)
     sc.d t2, t3, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t2)
     sc.d t5, t4, (t0) # fails
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
 # cp_custom_sc_addresses
     # loop over distances of 0 to 120 from lr to sc address
@@ -38,8 +46,9 @@
     add t5, t0, t6      # scratch address + offset
     lr.d t1, (t0)       # load from reservation set
     sc.d t1, t3, (t5)   # try store conditional, should succeed if in same set
+    RVTEST_SIGUPD(SIGPOINTER, t1)
     sc.d t1, t3, (t5)   # try again, and it should fail this time
-
+    RVTEST_SIGUPD(SIGPOINTER, t1)
     # for RV64, also check different size lr vs. sc
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
@@ -59,18 +68,22 @@
     lr.d t1, (t0)
     sb t3, 3(t0)      # store byte
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.d t1, (t0)
     sh t3, 2(t0)      # store half
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.d t1, (t0)
     sw t3, 4(t0)      # store word
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.d t1, (t0)
     sd t3, 0(t0)      # store double
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
 # cp_custom_sc_after_load
     # should not care about intervening loads
@@ -78,60 +91,74 @@
     lr.w t1, (t0)
     lb t3, 3(t0)      # load byte
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lb t3, 128(t0)      # load byte
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lbu t3, 2(t0)      # load byte unsigned
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lbu t3, 128(t0)      # load byte unsigned
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lh t3, 2(t0)      # load half
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lh t3, 128(t0)      # load half
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lhu t3, 0(t0)      # load half unsigned
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lhu t3, 128(t0)      # load half unsigned
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lw t3, 0(t0)      # load word
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     lr.w t1, (t0)
     lw t3, 128(t0)      # load word
     sc.d t5, t4, (t0) # succeeds
+    RVTEST_SIGUPD(SIGPOINTER, t5)
 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lr.w t1, (t0)
             lwu t3, 0(t0)      # load word unsigned
             sc.d t5, t4, (t0) # succeeds
+            RVTEST_SIGUPD(SIGPOINTER, t5)
 
             lr.w t1, (t0)
             lwu t3, 128(t0)      # load word unsigned
             sc.d t5, t4, (t0) # succeeds
+            RVTEST_SIGUPD(SIGPOINTER, t5)
 
             lr.w t1, (t0)
             ld t3, 0(t0)      # load double
             sc.d t5, t4, (t0) # succeeds
+            RVTEST_SIGUPD(SIGPOINTER, t5)
 
             lr.w t1, (t0)
             ld t3, 128(t0)      # load double
             sc.d t5, t4, (t0) # succeeds
+            RVTEST_SIGUPD(SIGPOINTER, t5)
 
         #endif
     #else

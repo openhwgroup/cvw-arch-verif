@@ -33,6 +33,10 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
+    if 'Zalrsc' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
+      ext_parts_no_I = ['A']#+ext_parts_no_I
+    if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
+      ext_parts_no_I = ['A']#+ext_parts_no_I
     if 'f' in  ext_parts[0]:
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
@@ -53,31 +57,31 @@ def insertTemplate(name, is_custom=False):
     template = template.replace("Instruction", test)
 
     if is_custom:
-      if name == "sw.S":
-        # Extract the argument from SIG_POINTER_INCREMENT(n)
-        match = re.search(r"SIG_POINTER_INCREMENT\((\d+)\)", template)
-        sig_pointer_incr = int(match.group(1)) if match else 0  # Value
-        # Validation: SIG_POINTER_INCREMENT must exist and be > 0
-        if sig_pointer_incr == 0:
-          print(f"Warning: Missing or invalid SIG_POINTER_INCREMENT(n) macro in template '{name}'. Removing the line.")
-          print(f"Warning: This will possible break your signature coverage for this custom test '{name}, if you have instructions in it.")
-          # Remove the SIG_POINTER_INCREMENT line from the template
-          template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
-          #sys.exit(1) # When we are done with more custom tests, we can decide if this is used
-        else:
-          # Replace macros in template# Remove the macro line
-          template = re.sub(r"[ \t]*SIG_POINTER_INCREMENT\(\d+\).*?\n", "", template)
-
+      # Count SIGUPD macros
+      sigupd_countcustom = template.count("RVTEST_SIGUPD(")
+      # Count SIG_POINTER_INCREMENT(...) macros
+      sig_pointer_incr_matches = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
+      # Handle RVTEST_SIGUPD usage
+      if sigupd_countcustom > 0:
           template = template.replace("SIGPOINTER", f"x{sigReg}")
+          sigupd_count += sigupd_countcustom
+      # Handle SIG_POINTER_INCREMENT(n) usage
+      if sig_pointer_incr_matches:
+          template = template.replace("SIGPOINTER", f"x{sigReg}")
+          for m in sig_pointer_incr_matches:
+              incr_val = int(m.group(1))
+              addi_instr = f"addi x{sigReg}, x{sigReg}, {incr_val}  # increment pointer {incr_val} bytes"
+              template = template.replace(m.group(0), addi_instr, 1)
+              sigupd_count += incr_val // (4 * (xlen // 32))
+      # Handle wrong or unused macro
+      elif "SIG_POINTER_INCREMENT" in template and not sig_pointer_incr_matches:
+          print(f"Warning: Invalid or missing SIG_POINTER_INCREMENT(n) in '{name}'. Removing it.")
+          template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
 
-          indent = "    "  # 4 spaces
-          lines = []
-          # Generate the increment logic:input in bytes, output in increments of REGWIDTH
-          count = sig_pointer_incr//(4*(xlen//32)) # count is the number of increments
-          sigupd_count += count # Update sigupd_count
-          lines.append(f"{indent}addi x{sigReg}, x{sigReg}, {sig_pointer_incr}  # increment pointer {sig_pointer_incr} bytes") # Incrementing sig ointer by the byte size of the custom test
-          template += "\n".join(lines) + "\n"
+    # After this block, write to file
     f.write(template)
+
+
 
 def insert_all_Z_underscores_after_first(s):
     matches = list(re.finditer(r'Z[a-z]+', s))
@@ -511,12 +515,20 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + ibtype_unsignedImm(xlen, immval) + " # perform operation\n")
   elif (test in amotype):
     storeop = "sw" if (xlen == 32) else "sd"
-    lines = lines + f"li x{rs2}, {formatstr.format(rs1val)} # load random value\n"
+    loadop = "lw" if (xlen == 32) else "ld"
+    align = 4 if test.endswith(".w") else 8
+    aligned_rs1val = rs1val & ~(align - 1)
+    lines = lines + f"li x{rs2}, {formatstr.format(aligned_rs1val)} # load random value\n"
     lines = lines + f"la x{rs1}, scratch # base address\n"
     lines = lines + f"{storeop} x{rs2}, 0(x{rs1}) # store in memory\n"
     if (rs2 != rs1):
-      lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load another value into integer register\n"
+      aligned_rs2val = rs2val & ~(align - 1)
+      lines = lines + f"li x{rs2}, {formatstr.format(aligned_rs2val)} # load another value into integer register\n"
     lines = lines + f"{test} x{rd}, x{rs2}, (x{rs1}) # perform operation\n"
+    lines += writeSIGUPD(rd)
+    if (rd != rs1):
+      lines = lines + f"{loadop} x{rs2}, 0(x{rs1}) # Load the updated value from memory \n"
+      lines += writeSIGUPD(rs2)
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]  # *** update to use constant memory
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
@@ -643,9 +655,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       if test == "sd":
-        WIDTH = 64
+        WIDTH = 8
       else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register \n"
       sigupd_count += 1
   elif (test in csstype):
@@ -666,9 +678,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
     if test in ["c.sd", "c.fsd","c.sdsp", "c.fsdsp"]:
-        WIDTH = 64
+        WIDTH = 8
     else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
 
@@ -758,9 +770,9 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     if test == "fsd":
-        WIDTH = 64
+        WIDTH = 8
     else:
-        WIDTH = 32
+        WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
   elif (test in F2Xtype):
@@ -803,11 +815,13 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!! \n"
+    lines = lines + f"sw x{rs2}, 0(x{rs1}) # store word for RV32\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in sctype:
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!!! \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
@@ -1017,14 +1031,23 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     if (test in csrtype or test in csritype):
       lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
       lines = lines + "csrw " + "mscratch" + ", x" + str(rs3b) + " # Write random immediate into mscratch\n"
-
+    if (test in sctype):
+      lines = lines + "li x" + str(rs1b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+    if (test in lrtype):
+      lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+      lines = lines + f"sw x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # storing imm into scratch\n"
+    if (test in amotype):
+      storeop = "sw" if (xlen == 32) else "sd"
+      lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+      lines = lines + f"{storeop} x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # store in memory\n"
+      lines = lines + "li x" + str(rs1b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
                     [rda, rdb], [rs1a, rs1b],
                     [rs2a, rs2b], [rs3a, rs3b],
                     [immvala, immvalb],
-                    ["perform first operation", "perform second (triggering) operation"],
+                    ["perform first operation", "perform second (triggering) operation!!!!!"],
                     xlen)
     if testa in floattypes and testa not in fTOrtype:
       lines += writeSIGUPD_F(rda)
