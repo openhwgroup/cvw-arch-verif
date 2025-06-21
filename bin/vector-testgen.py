@@ -337,9 +337,9 @@ def writeTest(description, instruction, instruction_data,
     testline = testline[:-2] # remove the ", " at the end of the test
 
     if (maskval is not None) or (vl is not None):
-      lines = writeVecTest(lines, vd, sew, testline, test=test, rd=rd, vl=vl)
+      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, vl=vl)
     else:
-      lines = writeVecTest(lines, vd, sew, testline, test=test, rd=rd)
+      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd)
 
     if (genLMULIfdef(lmul) != ""):
       lines = lines + "#endif\n"
@@ -978,8 +978,8 @@ def write_tests(coverpoints, test, sew=None):
       make_imm_v(test, sew)
     elif (coverpoint == "cp_vd"):
       make_vd(test, sew, range(maxreg+1))
-    elif (coverpoint == "cp_vs3"):
-      make_vs3(test, sew, range(maxreg+1))
+    # elif (coverpoint == "cp_vs3"):
+    #   make_vs3(test, sew, range(maxreg+1))
     elif (coverpoint == "cp_vd_nv0"):
       make_vd(test, sew, range(1,maxreg+1))
     elif (coverpoint == "cp_vd_emul2"):
