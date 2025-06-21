@@ -107,15 +107,31 @@ def loadVFloatReg(reg, val, sew):
   lines = lines + f"{loadop} v{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into v{reg}\n"
   return lines
 
-def loadVecReg(reg, pointer, sew):
-    loadop = f"vle{sew}.v"
-    lines = ""
-    tempReg = 6
-    while tempReg == sigReg:
+def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, *scalar_registers_used):
+    scalar_registers_used = list(scalar_registers_used)
+    register_data         = vector_register_data[register_argument_name]
+
+    register              = register_data['reg']
+    register_val_pointer  = register_data['val_pointer']
+    register_sew          = register_data['size_multiplier'] * sew if not register_data['reg_type'] == "mask" else 8
+
+    tempReg = 4
+    while tempReg in scalar_registers_used:
       tempReg = randint(1,31)
-    lines = lines + f"la x{tempReg}, {pointer}             # Load address of desired value\n"
-    lines = lines + f"{loadop} v{reg}, (x{tempReg})                       # Load desired value from memory into v{reg}\n"
-    return lines
+    scalar_registers_used.append(tempReg)
+
+    lines = lines + f"la x{tempReg}, {register_val_pointer}             # Load address of desired value\n"
+    lines = lines + f"vle{register_sew}.v v{register}, (x{tempReg})                       # Load desired value from memory into v{reg}\n"
+
+    return lines, scalar_registers_used
+
+def loadScalarReg(lines, register_argument_name: str, scalar_register_data):
+  register_data   = scalar_register_data[register_argument_name]
+  register        = register_data['reg']
+  register_value  = register_data['val']
+
+  lines = lines + f"li x{register}, {formatstr.format(register_value)}             # Load immediate value into integer register\n"
+  return lines
 
 # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
 def handleSignaturePointerConflict(lines, *registers):
@@ -220,26 +236,26 @@ def writeTest(description, instruction, instruction_data,
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
-    vd      = vector_register_data        ['vd'] ['reg']
-    vs1     = vector_register_data        ['vs1']['reg']
-    vs2     = vector_register_data        ['vs2']['reg']
-    vs3     = vector_register_data        ['vs3']['reg']
-    vd_val  = vector_register_data        ['vd'] ['val']
-    vs1_val = vector_register_data        ['vs1']['val']
-    vs2_val = vector_register_data        ['vs2']['val']
-    vs3_val = vector_register_data        ['vs3']['val']
+    vd              = vector_register_data        ['vd'] ['reg']
+    vs1             = vector_register_data        ['vs1']['reg']
+    vs2             = vector_register_data        ['vs2']['reg']
+    vs3             = vector_register_data        ['vs3']['reg']
+    vd_val_pointer  = vector_register_data        ['vd'] ['val_pointer']
+    vs1_val_pointer = vector_register_data        ['vs1']['val_pointer']
+    vs2_val_pointer = vector_register_data        ['vs2']['val_pointer']
+    vs3_val_pointer = vector_register_data        ['vs3']['val_pointer']
 
-    rd      = scalar_register_data        ['rd'] ['reg']
-    rs1     = scalar_register_data        ['rs1']['reg']
-    rs2     = scalar_register_data        ['rs2']['reg']
-    rd_val  = scalar_register_data        ['rd'] ['val']
-    rs1_val = scalar_register_data        ['rs1']['val']
-    rs2_val = scalar_register_data        ['rs2']['val']
+    rd              = scalar_register_data        ['rd'] ['reg']
+    rs1             = scalar_register_data        ['rs1']['reg']
+    rs2             = scalar_register_data        ['rs2']['reg']
+    rd_val          = scalar_register_data        ['rd'] ['val']
+    rs1_val         = scalar_register_data        ['rs1']['val']
+    rs2_val         = scalar_register_data        ['rs2']['val']
 
-    fd      = floating_point_register_data['fd'] ['reg']
-    fs1     = floating_point_register_data['fs1']['reg']
-    fd_val  = floating_point_register_data['fd'] ['val']
-    fs1_val = floating_point_register_data['fs1']['val']
+    fd              = floating_point_register_data['fd'] ['reg']
+    fs1             = floating_point_register_data['fs1']['reg']
+    fd_val_pointer  = floating_point_register_data['fd'] ['val_pointer']
+    fs1_val_pointer = floating_point_register_data['fs1']['val_pointer']
 
     scalar_registers_used = [rd, rs1, rs2]
 
@@ -305,14 +321,13 @@ def writeTest(description, instruction, instruction_data,
       elif arguemnt == 'imm':
         testline = testline + f"{imm_val}"
       elif arguemnt[0] == 'v':
-        loadVecReg(lines, argument, vector_register_data[arguemnt])
-        vs3_eew = sew * vector_register_data['vs3']['size_multiplier'] if not vector_register_data['vs3']['reg_type'] == "mask" else 1
+        lines, scalar_registers_used = loadVecReg(lines, arguemnt, vector_register_data, sew, *scalar_registers_used)
         testline = testline + f"v{vector_register_data[arguemnt]['reg']}"
       elif arguemnt[0] == 'x':
-        loadReg
+        lines = loadScalarReg(lines, arguemnt, scalar_register_data)
         testline = testline + f"x{scalar_register_data[arguemnt]['reg']}"
       elif arguemnt[0] == 'f':
-        loadReg
+        # TODO : implement load value for floating point
         testline = testline + f"f{floating_point_register_data[arguemnt]['reg']}"
       else:
         raise TypeError(f"Instruction Argument type not supported: '{arguemnt}'")
@@ -328,6 +343,7 @@ def writeTest(description, instruction, instruction_data,
 
     if (genLMULIfdef(lmul) != ""):
       lines = lines + "#endif\n"
+
     f.write(lines)
 
 def prepBaseV(lines, sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
@@ -410,16 +426,17 @@ def getRandomRegister(register_argument_name: str, maxreg: int, register_preset_
     else: # normal instructions
       register = randint(maxreg) # 1 to maxreg, inclusive
 
+  register_data['reg'] = register
+
   if register_value is None:
     if   register_type == "x":
-      register_value = randint(0, (2**xlen)-1)
-    elif register_type == "f":
-      register_value = randint(0, (2**flen)-1)
-    elif register_type == "v":
-      register_value = randint(0, (2**sew)-1)
+      register_data['val'] = randint(0, (2**xlen)-1)
 
-  register_data['reg'] = register
-  register_data['val'] = register_value
+    # TODO: this is not where values are randomized for f and v
+    # elif register_type == "f":
+    #   register_value = randint(0, (2**flen)-1)
+    # elif register_type == "v":
+    #   register_value = randint(0, (2**sew)-1)
 
   return register_data
 
@@ -490,15 +507,15 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
   }
 
   floating_point_register_preset_data = {
-    'fd'  : {'reg' : None, 'val' : None},
-    'fs1' : {'reg' : None, 'val' : None}
+    'fd'  : {'reg' : None, 'val_pointer' : None},
+    'fs1' : {'reg' : None, 'val_pointer' : None}
   }
 
   vector_register_preset_data         = {
-    'vs3' : {'reg' : None, 'val' : None, 'size_multiplier' : 1, 'reg_type' : None},
-    'vd'  : {'reg' : None, 'val' : None, 'size_multiplier' : 1, 'reg_type' : None},
-    'vs1' : {'reg' : None, 'val' : None, 'size_multiplier' : 1, 'reg_type' : None},
-    'vs2' : {'reg' : None, 'val' : None, 'size_multiplier' : 1, 'reg_type' : None}
+    'vs3' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None},
+    'vd'  : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None},
+    'vs1' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None},
+    'vs2' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None}
   }
 
   immediate_preset_data               = None
@@ -616,15 +633,17 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", no_overlap
       if len(registers_occupied) != len(set(registers_occupied)): # checks for duplicates
         register_overlap = True
 
-
   if (suite == "length"):
     test_count = length_suite_test_count
   else:
     test_count = base_suite_test_count
 
-  vs1_val = f"vs1_random_{suite}_{test_count:03d}"
-  vs2val = f"vs2_random_{suite}_{test_count:03d}"
-  vdval  = "vd_val_random"
+  vector_register_data['vs3']['val_pointer'] = f"vs3_random_{suite}_{test_count:03d}"
+  vector_register_data['vd' ]['val_pointer'] = f" vd_random_{suite}_{test_count:03d}"
+  vector_register_data['vs1']['val_pointer'] = f"vs1_random_{suite}_{test_count:03d}"
+  vector_register_data['vs2']['val_pointer'] = f"vs2_random_{suite}_{test_count:03d}"
+
+  # TODO : implement floating point data address
 
   # immediate handling
   if immediate_preset_data is not None:
