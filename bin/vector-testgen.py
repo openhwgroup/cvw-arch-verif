@@ -922,7 +922,7 @@ def make_vl_lmul(instruction, sew, maxlmul=8):
       vta = randint(0,1)
 
       maskval = randomizeMask(test)
-      no_overlap = [['vs1', 'v0'], ['vs2', 'v0']] if maskval is not None else None
+      no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
 
       description = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
       instruction_data  = randomizeVectorInstructionData(instruction, lmul = lmul, suite="length", additional_no_overlap=no_overlap)
@@ -940,7 +940,7 @@ def make_mask_corners(instruction, sew):
     vma = randint(0,1)
 
     description = f"cp_masking_corners (Test v0 = {m})"
-    instruction_data  = randomizeVectorInstructionData(instruction, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0']])
+    instruction_data  = randomizeVectorInstructionData(instruction, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']])
 
     writeTest(description, instruction, instruction_data, sew=sew, vl="vlmax", maskval=m, vma=vma)
     lengthtest_count += 1
@@ -955,7 +955,7 @@ def make_vtype_agnostic(instruction, sew):
         lmul = 2 ** randint(0, 3) # pick random integer LMUL to ensure that coverpoints are hit
 
       maskval = randomizeMask(instruction)
-      no_overlap = [['vs1', 'v0'], ['vs2', 'v0']] if maskval is not None else None
+      no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
       vta = t
       vma = m
 
