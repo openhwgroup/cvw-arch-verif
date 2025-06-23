@@ -1,9 +1,0 @@
-    mstatus_vs_inactive    : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "mstatus", "vs") {
-        bins inactive = {0};
-    }
-
-    vsstatus_vs_active : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vsstatus", "vs") {
-        bins active = {1};
-    }
-
-    cp_exceptionsv_mstatus_vs_off : cross std_trap_vec, misa_v_active, mstatus_vs_inactive, vsstatus_vs_active;

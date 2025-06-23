@@ -20,41 +20,93 @@
 //
 //
 
-function int get_vlmax(int hart, int issue, int prev);
+function int get_vtype_vlmax(int hart, int issue, int prev);
 
-    int vlen = get_csr_val(hart, issue, prev, "vlenb", "vlenb") * 8;
-    int vlen_div_sew;
-    int vlmax;
+  logic[2:0] vsew  = get_csr_val(hart, issue, prev, "vtype", "vsew") [2:0];
+  logic[2:0] vlmul = get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0];
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vsew")[1:0])
-        2'b00: vlen_div_sew = vlen / 8;
-        2'b01: vlen_div_sew = vlen / 16;
-        2'b10: vlen_div_sew = vlen / 32;
-        2'b11: vlen_div_sew = vlen / 64;
+  case (vlmul)
+        3'b000: begin end
+        3'b001: begin end
+        3'b010: begin end
+        3'b011: begin end
+        3'b101: begin end
+        3'b110: begin end
+        3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vsew"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
             $finish(-1);
         end
     endcase
 
-    case (get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0])
-        3'b000: vlmax = vlen_div_sew;
-        3'b001: vlmax = vlen_div_sew * 2;
-        3'b010: vlmax = vlen_div_sew * 4;
-        3'b011: vlmax = vlen_div_sew * 8;
-        3'b101: vlmax = vlen_div_sew / 8; // 1/8
-        3'b110: vlmax = vlen_div_sew / 4; // 1/4
-        3'b111: vlmax = vlen_div_sew / 2; // 1/2
+    case (vsew)
+        3'b000: begin end
+        3'b001: begin end
+        3'b010: begin end
+        3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)",
-                    get_csr_val(hart, issue, prev, "vtype", "vlmul"));
+            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
             $finish(-1);
+        end
+    endcase
+
+  if(get_csr_val(hart, issue, prev, "vtype", "vill") == 1) begin
+    return -1;   // make sure no coverpoint can ever be hit when vill bit is set
+  end
+
+  return get_vlmax_params(hart, issue, vsew, vlmul);
+endfunction
+
+
+function int get_vlmax_params(int hart, int issue, logic[2:0] vsew, logic[2:0] vlmul);
+
+    int vlen = get_csr_val(hart, issue, 0, "vlenb", "vlenb") * 8;
+    int vlen_times_lmul;
+    int vlmax;
+
+    case (vlmul)
+        3'b000: vlen_times_lmul = vlen;
+        3'b001: vlen_times_lmul = vlen * 2;
+        3'b010: vlen_times_lmul = vlen * 4;
+        3'b011: vlen_times_lmul = vlen * 8;
+        3'b101: vlen_times_lmul = vlen / 8; // 1/8
+        3'b110: vlen_times_lmul = vlen / 4; // 1/4
+        3'b111: vlen_times_lmul = vlen / 2; // 1/2
+        default: begin
+          return -1;
+        end
+    endcase
+
+    case (vsew)
+        3'b000: vlmax = vlen_times_lmul / 8;
+        3'b001: vlmax = vlen_times_lmul / 16;
+        3'b010: vlmax = vlen_times_lmul / 32;
+        3'b011: vlmax = vlen_times_lmul / 64;
+        default: begin
+          return -1;
         end
     endcase
 
     return vlmax;
 
+endfunction
+
+function logic check_vtype_sew_supported(`XLEN_BITS vsew);
+
+    `ifdef SEW8_SUPPORTED
+    if (vsew == 0) return 1'b1;
+    `endif
+    `ifdef SEW16_SUPPORTED
+    if (vsew == 1) return 1'b1;
+    `endif
+    `ifdef SEW32_SUPPORTED
+    if (vsew == 2) return 1'b1;
+    `endif
+    `ifdef SEW64_SUPPORTED
+    if (vsew == 3) return 1'b1;
+    `endif
+
+    return 1'b0;
 endfunction
 
 
@@ -87,7 +139,7 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     "f2":    eew = sew / 2;
     "f4":    eew = sew / 4;
     "f8":    eew = sew / 8;
-    "m":     eew = 1;
+    "m":     eew = 8;       // vl = 8 and eew = 1 for mask (logical) instructions
     default: begin
       $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
       $finish(-1);
@@ -95,7 +147,6 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
   endcase
 
   case (eew)
-    1:   return vs_corners_check_eew_1(val);
     8:   return vs_corners_check_eew_8(val);
     `ifdef SEW16_SUPPORTED
     16:  return vs_corners_check_eew_16(val);
@@ -192,7 +243,8 @@ function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
 endfunction
 `endif
 
-function logic[63:0] get_vr_element_zero(hart, issue, `VLEN_BITS val);
+
+function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
     case (vsew)
@@ -218,25 +270,47 @@ endfunction
 typedef enum {
     mask_zero,
     mask_ones,
-    mask_walkeodd,
-    mask_walkeven,
     mask_vlmaxm1ones,
     mask_vlmaxd2p1ones,
     mask_random
 } corner_mask_values_t;
 
 // Check for vector operand corner values, assuming vl = 1
-function corner_mask_values_t mask_corners_check(hart, issue, `VLEN_BITS mask_val);
-  int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
-  $display("mask_val: %h", mask_val);
-  $display("mask_one: %h", ((2 ** (vlmax)) - 1) * 2 / 3);
+function corner_mask_values_t mask_corners_check(int hart, int issue, `VLEN_BITS mask_val);
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
 
-  if      (mask_val == 0) return mask_zero;
-  else if (mask_val == ((2 ** (vlmax)) - 1)) return mask_ones;
-  else if (mask_val == ((2 ** (vlmax)) - 1) * 2/ 3) return mask_walkeodd;
-  else if (mask_val == ((2 ** (vlmax)) - 1) / 3) return mask_walkeven;
-  else if (mask_val == ((2 ** (vlmax-1)) - 1)) return mask_vlmaxm1ones;
-  else if (mask_val == ((2 ** (vlmax/2+1)) - 1)) return mask_vlmaxd2p1ones;
-  else                                                                    return mask_random;
+  if      (mask_val == 0)                           return mask_zero;
+  else if (mask_val == ((2 ** (vlmax)) - 1))        return mask_ones;
+  else if (mask_val == ((2 ** (vlmax-1)) - 1))      return mask_vlmaxm1ones;
+  else if (mask_val == ((2 ** (vlmax/2+1)) - 1))    return mask_vlmaxd2p1ones;
+  else                                              return mask_random;
 
+endfunction
+
+
+typedef enum {
+  vl_zero,
+  vl_one,
+  vl_vlmax,
+  vl_legal,
+  vl_illegal
+} vl_t;
+
+function vl_t vl_check(int hart, int issue);
+  `XLEN_BITS vl = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vl", "vl");
+  `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
+  bit legal;
+  if (vl <= vlmax & vl > vstart) legal = 1'b1; // check legal condition
+  else                           legal = 1'b0;
+
+  case(vl)
+    0:         return vl_zero;
+    1:         return vl_one;
+    vlmax:     return vl_vlmax;
+    default: begin
+      if (legal) return vl_legal;
+      else       return vl_illegal;
+    end
+  endcase
 endfunction

@@ -91,7 +91,9 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     template = template.replace("ARCHCASE", arch)
     template = template.replace("ARCH", arch.lower())
     if (effew != ""):
-        template = template.replace("EFFEW", str(int(math.log2(int(effew)))-3))
+        template = template.replace("TWOEFFEW", str(2 * int(effew)))
+        template = template.replace("EFFEW", str(int(effew)))
+        template = template.replace("EFFVSEW", str(int(math.log2(int(effew)))-3))
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64
@@ -116,13 +118,25 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
+        vectorwiden = (arch.startswith("Vx")) and (instr.startswith("vw") or (".w" in instr))
         if (match32 and match64):
-            f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
-            finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
+            if (vectorwiden):
+                effew = arch[2:]  # e.g. "8" from "Vx8"
+                f.write(customizeTemplate(covergroupTemplates, "instruction_vector_widen", arch, instr, effew=effew))
+                finit.write(customizeTemplate(covergroupTemplates, "init_vector_widen", arch, instr, effew=effew))
+            else:
+                f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
+                finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
             for cp in cps:
                 if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
+                    if ("lmul" in cp):
+                        effew = arch[2:]  # e.g. "8" from "Vx8"
+                        cp = cp + "_sew" + effew
                     f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
-            f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+            if (vectorwiden):
+                f.write(customizeTemplate(covergroupTemplates, "endgroup_vector_widen", arch, instr))
+            else:
+                f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
 
 def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
     for instr in k:
@@ -130,8 +144,12 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
-            if arch.startswith("Vx") or arch.startswith("Zv"):
-                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector", arch, instr))
+            if arch.startswith("Vx"):
+                if instr.startswith("vw") or (".w" in instr):
+                    effew = arch[2:]  # e.g. "8" from "Vx8"
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector_widen", arch, instr, effew=effew))
+                else:
+                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector", arch, instr))
             elif arch != "E": # E currently breaks coverage
                 f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
 
@@ -160,13 +178,16 @@ def writeCovergroups(testPlans, covergroupTemplates):
             with open(os.path.join(covergroupDir,"unpriv",file), "w") as f:
                 finit = open(os.path.join(covergroupDir,"unpriv",initfile), "w")
                 #print(covergroupTemplates)
-                f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
-                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
-                k = list(tp.keys())
-                k.sort()
-
                 if arch.startswith("Vx"):
                     effew = arch[2:]  # e.g. "8" from "Vx8"
+                    f.write(customizeTemplate(covergroupTemplates,"header_vector", arch, "", effew=effew))
+                else:
+                    f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
+                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
+
+                k = list(tp.keys())
+                k.sort()
+                if arch.startswith("Vx"):
                     k = [instr for instr in k if f"EFFEW{effew}" in tp[instr]]
 
                 writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
