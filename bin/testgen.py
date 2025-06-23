@@ -61,23 +61,27 @@ def insertTemplate(name, is_custom=False):
       sigupd_countcustom = template.count("RVTEST_SIGUPD(")
       # Count SIG_POINTER_INCREMENT(...) macros
       sig_pointer_incr_matches = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
+      lines = []
       # Handle RVTEST_SIGUPD usage
       if sigupd_countcustom > 0:
-          template = template.replace("SIGPOINTER", f"x{sigReg}")
-          sigupd_count += sigupd_countcustom
+        lines.append(f"mv x3, x{sigReg}  # copy sig pointer")
+        template = template.replace("SIGPOINTER", "x3")
+        sigupd_count += sigupd_countcustom
       # Handle SIG_POINTER_INCREMENT(n) usage
       if sig_pointer_incr_matches:
-          template = template.replace("SIGPOINTER", f"x{sigReg}")
-          for m in sig_pointer_incr_matches:
-              incr_val = int(m.group(1))
-              addi_instr = f"addi x{sigReg}, x{sigReg}, {incr_val}  # increment pointer {incr_val} bytes"
-              template = template.replace(m.group(0), addi_instr, 1)
-              sigupd_count += incr_val // (4 * (xlen // 32))
+        lines.append(f"mv x3, x{sigReg}  # copy sig pointer")
+        template = template.replace("SIGPOINTER", "x3")
+        for m in sig_pointer_incr_matches:
+            incr_val = int(m.group(1))
+            addi_instr = f"addi x{sigReg}, x{sigReg}, {incr_val}  # increment pointer {incr_val} bytes"
+            template = template.replace(m.group(0), addi_instr, 1)
+            sigupd_count += incr_val // (4 * (xlen // 32))
       # Handle wrong or unused macro
       elif "SIG_POINTER_INCREMENT" in template and not sig_pointer_incr_matches:
           print(f"Warning: Invalid or missing SIG_POINTER_INCREMENT(n) in '{name}'. Removing it.")
           template = re.sub(r"SIG_POINTER_INCREMENT\(\d*\)", "", template)
-
+      for line in lines:
+        f.write(line + "\n")
     # After this block, write to file
     f.write(template)
 
@@ -517,18 +521,16 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeop = "sw" if (xlen == 32) else "sd"
     loadop = "lw" if (xlen == 32) else "ld"
     align = 4 if test.endswith(".w") else 8
-    aligned_rs1val = rs1val & ~(align - 1)
-    lines = lines + f"li x{rs2}, {formatstr.format(aligned_rs1val)} # load random value\n"
+    lines = lines + f"li x{rs2}, {formatstr.format(rs1val)} # load random value\n"
     lines = lines + f"la x{rs1}, scratch # base address\n"
     lines = lines + f"{storeop} x{rs2}, 0(x{rs1}) # store in memory\n"
     if (rs2 != rs1):
-      aligned_rs2val = rs2val & ~(align - 1)
-      lines = lines + f"li x{rs2}, {formatstr.format(aligned_rs2val)} # load another value into integer register\n"
+      lines = lines + f"li x{rs2}, {formatstr.format(rs2val)} # load another value into integer register\n"
     lines = lines + f"{test} x{rd}, x{rs2}, (x{rs1}) # perform operation\n"
     lines += writeSIGUPD(rd)
     if (rd != rs1):
-      lines = lines + f"{loadop} x{rs2}, 0(x{rs1}) # Load the updated value from memory \n"
-      lines += writeSIGUPD(rs2)
+      lines = lines + f"{loadop} x{rs1}, 0(x{rs1}) # Load the updated value from memory \n"
+      lines += writeSIGUPD(rs1)
   elif (test in loaditype):#["lb", "lh", "lw", "ld", "lbu", "lhu", "lwu"]  # *** update to use constant memory
     if (rs1 != 0):
       lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"

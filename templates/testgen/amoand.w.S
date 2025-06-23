@@ -8,6 +8,6 @@ li t2, 0xA5A5A5A5
 
 # cp_align_word
 amoand.w t1, t2, (t0)
-
-#NOTE: haven't added a signature becuase rs1 is misaligned and that
-#      will cause an access-fault exception whenever we do a memory access
+RVTEST_SIGUPD(SIGPOINTER, t1)
+lw t3, 0(t0)              # Load updated memory
+RVTEST_SIGUPD(SIGPOINTER, t3)    # Expect 0x3F190B55 (updated memory value)
