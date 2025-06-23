@@ -293,11 +293,11 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
   signatureWords = sigupd_count
   if sigupd_countF > 0:
-    if flen > xlen:
+    if flen >= xlen:
       mult = flen//xlen
-      signatureWords = sigupd_count + (sigupd_countF * ((mult*2)-1)) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+      signatureWords = 3 * sigupd_count + (sigupd_countF * ((mult)))   ###*2)-1))(past edit for open issue 3 * is to make parachute) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
     else:
-      signatureWords = 2* sigupd_count + sigupd_countF # all Sigupd, 2* sigcount for missalignment parachute Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+      signatureWords =  sigupd_count + sigupd_countF # all Sigupd Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
 # writeTest appends the test to the lines.
