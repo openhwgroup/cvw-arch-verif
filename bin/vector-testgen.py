@@ -80,21 +80,17 @@ def writeSIGUPD_V(vd, sew, avl=1, single_register_store = False):
     else:
       sigupd_count += avl
 
-    lines = ""
-
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
 
     if single_register_store:
-      lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma    # change lmul to 1 and set vl to vlmax to store whole register (offgroup)\n"
+      writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma", "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
 
-    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
-    return lines
+    writeLine(f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})", "# stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
 
 # TODO: will be used and tested for vector FP
 def loadVFloatReg(reg, val, sew):
-  lines = ""
   if sew == 16:
     precision = 16
     loadop = "flh"
@@ -107,13 +103,12 @@ def loadVFloatReg(reg, val, sew):
     precision = 64
     loadop = "fld"
     storeop = "sd"
-  lines = lines + "la x2, scratch\n"
-  lines = lines + f"li x3, {formatstrFP.format(val)} # load x3 with value {formatstrFP.format(val)}\n"
-  lines = lines + f"{storeop} x3, 0(x2) # store {formatstrFP.format(val)} in memory\n"
-  lines = lines + f"{loadop} v{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into v{reg}\n"
-  return lines
+  writeLine("la x2, scratch")
+  writeLine(f"li x3, {formatstrFP.format(val)}", f"# load x3 with value {formatstrFP.format(val)}")
+  writeLine(f"{storeop} x3, 0(x2)", f"# store {formatstrFP.format(val)} in memory")
+  writeLine(f"{loadop} v{reg}, 0(x2)", f"# load {formatstrFP.format(val)} from memory into v{reg}")
 
-def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
+def loadVecReg(register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
     scalar_registers_used = list(scalar_registers_used)
     register_data         = vector_register_data[register_argument_name]
 
@@ -141,44 +136,41 @@ def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, lm
         avlReg = randint(1,31)
       scalar_registers_used.append(avlReg)
 
-      lines = lines + f"csrr x{vtypeReg}, vtype     # save vtype register for after load\n"
-      lines = lines + f"csrr x{avlReg}, vl          # save vl register for after load\n"
-      lines = lines + f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma     # set lmul to 1 for load\n" # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
+      writeLine(f"csrr x{vtypeReg}, vtype", "# save vtype register for after load")
+      writeLine(f"csrr x{avlReg}, vl",      "# save vl register for after load")
+      writeLine(f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
 
     tempReg = 4
     while tempReg in scalar_registers_used:
       tempReg = randint(1,31)
     scalar_registers_used.append(tempReg)
 
-    lines = lines + f"la x{tempReg}, {register_val_pointer}             # Load address of desired value\n"
-    lines = lines + f"vle{register_sew}.v v{register}, (x{tempReg})                       # Load desired value from memory into v{register}\n"
+    writeLine(f"la x{tempReg}, {register_val_pointer}", "# Load address of desired value")
+    writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
     if load_unique_vtype: # return vl and vtype register to what it was before
-      lines = lines + f"vsetvl x0, x{avlReg}, x{vtypeReg}         # restore vl and vtype setting\n"
+      writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}", "# restore vl and vtype setting")
 
-    return lines, scalar_registers_used
+    return scalar_registers_used
 
-def loadScalarReg(lines, register_argument_name: str, scalar_register_data):
+def loadScalarReg(register_argument_name: str, scalar_register_data):
   register_data   = scalar_register_data[register_argument_name]
   register        = register_data['reg']
   register_value  = register_data['val']
 
-  lines = lines + f"li x{register}, {formatstr.format(register_value)}             # Load immediate value into integer register\n"
-  return lines
+  writeLine(f"li x{register}, {formatstr.format(register_value)}", "# Load immediate value into integer register")
 
 # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
-def handleSignaturePointerConflict(lines, *registers):
+def handleSignaturePointerConflict(*registers):
   global sigReg # this function can modify the signature register
 
-  l = lines
   oldSigReg = sigReg
 
   while (sigReg in registers):
     sigReg = randint(1,31)
 
   if (sigReg != oldSigReg):
-    l = lines + "mv x" + str(sigReg) + ", x" + str(oldSigReg) + " # switch signature pointer register to avoid conflict with test\n"
-  return l
+    writeLine("mv x" + str(sigReg) + ", x" + str(oldSigReg), " # switch signature pointer register to avoid conflict with test")
 
 def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
@@ -192,8 +184,8 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   return signatureWords
 
 
-def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1, single_vector_register_store = False):
-    l = lines + testline
+def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, single_vector_register_store = False):
+
     if (test in vd_widen_ins) or (test in wvsins):
       l = l + writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
@@ -201,17 +193,15 @@ def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1, single_vect
     elif (test in xvtype):
       l = l + writeSIGUPD(rd)
     else:
-      l = l + writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store)
-    return l
+      writeLine(writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store))
 
 
 # TODO : Make this works with vector FP
-def loadFloatRoundingMode(lines, vfloattype, *scalar_registers_used):
+def loadFloatRoundingMode(vfloattype, *scalar_registers_used):
+  return
 
-  return lines
 
-
-def loadVxrmRoundingMode(lines, vxrm, *scalar_registers_used):
+def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
   scalar_registers_used = list(scalar_registers_used)
 
   tempReg3 = 13
@@ -219,21 +209,21 @@ def loadVxrmRoundingMode(lines, vxrm, *scalar_registers_used):
     tempReg3 = randint(1,31)
   scalar_registers_used.append(tempReg3)
 
-  lines = lines + f"# set vcsr.vxrm to {vxrm}\n"
-  lines = lines + f"li x{tempReg3}, {vxrmList[vxrm]}\n"
-  lines = lines + f"csrw vcsr, x{tempReg3}\n"
-  return lines, scalar_registers_used
+  writeLine("", f"# set vcsr.vxrm to {vxrm}")
+  writeLine(f"li x{tempReg3}, {vxrmList[vxrm]}")
+  writeLine(f"csrw vcsr, x{tempReg3}\n")
+  return scalar_registers_used
 
 # TODO: doesnt work
-def loadVxsatMode(lines, *scalar_registers_used):
+def loadVxsatMode(*scalar_registers_used):
   # TODO dont use t0 find a register that works
-  # lines = lines + f"csrr t0, vcsr"
-  # lines = lines + f"andi t1, t0, 1"
-  # lines = lines + f"la t2, vxsat_address"
-  # lines = lines + f"sw t1, 0(t2)"
-  return lines
+  # writeLine(f"csrr t0, vcsr"
+  # writeLine(f"andi t1, t0, 1"
+  # writeLine(f"la t2, vxsat_address"
+  # writeLine(f"sw t1, 0(t2)"
+  return
 
-def genLMULIfdef(lmul):
+def getLMULIfdef(lmul):
   ifdef = ""
   if (lmul == 0.5):
     ifdef = "#ifdef LMULf2_SUPPORTED\n"
@@ -243,38 +233,36 @@ def genLMULIfdef(lmul):
     ifdef = "#ifdef LMULf8_SUPPORTED\n"
   return ifdef
 
-def prepMaskV(lines, maskval, sew, tempReg):
+def prepMaskV(maskval, sew, tempReg):
   if (maskval == "zeroes"):
-    lines = lines + f"vmv.v.i v0, 0                 # Set mask value to 0\n"
+    writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
   elif (maskval == "ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
-    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
-    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX) ? 1 : 0\n"
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
+    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX) ? 1 : 0")
   elif (maskval == "vlmaxm1_ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
-    lines = lines + f"addi x{tempReg}, x{tempReg}, -1                  # x{tempReg} = VLMAX - 1\n"
-    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
-    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX-1) ? 1 : 0\n"
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"addi x{tempReg}, x{tempReg}, -1",             f"# x{tempReg} = VLMAX - 1")
+    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
+    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX-1) ? 1 : 0")
   elif (maskval == "vlmaxd2p1_ones"):
-    lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma       # x{tempReg} = VLMAX\n"
-    lines = lines + f"srli x{tempReg}, x{tempReg}, 1                   # x{tempReg} = VLMAX / 2\n"
-    lines = lines + f"addi x{tempReg}, x{tempReg}, 1                   # x{tempReg} = VLMAX / 2 + 1\n"
-    lines = lines + f"vid.v v1                           # v1 = [0,1,2,...]\n"
-    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
-    lines = lines + f"vmslt.vx v0, v1, x{tempReg}        # v0[i] = (i < VLMAX/2+1) ? 1 : 0\n"
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"srli x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2")
+    writeLine(f"addi x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2 + 1")
+    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
+    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX/2+1) ? 1 : 0")
   else: # random mask
-    lines = lines + f"vmv.v.i v0, 0                      # Reset mask value to 0\n"
-    lines = lines + f"la x{tempReg}, {maskval}\n"
-    lines = lines + f"vlm.v v0, (x{tempReg})             # Load mask value into v0\n"
-  return lines
+    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine(f"la x{tempReg}, {maskval}")
+    writeLine(f"vlm.v v0, (x{tempReg})",                      f"# Load mask value into v0")
 
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
               vfrm=None, vfloattype=None, vxsat=None, vta=0, vma=0):
-    lines = "" # where the lines begin
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
@@ -291,28 +279,29 @@ def writeTest(description, instruction, instruction_data,
       tempReg = randint(1,31)
     scalar_registers_used.append(tempReg)
 
-    lines = handleSignaturePointerConflict(lines, *scalar_registers_used)
+    handleSignaturePointerConflict(*scalar_registers_used)
     scalar_registers_used.append(sigReg)
 
     # deal with conflict before generating lmul ifdefs to not cause issue if the test is unused
 
-    lines = lines + "\n" + genLMULIfdef(lmul)
-    lines = lines + "# Testcase " + str(description) + "\n"
+    writeLine("\n" + getLMULIfdef(lmul))
 
-    lines, scalar_registers_used = prepBaseV(lines, sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
+    writeLine("# Testcase " + str(description))
+
+    scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
     # If mask value specified, load to v0
     if maskval is not None:
-      lines = prepMaskV(lines, maskval, sew, tempReg)
+      prepMaskV(maskval, sew, tempReg)
     elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype]):
-       lines = lines + "vmv.v.i v0, 0     # set v0 register to 0 in base suit where vm is fixed to 0\n"
+      writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
 
     if vfloattype is not None:
-      lines, scalar_registers_used = loadFloatRoundingMode(lines, vfloattype, *scalar_registers_used)
+      scalar_registers_used = loadFloatRoundingMode(vfloattype, *scalar_registers_used)
     elif vxsat is not None:
-      lines, scalar_registers_used = loadVxsatMode(lines, *scalar_registers_used)
+      scalar_registers_used = loadVxsatMode(*scalar_registers_used)
     elif vxrm is not None:
-      lines, scalar_registers_used = loadVxrmRoundingMode(lines, vxrm, *scalar_registers_used)
+      scalar_registers_used = loadVxrmRoundingMode(vxrm, *scalar_registers_used)
 
     instruction_arguments = []
     # test writing
@@ -354,10 +343,10 @@ def writeTest(description, instruction, instruction_data,
       elif arguement == 'imm':
         testline = testline + f"{imm_val}"
       elif arguement[0] == 'v':
-        lines, scalar_registers_used = loadVecReg(lines, arguement, vector_register_data, sew, lmul, *scalar_registers_used)
+        scalar_registers_used = loadVecReg(arguement, vector_register_data, sew, lmul, *scalar_registers_used)
         testline = testline + f"v{vector_register_data[arguement]['reg']}"
       elif arguement[0] == 'r':
-        lines = loadScalarReg(lines, arguement, scalar_register_data)
+        loadScalarReg(arguement, scalar_register_data)
         testline = testline + f"x{scalar_register_data[arguement]['reg']}"
       elif arguement[0] == 'f':
         # TODO : implement load value for floating point
@@ -367,7 +356,7 @@ def writeTest(description, instruction, instruction_data,
 
       testline = testline + ", "
 
-    testline = testline[:-2] + "\n" # remove the ", " at the end of the test
+    testline = testline[:-2] # remove the ", " at the end of the test
 
     if vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar":
       single_vector_register_store = True
@@ -375,16 +364,16 @@ def writeTest(description, instruction, instruction_data,
       single_vector_register_store = False
 
     if (maskval is not None) or (vl is not None):
-      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store)
+      writeVecTest(vd, sew, testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store)
     else:
-      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store)
+      writeVecTest(vd, sew, testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store)
 
-    if (genLMULIfdef(lmul) != ""):
-      lines = lines + "#endif\n"
+    if (getLMULIfdef(lmul) != ""):
+      writeLine("#endif")
 
-    f.write(lines)
 
-def prepBaseV(lines, sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
+
+def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
   scalar_registers_used = list(scalar_registers_used)
   lmulflag = lmul
 
@@ -421,22 +410,22 @@ def prepBaseV(lines, sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_us
 
   if vl == "random":
     randomVl = getrandbits(32)
-    lines = lines + f"li x{tempReg2}, {randomVl}                       # Load value for random vl preparation\n"
-    lines = lines + f"vsetvli x{vlmaxReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}               # x{vlmaxReg} = VLMAX\n"
-    lines = lines + f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}                      # ensure that vl < VLMAX\n"
-    lines = lines + f"ori x{tempReg2}, x{tempReg2}, 0x2                     # set bit 1 to 1, ensuring 2 <= vl < VLMAX\n"
-    lines = lines + f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
+    writeLine(f"li x{tempReg2}, {randomVl}",                                      f"# Load value for random vl preparation")
+    writeLine(f"vsetvli x{vlmaxReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# x{vlmaxReg} = VLMAX")
+    writeLine(f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}",                      f"# ensure that vl < VLMAX")
+    writeLine(f"ori x{tempReg2}, x{tempReg2}, 0x2",                               f"# set bit 1 to 1, ensuring 2 <= vl < VLMAX")
+    writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
   elif vl == "vlmax":
-    lines = lines + f"vsetvli x{tempReg2}, x0, e{sew}, m{lmulflag}{taflag}{maflag}     # Set vl = VLMAX, where x{vlmaxReg} = VLMAX\n"
+    writeLine(f"vsetvli x{tempReg2}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# Set vl = VLMAX, where x{vlmaxReg} = VLMAX")
   else:
-    lines = lines + f"li x{tempReg2}, {vl}                       # Load desired vl value\n" # put desired vl into an integer register
-    lines = lines + f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}\n"
+    writeLine(f"li x{tempReg2}, {vl}",                                            f"# Load desired vl value") # put desired vl into an integer register
+    writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
 
   if (vstart == True):   # if vstart specified
-    lines = lines + f"li x{tempReg2}, {vstart}               # Load desired vstart value\n"
-    lines = lines + f"csrw vstart, x{tempReg2}\n"
+    writeLine(f"li x{tempReg2}, {vstart}",                                        f"# Load desired vstart value")
+    writeLine(f"csrw vstart, x{tempReg2}")
 
-  return lines, scalar_registers_used
+  return scalar_registers_used
 
 def vsAddressCount(suite="base"):
   global base_suite_test_count, length_suite_test_count
@@ -725,8 +714,8 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
 
   return [vector_register_data, scalar_register_data, floating_point_register_data, immval]
 
-def addLine(lines, argument: str, comment = ""):
-  tab_over_distance = 60
+def writeLine(argument: str, comment = ""):
+  tab_over_distance = 50
 
   argument = str(argument)
 
@@ -734,7 +723,7 @@ def addLine(lines, argument: str, comment = ""):
     padding = max(0, tab_over_distance - len(argument))
     comment = " " * padding + str(comment)
 
-  lines = lines + argument + comment
+  f.write(argument + comment +"\n")
 
 def make_custom(test, xlen):
     insertTemplate(f"{test}.S")
@@ -746,12 +735,17 @@ def make_vd(instruction, sew, rng):
   global basetest_count
   for v in rng:
     description = f"cp_vd (Test destination vd = v" + str(v) + ")"
+    instruction_data = randomizeVectorInstructionData(instruction, vd = v)
 
-    if (instruction in vvvxtype): # vmv<nr>r.v
-      lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
-      instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v)
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v)
+    writeTest(description, instruction, instruction_data, sew=sew)
+    basetest_count += 1
+    vsAddressCount()
+
+def make_vs3(instruction, sew, rng):
+  global basetest_count
+  for v in rng:
+    description = f"cp_vs2 (Test source vs3 = v" + str(v) + ")"
+    instruction_data = randomizeVectorInstructionData(instruction, vs3 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
@@ -761,12 +755,7 @@ def make_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
     description = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
-
-    if (test in vvvxtype): # vmv<nr>r.v
-      lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
-      instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vs2 = v)
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vs2 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
@@ -788,12 +777,7 @@ def make_vd_vs2(instruction, sew, rng):
   global basetest_count
   for v in rng:
     description = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
-
-    if (test in vvvxtype): # vmv<nr>r.v
-      lmul = instruction[3] # vmv<nr>r.v, thus nr = instruction[3] which encodes emul
-      instruction_data = randomizeVectorInstructionData(instruction, lmul = lmul, vd = v, vs2 = v)
-    else :
-      instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs2 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, vd = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     basetest_count += 1
@@ -1059,63 +1043,63 @@ def write_tests(coverpoints, test, sew=None):
     if (coverpoint == "cp_asm_count"):
       pass
     elif (coverpoint == "cp_rd"):
-      make_rdv(test, sew, range(maxreg+1))
+      make_rdv(test, sew, range(xreg_count))
     elif (coverpoint == "cp_rs1"):
-      make_rs1_v(test, sew, range(maxreg+1))
+      make_rs1_v(test, sew, range(xreg_count))
     elif (coverpoint == "cp_imm_5bit") or (coverpoint == "cp_imm_5bit_u"):
       make_imm_v(test, sew)
     elif (coverpoint == "cp_vd"):
-      make_vd(test, sew, range(maxreg+1))
-    # elif (coverpoint == "cp_vs3"):
-    #   make_vs3(test, sew, range(maxreg+1))
+      make_vd(test, sew, range(vreg_count))
+    elif (coverpoint == "cp_vs3"):
+      make_vs3(test, sew, range(vreg_count))
     elif (coverpoint == "cp_vd_nv0"):
-      make_vd(test, sew, range(1,maxreg+1))
+      make_vd(test, sew, range(1,vreg_count))
     elif (coverpoint == "cp_vd_emul2"):
-      make_vd(test, sew, range(0,maxreg,2))
+      make_vd(test, sew, range(0,vreg_count,2))
     elif (coverpoint == "cp_vd_emul4"):
-      make_vd(test, sew, range(0,maxreg,4))
+      make_vd(test, sew, range(0,vreg_count,4))
     elif (coverpoint == "cp_vd_emul8"):
-      make_vd(test, sew, range(0,maxreg,8))
+      make_vd(test, sew, range(0,vreg_count,8))
     elif (coverpoint == "cp_vs2"):
-      make_vs2(test, sew, range(maxreg+1))
+      make_vs2(test, sew, range(vreg_count))
     elif (coverpoint == "cp_vs2_nv0"):
-      make_vs2(test, sew, range(1,maxreg+1))
+      make_vs2(test, sew, range(1,vreg_count))
     elif (coverpoint == "cp_vs2_emul2"):
-      make_vs2(test, sew, range(0,maxreg,2))
+      make_vs2(test, sew, range(0,vreg_count,2))
     elif (coverpoint == "cp_vs2_emul4"):
-      make_vs2(test, sew, range(0,maxreg,4))
+      make_vs2(test, sew, range(0,vreg_count,4))
     elif (coverpoint == "cp_vs2_emul8"):
-      make_vs2(test, sew, range(0,maxreg,8))
+      make_vs2(test, sew, range(0,vreg_count,8))
     elif (coverpoint == "cp_vs1"):
-      make_vs1(test, sew, range(maxreg+1))
+      make_vs1(test, sew, range(vreg_count))
     elif (coverpoint == "cp_vs1_nv0"):
-      make_vs1(test, sew, range(1,maxreg+1))
+      make_vs1(test, sew, range(1,vreg_count))
     elif (coverpoint == "cp_vs1_emul2"):
-      make_vs1(test, sew, range(0,maxreg,2))
+      make_vs1(test, sew, range(0,vreg_count,2))
     elif (coverpoint == "cmp_vd_vs2"):
-      make_vd_vs2(test, sew, range(maxreg+1))
+      make_vd_vs2(test, sew, range(vreg_count))
     elif (coverpoint == "cmp_vd_vs2_nv0"):
-      make_vd_vs2(test, sew, range(1,maxreg+1))
+      make_vd_vs2(test, sew, range(1,vreg_count))
     elif (coverpoint == "cmp_vd_vs2_emul2"):
-      make_vd_vs2(test, sew, range(0,maxreg,2))
+      make_vd_vs2(test, sew, range(0,vreg_count,2))
     elif (coverpoint == "cmp_vd_vs2_emul4"):
-      make_vd_vs2(test, sew, range(0,maxreg,4))
+      make_vd_vs2(test, sew, range(0,vreg_count,4))
     elif (coverpoint == "cmp_vd_vs2_emul8"):
-      make_vd_vs2(test, sew, range(0,maxreg,8))
+      make_vd_vs2(test, sew, range(0,vreg_count,8))
     elif (coverpoint == "cmp_vd_vs1"):
-      make_vd_vs1(test, sew, range(maxreg+1))
+      make_vd_vs1(test, sew, range(vreg_count))
     elif (coverpoint == "cmp_vd_vs1_nv0"):
-      make_vd_vs1(test, sew, range(1,maxreg+1))
+      make_vd_vs1(test, sew, range(1,vreg_count))
     elif (coverpoint == "cmp_vd_vs1_emul2"):
-      make_vd_vs1(test, sew, range(0,maxreg,2))
+      make_vd_vs1(test, sew, range(0,vreg_count,2))
     elif (coverpoint == "cmp_vs1_vs2"):
-      make_vs1_vs2(test, sew, range(maxreg+1))
+      make_vs1_vs2(test, sew, range(vreg_count))
     elif (coverpoint == "cmp_vs1_vs2_nv0"):
-      make_vs1_vs2(test, sew, range(1,maxreg+1))
+      make_vs1_vs2(test, sew, range(1,vreg_count))
     elif (coverpoint == "cmp_vd_vs1_vs2"):
-      make_vd_vs1_vs2(test, sew, range(maxreg+1))
+      make_vd_vs1_vs2(test, sew, range(vreg_count))
     elif (coverpoint == "cmp_vd_vs1_vs2_nv0"):
-      make_vd_vs1_vs2(test, sew, range(1,maxreg+1))
+      make_vd_vs1_vs2(test, sew, range(1,vreg_count))
     elif (coverpoint == "cp_vs2_corners"):
       make_vs2_corners(test, sew, vcornersemul1)
     elif (coverpoint == "cp_vs2_corners_emul2"):
@@ -1139,7 +1123,7 @@ def write_tests(coverpoints, test, sew=None):
     elif (coverpoint == "cp_vs1_corners_eew1"):
       make_vs1_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
     elif (coverpoint == "cp_rs1_corners"):
-      make_rs1_corners_v(test, sew, range(maxreg+1))
+      make_rs1_corners_v(test, sew, range(xreg_count))
     elif (coverpoint == "cr_vs2_vs1_corners"):
       make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
     elif (coverpoint == "cr_vs2_vs1_corners_wv"):
