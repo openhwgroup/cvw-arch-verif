@@ -20,7 +20,7 @@
 //
 //
 
-function int get_vlmax(int hart, int issue, int prev);
+function int get_vtype_vlmax(int hart, int issue, int prev);
 
   logic[2:0] vsew  = get_csr_val(hart, issue, prev, "vtype", "vsew") [2:0];
   logic[2:0] vlmul = get_csr_val(hart, issue, prev, "vtype", "vlmul")[2:0];
@@ -34,7 +34,7 @@ function int get_vlmax(int hart, int issue, int prev);
         3'b110: begin end
         3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax lmul is undefined (%0s)", vlmul);
+            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
             $finish(-1);
         end
     endcase
@@ -45,14 +45,13 @@ function int get_vlmax(int hart, int issue, int prev);
         3'b010: begin end
         3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vlmax sew is undefined (%0s)", vsew);
+            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
             $finish(-1);
         end
     endcase
 
   if(get_csr_val(hart, issue, prev, "vtype", "vill") == 1) begin
-    $display("ERROR: SystemVerilog Functional Coverage: vlmax undefined, vill bit is set");
-    $finish(-1);
+    return -1;   // make sure no coverpoint can ever be hit when vill bit is set
   end
 
   return get_vlmax_params(hart, issue, vsew, vlmul);
@@ -343,7 +342,7 @@ typedef enum {
 
 // Check for vector operand corner values, assuming vl = 1
 function corner_mask_values_t mask_corners_check(int hart, int issue, `VLEN_BITS mask_val);
-  int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
 
   if      (mask_val == 0)                           return mask_zero;
   else if (mask_val == ((2 ** (vlmax)) - 1))        return mask_ones;
@@ -365,7 +364,7 @@ typedef enum {
 function vl_t vl_check(int hart, int issue);
   `XLEN_BITS vl = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vl", "vl");
   `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
-  int vlmax = get_vlmax(hart, issue, `SAMPLE_BEFORE);
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
   bit legal;
   if (vl <= vlmax & vl > vstart) legal = 1'b1; // check legal condition
   else                           legal = 1'b0;
