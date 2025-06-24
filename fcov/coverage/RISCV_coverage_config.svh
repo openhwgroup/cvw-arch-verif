@@ -86,6 +86,9 @@
 `ifdef ZICOND_COVERAGE
   `include "Zicond_coverage.svh"
 `endif
+`ifdef ZIFENCEI_COVERAGE
+  `include "Zifencei_coverage.svh"
+`endif
 `ifdef ZCA_COVERAGE
   `include "Zca_coverage.svh"
 `endif
@@ -138,6 +141,9 @@
 `ifdef ZALRSC_COVERAGE
   `include "Zalrsc_coverage.svh"
 `endif
+`ifdef SVINVAL_COVERAGE
+  `include "Svinval_coverage.svh"
+`endif
 
 // Privileged extensions
 `ifdef RV64VM_COVERAGE
@@ -187,6 +193,12 @@
 `ifdef ZICSRU_COVERAGE
   `include "ZicsrU_coverage.svh"
 `endif
+`ifdef ZICSRV_COVERAGE
+  `include "ZicsrV_coverage.svh"
+`endif
+`ifdef ZICSRHV_COVERAGE
+  `include "ZicsrHV_coverage.svh"
+`endif
 `ifdef ZICSRF_COVERAGE
   `include "ZicsrF_coverage.svh"
 `endif
@@ -210,6 +222,9 @@
 `endif
 `ifdef EXCEPTIONSV_COVERAGE
   `include "ExceptionsV_coverage.svh"
+`endif
+`ifdef EXCEPTIONSHV_COVERAGE
+  `include "ExceptionsHV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZC_COVERAGE
   `include "ExceptionsZc_coverage.svh"
@@ -241,11 +256,20 @@
 `ifdef EXCEPTIONSVM_COVERAGE
   `include "ExceptionsVM_coverage.svh"
 `endif
+`ifdef EXCEPTIONSVMZAAMO_COVERAGE
+  `include "ExceptionsVMZaamo_coverage.svh"
+`endif
+`ifdef EXCEPTIONSVMZALRSC_COVERAGE
+  `include "ExceptionsVMZalrsc_coverage.svh"
+`endif
 `ifdef SSSTRICTS_COVERAGE
   `include "SsstrictS_coverage.svh"
 `endif
 `ifdef SSSTRICTM_COVERAGE
   `include "SsstrictM_coverage.svh"
+`endif
+`ifdef SSSTRICTV_COVERAGE
+  `include "SsstrictV_coverage.svh"
 `endif
 `ifdef EXCEPTIONSZAAMO_COVERAGE
   `include "ExceptionsZaamo_coverage.svh"

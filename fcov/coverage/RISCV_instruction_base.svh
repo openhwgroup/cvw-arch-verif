@@ -25,7 +25,7 @@ class RISCV_instruction
   parameter int ILEN   = 32,  // Instruction length in bits
   parameter int XLEN   = 32,  // GPR length in bits
   parameter int FLEN   = 32,  // FPR length in bits
-  parameter int VLEN   = 256, // Vector register size in bits
+  parameter int VLEN   = 512, // Vector register size in bits
   parameter int NHART  = 1,   // Number of harts reported
   parameter int RETIRE = 1    // Number of instructions that can retire during valid event
 );
@@ -103,8 +103,6 @@ class RISCV_instruction
           break;
         end
       end
-      // $display("indirect ins_str(%s) op[0](%0s).key(%s) op[1](%s).key(%s) op[2](%s).key(%s) op[3](%s).key(%s)",
-      //    ins_str, op[0], this.ops[0].key, op[1], this.ops[1].key, op[2], this.ops[2].key, op[3], this.ops[3].key);
     end
 
     // Parse operands and get values of relevant registers if needed
@@ -160,9 +158,7 @@ class RISCV_instruction
   endfunction
 
   // Lookup vector register value
-
-  //TODO bad "bit [VLEN-1:0]"
-  function bit [VLEN-1:0] get_vr_val(int hart, int issue, string key, int prev);
+  function `SIGNED_VLEN_BITS get_vr_val(int hart, int issue, string key, int prev);
     int idx = get_vr_num(key);
     if (idx >= 0) begin
       return traceDataQ[hart][issue][prev].v_wdata[idx];
@@ -527,6 +523,11 @@ class RISCV_instruction
     current.has_vs3 = 1;
     current.vs3 = ops[offset].key;
     current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_v0();
+    current.has_v0 = 1;
+    current.v0_val = prev.v_wdata[0];
   endfunction
 
   virtual function void add_vm(int offset);

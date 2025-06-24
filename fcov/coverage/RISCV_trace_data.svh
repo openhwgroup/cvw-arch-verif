@@ -25,7 +25,7 @@ class riscvTraceData
   parameter int ILEN   = 32,  // Instruction length in bits
   parameter int XLEN   = 32,  // GPR length in bits
   parameter int FLEN   = 32,  // FPR length in bits
-  parameter int VLEN   = 256  // Vector register size in bits
+  parameter int VLEN   = 512  // Vector register size in bits
 );
   `ifdef COVER_E
     localparam NUM_REGS = 16;
@@ -110,6 +110,7 @@ class riscvTraceData
   bit                       has_vs1;
   bit                       has_vs2;
   bit                       has_vs3;
+  bit                       has_v0;
 
   string                    rd;
   string                    rs1;
@@ -143,6 +144,7 @@ class riscvTraceData
   bit [(VLEN-1):0]          vs1_val;
   bit [(VLEN-1):0]          vs2_val;
   bit [(VLEN-1):0]          vs3_val;
+  bit [(VLEN-1):0]          v0_val;
   bit                       vm;
 
   bit [(XLEN-1):0]          imm;

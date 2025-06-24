@@ -8,6 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ExceptionsV_edgecases_cg = new();           ExceptionsV_edgecases_cg.set_inst_name("obj_ExceptionsV_edgecases");
-    ExceptionsV_reserved_cg = new();            ExceptionsV_reserved_cg.set_inst_name("obj_ExceptionsV_reserved");
-    ExceptionsV_illegal_cg = new();             ExceptionsV_illegal_cg.set_inst_name("obj_ExceptionsV_illegal");
+    ExceptionsV_exceptions_cg = new();           ExceptionsV_exceptions_cg.set_inst_name("obj_ExceptionsV_exceptions");
