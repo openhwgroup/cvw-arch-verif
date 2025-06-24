@@ -71,7 +71,7 @@ def writeSIGUPD_F(rd):
     l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
     return l
 
-def writeSIGUPD_V(vd, sew, avl=1):
+def writeSIGUPD_V(vd, sew, avl=1, single_register_store = False):
     global sigupd_count        # Allow modification of global variable
     if (avl == "random" or avl == "vlmax"):
       avl = maxVLEN            # set to max possible vl since SIGUPD_V needs AVL to be a compile-time constant
@@ -80,10 +80,16 @@ def writeSIGUPD_V(vd, sew, avl=1):
     else:
       sigupd_count += avl
 
+    lines = ""
+
     tempReg = 6
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    lines = f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
+
+    if single_register_store:
+      lines = lines + f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma    # change lmul to 1 and set vl to vlmax to store whole register (offgroup)\n"
+
+    lines = lines + f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})    # stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register\n"
     return lines
 
 # TODO: will be used and tested for vector FP
@@ -107,13 +113,37 @@ def loadVFloatReg(reg, val, sew):
   lines = lines + f"{loadop} v{reg}, 0(x2) # load {formatstrFP.format(val)} from memory into v{reg}\n"
   return lines
 
-def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, *scalar_registers_used):
+def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
     scalar_registers_used = list(scalar_registers_used)
     register_data         = vector_register_data[register_argument_name]
 
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
-    register_sew          = register_data['size_multiplier'] * sew if not register_data['reg_type'] == "mask" else 8
+    if register_data['reg_type'] == "mask":
+      register_sew        = 8
+    else:
+      register_sew        = register_data['size_multiplier'] * sew
+    register_emul         = lmul * register_data['size_multiplier']
+
+    # need to handle loading to mask and scalar registers which can be off group
+    # also need to ensure that if a scalar value is widenened, that it only loads a single register
+    load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
+        or (register_emul > 1 and register_data['reg_type'] == "scalar")
+
+    if load_unique_vtype:
+      vtypeReg = 1
+      while vtypeReg in scalar_registers_used:
+        vtypeReg = randint(1,31)
+      scalar_registers_used.append(vtypeReg)
+
+      avlReg = 9
+      while avlReg in scalar_registers_used:
+        avlReg = randint(1,31)
+      scalar_registers_used.append(avlReg)
+
+      lines = lines + f"csrr x{vtypeReg}, vtype     # save vtype register for after load\n"
+      lines = lines + f"csrr x{avlReg}, vl          # save vl register for after load\n"
+      lines = lines + f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma     # set lmul to 1 for load\n" # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
 
     tempReg = 4
     while tempReg in scalar_registers_used:
@@ -122,6 +152,9 @@ def loadVecReg(lines, register_argument_name: str, vector_register_data, sew, *s
 
     lines = lines + f"la x{tempReg}, {register_val_pointer}             # Load address of desired value\n"
     lines = lines + f"vle{register_sew}.v v{register}, (x{tempReg})                       # Load desired value from memory into v{register}\n"
+
+    if load_unique_vtype: # return vl and vtype register to what it was before
+      lines = lines + f"vsetvl x0, x{avlReg}, x{vtypeReg}         # restore vl and vtype setting\n"
 
     return lines, scalar_registers_used
 
@@ -159,33 +192,41 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
   return signatureWords
 
 
-def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1):
+def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1, single_vector_register_store = False):
     l = lines + testline
     if (test in vd_widen_ins) or (test in wvsins):
-      l = l + writeSIGUPD_V(vd, 2*sew, avl=vl)  # EEW of vd = 2 * SEW for widening
+      l = l + writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
-      l = l + writeSIGUPD_V(vd, 1, avl=vl)      # EEW of vd = 1 for mask
+      l = l + writeSIGUPD_V(vd, 1, avl=vl, single_register_store=single_vector_register_store)      # EEW of vd = 1 for mask
     elif (test in xvtype):
       l = l + writeSIGUPD(rd)
     else:
-      l = l + writeSIGUPD_V(vd, sew, avl=vl)
+      l = l + writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store)
     return l
 
 
 # TODO : Make this works with vector FP
-def loadFloatRoundingMode(lines, vfloattype):
+def loadFloatRoundingMode(lines, vfloattype, *scalar_registers_used):
 
   return lines
 
 
-def loadVxrmRoundingMode(lines, vxrm):
+def loadVxrmRoundingMode(lines, vxrm, *scalar_registers_used):
+  scalar_registers_used = list(scalar_registers_used)
+
+  tempReg3 = 13
+  while tempReg3 in scalar_registers_used:
+    tempReg3 = randint(1,31)
+  scalar_registers_used.append(tempReg3)
+
   lines = lines + f"# set vcsr.vxrm to {vxrm}\n"
-  lines = lines + f"li t0, {vxrmList[vxrm]}\n"
-  lines = lines + f"csrw vcsr, t0\n"
-  return lines
+  lines = lines + f"li x{tempReg3}, {vxrmList[vxrm]}\n"
+  lines = lines + f"csrw vcsr, x{tempReg3}\n"
+  return lines, scalar_registers_used
 
 # TODO: doesnt work
-def loadVxsatMode(lines):
+def loadVxsatMode(lines, *scalar_registers_used):
+  # TODO dont use t0 find a register that works
   # lines = lines + f"csrr t0, vcsr"
   # lines = lines + f"andi t1, t0, 1"
   # lines = lines + f"la t2, vxsat_address"
@@ -264,14 +305,14 @@ def writeTest(description, instruction, instruction_data,
     if maskval is not None:
       lines = prepMaskV(lines, maskval, sew, tempReg)
     elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype]):
-       lines = lines + "vmv.v.i v0, 0" # set v0 register to 0 in base suit where vm is fixed to 0
+       lines = lines + "vmv.v.i v0, 0     # set v0 register to 0 in base suit where vm is fixed to 0\n"
 
     if vfloattype is not None:
-      lines = loadFloatRoundingMode(lines, vfloattype)
+      lines, scalar_registers_used = loadFloatRoundingMode(lines, vfloattype, *scalar_registers_used)
     elif vxsat is not None:
-      lines = loadVxsatMode(lines)
+      lines, scalar_registers_used = loadVxsatMode(lines, *scalar_registers_used)
     elif vxrm is not None:
-      lines = loadVxrmRoundingMode(lines, vxrm)
+      lines, scalar_registers_used = loadVxrmRoundingMode(lines, vxrm, *scalar_registers_used)
 
     instruction_arguments = []
     # test writing
@@ -313,7 +354,7 @@ def writeTest(description, instruction, instruction_data,
       elif arguement == 'imm':
         testline = testline + f"{imm_val}"
       elif arguement[0] == 'v':
-        lines, scalar_registers_used = loadVecReg(lines, arguement, vector_register_data, sew, *scalar_registers_used)
+        lines, scalar_registers_used = loadVecReg(lines, arguement, vector_register_data, sew, lmul, *scalar_registers_used)
         testline = testline + f"v{vector_register_data[arguement]['reg']}"
       elif arguement[0] == 'r':
         lines = loadScalarReg(lines, arguement, scalar_register_data)
@@ -328,10 +369,15 @@ def writeTest(description, instruction, instruction_data,
 
     testline = testline[:-2] + "\n" # remove the ", " at the end of the test
 
-    if (maskval is not None) or (vl is not None):
-      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, vl=vl)
+    if vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar":
+      single_vector_register_store = True
     else:
-      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd)
+      single_vector_register_store = False
+
+    if (maskval is not None) or (vl is not None):
+      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store)
+    else:
+      lines = writeVecTest(lines, vd, sew, testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store)
 
     if (genLMULIfdef(lmul) != ""):
       lines = lines + "#endif\n"
@@ -415,7 +461,8 @@ def randomizeRegister(register_argument_name: str, reg_count: int, register_pres
         emul = 1
       register = emul * randint(0, int(reg_count/emul) - 1) # only register numbers of multiples of LMUL(EMUL) are allowed
     else: # normal instructions
-      register = randint(0, reg_count-1) # 0 to maxreg, inclusive
+      if register_type == "r":
+        register = randint(1, reg_count-1) # 0 to maxreg, inclusive
 
   register_data['reg'] = register
 
@@ -446,7 +493,8 @@ def getVectorEmulMultipliers(instruction):
   if instruction in mmins or instruction in vmlogicalins: # instructions opperate with EEW = 1
     vector_register_data['vs1_reg_type']        = "mask"
     vector_register_data['vs2_reg_type']        = "mask"
-    vector_register_data[ 'vd_reg_type']        = "mask"
+    if instruction != "viota.m":
+      vector_register_data['vd_reg_type']       = "mask"
   if instruction in maskins: # instructions operate with vd EEW = 1
     vector_register_data[ 'vd_reg_type']        = "mask"
   if instruction in vredins:
@@ -476,7 +524,7 @@ def getInstructionRegisterOverlapConstraints (instruction):
   elif instruction in wvsins        : no_overlap = [['vd',        'vs2'], ['vs2',       'vs1']] # no "_bottom" in vd because its a reduction instruction
   elif instruction in wwvins        : no_overlap = [['vd_bottom', 'vs1'], ['vs1',       'vs2']]
   elif instruction in v_mins        : no_overlap = [['v0', 'vs2'], ['v0', 'vs1'], ['v0', 'vd']]
-  elif instruction in mv_mins       : no_overlap = [['vd', 'v0',  'vs2'], ['vd', 'v0',  'vs1']]
+  elif instruction in mv_mins       : no_overlap = [['vd','vs2'],['v0','vs2'],['vd','vs1'],['v0','vs1']]
   elif instruction in vcompressins  : no_overlap = [['vd', 'vs2', 'vs1']                      ]
 
   return no_overlap
@@ -592,6 +640,8 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
   # check and resolve and register overlap
   ####################################################################################
 
+  randomization_count = 0
+
   while register_overlap:
 
     vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
@@ -644,6 +694,12 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
       if not len(registers_occupied) == len(set(registers_occupied)): # checks for duplicates
         register_overlap = True
 
+    max_randomization_count = 1000
+    if (randomization_count >= max_randomization_count):
+      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for \
+                       instruction "{instruction}" after {max_randomization_count} attempts')
+    randomization_count = randomization_count + 1
+
   ####################################################################################
 
   if (suite == "length"):
@@ -668,6 +724,17 @@ def randomizeVectorInstructionData(instruction, lmul=1, suite="base", additional
     immval = immediate_preset_data
 
   return [vector_register_data, scalar_register_data, floating_point_register_data, immval]
+
+def addLine(lines, argument: str, comment = ""):
+  tab_over_distance = 60
+
+  argument = str(argument)
+
+  if comment != "":
+    padding = max(0, tab_over_distance - len(argument))
+    comment = " " * padding + str(comment)
+
+  lines = lines + argument + comment
 
 def make_custom(test, xlen):
     insertTemplate(f"{test}.S")
@@ -780,13 +847,18 @@ def make_imm_v(instruction, sew):
     for uimm in range(0,32):
       description       = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
       instruction_data  = randomizeVectorInstructionData(instruction, imm = uimm)
+
+      writeTest(description, instruction, instruction_data, sew=sew)
+      basetest_count += 1
   else:
     for imm in range(-16,16):
       description       = "cp_imm_5bit (Test imm = " + str(imm) + ")"
       instruction_data  = randomizeVectorInstructionData(instruction, imm = imm)
 
-  writeTest(description, instruction, instruction_data, sew=sew)
-  basetest_count += 1
+      writeTest(description, instruction, instruction_data, sew=sew)
+      basetest_count += 1
+
+
 
 def make_rdv(instruction, sew, rng):
   global basetest_count
@@ -860,7 +932,7 @@ def make_vxrm_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners):
     for v1 in vs1corners:
       for v2 in vs2corners:
         description = "cr_vxrm_vs2_vs1_corners (Test vxrm = " + vxrm + ")"
-        instruction_data  = randomizeVectorInstructionData(instruction, vs2_val_pointer = v2, vs1_val_pointer = v1)
+        instruction_data  = randomizeVectorInstructionData(instruction, vs2_val_pointer = v2, vs1_val_pointer = v1, additional_no_overlap=[['vs1','vs2']])
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
 
@@ -1443,7 +1515,6 @@ wvvins = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu.
 wvxins = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 wwvins = ["vwadd.wv", "vwaddu.wv", "vwsub.wv", "vwsubu.wv"]
 wwxins = ["vwadd.wx", "vwaddu.wx", "vwsub.wx", "vwsubu.wx"]
-vd_widen_ins = wvvins + wvxins + wwvins + wwxins
 vs2_widen_ins = narrowins + wwvins + wwxins
 # masking
 vvmins = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm"]
@@ -1475,6 +1546,7 @@ vmlogicalins = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m"]
 vredins = ["vredsum.vs", "vwredsumu.vs", "vwredsum.vs", "vredmaxu.vs", "vredmax.vs", "vredminu.vs", "vredmin.vs", "vredand.vs", "vredor.vs", "vredxor.vs"]
 
 vmvins = vvrtype + vxtype + vitype + xvtype + vvvxtype + vcompressins
+vd_widen_ins = wvvins + wvxins + wwvins + wwxins + wvsins
 
 if __name__ == '__main__':
 
@@ -1710,19 +1782,22 @@ if __name__ == '__main__':
         insertTemplate("testgen_footer_vector1.S")
 
         # generate vector data (random and corners)
-        if (test not in xvtype and test not in xvmtype) :
+        if test in vd_widen_ins:
+          genVector(test, sew, vs="vd", emul = 2)
+        elif (test not in xvtype and test not in xvmtype) :
           genVector(test, sew, vs="vd")
-        if (test in narrowins) or (test in vd_widen_ins):
+
+        if (test in wvsins): # needs to be first since in vd_widen_ins
+          genVector(test, sew, vs="vs2")
+          genVector(test, sew, vs="vs1", emul=2)
+          genVsCorners(test, sew, "2")
+          genVsCorners(test, sew, "1")
+        elif (test in narrowins) or (test in vd_widen_ins):
           genVector(test, sew, vs="vs2", emul=2)
           if (test in vs1ins):
             genVector(test, sew, vs="vs1")
           genVsCorners(test, sew, "1")
           genVsCorners(test, sew, "2")
-        elif (test in wvsins):
-          genVector(test, sew, vs="vs2")
-          genVector(test, sew, vs="vs1", emul=2)
-          genVsCorners(test, sew, "2")
-          genVsCorners(test, sew, "1")
         else:
           genVector(test, sew, vs="vs2")
           if (test in vs1ins):
