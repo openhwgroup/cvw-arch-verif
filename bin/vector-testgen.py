@@ -197,7 +197,7 @@ def writeVecTest(lines, vd, sew, testline, test=None, rd=None, vl=1, single_vect
     if (test in vd_widen_ins) or (test in wvsins):
       l = l + writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
-      l = l + writeSIGUPD_V(vd, 1, avl=vl, single_register_store=single_vector_register_store)      # EEW of vd = 1 for mask
+      l = l + writeSIGUPD_V(vd, 8, avl=vl, single_register_store=single_vector_register_store)      # EEW of vd = 1 for mask
     elif (test in xvtype):
       l = l + writeSIGUPD(rd)
     else:
@@ -1277,9 +1277,16 @@ def genVMaskCorners(test, sew):
       f.write(f"    .word 0x{word:08x}\n")
 
   # generating random mask for cp_masking_corners
-  random_mask = getrandbits(maxVLEN)
-  while (random_mask == 0) or (random_mask % 2 == 1): # prevent overlapping with other mask corners
+  regenerate = True
+  while regenerate: # prevent overlapping with other mask corners
+    regenerate = False
     random_mask = getrandbits(maxVLEN)
+    for i in range(3, int(math.log2(maxVLEN))): # getting all powers of 2: 8 through maxVLEN
+      vlen = 2 ** i
+      random_mask_bottom_vlen_bits = random_mask % vlen
+      if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask corner
+        regenerate = True
+
   f.write(f"cp_mask_random:\n")
   for i in range(num_words):
       word = (random_mask >> (32 * i)) & 0xFFFFFFFF
