@@ -409,13 +409,17 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "csrr x" + str(rs2) + ", mscratch #Reading the updated mscratch value \n"
       lines += writeSIGUPD(rs2)
   elif (test in citype):
+    if "sp" in test: #ensure no sp conflicts
+      while rs1 == 2 or rs2 == 2:
+        rs1 = randint(1,31)
+        rs2 = randint(1,31)
     if(test == "c.lui" and rd == 2): # rd ==2 is illegal operand
       rd = 9 # change to arbitrary other register
     elif (test == "c.addiw" and rd == 0):
       rd = 1
     if (test != "c.addi16sp"):
-      if (test in "c.lwsp"):
-        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      if (test == "c.lwsp" or test == "c.flwsp"):
+        lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs2\n"
       else:
         if test == "c.fldsp":  ##special case for c.fldsp in rv32 have to load double in two parts
           storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
@@ -441,7 +445,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         else:
           lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
-      lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+      lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize sp\n"
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
         immval = 16
@@ -578,7 +582,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         lines = lines + "addi x"     + str(rs1) + ", x" + str(rs1) + ", -" + str(int(unsignedImm5(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
         lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # load immediate value into integer register\n"
         lines = lines + "sw x" + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # store value to memory\n"
-        lines = writeTest(lines, rd, xlen, False,  test + " f" + str(rd)  + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n")
+        lines = writeTest(lines, rd, xlen, True,  test + " f" + str(rd)  + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(rs1) + ") # perform operation\n")
       elif (test == "c.fld"):
         storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
         mul = 8
