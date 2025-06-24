@@ -39,30 +39,6 @@
     sc.d t5, t4, (t0) # fails
     RVTEST_SIGUPD(SIGPOINTER, t5)
 
-# cp_custom_sc_addresses
-    # loop over distances of 0 to 120 from lr to sc address
-    li t6, 0        # initialize offset to 0
-1:
-    add t5, t0, t6      # scratch address + offset
-    lr.d t1, (t0)       # load from reservation set
-    sc.d t1, t3, (t5)   # try store conditional, should succeed if in same set
-    RVTEST_SIGUPD(SIGPOINTER, t1)
-    sc.d t1, t3, (t5)   # try again, and it should fail this time
-    RVTEST_SIGUPD(SIGPOINTER, t1)
-    # for RV64, also check different size lr vs. sc
-    #ifdef __riscv_xlen
-        #if __riscv_xlen == 64
-            lr.w t1, (t0)
-            sc.d t1, t3, (t5)
-         #endif
-    #else
-        ERROR: __riscv_xlen not defined
-    #endif
-
-    addi t6, t6, 8      # increment offset
-    slti t5, t6, 129    # offset <= 128
-    bnez t5, 1b         # repeat until done
-
 # cp_custom_sc_after_store
     # should not care about intervening stores
     lr.d t1, (t0)
@@ -164,3 +140,176 @@
     #else
         ERROR: __riscv_xlen not defined
     #endif
+
+
+
+# cp_custom_sc_addresses
+    # cp_address_difference
+
+    li t3, 0x12345678
+
+    addi t1, t0, 8 # address difference of 8
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 16 # address difference of 16
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 24 # address difference of 24
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 32 # address difference of 32
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 40 # address difference of 40
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 48 # address difference of 48
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 56 # address difference of 56
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 64 # address difference of 64
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 72 # address difference of 72
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 80 # address difference of 80
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 88 # address difference of 88
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 96 # address difference of 96
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 104 # address difference of 104
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 112 # address difference of 112
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 120 # address difference of 120
+    lr.d t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+
+    li t3, 0x12345678
+
+    addi t1, t0, 8 # address difference of 8
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 16 # address difference of 16
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 24 # address difference of 24
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 32 # address difference of 32
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 40 # address difference of 40
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 48 # address difference of 48
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 56 # address difference of 56
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 64 # address difference of 64
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 72 # address difference of 72
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 80 # address difference of 80
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 88 # address difference of 88
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 96 # address difference of 96
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 104 # address difference of 104
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 112 # address difference of 112
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+    addi t1, t0, 120 # address difference of 120
+    lr.w t2, (t0)
+    sc.d t4, t3, (t1)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
+
+
+
+
+# cp_custom_sc_after_sc
+    li x29, 0xbb6e9d42 # initialize rs2
+    li x28, 0xa4c321f4 # initialize rs2
+    la t0, scratch # rs1 = base address
+    lr.d t2, (t0)
+    sc.d x7, x29, (t0) # perform operation
+    sc.d x8, x28, (t0) # perform operation
+    RVTEST_SIGUPD(SIGPOINTER, x7)
+    RVTEST_SIGUPD(SIGPOINTER, x8)

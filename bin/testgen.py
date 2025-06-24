@@ -62,14 +62,13 @@ def insertTemplate(name, is_custom=False):
       # Count SIG_POINTER_INCREMENT(...) macros
       sig_pointer_incr_matches = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
       lines = []
+      lines.append(f"mv x3, x{sigReg}  # copy sig pointer")
       # Handle RVTEST_SIGUPD usage
       if sigupd_countcustom > 0:
-        lines.append(f"mv x3, x{sigReg}  # copy sig pointer")
         template = template.replace("SIGPOINTER", "x3")
         sigupd_count += sigupd_countcustom
       # Handle SIG_POINTER_INCREMENT(n) usage
       if sig_pointer_incr_matches:
-        lines.append(f"mv x3, x{sigReg}  # copy sig pointer")
         template = template.replace("SIGPOINTER", "x3")
         for m in sig_pointer_incr_matches:
             incr_val = int(m.group(1))
@@ -818,12 +817,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs1) + ", " + str(immval % 11) + " # perform operation\n")
   elif test in lrtype:
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!! \n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
     lines = lines + f"sw x{rs2}, 0(x{rs1}) # store word for RV32\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in sctype:
     lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val) + " # initialize rs2\n"
-    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address!!! \n"
+    lines = lines + "la x" + str(rs1) + ", scratch" + " # rs1 = base address \n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
   elif test in amotype:
     lines = lines + "li x" + str(rs1) + ", " + formatstr.format(rs1val) + " # initialize rs1\n"
@@ -1049,7 +1048,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
                     [rda, rdb], [rs1a, rs1b],
                     [rs2a, rs2b], [rs3a, rs3b],
                     [immvala, immvalb],
-                    ["perform first operation", "perform second (triggering) operation!!!!!"],
+                    ["perform first operation", "perform second (triggering) operation"],
                     xlen)
     if testa in floattypes and testa not in fTOrtype:
       lines += writeSIGUPD_F(rda)
