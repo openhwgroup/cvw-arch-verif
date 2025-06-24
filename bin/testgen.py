@@ -29,7 +29,7 @@ def insertTemplate(name, is_custom=False):
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
-    if 'D' in ext_parts_no_I:
+    if 'D' in ext_parts_no_I or 'Zcd' in ext_parts_no_I:
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
@@ -224,7 +224,7 @@ def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant tabl
   # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
   global sigReg # this function can modify the signature register
   lines = "" # f"# Loading value {val} into f{reg}\n"
-  if test[-1] == "d" or NaNBox_tests == "D":
+  if test[-1] == "d" or NaNBox_tests == "D" or test == 'c.fsdsp':
     precision = 64
     loadop = "fld"
   elif NaNBox_tests == "S":
@@ -417,26 +417,44 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       if (test in "c.lwsp"):
         lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       else:
-        lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
+        if test == "c.fldsp":  ##special case for c.fldsp in rv32 have to load double in two parts
+          storeop =  "sw" if (min (xlen, flen) == 32) else "sd"
+          mul = 8
+          temp1 = 8
+          temp2 = 9
+          while (temp1 in [rs1, rs2]):
+            temp1 = randomNonconflictingReg(test)
+          while (temp2 in [rs1, rs2, temp1]):
+            temp2 = randomNonconflictingReg(test)
+          lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
+          if (flen > xlen): # flen = 6
+            lines = lines + f"li x{temp1}, 0x{formatstrFP.format(rdval)[2:10]} # load x{temp1} with 32 MSBs of {formatstrFP.format(rdval)}\n"
+            lines = lines + f"li x{temp2}, 0x{formatstrFP.format(rdval)[10:18]} # load x{temp2} with 32 LSBs {formatstrFP.format(rdval)}\n"
+            lines = lines + f"{storeop} x{temp1}, {str(int(ZextImm6(immval))*mul)}(sp) # store x{temp1} (0x{formatstrFP.format(rdval)[2:10]}) in memory\n"
+            lines = lines + f"addi sp, sp, 4 # move address up by 4\n"
+            lines = lines + f"{storeop} x{temp2}, {str(int(ZextImm6(immval))*mul)}(sp) # store x{temp2} (0x{formatstrFP.format(rdval)[10:18]}) after 4 bytes in memory\n"
+            lines = lines + f"addi sp, sp, -4 # move back to scratch\n"
+          else:
+            lines = lines + f"li x{temp1}, {formatstrFP.format(rdval)} # load x{temp1} with value {formatstrFP.format(rdval)}\n"
+            lines = lines + f"{storeop} x{temp1}, {str(int(ZextImm6(immval))*mul)}(sp) # store {formatstrFP.format(rdval)} in memory\n"
+          lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {str(int(ZextImm6(immval))*mul)}(sp) # perform operation\n")
+        else:
+          lines = lines + "li x" + str(rd) + ", " + formatstr.format(rdval) + " # initialize rs1\n"
     if (test == "c.addi16sp"):
       lines = lines + "li" + " sp"  + ", " + formatstr.format(rdval) + " # initialize rs1\n"
       immval = int(signedImm6(immval)) * 16
       if (immval == 0):
         immval = 16
       lines = writeTest(lines, 2, xlen, False, test + " sp, " + str(immval) + " # perform operation\n")
-    elif test in ["c.lwsp","c.ldsp","c.flwsp","c.fldsp"]:
+    elif test == "c.fldsp":
+      pass # fldsp is handled above
+    elif test in ["c.lwsp","c.ldsp","c.flwsp"]:
       if (test == "c.lwsp"):
         storeop = "c.swsp"
         mul = 4
       elif (test == "c.flwsp"):
         storeop = "sw"
         mul = 4
-      elif (test == "c.fldsp"):
-        mul = 8
-        if (xlen == 32):
-          storeop = "sw"
-        else:
-          storeop = "sd"
       else:
         storeop = "c.sdsp"
         mul = 8
@@ -447,8 +465,8 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + "la " + "sp" + ", scratch" + " # base address \n"
       lines = lines + "addi " + "sp" + ", " + "sp" + ", -" + str(int(ZextImm6(immval))*mul) + " # sub immediate from rs1 to counter offset\n"
       lines = lines + storeop + " x" + str(rs2) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ")   # store value to put something in memory\n"
-      if (test == "c.flwsp" or test == "c.fldsp"):
-        lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n")
+      if (test == "c.flwsp"):
+        lines = writeTest(lines, rd, xlen, True, test + " f" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform  operation\n")
       else:
         lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", " + str(int(ZextImm6(immval))*mul) + "(" + "sp" + ") # perform operation\n")
     else:
@@ -602,21 +620,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       while (rs1 == rs2):
         rs1 = randomNonconflictingReg(test)
     mul = 4 if (test in ["c.sw", "c.fsw"]) else 8
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2 with random value\n"
+    if not ((test == "c.fsd") and (flen > xlen)):
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2 with random value\n"
     lines = lines + "mv x" + str(rs1) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1
     #lines = lines + "la x" + str(rs1) + ", scratch" + " # base address\n"
     if (test in ["c.fsw", "c.fsd"]):
       if ((test == "c.fsd") and (flen > xlen)):
-        temp = 8
-        while (temp in [sigReg, rs2]):
-          temp = randomNonconflictingReg(test)
-        lines = lines + "li x" + str(temp) +", " + formatstr.format(rs1val) + " # initialize x" + str(temp) + " with random value{formatstr.format(rs1val)}\n"
-        lines = lines + "sw x" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # store " + hex(rs2val) + " in memory\n"
-        lines = lines + "sw x" + str(temp) + ", 4(x" + str(sigReg) + ")" + " # store " + hex(rs1val) + " in memory\n"
-        lines = lines + "fld f" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # load " + hex(rs1val) + hex(rs2val)[2:] + " from memory into fs2\n"
-        lines = lines + "sw x0, 0(x" + str(sigReg) + ")" + " # clearing the random value store at scratch\n"
-        lines = lines + "sw x0, 4(x" + str(sigReg) + ")" + " # clearing the random value store at 4(scratch)\n"
+        lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
       else:
         size = "w" if test == "c.fsw" else "d"
         lines = lines + "s" + size + " x" + str(rs2) + ", 0(x" + str(sigReg) + ")" + " # store " + hex(rs2val) + " in memory\n"
@@ -626,7 +637,12 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + (" f" if test in ["c.fsw","c.fsd"] else " x") + str(rs2) + ", " + str(int(unsignedImm5(immval))*mul) + "(x" + str(sigReg) + ") # perform operation \n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + str(int(unsignedImm5(immval))*mul)  + " \n"
-    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", REGWIDTH  # Incrementing base register\n"
+    if test == "c.fsd":
+        sigupd_count += 1
+        WIDTH = 8 #bytes
+    else:
+        WIDTH = "REGWIDTH"
+    lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " +str(WIDTH)+ "  # Incrementing base register\n"
     sigupd_count += 1 if test == "c.fsw" else 2
   elif (test in cutype):
     lines = lines + "li x" + str(rd) + ", " + formatstr.format(rs1val)  + " # initialize rd to specific value\n"
@@ -660,8 +676,11 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
     type = "f" if (test in ["c.fswsp", "c.fsdsp"]) else "x"
-    lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
-    if (test == "c.fswsp" or test == "c.fsdsp"):
+    if test == "c.fsdsp":
+      lines = lines+  loadFloatReg(rs2, rs2val, xlen, flen)
+    else:
+      lines = lines + "li x" + str(rs2) + ", " + formatstr.format(rs2val)  + " # initialize rs2\n"
+    if (test == "c.fswsp"):
       mv = "fmv.d.x" if (xlen == 64) else "fmv.w.x"
       lines = lines + mv + " f" + str(rs2) + ", x" + str(rs2) + " # move the random value into fs2\n"
     offset = int(ZextImm6(immval))*mul
@@ -678,9 +697,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
         WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
     sigupd_count += 1
-
-
-
   elif (test in csbtype + cshtype):
     if (test in csbtype):
       offset = unsignedImm2(immval)
