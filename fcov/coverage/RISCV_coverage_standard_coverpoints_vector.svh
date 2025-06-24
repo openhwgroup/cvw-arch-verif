@@ -115,7 +115,6 @@
         bins target = {1'b1};
     }
 
-
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")
                         == get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins target = {1'b1};
@@ -133,7 +132,7 @@
         bins eight  = {3};
     }
 
-    vtype_all_lmul_supported : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+    vtype_all_lmul_supported_sew8 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         `ifdef LMULf8_SUPPORTED
         bins eigth  = {5};
         `endif
@@ -143,6 +142,36 @@
         `ifdef LMULf2_SUPPORTED
         bins half   = {7};
         `endif
+        bins one    = {0};
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
+    vtype_all_lmul_supported_sew16 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        `ifdef LMULf4_SUPPORTED
+        bins fourth = {6};
+        `endif
+        `ifdef LMULf2_SUPPORTED
+        bins half   = {7};
+        `endif
+        bins one    = {0};
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
+    vtype_all_lmul_supported_sew32 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        `ifdef LMULf2_SUPPORTED
+        bins half   = {7};
+        `endif
+        bins one    = {0};
+        bins two    = {1};
+        bins four   = {2};
+        bins eight  = {3};
+    }
+
+    vtype_all_lmul_supported_sew64 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         bins one    = {0};
         bins two    = {1};
         bins four   = {2};
@@ -185,7 +214,25 @@
 
     vtype_sew_8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
         `ifdef SEW8_SUPPORTED
-        bins eight      = {0};
+        bins eight = {0};
+        `endif
+    }
+
+    vtype_sew_16: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW16_SUPPORTED
+        bins sixteen = {1};
+        `endif
+    }
+
+    vtype_sew_32: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW32_SUPPORTED
+        bins thirtytwo = {2};
+        `endif
+    }
+
+    vtype_sew_64: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
+        `ifdef SEW64_SUPPORTED
+        bins sixtyfour = {3};
         `endif
     }
 
