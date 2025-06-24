@@ -33,12 +33,14 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
-    if 'f' in  ext_parts[0]:
+    if 'F' in ext_parts_no_I or 'f' in ext_parts_no_I:
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
       if ext_parts_no_I[-1] == 'D':
         ext_parts_no_I = ext_parts_no_I[:-1]
       if ext_parts_no_I[-1] == 'M':
+        ext_parts_no_I = ext_parts_no_I[:-1]
+      if ext_parts_no_I[-1] == 'F':
         ext_parts_no_I = ext_parts_no_I[:-1]
     #ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     raw_ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
