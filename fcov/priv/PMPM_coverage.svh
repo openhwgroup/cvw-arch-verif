@@ -230,7 +230,7 @@ covergroup PMPM_cg with function sample(
 	pmpaddr_for_tor_region14: coverpoint {pmpaddr[15], pmpaddr[14]}  {
 		bins tor0  = {`NON_STANDARD_REGION + 120*`g, `NON_STANDARD_REGION + 105*`g};
  	}
-   //15 configuartions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
+   //15 configurtions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
 
 	RWXL_i001_pmp0cfg: coverpoint { pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit } {
 	    wildcard bins pmp0cfg_rwx000  = { 75'b????????????????????????????00_??????????????0_??????????????1_000000000000001 };
