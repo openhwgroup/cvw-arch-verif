@@ -160,12 +160,14 @@
 `endif
 `ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
+  `include "PMPM_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
   `include "PMPZalrsc_coverage.svh"
   `include "PMPZca_coverage.svh"
 `endif
 `ifdef RV32PMP_COVERAGE
+  `include "PMPM_coverage.svh"
   `include "PMPM_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
