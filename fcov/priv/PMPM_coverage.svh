@@ -189,43 +189,43 @@ covergroup PMPM_cg with function sample(
 		bins tor0  = {`NON_STANDARD_REGION + 1*`g, `NON_STANDARD_REGION};
  	}
 	pmpaddr_for_tor_region1: coverpoint {pmpaddr[2], pmpaddr[1]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 6*`g, `NON_STANDARD_REGION + 3*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 3*`g, `NON_STANDARD_REGION + 1*`g};
  	}
 	pmpaddr_for_tor_region2: coverpoint {pmpaddr[3], pmpaddr[2]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 10*`g, `NON_STANDARD_REGION + 6*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 6*`g, `NON_STANDARD_REGION + 3*`g};
  	}
 	pmpaddr_for_tor_region3: coverpoint {pmpaddr[4], pmpaddr[3]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 15*`g, `NON_STANDARD_REGION + 10*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 10*`g, `NON_STANDARD_REGION + 6*`g};
  	}
 	pmpaddr_for_tor_region4: coverpoint {pmpaddr[5], pmpaddr[4]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 21*`g, `NON_STANDARD_REGION + 15*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 15*`g, `NON_STANDARD_REGION + 10*`g};
  	}
 	pmpaddr_for_tor_region5: coverpoint {pmpaddr[6], pmpaddr[5]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 28*`g, `NON_STANDARD_REGION + 21*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 21*`g, `NON_STANDARD_REGION + 15*`g};
  	}
 	pmpaddr_for_tor_region6: coverpoint {pmpaddr[7], pmpaddr[6]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 36*`g, `NON_STANDARD_REGION + 28*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 28*`g, `NON_STANDARD_REGION + 21*`g};
  	}
 	pmpaddr_for_tor_region7: coverpoint {pmpaddr[8], pmpaddr[7]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 45*`g, `NON_STANDARD_REGION + 36*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 36*`g, `NON_STANDARD_REGION + 28*`g};
  	}
 	pmpaddr_for_tor_region8: coverpoint {pmpaddr[9], pmpaddr[8]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 55*`g, `NON_STANDARD_REGION + 45*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 45*`g, `NON_STANDARD_REGION + 36*`g};
  	}
 	pmpaddr_for_tor_region9: coverpoint {pmpaddr[10], pmpaddr[9]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 66*`g, `NON_STANDARD_REGION + 55*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 55*`g, `NON_STANDARD_REGION + 45*`g};
  	}
 	pmpaddr_for_tor_region10: coverpoint {pmpaddr[11], pmpaddr[10]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 78*`g, `NON_STANDARD_REGION + 66*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 66*`g, `NON_STANDARD_REGION + 55*`g};
  	}
 	pmpaddr_for_tor_region11: coverpoint {pmpaddr[12], pmpaddr[11]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 91*`g, `NON_STANDARD_REGION + 78*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 78*`g, `NON_STANDARD_REGION + 66*`g};
  	}
 	pmpaddr_for_tor_region12: coverpoint {pmpaddr[13], pmpaddr[12]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 105*`g, `NON_STANDARD_REGION + 91*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 91*`g, `NON_STANDARD_REGION + 78*`g};
  	}
 	pmpaddr_for_tor_region13: coverpoint {pmpaddr[14], pmpaddr[13]}  {
-		bins tor0  = {`NON_STANDARD_REGION + 120*`g, `NON_STANDARD_REGION + 105*`g};
+    bins tor0  = {`NON_STANDARD_REGION + 105*`g, `NON_STANDARD_REGION + 91*`g};
  	}
 	pmpaddr_for_tor_region14: coverpoint {pmpaddr[15], pmpaddr[14]}  {
 		bins tor0  = {`NON_STANDARD_REGION + 120*`g, `NON_STANDARD_REGION + 105*`g};
