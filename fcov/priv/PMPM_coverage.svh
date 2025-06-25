@@ -51,8 +51,8 @@ covergroup PMPM_cg with function sample(
 										logic [XLEN-1:0] pmpcfg [15:0],		// 16 unpacked config registers
 										logic [XLEN-1:0] pmpaddr [62:0],	// 63 unpacked pmpaddress registers
 										logic [16*XLEN-1:0] pack_pmpaddr,	// 16 packed pmpaddress registers
-										logic [29:0] pmpcfg_rw,				// first 15 regions RW fields
-										logic [95:0] pmpcfg_RW,				// next 48 regions RW fields
+										logic [29:0] pmpcfg_wr,				// first 15 regions RW fields
+										logic [95:0] pmpcfg_WR,				// next 48 regions RW fields
 										logic [29:0] pmpcfg_a,				// first 15 regions A fields
 										logic [95:0] pmpcfg_A,				// next 48 regions A fields
 										logic [14:0] pmpcfg_x,				// first 15 regions X fields
@@ -234,69 +234,69 @@ covergroup PMPM_cg with function sample(
 
    //15 configurtions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
 
-    RWXL_i001_pmp0cfg: coverpoint { pmpcfg_rw[0], pmpcfg_x[0], pmpcfg_l[0], pmpcfg_a[0], pmp_hit[0] } {
+    RWXL_i001_pmp0cfg: coverpoint { pmpcfg_wr[0], pmpcfg_x[0], pmpcfg_l[0], pmpcfg_a[0], pmp_hit[0] } {
    		bins pmp0cfg_wrx000  = { 7'b0001011 };
    }
 
-	RWXL_i001_pmp1cfg: coverpoint { pmpcfg_rw[1], pmpcfg_x[1], pmpcfg_l[1], pmpcfg_a[1], pmp_hit[1] } {
+	RWXL_i001_pmp1cfg: coverpoint { pmpcfg_wr[1], pmpcfg_x[1], pmpcfg_l[1], pmpcfg_a[1], pmp_hit[1] } {
    		bins pmp1cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp2cfg: coverpoint { pmpcfg_rw[2], pmpcfg_x[2], pmpcfg_l[2], pmpcfg_a[2], pmp_hit[2] } {
+	RWXL_i001_pmp2cfg: coverpoint { pmpcfg_wr[2], pmpcfg_x[2], pmpcfg_l[2], pmpcfg_a[2], pmp_hit[2] } {
    		bins pmp2cfg_wrx000  = { 7'b0001011 };
    }
 
-   RWXL_i001_pmp3cfg: coverpoint { pmpcfg_rw[3], pmpcfg_x[3], pmpcfg_l[3], pmpcfg_a[3], pmp_hit[3] } {
+   RWXL_i001_pmp3cfg: coverpoint { pmpcfg_wr[3], pmpcfg_x[3], pmpcfg_l[3], pmpcfg_a[3], pmp_hit[3] } {
    		bins pmp3cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp4cfg: coverpoint { pmpcfg_rw[4], pmpcfg_x[4], pmpcfg_l[4], pmpcfg_a[4], pmp_hit[4] } {
+	RWXL_i001_pmp4cfg: coverpoint { pmpcfg_wr[4], pmpcfg_x[4], pmpcfg_l[4], pmpcfg_a[4], pmp_hit[4] } {
    		bins pmp4cfg_wrx000  = { 7'b0001011 };
    }
 
-		RWXL_i001_pmp5cfg: coverpoint { pmpcfg_rw[5], pmpcfg_x[5], pmpcfg_l[5], pmpcfg_a[5], pmp_hit[5] } {
+		RWXL_i001_pmp5cfg: coverpoint { pmpcfg_wr[5], pmpcfg_x[5], pmpcfg_l[5], pmpcfg_a[5], pmp_hit[5] } {
    		bins pmp5cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp6cfg: coverpoint { pmpcfg_rw[6], pmpcfg_x[6], pmpcfg_l[6], pmpcfg_a[6], pmp_hit[6] } {
+	RWXL_i001_pmp6cfg: coverpoint { pmpcfg_wr[6], pmpcfg_x[6], pmpcfg_l[6], pmpcfg_a[6], pmp_hit[6] } {
    		bins pmp6cfg_wrx000  = { 7'b0001011 };
    }
 
-	RWXL_i001_pmp7cfg: coverpoint { pmpcfg_rw[7], pmpcfg_x[7], pmpcfg_l[7], pmpcfg_a[7], pmp_hit[7] } {
+	RWXL_i001_pmp7cfg: coverpoint { pmpcfg_wr[7], pmpcfg_x[7], pmpcfg_l[7], pmpcfg_a[7], pmp_hit[7] } {
    		bins pmp7cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp8cfg: coverpoint { pmpcfg_rw[8], pmpcfg_x[8], pmpcfg_l[8], pmpcfg_a[8], pmp_hit[8] } {
+	RWXL_i001_pmp8cfg: coverpoint { pmpcfg_wr[8], pmpcfg_x[8], pmpcfg_l[8], pmpcfg_a[8], pmp_hit[8] } {
    		bins pmp8cfg_wrx000  = { 7'b0001011 };
    }
 
-	RWXL_i001_pmp9cfg: coverpoint { pmpcfg_rw[9], pmpcfg_x[9], pmpcfg_l[9], pmpcfg_a[9], pmp_hit[9] } {
+	RWXL_i001_pmp9cfg: coverpoint { pmpcfg_wr[9], pmpcfg_x[9], pmpcfg_l[9], pmpcfg_a[9], pmp_hit[9] } {
    		bins pmp9cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp10cfg: coverpoint { pmpcfg_rw[10], pmpcfg_x[10], pmpcfg_l[10], pmpcfg_a[10], pmp_hit[10] } {
+	RWXL_i001_pmp10cfg: coverpoint { pmpcfg_wr[10], pmpcfg_x[10], pmpcfg_l[10], pmpcfg_a[10], pmp_hit[10] } {
    		bins pmp10cfg_wrx000  = { 7'b0001011 };
    }
 
-	RWXL_i001_pmp11cfg: coverpoint { pmpcfg_rw[11], pmpcfg_x[11], pmpcfg_l[11], pmpcfg_a[11], pmp_hit[11] } {
+	RWXL_i001_pmp11cfg: coverpoint { pmpcfg_wr[11], pmpcfg_x[11], pmpcfg_l[11], pmpcfg_a[11], pmp_hit[11] } {
    		bins pmp11cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp12cfg: coverpoint { pmpcfg_rw[12], pmpcfg_x[12], pmpcfg_l[12], pmpcfg_a[12], pmp_hit[12] } {
+	RWXL_i001_pmp12cfg: coverpoint { pmpcfg_wr[12], pmpcfg_x[12], pmpcfg_l[12], pmpcfg_a[12], pmp_hit[12] } {
    		bins pmp0cfg_wrx000  = { 7'b0001011 };
    }
 
-	RWXL_i001_pmp13cfg: coverpoint { pmpcfg_rw[13], pmpcfg_x[13], pmpcfg_l[13], pmpcfg_a[13], pmp_hit[13] } {
+	RWXL_i001_pmp13cfg: coverpoint { pmpcfg_wr[13], pmpcfg_x[13], pmpcfg_l[13], pmpcfg_a[13], pmp_hit[13] } {
    		bins pmp0cfg_wrx010  = { 7'b0101011 };
    }
 
-	RWXL_i001_pmp14cfg: coverpoint { pmpcfg_rw[14], pmpcfg_x[14], pmpcfg_l[14], pmpcfg_a[14], pmp_hit[14] } {
+	RWXL_i001_pmp14cfg: coverpoint { pmpcfg_wr[14], pmpcfg_x[14], pmpcfg_l[14], pmpcfg_a[14], pmp_hit[14] } {
    		bins pmp0cfg_wrx000  = { 7'b0001011 };
    }
 
 //-------------------------------------------------------
 
-pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
+	pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		wildcard bins OFF0  = {45'b????????????????????????????00_000000000000001};
 		wildcard bins OFF1  = {45'b??????????????????????????00??_000000000000010};
 		wildcard bins OFF2  = {45'b????????????????????????00????_000000000000100};
@@ -364,6 +364,24 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		wildcard bins NAPOT13 = {45'b??11??????????????????????????_010000000000000};
 		wildcard bins NAPOT14 = {45'b11????????????????????????????_100000000000000};
 	}
+//-------------------------------------------------------
+/*
+	//the patterns to be written inside pmpaddr[0]
+	pmpaddr0_for_cp_grain: coverpoint{pmpaddr[0]}{
+		bins all_zero = {{(`XLEN-2){1'b0}}};
+		bins all_one  = {{(`XLEN-2){1'b1}}};
+		bins checkerboard = {{((`XLEN-2)/2){2’b10}} }; //checkerboard pattern
+	}
+
+	pmpaddr0_low_bits: coverpoint {pmpaddr[0][`G-1:0]}{
+		bins all_zero = {1'b1,{(`G-1){1'b1}}};
+	}
+
+	pmpcfg0_A_mode: coverpoint pmpcfg[0][4:3] {
+  		bins OFF   = {2'b00};
+  		bins TOR   = {2'b01};
+  		bins NAPOT = {2'b10};
+	}*/
 
 //-------------------------------------------------------
 
@@ -384,7 +402,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 	pmp_addr_for_tor_bot: coverpoint {pmpaddr[1],pmpaddr[0]} {  //pmpaddr0 = pmpaddr1-g
-		bins range = {`NON_STANDARD_REGION,`NON_STANDARD_REGION-`g};
+		bins range = {`NON_STANDARD_REGION+`g,`NON_STANDARD_REGION};
 	}
 
 	pmp_addr_for_tor0: coverpoint {pmpaddr[0]} {
@@ -392,10 +410,10 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 	addr_for_tor_bot: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins pmpaddr0_4 = {((`NON_STANDARD_REGION-`g)<<2)-4}; //pmpaddr0-4
-		bins pmpaddr0 = {(`NON_STANDARD_REGION-`g)<<2}; //pmpaddr0
-		bins pmpaddr1_4 = {`REGIONSTART-4}; //pmpaddr1-4 NOTE: REGIONSTART>>2 => NON_STANDARD_REGION (pmp encoded address)
-		bins pmpaddr1 = {`REGIONSTART};
+		bins pmpaddr0_4 = {((`NON_STANDARD_REGION)<<2)-4}; //pmpaddr0-4
+		bins pmpaddr0 = {(`NON_STANDARD_REGION)<<2}; //pmpaddr0
+		bins pmpaddr1_4 = {(`REGIONSTART+`g)-4}; //pmpaddr1-4 NOTE: REGIONSTART>>2 => NON_STANDARD_REGION (pmp encoded address)
+		bins pmpaddr1 = {`REGIONSTART+`g};
 	}
 
 	pmp_addr_for_tor_nonoverlap: coverpoint {pmpaddr[1], pmpaddr[0]} { // pmpaddr0 >= pmpaddr1.
@@ -405,7 +423,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
  	}
 
 	pmpcfg_tor_nonoverlap: coverpoint { pmpcfg[0][15:0] } {
-    	bins pmp_cfg_tor1 =  {16'b0000100010001000}; //L=0 for pmpcfg1 and L=0 for pmpcfg1,A=TOR(both),XWR=000(both)
+    	bins pmp_cfg_tor1 =  {16'b1000100000000000}; //L=1 for pmpcfg1 and L=0 for pmpcfg0,A=TOR for cf1 and A=OFF for 0,XWR=000(both)
 	}
 
 	addr_for_tor_nonoverlap: coverpoint (ins.current.rs1_val + ins.current.imm) {
@@ -473,7 +491,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 //-------------------------------------------------------
 
-	RWXL000: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0
+	RWXL000: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0
 		wildcard bins pmp0cfg_rwx000  = {75'b????????????????????????????00_??????????????0_??????????????0_000000000000001};
 		wildcard bins pmp1cfg_rwx000  = {75'b??????????????????????????00??_?????????????0?_?????????????0?_000000000000010};
 		wildcard bins pmp2cfg_rwx000  = {75'b????????????????????????00????_????????????0??_????????????0??_000000000000100};
@@ -496,55 +514,55 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	//6 legal combinations for XRW
 
 	//incase of legal_RWX_L_TOR_1, pmpaddri-1 is REGIONSTART, hence the access addressess are adjusted accordingly. (pmpaddr-i = address-g)
-	legal_RWX_L_TOR_1: coverpoint {pmpcfg_x[1], pmpcfg_rw[1], pmpcfg_l[1], pmpcfg_a[1], pmp_hit[1],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp1
-		wildcard bins pmp0cfg_rwx001_addr1  = {7'b0011011,`REGIONSTART}; //address-g
-		wildcard bins pmp0cfg_rwx001_addr2  = {7'b0011011,`REGIONSTART-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx001_addr3  = {7'b0011011,`REGIONSTART+`g}; //address
-		wildcard bins pmp0cfg_rwx001_addr4  = {7'b0011011,`REGIONSTART+`g-4}; //address-4
+	legal_RWX_L_TOR_1: coverpoint {pmpcfg_x[1], pmpcfg_wr[1], pmpcfg_l[1], pmpcfg_a[1], pmp_hit[1],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp1
+		wildcard bins pmp0cfg_xwr001_addr1  = {7'b0011011,`REGIONSTART}; //address-g
+		wildcard bins pmp0cfg_xwr001_addr2  = {7'b0011011,`REGIONSTART-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr001_addr3  = {7'b0011011,`REGIONSTART+`g}; //address
+		wildcard bins pmp0cfg_xwr001_addr4  = {7'b0011011,`REGIONSTART+`g-4}; //address-4
 	}
 
 	//incase of legal_RWX_L_TOR_2, pmpaddri-1 is (`NON_STANDARD_REGION + `g)<<2
-	legal_RWX_L_TOR_2: coverpoint {pmpcfg_x[2], pmpcfg_rw[2], pmpcfg_l[2], pmpcfg_a[2], pmp_hit[2],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp2
-		wildcard bins pmp0cfg_rwx101_addr1  = {7'b0111011,(`NON_STANDARD_REGION + `g)<<2}; //address-g
-		wildcard bins pmp0cfg_rwx101_addr2  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx101_addr3  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_rwx101_addr4  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g-4}; //address-4
+	legal_RWX_L_TOR_2: coverpoint {pmpcfg_x[2], pmpcfg_wr[2], pmpcfg_l[2], pmpcfg_a[2], pmp_hit[2],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp2
+		wildcard bins pmp0cfg_xwr011_addr1  = {7'b0111011,(`NON_STANDARD_REGION + `g)<<2}; //address-g
+		wildcard bins pmp0cfg_xwr011_addr2  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr011_addr3  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g}; //address
+		wildcard bins pmp0cfg_xwr011_addr4  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g-4}; //address-4
 	}
 
 	//incase of legal_RWX_L_TOR_3, pmpaddri-1 is (`NON_STANDARD_REGION + 3*`g)<<2
-	legal_RWX_L_TOR_3: coverpoint {pmpcfg_x[3],pmpcfg_rw[3], pmpcfg_l[3], pmpcfg_a[3], pmp_hit[3],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp3
-		wildcard bins pmp0cfg_rwx110_addr1  = {7'b1001011,(`NON_STANDARD_REGION + 3*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_rwx110_addr2  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx110_addr3  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_rwx110_addr4  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g-4}; //address-4
+	legal_RWX_L_TOR_3: coverpoint {pmpcfg_x[3],pmpcfg_wr[3], pmpcfg_l[3], pmpcfg_a[3], pmp_hit[3],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp3
+		wildcard bins pmp0cfg_xwr100_addr1  = {7'b1001011,(`NON_STANDARD_REGION + 3*`g)<<2}; //address-g
+		wildcard bins pmp0cfg_xwr100_addr2  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr100_addr3  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g}; //address
+		wildcard bins pmp0cfg_xwr100_addr4  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g-4}; //address-4
 	}
 
 	//incase of legal_RWX_L_TOR_4, pmpaddri-1 is (`NON_STANDARD_REGION + 6*`g)<<2
-	legal_RWX_L_TOR_4: coverpoint {pmpcfg_x[4], pmpcfg_rw[4], pmpcfg_l[4], pmpcfg_a[4], pmp_hit[4],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp4
-		wildcard bins pmp0cfg_rwx100_addr1  = {7'b1011011,(`NON_STANDARD_REGION + 6*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_rwx100_addr2  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx100_addr3  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_rwx100_addr4  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g-4}; //address-4
+	legal_RWX_L_TOR_4: coverpoint {pmpcfg_x[4], pmpcfg_wr[4], pmpcfg_l[4], pmpcfg_a[4], pmp_hit[4],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp4
+		wildcard bins pmp0cfg_xwr101_addr1  = {7'b1011011,(`NON_STANDARD_REGION + 6*`g)<<2}; //address-g
+		wildcard bins pmp0cfg_xwr101_addr2  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr101_addr3  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g}; //address
+		wildcard bins pmp0cfg_xwr101_addr4  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g-4}; //address-4
 	}
 
 	//incase of legal_RWX_L_TOR_5, pmpaddri-1 is (`NON_STANDARD_REGION + 10*`g)<<2
-	legal_RWX_L_TOR_5: coverpoint {pmpcfg_x[5], pmpcfg_rw[5], pmpcfg_l[5], pmpcfg_a[5], pmp_hit[5],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
-		wildcard bins pmp0cfg_rwx111_addr1  = {7'b1101011,(`NON_STANDARD_REGION + 10*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_rwx111_addr2  = {7'b1101011,((`NON_STANDARD_REGION + 10*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx111_addr3  = {7'b1101011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_rwx111_addr4  = {7'b1101011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g-4}; //address-4
+	legal_RWX_L_TOR_5: coverpoint {pmpcfg_x[5], pmpcfg_wr[5], pmpcfg_l[5], pmpcfg_a[5], pmp_hit[5],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
+		wildcard bins pmp0cfg_xwr111_addr1  = {7'b1111011,(`NON_STANDARD_REGION + 10*`g)<<2}; //address-g
+		wildcard bins pmp0cfg_xwr111_addr2  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr111_addr3  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g}; //address
+		wildcard bins pmp0cfg_xwr111_addr4  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g-4}; //address-4
 	}
 
 	//incase of legal_RWX_L_TOR_6, pmpaddri-1 is (`NON_STANDARD_REGION + 15*`g)<<2
-	legal_RWX_L_TOR_6: coverpoint {pmpcfg_x[6], pmpcfg_rw[6], pmpcfg_l[6], pmpcfg_a[6], pmp_hit[6],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
-		wildcard bins pmp0cfg_rwx000_addr1  = {7'b0001011,(`NON_STANDARD_REGION + 15*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_rwx000_addr2  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_rwx000_addr3  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_rwx000_addr4  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g-4}; //address-4
+	legal_RWX_L_TOR_6: coverpoint {pmpcfg_x[6], pmpcfg_wr[6], pmpcfg_l[6], pmpcfg_a[6], pmp_hit[6],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
+		wildcard bins pmp0cfg_xwr000_addr1  = {7'b0001011,(`NON_STANDARD_REGION + 15*`g)<<2}; //address-g
+		wildcard bins pmp0cfg_xwr000_addr2  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)-4}; //address-g-4
+		wildcard bins pmp0cfg_xwr000_addr3  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g}; //address
+		wildcard bins pmp0cfg_xwr000_addr4  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g-4}; //address-4
 	}
 //-------------------------------------------------------
 
-  	legal_RWX_L_NAPOT: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 3 for region pmp0
+  	legal_RWX_L_NAPOT: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 3 for region pmp0
 		wildcard bins pmp0cfg_rwxl0001  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????11_000000000000001};
 		wildcard bins pmp0cfg_rwxl0011  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????11_000000000000001};
 		wildcard bins pmp0cfg_rwxl1011  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????11_000000000000001};
@@ -554,7 +572,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 //-------------------------------------------------------
-  	legal_RWX_L_NA4: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} iff(`G==0){ // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 2'b10 for region pmp0
+  	legal_RWX_L_NA4: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} iff(`G==0){ // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 2'b10 for region pmp0
 		wildcard bins pmp0cfg_rwxl0001  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????10_000000000000001};
 		wildcard bins pmp0cfg_rwxl0011  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????10_000000000000001};
 		wildcard bins pmp0cfg_rwxl1011  = {105'b????????????????????????????00_??????????????1_??????????????1_????????????????????????????10_000000000000001};
@@ -564,7 +582,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 
 //-------------------------------------------------------
-	RWXL0001: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 1
+	RWXL0001: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 1
 		wildcard bins pmp0cfg_rwxl0001  = {75'b????????????????????????????00_??????????????0_??????????????1_000000000000001};
 		wildcard bins pmp1cfg_rwxl0001  = {75'b??????????????????????????00??_?????????????0?_?????????????1?_000000000000010};
 		wildcard bins pmp2cfg_rwxl0001  = {75'b????????????????????????00????_????????????0??_????????????1??_000000000000100};
@@ -622,7 +640,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 //-------------------------------------------------------
 
-	RW00: coverpoint {pmpcfg_rw, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 0, pmpcfg.L = 1 and pmpcfg.A = 3
+	RW00: coverpoint {pmpcfg_wr, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 0, pmpcfg.L = 1 and pmpcfg.A = 3
 		wildcard bins pmp0cfg_rw00   = {90'b????????????????????????????00_??????????????1_????????????????????????????11_000000000000001};
 		wildcard bins pmp1cfg_rw00   = {90'b??????????????????????????00??_?????????????1?_??????????????????????????11??_000000000000010};
 		wildcard bins pmp2cfg_rw00   = {90'b????????????????????????00????_????????????1??_????????????????????????11????_000000000000100};
@@ -640,7 +658,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		wildcard bins pmp14cfg_rw00  = {90'b00????????????????????????????_1??????????????_11????????????????????????????_100000000000000};
 	}
 
-	RW11: coverpoint {pmpcfg_rw, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 3, pmpcfg.L = 1 and pmpcfg.A = 3
+	RW11: coverpoint {pmpcfg_wr, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 3, pmpcfg.L = 1 and pmpcfg.A = 3
 		wildcard bins pmp0cfg_rw11     = {90'b????????????????????????????11_??????????????1_????????????????????????????11_000000000000001};
 		wildcard bins pmp1cfg_rw11     = {90'b??????????????????????????11??_?????????????1?_??????????????????????????11??_000000000000010};
 		wildcard bins pmp2cfg_rw11     = {90'b????????????????????????11????_????????????1??_????????????????????????11????_000000000000100};
@@ -658,7 +676,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 		wildcard bins pmp14cfg_rw11    = {90'b11????????????????????????????_1??????????????_11????????????????????????????_100000000000000};
 	}
 
-	RW10: coverpoint {pmpcfg_rw, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 1, pmpcfg.L = 1 and pmpcfg.A = 3
+	RW10: coverpoint {pmpcfg_wr, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RW = 1, pmpcfg.L = 1 and pmpcfg.A = 3
 		wildcard bins pmp0cfg_rw11     = {90'b????????????????????????????01_??????????????1_????????????????????????????11_000000000000001};
 		wildcard bins pmp1cfg_rw11     = {90'b??????????????????????????01??_?????????????1?_??????????????????????????11??_000000000000010};
 		wildcard bins pmp2cfg_rw11     = {90'b????????????????????????01????_????????????1??_????????????????????????11????_000000000000100};
@@ -678,7 +696,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 //-------------------------------------------------------
 
-	RWX000: coverpoint {pmpcfg_rw, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0 and pmpcfg.A = 3
+	RWX000: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0 and pmpcfg.A = 3
 		wildcard bins pmp0cfg_rwx000  = {105'b????????????????????????????00_??????????????0_??????????????0_????????????????????????????11_000000000000001};
 		wildcard bins pmp1cfg_rwx000  = {105'b??????????????????????????00??_?????????????0?_?????????????0?_??????????????????????????11??_000000000000010};
 		wildcard bins pmp2cfg_rwx000  = {105'b????????????????????????00????_????????????0??_????????????0??_????????????????????????11????_000000000000100};
@@ -955,7 +973,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	}
 //-------------------------------------------------------
 
-	pmp64: coverpoint {pmpcfg_L, pmpcfg_X, pmpcfg_RW, pmp_HIT} {
+	pmp64: coverpoint {pmpcfg_L, pmpcfg_X, pmpcfg_wr, pmp_HIT} {
 		wildcard bins pmp15cfg = {240'b???????????????????????????????????????????????1_???????????????????????????????????????????????1_??????????????????????????????????????????????????????????????????????????????????????????????01_000000000000000000000000000000000000000000000001};
 		wildcard bins pmp16cfg = {240'b??????????????????????????????????????????????1?_??????????????????????????????????????????????1?_????????????????????????????????????????????????????????????????????????????????????????????01??_000000000000000000000000000000000000000000000010};
 		wildcard bins pmp17cfg = {240'b?????????????????????????????????????????????1??_?????????????????????????????????????????????1??_??????????????????????????????????????????????????????????????????????????????????????????01????_000000000000000000000000000000000000000000000100};
@@ -1023,7 +1041,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 //-------------------------------------------------------
 
 	// Starting from same base address `REGIONSTART if pmphit is 1, NAPOT regions are locked, and rotating xwr.
-	pmp_entries_setup: coverpoint {pmp_hit, pmpcfg_a, pmpcfg_l, pmpcfg_x, pmpcfg_rw} {
+	pmp_entries_setup: coverpoint {pmp_hit, pmpcfg_a, pmpcfg_l, pmpcfg_x, pmpcfg_wr} {
 		bins pmp_entry = {105'b111111111111111_111111111111111111111111111111_111111111111111_000111000111000_11_01_00_11_01_00_11_01_00_11_01_00_11_01_00};
 	}
 
@@ -1262,6 +1280,9 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
+	//crossess for cp_grain
+	//cp_grain : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpaddr0_low_bits, pmpcfg0_A_mode;
+
 	//crosses boundary for napot region at the start of the region.
 	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, read_instr{
 		ignore_bins ig1 = binsof(read_instr.lb);
@@ -1359,11 +1380,11 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 			}
 
 			pmpaddr_for_tor_even: coverpoint {pmpaddr[1],pmpaddr[0]}  {
-				bins four_byte_tor = {`NON_STANDARD_REGION+4,`NON_STANDARD_REGION};
+				bins four_byte_tor = {`NON_STANDARD_REGION+1,`NON_STANDARD_REGION};
 			}
 
 			pmpaddr_for_tor_odd: coverpoint {pmpaddr[3],pmpaddr[2]}  {
-				bins four_byte_tor = {`NON_STANDARD_REGION+16,`NON_STANDARD_REGION+12};
+				bins four_byte_tor = {`NON_STANDARD_REGION+4,`NON_STANDARD_REGION+3};
 			}
 
 			addr_for_tor_odd: coverpoint (ins.current.rs1_val + ins.current.imm) {
@@ -1383,7 +1404,7 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 			}
 
 			pmpaddr_for_double_tor: coverpoint {pmpaddr[5],pmpaddr[4],pmpaddr[3]}  {
-				bins byte_double_tor = {`NON_STANDARD_REGION+24,`NON_STANDARD_REGION+20,`NON_STANDARD_REGION+16};
+				bins byte_double_tor = {`NON_STANDARD_REGION+6,`NON_STANDARD_REGION+5,`NON_STANDARD_REGION+4};
 			}
 
 			pmpcfg_double_tor_lxwr: coverpoint pmpcfg[0][47:32]  {
@@ -1449,13 +1470,13 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 
 endgroup
 
-function void pmp_sample(int hart, int issue, ins_t ins);
+function void pmpm_sample(int hart, int issue, ins_t ins);
 
 	logic [XLEN-1:0] pmpcfg [15:0];
 	logic [XLEN-1:0] pmpaddr [62:0];
 	logic [16*XLEN-1:0] pack_pmpaddr;
-	logic [29:0] pmpcfg_rw, pmpcfg_a;			// for first 15 Regions
-	logic [95:0] pmpcfg_RW, pmpcfg_A;			// for next 48 Regions
+	logic [29:0] pmpcfg_wr, pmpcfg_a;			// for first 15 Regions
+	logic [95:0] pmpcfg_WR, pmpcfg_A;			// for next 48 Regions
 	logic [14:0] pmpcfg_x, pmpcfg_l, pmp_hit;   // for first 15 Regions
 	logic [47:0] pmpcfg_X, pmpcfg_L, pmp_HIT;   // for next 48 Regions
 
@@ -1494,7 +1515,7 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 					};
 
 	`ifdef XLEN32
-		pmpcfg_rw = {
+		pmpcfg_wr = {
 					ins.current.csr[12'h3A3][17:16],
 					ins.current.csr[12'h3A3][9:8],
 					ins.current.csr[12'h3A3][1:0],
@@ -1513,7 +1534,7 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	`ifdef XLEN64
-		pmpcfg_rw = {
+		pmpcfg_wr = {
 					ins.current.csr[12'h3A2][49:48],
 					ins.current.csr[12'h3A2][41:40],
 					ins.current.csr[12'h3A2][33:32],
@@ -1533,7 +1554,7 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 	`endif
 
 	`ifdef XLEN32
-		pmpcfg_RW = {
+		pmpcfg_WR = {
 					ins.current.csr[12'h3AF][17:16],
 					ins.current.csr[12'h3AF][9:8],
 					ins.current.csr[12'h3AF][1:0],
@@ -1585,7 +1606,7 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	`ifdef XLEN64
-		pmpcfg_RW = {
+		pmpcfg_WR = {
 					ins.current.csr[12'h3AE][49:48],
 					ins.current.csr[12'h3AE][41:40],
 					ins.current.csr[12'h3AE][33:32],
@@ -2068,6 +2089,6 @@ function void pmp_sample(int hart, int issue, ins_t ins);
 					ins.current.csr[12'h3A0][7]
 					};
 	`endif
-	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_rw, pmpcfg_RW, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
+	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
 	$display("PMPADDR = %h",`STANDARD_REGION);
 endfunction
