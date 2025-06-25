@@ -982,7 +982,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       if haz_type == "nohaz":
         lines = lines + "li x" + str(rda) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
       else:
-        if testb == "fsw" and haz_type == "raw":  #have to load value into freg to have read after write be same reg
+        if testb in ["fsw","fsh"] and haz_type == "raw":  #have to load value into freg to have read after write be same reg
             tempReg = 3
             tempReg2 = 4
             while tempReg == sigReg or tempReg == rs2b or tempReg2 == sigReg or tempReg2 == rs2b:
@@ -1087,7 +1087,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += writeSIGUPD(rda)
     if testb in floattypes and testb not in fTOrtype:
       lines += writeSIGUPD_F(rdb)
-    if (test in csrtype or test in csritype):
+    elif (test in csrtype or test in csritype):
       lines += "# orignal mscratch value: \n"
       lines += writeSIGUPD(rdb)
       lines += "csrr x" + str(rdb) + ", mscratch #Reading the updated mscratch value \n"
