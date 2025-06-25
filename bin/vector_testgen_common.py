@@ -43,11 +43,11 @@ flen                    = 0
 
 extension               = ""
 
-formatstr   = "" # format as xlen-bit hexadecimal number
-formatstrFP = "" # format as flen-bit hexadecimal number
+formatstr               = "" # format as xlen-bit hexadecimal number
+formatstrFP             = "" # format as flen-bit hexadecimal number
 
-basetest_count = 0
-lengthtest_count = 0
+basetest_count          = 0
+lengthtest_count        = 0
 
 sigTotal                = 0 # total number of bytes in signature
 sigReg                  = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
@@ -162,6 +162,14 @@ def writeLine(argument: str, comment = ""):
 # Setter functions
 ##################################
 
+def newInstruction():
+  global sigReg, lengthtest_count, basetest_count, base_suite_test_count, length_suite_test_count
+  sigReg                    = 3
+  lengthtest_count          = 0
+  basetest_count            = 0
+  base_suite_test_count     = 0
+  length_suite_test_count   = 0
+
 def setXlen(new_xlen):
     global xlen, formatstr
     xlen = new_xlen
@@ -175,6 +183,30 @@ def setFlen(new_flen):
 
     formatstrlenFP = str(int(flen/4))
     formatstrFP = "0x{:0" + formatstrlenFP + "x}"
+
+def setExtension(new_extension):
+    global extension
+    extension = new_extension
+
+def incrememntLengthtestCount():
+    global lengthtest_count
+    lengthtest_count = lengthtest_count + 1
+
+def incrementBasetestCount():
+    global basetest_count
+    basetest_count += 1
+
+##################################
+# Getter functions
+##################################
+
+def getBaseSuiteTestCount():
+  # print(f"base: \t{base_suite_test_count}")
+  return base_suite_test_count
+
+def getLengthSuiteTestCount():
+  # print(f"length: \t{length_suite_test_count}")
+  return length_suite_test_count
 
 ##################################
 # Global Variables
@@ -549,7 +581,6 @@ segment_stores = seg2_loads  + seg3_loads  + seg4_loads  + seg5_loads  + seg6_lo
 ##################################
 
 def genRandomVector(test, sew, vs="vs2", emul=1):
-  global basetest_count
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
   writeLine(f"// {test}_{vs}_data for {vs}")
@@ -604,7 +635,6 @@ def genVMaskCorners():
       writeLine(f"    .word 0x{word:08x}")
 
   writeLine("")
-  #f.close()
 
 def genVsCorners(test, sew, emul):
   def convert(val, bitwidth):
@@ -720,7 +750,7 @@ def writeSIGUPD_V(vd, sew, avl=1, single_register_store = False):
     if single_register_store:
       writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma", "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
 
-    writeLine(f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})", "# stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
+    writeLine(f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})", f"# stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
 
 def vsAddressCount(suite="base"):
     global base_suite_test_count, length_suite_test_count
@@ -814,7 +844,7 @@ def handleSignaturePointerConflict(*registers):
     sigReg = randint(1,31)
 
   if (sigReg != oldSigReg):
-    writeLine("mv x" + str(sigReg) + ", x" + str(oldSigReg), " # switch signature pointer register to avoid conflict with test")
+    writeLine("mv x" + str(sigReg) + ", x" + str(oldSigReg), "# switch signature pointer register to avoid conflict with test")
 
 def getSigSpace(xlen, flen, sigupd_count, sigupd_countF):
   #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
@@ -828,6 +858,7 @@ def getSigSpace(xlen, flen, sigupd_count, sigupd_countF):
   return signatureWords
 
 def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, single_vector_register_store = False):
+    writeLine(testline)
     if (test in vd_widen_ins) or (test in wvsins):
       writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
@@ -835,7 +866,7 @@ def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, single_vector_regi
     elif (test in xvtype):
       writeSIGUPD(rd)
     else:
-      writeLine(writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store))
+      writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store)
 
 # TODO : Make this works with vector FP
 def loadFloatRoundingMode(vfloattype, *scalar_registers_used):

@@ -249,7 +249,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
   logic one_value_zero          = 1'b0;
 
   `XLEN_BITS vsew               = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
-  int vlmax                     = get_vlmax(hart, issue, `SAMPLE_BEFORE);
+  int vlmax                     = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
 
   //------------------------------------------
   // Walk across VAL in chunks of size SEW
