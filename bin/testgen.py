@@ -37,12 +37,14 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['A']#+ext_parts_no_I
     if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
       ext_parts_no_I = ['A']#+ext_parts_no_I
-    if 'f' in  ext_parts[0]:
+    if 'F' in ext_parts_no_I or 'f' in ext_parts_no_I:
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
       if ext_parts_no_I[-1] == 'D':
         ext_parts_no_I = ext_parts_no_I[:-1]
       if ext_parts_no_I[-1] == 'M':
+        ext_parts_no_I = ext_parts_no_I[:-1]
+      if ext_parts_no_I[-1] == 'F':
         ext_parts_no_I = ext_parts_no_I[:-1]
     #ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
     raw_ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
@@ -304,7 +306,7 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
       mult = flen//xlen
       signatureWords = 3 * sigupd_count + (sigupd_countF * ((mult)))   ###*2)-1))(past edit for open issue 3 * is to make parachute) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
     else:
-      signatureWords =  sigupd_count + sigupd_countF # all Sigupd Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+      signatureWords =  sigupd_count + sigupd_countF + 10 # (+10 for double buffer from start) all Sigupd Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
 # writeTest appends the test to the lines.
@@ -1097,6 +1099,9 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines = lines + "li x" + str(rs3b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
       lines = lines + f"{storeop} x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # store in memory\n"
       lines = lines + "li x" + str(rs1b) + ", " + formatstr.format(immvala) + " # initialize rs2\n"
+    if (testa in floattypes and testa not in fTOrtype) or (testb in floattypes and testb not in fTOrtype): #clear flags for floating point operations before performing
+      lines += "fsflagsi 0b00000 # clear all fflags\n"
+
     lines += writeSingleInstructionSequence(desc,
                     [testa, testb],
                     [regconfig2, regconfig],
@@ -1111,7 +1116,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines += writeSIGUPD(rda)
     if testb in floattypes and testb not in fTOrtype:
       lines += writeSIGUPD_F(rdb)
-    if (test in csrtype or test in csritype):
+    elif (test in csrtype or test in csritype):
       lines += "# orignal mscratch value: \n"
       lines += writeSIGUPD(rdb)
       lines += "csrr x" + str(rdb) + ", mscratch #Reading the updated mscratch value \n"
