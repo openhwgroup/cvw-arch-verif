@@ -1192,7 +1192,7 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     rd = rs1
     while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
       rd = randomNonconflictingReg(test)
-    if test in floattypes:
+    if test in floattypes and test not in X2Ftype:
       rs1val = randint(0, 2**flen-1)
       rs2val = randint(0, 2**flen-1)
       immval = randint(0, 2**flen-1)
