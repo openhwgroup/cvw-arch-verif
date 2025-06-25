@@ -33,15 +33,11 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
-<<<<<<< customtests_fix
     if 'Zalrsc' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
       ext_parts_no_I = ['A']#+ext_parts_no_I
     if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
       ext_parts_no_I = ['A']#+ext_parts_no_I
-    if 'F' in ext_parts_no_I or 'f' in ext_parts_no_I:
-=======
     if 'F' in ext_parts_no_I or any('f' in ext for ext in ext_parts_no_I):
->>>>>>> main
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
       if ext_parts_no_I[-1] == 'D':
