@@ -33,7 +33,7 @@ def insertTemplate(name, is_custom=False):
       ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
       ext_parts_no_I = ['M']+ext_parts_no_I
-    if 'F' in ext_parts_no_I or 'f' in ext_parts_no_I:
+    if 'F' in ext_parts_no_I or any('f' in ext for ext in ext_parts_no_I):
       ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
       if ext_parts_no_I[-1] == 'D':
@@ -978,6 +978,8 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     lines = lines + "mv x" + str(rs1b) + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     sigReg = rs1b
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(-immvalb, 12, True) + "\n"
+    hazStoreOp = "sw"
+    hazRegType = "x"
     if haz_type != "war":
       rs1a = rda
       rs2a = 0
@@ -985,6 +987,8 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
         lines = lines + "li x" + str(rda) + ", " + formatstr.format(immvalb)  + " # initialize random imm value\n"
       else:
         if testb in ["fsw","fsh"] and haz_type == "raw":  #have to load value into freg to have read after write be same reg
+            hazStoreOp = "fsw"
+            hazRegType = "f"
             tempReg = 3
             tempReg2 = 4
             while tempReg == sigReg or tempReg == rs2b or tempReg2 == sigReg or tempReg2 == rs2b:
@@ -995,6 +999,8 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
             lines = lines + f"sw x{tempReg}, 0(x{tempReg2}) # store {formatstrFP.format(immvalb)} in memory\n"
             lines = lines + f"flw f{rs2b}, 0(x{tempReg2}) # load {formatstrFP.format(immvalb)} from memory into f{rs2b}\n"
         elif testb == "fsd" and haz_type == "raw":  #have to load value into freg to have read after write be same reg
+            hazStoreOp = "fsw"
+            hazRegType = "f"
             tempReg = 3
             tempReg2 = 4
             while tempReg == sigReg or tempReg == rs2b or tempReg2 == sigReg or tempReg2 == rs2b:
@@ -1034,9 +1040,9 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
         WIDTH = "REGWIDTH"
     lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(WIDTH)  + " # Increment base Register\n"
     if haz_type == "nohaz":
-      lines += "sw x" + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+      lines += hazStoreOp+ " " + hazRegType + str(rda) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
     else:
-      lines += "sw x" + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
+      lines += hazStoreOp+ " " + hazRegType + str(rs2b) + ", 0(x"  + str(sigReg) + ")  # store the hazards\n"
     lines += "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH) + "  # Increment base Register\n"
     sigupd_count += 2
 
@@ -1186,7 +1192,7 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
     rd = rs1
     while ((rd == rs1) or (rd == rs2) or ((rs3 is not None) and (rd == rs3))):
       rd = randomNonconflictingReg(test)
-    if test in floattypes:
+    if test in floattypes and test not in X2Ftype:
       rs1val = randint(0, 2**flen-1)
       rs2val = randint(0, 2**flen-1)
       immval = randint(0, 2**flen-1)
