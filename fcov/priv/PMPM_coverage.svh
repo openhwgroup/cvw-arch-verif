@@ -81,7 +81,8 @@ covergroup PMPM_cg with function sample(
   		// this should also fault as “outside”, but loads beyond this should succeed
   		bins just_beyond  = {`REGIONSTART+`g};
 
-        bins just_close  = {`REGIONSTART-`g};
+		//access just before the start of region
+        bins just_before_start  = {`REGIONSTART-`g};
 
 		//last word inside region
 		bins highest_word  = {`REGIONSTART +`g-4};
@@ -1091,39 +1092,39 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, RWXL0001, read_instr_lw, addr_offset {
 		ignore_bins ig1  = binsof(addr_offset.above_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_close);
+		ignore_bins ig3  = binsof(addr_offset.just_before_start);
 	}
 
 	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, exec_instr {
-		ignore_bins ig1  = binsof(addr_offset.just_close);
+		ignore_bins ig1  = binsof(addr_offset.just_before_start);
 	}
 	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, read_instr_lw {
-		ignore_bins ig1  = binsof(addr_offset.just_close);
+		ignore_bins ig1  = binsof(addr_offset.just_before_start);
 	}
 	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, write_instr_sw {
-		ignore_bins ig1  = binsof(addr_offset.just_close);
+		ignore_bins ig1  = binsof(addr_offset.just_before_start);
 	}
 
 	cp_cfg_A_na4_x : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, exec_instr {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_close);
+		ignore_bins ig3  = binsof(addr_offset.just_before_start);
 	}
 	cp_cfg_A_na4_r : cross priv_mode_m,legal_RWX_L_NA4, addr_offset, read_instr_lw {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_close);
+		ignore_bins ig3  = binsof(addr_offset.just_before_start);
 	}
 	cp_cfg_A_na4_w : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, write_instr_sw {
 		ignore_bins ig1  = binsof(addr_offset.below_base);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_close);
+		ignore_bins ig3  = binsof(addr_offset.just_before_start);
 	}
 
 	cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, RWXL0001, read_instr_lw, addr_offset {
 		ignore_bins ig1  = binsof(addr_offset.just_beyond);
 		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_close);
+		ignore_bins ig3  = binsof(addr_offset.just_before_start);
 	}
 
 	//we have 6 variants for each region,  with unique legal_RWX_L_TOR combination, pmpaddr_for_tor_regioni
@@ -1153,21 +1154,21 @@ pmpcfgA_OFF: coverpoint {pmpcfg_a,pmp_hit} {
 	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, read_instr_lw {
 		ignore_bins ig1 = binsof(addr_offset.above_base);
 		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig3 = binsof(addr_offset.just_before_start);
 		ignore_bins ig4 = binsof(addr_offset.highest_word);
 	}
 
 	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, write_instr_sw {
 		ignore_bins ig1 = binsof(addr_offset.above_base);
 		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig3 = binsof(addr_offset.just_before_start);
 		ignore_bins ig4 = binsof(addr_offset.highest_word);
 	}
 
 	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, exec_instr {
 		ignore_bins ig1 = binsof(addr_offset.above_base);
 		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_close);
+		ignore_bins ig3 = binsof(addr_offset.just_before_start);
 		ignore_bins ig4 = binsof(addr_offset.highest_word);
 	}
 
