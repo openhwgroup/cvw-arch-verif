@@ -51,15 +51,26 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		bins at_region = {`REGIONSTART};
 	}
 
-	addr_offset: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins at_base = {`REGIONSTART}; // Access exactly at the region base
-		bins below_base = {`REGIONSTART - 4}; // Access 4 bytes before the region start
-		bins just_inside = {`REGIONSTART + 4}; // Access 4 bytes into the region
-		bins just_after_end = {`REGIONSTART + `g}; // Access exactly at the end of the region
-		bins just_before_start = {`REGIONSTART - `g}; // Access just before the region starts
-		bins last_word_in_region = {`REGIONSTART + `g - 4}; // Last 4-byte address fully inside the region
-		bins far_below = {`REGIONSTART - `g - 4}; // Far-below base address
-		bins far_above = {`REGIONSTART + `g + 4}; // Far-above base address
+	addr_offset_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins at_base	  = {`REGIONSTART};			 // Access exactly at the region base
+		bins below_base	  = {`REGIONSTART - 4};		 // Access 4 bytes below the region
+		bins just_inside  = {`REGIONSTART + 4};		 // Access 4 bytes into the region
+		bins highest_word = {`REGIONSTART + `g - 4}; // Access at the last word in region
+		bins just_beyond  = {`REGIONSTART + `g};	 // Access exactly at the end of the region
+	}
+
+	addr_offset_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins at_base	= {`REGIONSTART}; 		// Access exactly at the region base
+		bins at_end		= {`REGIONSTART + 4};	// Access at the end of region
+		bins beyond_top	= {`REGIONSTART + 6};	// Access beyond top of region
+	}
+
+	// if range is from `REGIONSTART to `REGIONSTART + `g
+	addr_offset_tor: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins at_top		  = {`REGIONSTART + `g}; 	 // Access exactly at top of range
+		bins highest_word = {`REGIONSTART + `g - 4}; // Access at the last word in region
+		bins at_base	  = {`REGIONSTART};			 // Access exactly at the region base
+		bins below_base	  = {`REGIONSTART - 4};		 // Access 4 bytes below the base
 	}
 
 	exec_instr: coverpoint ins.current.insn {
@@ -258,14 +269,14 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		}
 	`endif
 
-	// pmpcfg_i.L = 0, pmpcfg_i.A = TOR, all legal pmpcfg_i.XWR, pmpaddr_i = `NON_STANDARD_REGION, pmpaddr_i-1 = `NON_STANDARD_REGION-`g
+	// pmpcfg_i.L = 0, pmpcfg_i.A = TOR, all legal pmpcfg_i.XWR, pmpaddr_i = `NON_STANDARD_REGION + `g, pmpaddr_i-1 = `NON_STANDARD_REGION
 	cfg_A_tor: coverpoint {ins.current.csr[12'h3A0][7:0],ins.current.csr[12'h3B0],ins.current.csr[12'h3B1]} {
-		bins tor_lwxr_0000 = {8'b00001000,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
-		bins tor_lwxr_0001 = {8'b00001001,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
-		bins tor_lwxr_0011 = {8'b00001011,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
-		bins tor_lwxr_0100 = {8'b00001100,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
-		bins tor_lwxr_0101 = {8'b00001101,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
-		bins tor_lwxr_0111 = {8'b00001111,`NON_STANDARD_REGION-`g,`NON_STANDARD_REGION};
+		bins tor_lwxr_0000 = {8'b00001000,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
+		bins tor_lwxr_0001 = {8'b00001001,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
+		bins tor_lwxr_0011 = {8'b00001011,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
+		bins tor_lwxr_0100 = {8'b00001100,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
+		bins tor_lwxr_0101 = {8'b00001101,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
+		bins tor_lwxr_0111 = {8'b00001111,`NON_STANDARD_REGION,`NON_STANDARD_REGION+`g};
 	}
 
 //-------------------------------------------------------
@@ -283,66 +294,21 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	cp_cfg_A_off_sw: cross priv_mode_u, cfg_A_off, write_instr_sw, addr_in_region ;
 
 	// Access at start of region, start - 4, start + 4, highest word in region, just beyond top of the region
-	cp_cfg_A_napot_jalr: cross priv_mode_u, cfg_A_napot, exec_instr, addr_offset {
-		ignore_bins ig1 = binsof(addr_offset.just_before_start);
-		ignore_bins ig2 = binsof(addr_offset.far_above);
-		ignore_bins ig3 = binsof(addr_offset.far_below);
-	}
-	cp_cfg_A_napot_lw: cross priv_mode_u, cfg_A_napot, read_instr_lw, addr_offset {
-		ignore_bins ig1 = binsof(addr_offset.just_before_start);
-		ignore_bins ig2 = binsof(addr_offset.far_above);
-		ignore_bins ig3 = binsof(addr_offset.far_below);
-	}
-	cp_cfg_A_napot_sw: cross priv_mode_u, cfg_A_napot, write_instr_sw, addr_offset {
-		ignore_bins ig1 = binsof(addr_offset.just_before_start);
-		ignore_bins ig2 = binsof(addr_offset.far_above);
-		ignore_bins ig3 = binsof(addr_offset.far_below);
-	}
+	cp_cfg_A_napot_jalr: cross priv_mode_u, cfg_A_napot, exec_instr, addr_offset_napot ;
+	cp_cfg_A_napot_lw: cross priv_mode_u, cfg_A_napot, read_instr_lw, addr_offset_napot ;
+	cp_cfg_A_napot_sw: cross priv_mode_u, cfg_A_napot, write_instr_sw, addr_offset_napot ;
 
 	`ifdef G_IS_0
 		// Access at start of address, that address + 4, just beyond top of the region.
-		cp_cfg_A_na4_jalr: cross priv_mode_u, cfg_A_na4, exec_instr, addr_offset {
-			ignore_bins ig1  = binsof(addr_offset.just_after_end);
-			ignore_bins ig2  = binsof(addr_offset.just_before_start);
-			ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-			ignore_bins ig4  = binsof(addr_offset.far_below);
-			ignore_bins ig4  = binsof(addr_offset.far_above);
-		}
-		cp_cfg_A_na4_lw: cross priv_mode_u, cfg_A_na4, read_instr_lw, addr_offset {
-			ignore_bins ig1  = binsof(addr_offset.just_after_end);
-			ignore_bins ig2  = binsof(addr_offset.just_before_start);
-			ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-			ignore_bins ig4  = binsof(addr_offset.far_below);
-			ignore_bins ig4  = binsof(addr_offset.far_above);
-		}
-		cp_cfg_A_na4_sw: cross priv_mode_u, cfg_A_na4, write_instr_sw, addr_offset {
-			ignore_bins ig1  = binsof(addr_offset.just_after_end);
-			ignore_bins ig2  = binsof(addr_offset.just_before_start);
-			ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-			ignore_bins ig4  = binsof(addr_offset.far_below);
-			ignore_bins ig4  = binsof(addr_offset.far_above);
-		}
+		cp_cfg_A_na4_jalr: cross priv_mode_u, cfg_A_na4, exec_instr, addr_offset_na4 ;
+		cp_cfg_A_na4_lw: cross priv_mode_u, cfg_A_na4, read_instr_lw, addr_offset_na4 ;
+		cp_cfg_A_na4_sw: cross priv_mode_u, cfg_A_na4, write_instr_sw, addr_offset_na4 ;
 	`endif
 
 	// Access at address, address-4, address-g, address-g-4.
-	cp_cfg_A_tor_jalr: cross priv_mode_u, cfg_A_tor, exec_instr, addr_offset {
-		ignore_bins ig1  = binsof(addr_offset.just_inside);
-		ignore_bins ig2  = binsof(addr_offset.just_after_end);
-		ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-		ignore_bins ig4  = binsof(addr_offset.far_above);
-	}
-	cp_cfg_A_tor_lw: cross priv_mode_u, cfg_A_tor, read_instr_lw, addr_offset {
-		ignore_bins ig1  = binsof(addr_offset.just_inside);
-		ignore_bins ig2  = binsof(addr_offset.just_after_end);
-		ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-		ignore_bins ig4  = binsof(addr_offset.far_above);
-	}
-	cp_cfg_A_tor_sw: cross priv_mode_u, cfg_A_tor, write_instr_sw, addr_offset {
-		ignore_bins ig1  = binsof(addr_offset.just_inside);
-		ignore_bins ig2  = binsof(addr_offset.just_after_end);
-		ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
-		ignore_bins ig4  = binsof(addr_offset.far_above);
-	}
+	cp_cfg_A_tor_jalr: cross priv_mode_u, cfg_A_tor, exec_instr, addr_offset_tor ;
+	cp_cfg_A_tor_lw: cross priv_mode_u, cfg_A_tor, read_instr_lw, addr_offset_tor ;
+	cp_cfg_A_tor_sw: cross priv_mode_u, cfg_A_tor, write_instr_sw, addr_offset_tor ;
 
 	cp_mprv_jalr: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, exec_instr, standard_region, addr_in_region ;
 	cp_mprv_lw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, read_instr_lw, standard_region, addr_in_region ;
