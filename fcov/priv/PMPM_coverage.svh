@@ -433,7 +433,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	pmpaddr_for_napot_misaligned: coverpoint {pmpaddr[0]} {
-		bins pmpaddr = {(`REGIONSTART>>2) | 1'b1 }; //No of Trailing 1s = 1 => size of napot region = 8 bytes
+		bins pmpaddr = {(`REGIONSTART>>2) | ((1 << `G) - 1) }; //No of Trailing 1s = (1 << G) - 1, a standard NAPOT Region
 	}
 
 	pmpcfg_for_napot_misaligned: coverpoint {pmpcfg[0][7:0]} {
@@ -446,7 +446,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	addr_napot_misaligned_straddling_end: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins addr1 = {`REGIONSTART+1}; //for 1 byte outside the region
+		bins addr1 = {(`REGIONSTART+`g)-1}; //for 1 byte inside the region
 	}
 
 	pmpaddr_for_na4_misaligned: coverpoint {pmpaddr[0]} {
