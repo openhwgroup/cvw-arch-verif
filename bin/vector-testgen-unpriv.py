@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 ##################################
-# vector-testgen.py
+# vector-testgen-unpriv.py
 #
-# David_Harris@hmc.edu 27 March 2024
+# James Kaden Cassidy jacassidy@g.hmc.edu June 26 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
 # Generate directed tests for functional coverage
@@ -235,6 +235,7 @@ def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
 
 def make_vl_lmul(instruction, sew, maxlmul=8):
   global legalvlmuls
+
   numlmul = int(math.log2(maxlmul))
   minlmul = min(legalvlmuls)
   for l in range(minlmul, numlmul+1):
@@ -300,131 +301,84 @@ def makeTest(coverpoints, test, sew=None):
     seed(hashval)
     #seed(hash(test + coverpoint))
     ############################# base suite #############################
-    if (coverpoint == "cp_asm_count"):
-      pass
-    elif (coverpoint == "cp_rd"):
-      make_rdv(test, sew, range(xreg_count))
-    elif (coverpoint == "cp_rs1"):
-      make_rs1_v(test, sew, range(xreg_count))
-    elif (coverpoint == "cp_imm_5bit") or (coverpoint == "cp_imm_5bit_u"):
-      make_imm_v(test, sew)
-    elif (coverpoint == "cp_vd"):
-      make_vd(test, sew, range(vreg_count))
-    elif (coverpoint == "cp_vs3"):
-      make_vs3(test, sew, range(vreg_count))
-    elif (coverpoint == "cp_vd_nv0"):
-      make_vd(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cp_vd_emul2"):
-      make_vd(test, sew, range(0,vreg_count,2))
-    elif (coverpoint == "cp_vd_emul4"):
-      make_vd(test, sew, range(0,vreg_count,4))
-    elif (coverpoint == "cp_vd_emul8"):
-      make_vd(test, sew, range(0,vreg_count,8))
-    elif (coverpoint == "cp_vs2"):
-      make_vs2(test, sew, range(vreg_count))
-    elif (coverpoint == "cp_vs2_nv0"):
-      make_vs2(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cp_vs2_emul2"):
-      make_vs2(test, sew, range(0,vreg_count,2))
-    elif (coverpoint == "cp_vs2_emul4"):
-      make_vs2(test, sew, range(0,vreg_count,4))
-    elif (coverpoint == "cp_vs2_emul8"):
-      make_vs2(test, sew, range(0,vreg_count,8))
-    elif (coverpoint == "cp_vs1"):
-      make_vs1(test, sew, range(vreg_count))
-    elif (coverpoint == "cp_vs1_nv0"):
-      make_vs1(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cp_vs1_emul2"):
-      make_vs1(test, sew, range(0,vreg_count,2))
-    elif (coverpoint == "cmp_vd_vs2"):
-      make_vd_vs2(test, sew, range(vreg_count))
-    elif (coverpoint == "cmp_vd_vs2_nv0"):
-      make_vd_vs2(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cmp_vd_vs2_emul2"):
-      make_vd_vs2(test, sew, range(0,vreg_count,2))
-    elif (coverpoint == "cmp_vd_vs2_emul4"):
-      make_vd_vs2(test, sew, range(0,vreg_count,4))
-    elif (coverpoint == "cmp_vd_vs2_emul8"):
-      make_vd_vs2(test, sew, range(0,vreg_count,8))
-    elif (coverpoint == "cmp_vd_vs1"):
-      make_vd_vs1(test, sew, range(vreg_count))
-    elif (coverpoint == "cmp_vd_vs1_nv0"):
-      make_vd_vs1(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cmp_vd_vs1_emul2"):
-      make_vd_vs1(test, sew, range(0,vreg_count,2))
-    elif (coverpoint == "cmp_vs1_vs2"):
-      make_vs1_vs2(test, sew, range(vreg_count))
-    elif (coverpoint == "cmp_vs1_vs2_nv0"):
-      make_vs1_vs2(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cmp_vd_vs1_vs2"):
-      make_vd_vs1_vs2(test, sew, range(vreg_count))
-    elif (coverpoint == "cmp_vd_vs1_vs2_nv0"):
-      make_vd_vs1_vs2(test, sew, range(1,vreg_count))
-    elif (coverpoint == "cp_vs2_corners"):
-      make_vs2_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cp_vs2_corners_emul2"):
-      make_vs2_corners(test, sew, vcornersemul2)
-    elif (coverpoint == "cp_vs2_corners_emul4"):
-      make_vs2_corners(test, sew, vcornersemul4)
-    elif (coverpoint == "cp_vs2_corners_emul8"):
-      make_vs2_corners(test, sew, vcornersemul8)
-    elif (coverpoint == "cp_vs2_corners_emulf2"):
-      make_vs2_corners(test, sew, vcornersemulf2)
-    elif (coverpoint == "cp_vs2_corners_emulf4"):
-      make_vs2_corners(test, sew, vcornersemulf4)
-    elif (coverpoint == "cp_vs2_corners_emulf8"):
-      make_vs2_corners(test, sew, vcornersemulf8)
-    elif (coverpoint == "cp_vs2_corners_eew1"):
-      make_vs2_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
-    elif (coverpoint == "cp_vs1_corners"):
-      make_vs1_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cp_vs1_corners_emul2"):
-      make_vs1_corners(test, sew, vcornersemul2)
-    elif (coverpoint == "cp_vs1_corners_eew1"):
-      make_vs1_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
-    elif (coverpoint == "cp_rs1_corners"):
-      make_rs1_corners_v(test, sew, range(xreg_count))
-    elif (coverpoint == "cr_vs2_vs1_corners"):
-      make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
-    elif (coverpoint == "cr_vs2_vs1_corners_wv"):
-      make_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
-    elif (coverpoint == "cr_vs2_vs1_corners_wred"):
-      make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul2)
-    elif (coverpoint == "cr_vs2_vs1_corners_mm"):
-      make_vs2_vs1_corners(test, sew, vcornerseew1, vcornerseew1, vl=8)
-    elif (coverpoint == "cr_vs2_rs1_corners"):
-      make_vs2_rs1_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cr_vs2_rs1_corners_wx"):
-      make_vs2_rs1_corners(test, sew, vcornersemul2)
+    if   coverpoint == "cp_asm_count"                 : pass
+    elif coverpoint == "cp_rd"                        : make_rdv(test, sew, range(xreg_count))
+    elif coverpoint == "cp_rs1"                       : make_rs1_v(test, sew, range(xreg_count))
+    elif coverpoint == "cp_rs1_nx0"                   : make_rs1_v(test, sew, range(1, xreg_count))
+    elif coverpoint == "cp_imm_5bit"                  : make_imm_v(test, sew)
+    elif coverpoint == "cp_imm_5bit_u"                : make_imm_v(test, sew)
+    elif coverpoint == "cp_vd"                        : make_vd(test, sew, range(vreg_count))
+    elif coverpoint == "cp_vd_lte30"                  : make_vd(test, sew, range(vreg_count-1))
+    elif coverpoint == "cp_vd_lte29"                  : make_vd(test, sew, range(vreg_count-2))
+    elif coverpoint == "cp_vd_lte28"                  : make_vd(test, sew, range(vreg_count-3))
+    elif coverpoint == "cp_vd_lte27"                  : make_vd(test, sew, range(vreg_count-4))
+    elif coverpoint == "cp_vd_lte26"                  : make_vd(test, sew, range(vreg_count-5))
+    elif coverpoint == "cp_vd_lte25"                  : make_vd(test, sew, range(vreg_count-6))
+    elif coverpoint == "cp_vd_lte24"                  : make_vd(test, sew, range(vreg_count-7))
+    elif coverpoint == "cp_vd_nv0"                    : make_vd(test, sew, range(1,vreg_count))
+    elif coverpoint == "cp_vd_emul2"                  : make_vd(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cp_vd_emul4"                  : make_vd(test, sew, range(0,vreg_count,4))
+    elif coverpoint == "cp_vd_emul8"                  : make_vd(test, sew, range(0,vreg_count,8))
+    elif coverpoint == "cp_vs3"                       : make_vs3(test, sew, range(vreg_count))
+    elif coverpoint == "cp_vs3_emul2"                 : make_vs3(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cp_vs3_emul4"                 : make_vs3(test, sew, range(0,vreg_count,4))
+    elif coverpoint == "cp_vs3_emul8"                 : make_vs3(test, sew, range(0,vreg_count,8))
+    elif coverpoint == "cp_vs2"                       : make_vs2(test, sew, range(vreg_count))
+    elif coverpoint == "cp_vs2_nv0"                   : make_vs2(test, sew, range(1,vreg_count))
+    elif coverpoint == "cp_vs2_emul2"                 : make_vs2(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cp_vs2_emul4"                 : make_vs2(test, sew, range(0,vreg_count,4))
+    elif coverpoint == "cp_vs2_emul8"                 : make_vs2(test, sew, range(0,vreg_count,8))
+    elif coverpoint == "cp_vs1"                       : make_vs1(test, sew, range(vreg_count))
+    elif coverpoint == "cp_vs1_nv0"                   : make_vs1(test, sew, range(1,vreg_count))
+    elif coverpoint == "cp_vs1_emul2"                 : make_vs1(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cmp_vd_vs2"                   : make_vd_vs2(test, sew, range(vreg_count))
+    elif coverpoint == "cmp_vd_vs2_nv0"               : make_vd_vs2(test, sew, range(1,vreg_count))
+    elif coverpoint == "cmp_vd_vs2_emul2"             : make_vd_vs2(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cmp_vd_vs2_emul4"             : make_vd_vs2(test, sew, range(0,vreg_count,4))
+    elif coverpoint == "cmp_vd_vs2_emul8"             : make_vd_vs2(test, sew, range(0,vreg_count,8))
+    elif coverpoint == "cmp_vd_vs1"                   : make_vd_vs1(test, sew, range(vreg_count))
+    elif coverpoint == "cmp_vd_vs1_nv0"               : make_vd_vs1(test, sew, range(1,vreg_count))
+    elif coverpoint == "cmp_vd_vs1_emul2"             : make_vd_vs1(test, sew, range(0,vreg_count,2))
+    elif coverpoint == "cmp_vs1_vs2"                  : make_vs1_vs2(test, sew, range(vreg_count))
+    elif coverpoint == "cmp_vs1_vs2_nv0"              : make_vs1_vs2(test, sew, range(1,vreg_count))
+    elif coverpoint == "cmp_vd_vs1_vs2"               : make_vd_vs1_vs2(test, sew, range(vreg_count))
+    elif coverpoint == "cmp_vd_vs1_vs2_nv0"           : make_vd_vs1_vs2(test, sew, range(1,vreg_count))
+    elif coverpoint == "cp_vs2_corners"               : make_vs2_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cp_vs2_corners_emul2"         : make_vs2_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cp_vs2_corners_emul4"         : make_vs2_corners(test, sew, vcornersemul4)
+    elif coverpoint == "cp_vs2_corners_emul8"         : make_vs2_corners(test, sew, vcornersemul8)
+    elif coverpoint == "cp_vs2_corners_emulf2"        : make_vs2_corners(test, sew, vcornersemulf2)
+    elif coverpoint == "cp_vs2_corners_emulf4"        : make_vs2_corners(test, sew, vcornersemulf4)
+    elif coverpoint == "cp_vs2_corners_emulf8"        : make_vs2_corners(test, sew, vcornersemulf8)
+    elif coverpoint == "cp_vs2_corners_eew1"          : make_vs2_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
+    elif coverpoint == "cp_vs2_corners_ls"            : make_vs2_corners(test, sew, v_corners_ls)
+    elif coverpoint == "cp_vs1_corners"               : make_vs1_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cp_vs1_corners_emul2"         : make_vs1_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cp_vs1_corners_eew1"          : make_vs1_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
+    elif coverpoint == "cp_rs1_corners"               : make_rs1_corners_v(test, sew, range(xreg_count))
+    elif coverpoint == "cr_vs2_vs1_corners"           : make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
+    elif coverpoint == "cr_vs2_vs1_corners_wv"        : make_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
+    elif coverpoint == "cr_vs2_vs1_corners_wred"      : make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul2)
+    elif coverpoint == "cr_vs2_vs1_corners_mm"        : make_vs2_vs1_corners(test, sew, vcornerseew1, vcornerseew1, vl=8)
+    elif coverpoint == "cr_vs2_rs1_corners"           : make_vs2_rs1_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cr_vs2_rs1_corners_wx"        : make_vs2_rs1_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cr_vs2_imm_corners"           : make_vs2_imm_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cr_vs2_imm_corners_u"         : make_vs2_imm_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cr_vs2_imm_corners_wi"        : make_vs2_imm_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cr_vs2_imm_corners_wiu"       : make_vs2_imm_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cr_vxrm_vs2_vs1_corners"      : make_vxrm_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
+    elif coverpoint == "cr_vxrm_vs2_vs1_corners_wv"   : make_vxrm_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
+    elif coverpoint == "cr_vxrm_vs2_rs1_corners"      : make_vxrm_vs2_rs1_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cr_vxrm_vs2_rs1_corners_wx"   : make_vxrm_vs2_rs1_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cr_vxrm_vs2_imm_corners"      : make_vxrm_vs2_imm_corners(test, sew, vcornersemul1)
+    elif coverpoint == "cr_vxrm_vs2_imm_corners_wi"   : make_vxrm_vs2_imm_corners(test, sew, vcornersemul2)
     elif (coverpoint == "cp_imm_corners_5bit" or coverpoint == "cp_imm_corners_5bit_u"):
       pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
     elif (coverpoint == "cp_csr_vxrm"):
       pass # already tested in cross coverpoints with vs2 and vs1/rs1/imm
-    elif (coverpoint == "cr_vs2_imm_corners" or coverpoint == "cr_vs2_imm_corners_u"):
-      make_vs2_imm_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cr_vs2_imm_corners_wi" or coverpoint == "cr_vs2_imm_corners_wiu"):
-      make_vs2_imm_corners(test, sew, vcornersemul2)
-    elif (coverpoint == "cr_vxrm_vs2_vs1_corners"):
-      make_vxrm_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
-    elif (coverpoint == "cr_vxrm_vs2_vs1_corners_wv"):
-      make_vxrm_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
-    elif (coverpoint == "cr_vxrm_vs2_rs1_corners"):
-      make_vxrm_vs2_rs1_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cr_vxrm_vs2_rs1_corners_wx"):
-      make_vxrm_vs2_rs1_corners(test, sew, vcornersemul2)
-    elif (coverpoint == "cr_vxrm_vs2_imm_corners"):
-      make_vxrm_vs2_imm_corners(test, sew, vcornersemul1)
-    elif (coverpoint == "cr_vxrm_vs2_imm_corners_wi"):
-      make_vxrm_vs2_imm_corners(test, sew, vcornersemul2)
     ############################ length suite ############################
     elif (coverpoint == "cp_masking_corners"):
       make_mask_corners(test, sew)
-    elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew8", "cp_csr_vtype_lmul_all_lmul4max_sew16", "cp_csr_vtype_lmul_all_lmul4max_sew32", "cp_csr_vtype_lmul_all_lmul4max_sew64",
-                         "cp_csr_vtype_lmul_all_sew8_lmul_le_8", "cp_vtype_lmul_ge_1", "cp_csr_vtype_lmul_all_lmul4max_sew8_lmul_le_4", "cp_csr_vtype_lmul_all_sew32_lmul_le_8",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew32_lmul_le_4", "cp_csr_vtype_lmul_all_sew64_lmul_le_8", "cp_csr_vtype_lmul_all_sew16_lmul_le_8",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4", "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4"]):
-      pass # helper coverpoints, crossed in cr_vl_lmul
     elif (coverpoint in ["cr_vl_lmul_sew8", "cr_vl_lmul_sew16", "cr_vl_lmul_sew32", "cr_vl_lmul_sew64"]):
       make_vl_lmul(test, sew)            # includes tests for legal LMUL up to 8
     elif (coverpoint in ["cr_vl_lmul_sew32_lmul4max", "cr_vl_lmul_sew16_lmul4max"]):
@@ -437,14 +391,21 @@ def makeTest(coverpoints, test, sew=None):
       make_vl_lmul(test, sew, maxlmul=1) # includes tests for legal LMUL up to 4
     elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
       pass # helper coverpoints, crossed in cr_vtype_agnostic
-    elif (coverpoint == "cr_vtype_agnostic"):
-      make_vtype_agnostic(test, sew, maxlmul=8)
-    elif (coverpoint == "cr_vtype_agnostic_lmul4max"):
-      make_vtype_agnostic(test, sew, maxlmul=4)
-    elif (coverpoint == "cr_vtype_agnostic_lmul2max"):
-      make_vtype_agnostic(test, sew, maxlmul=2)
-    elif (coverpoint == "cr_vtype_agnostic_lmul1max"):
-      make_vtype_agnostic(test, sew, maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic": make_vtype_agnostic(test, sew, maxlmul=8)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max": make_vtype_agnostic(test, sew, maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max": make_vtype_agnostic(test, sew, maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max": make_vtype_agnostic(test, sew, maxlmul=1)
+    elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
+                         "cp_csr_vtype_lmul_all_lmul4max_sew8", "cp_csr_vtype_lmul_all_lmul4max_sew16", "cp_csr_vtype_lmul_all_lmul4max_sew32", "cp_csr_vtype_lmul_all_lmul4max_sew64",
+                         "cp_csr_vtype_lmul_all_sew8_lmul_le_8", "cp_vtype_lmul_ge_1", "cp_csr_vtype_lmul_all_lmul4max_sew8_lmul_le_4", "cp_csr_vtype_lmul_all_sew32_lmul_le_8",
+                         "cp_csr_vtype_lmul_all_lmul4max_sew32_lmul_le_4", "cp_csr_vtype_lmul_all_sew64_lmul_le_8", "cp_csr_vtype_lmul_all_sew16_lmul_le_8",
+                         "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4", "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4", "cp_csr_vtype_lmul_all_sew8_eew8",
+                         "cp_csr_vtype_lmul_all_sew16_eew8", "cp_csr_vtype_lmul_all_sew32_eew8", "cp_csr_vtype_lmul_all_sew64_eew8", "cp_csr_vtype_lmul_all_sew8_lmul1max",
+                         "cp_csr_vtype_lmul_all_sew16_lmul1max", "cp_csr_vtype_lmul_all_sew32_lmul1max", "cp_csr_vtype_lmul_all_sew64_lmul1max", "cp_csr_vtype_lmul_all_sew8_lmul2max",
+                         "cp_csr_vtype_lmul_all_sew8_lmul_le_1", "cp_vtype_lmul_1", "cp_vtype_lmul_ge_1_le_4", "cp_vtype_lmul_ge_1_le_2", "cp_csr_vtype_lmul_all_sew8_lmul_le_2",
+                         "cp_csr_vtype_lmul_all_sew32_lmul_le_1", "cp_csr_vtype_lmul_all_sew64_lmul_le_2", "cp_csr_vtype_lmul_all_lmul4max_sew64_lmul_le_4", "cp_csr_vtype_lmul_all_sew16_lmul_le_2",
+                         "cp_csr_vtype_lmul_all_sew16_lmul_le_1", "cp_csr_vtype_lmul_all_sew32_lmul_le_2", "cp_csr_vtype_lmul_all_sew64_lmul_le_1", ]):
+      pass # helper coverpoints, crossed in cr_vl_lmul
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -566,18 +527,6 @@ if __name__ == '__main__':
         else:
           immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
 
-        vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
-                         "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
-        vcornersemul1 = [(vcorner + "_emul1") for vcorner in vectorcorners]
-        vcornersemul2 = [(vcorner + "_emul2") for vcorner in vectorcorners]
-        vcornersemul4 = [(vcorner + "_emul4") for vcorner in vectorcorners]
-        vcornersemul8 = [(vcorner + "_emul8") for vcorner in vectorcorners]
-        vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners]
-        vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
-        vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
-        vcornerseew1 = [(vcorner + "_eew1") for vcorner in vectorcorners]
-
-
         basename = "WALLY-COV-" + extension + "-" + test
         fname = pathname + "/" + basename + ".S"
         tempfname = pathname + "/" + basename + "_temp.S"
@@ -636,6 +585,9 @@ if __name__ == '__main__':
           genRandomVector(test, sew, vs="vd", emul = 2)
         elif (test not in xvtype and test not in xvmtype) :
           genRandomVector(test, sew, vs="vd")
+
+        if test in vector_loads:
+          genRandomVector(test, sew, vs="vd_load")
 
         if (test in wvsins): # needs to be first since in vd_widen_ins
           genRandomVector(test, sew, vs="vs2")

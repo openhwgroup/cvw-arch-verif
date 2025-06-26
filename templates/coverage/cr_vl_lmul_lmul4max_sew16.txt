@@ -1,5 +1,5 @@
     //////////////////////////////////////////////////////////////////////////////////
-    // cr_vl_lmul_sew16_lmul4max
+    // cr_vl_lmul_lmul4max_sew16
     //////////////////////////////////////////////////////////////////////////////////
 
     cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 1) {
@@ -21,7 +21,7 @@
         ignore_bins vl_illegal = {vl_illegal};
     }
 
-    cr_vl_lmul_sew16_lmul4max : cross cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4, cp_csr_vl_corners  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 1)  {
+    cr_vl_lmul_lmul4max_sew16 : cross cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4, cp_csr_vl_corners  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 1)  {
         //Cross coverage all legal LMULs (excluding LMUL = 8) for SEW = 16 and vl corners (1, random, vlmax)
     }
 

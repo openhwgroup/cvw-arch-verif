@@ -34,8 +34,8 @@ function int get_vtype_vlmax(int hart, int issue, int prev);
         3'b110: begin end
         3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
-            $finish(-1);
+            $error("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
+            $fatal(1);
         end
     endcase
 
@@ -45,8 +45,8 @@ function int get_vtype_vlmax(int hart, int issue, int prev);
         3'b010: begin end
         3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
-            $finish(-1);
+            $error("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
+            $fatal(1);
         end
     endcase
 
@@ -141,8 +141,8 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     "f8":    eew = sew / 8;
     "m":     eew = 8;       // vl = 8 and eew = 1 for mask (logical) instructions
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
+      $fatal(1);
     end
   endcase
 
@@ -158,8 +158,8 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     64:  return vs_corners_check_eew_64(val);
     `endif
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
+      $fatal(1);
     end
   endcase
 endfunction
@@ -243,6 +243,12 @@ function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
 endfunction
 `endif
 
+
+// todo: CHECK TO MAKE SURE BOOLEAN STATEMENTS WORK
+// todo: ESPECIALLY REGARDING SIGNS
+// todo:
+// todo:
+// todo:
 function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
 
   logic all_values_within_range = 1'b1;
@@ -260,7 +266,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     //--------------------------------------------------------------
     0: begin : SEW8
       for (int idx = 1; idx <= `VLEN / 8; ++idx) begin
-        logic [7:0] elem = val[idx*8 -: 8];
+        logic [7:0] elem = val[idx*8-1 -: 8];
 
         if (elem == 0)                          one_value_zero          = 1'b1;
         if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
@@ -271,7 +277,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     //--------------------------------------------------------------
     1: begin : SEW16
       for (int idx = 1; idx <= `VLEN / 16; ++idx) begin
-        logic [15:0] elem = val[idx*16 -: 16];
+        logic [15:0] elem = val[idx*16-1 -: 16];
 
         if (elem == 0)                          one_value_zero          = 1'b1;
         if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
@@ -282,7 +288,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     //--------------------------------------------------------------
     2: begin : SEW32
       for (int idx = 1; idx <= `VLEN / 32; ++idx) begin
-        logic [31:0] elem = val[idx*32 -: 32];
+        logic [31:0] elem = val[idx*32-1 -: 32];
 
         if (elem == 0)                          one_value_zero          = 1'b1;
         if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
@@ -293,7 +299,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     //--------------------------------------------------------------
     3: begin : SEW64
       for (int idx = 1; idx <= `VLEN / 64; ++idx) begin
-        logic [63:0] elem = val[idx*64 -: 64];
+        logic [63:0] elem = val[idx*64-1 -: 64];
 
         if (elem == 0)                          one_value_zero          = 1'b1;
         if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
@@ -301,8 +307,8 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     end
     //--------------------------------------------------------------
     default : begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported VSEW: %s", vsew);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported VSEW: %s", vsew);
+      $fatal(1);
     end
   endcase
 
@@ -324,8 +330,8 @@ function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     2'b11:  return val[63:0];
     `endif
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", vsew);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", vsew);
+      $fatal(1);
     end
   endcase
 

@@ -59,6 +59,10 @@ sigupd_count            = 10 # number of entries in signature - start with a mar
 sigupd_countF           = 0  #initialize signature update count for F tests
 signatureWords          = 0 #initialize signature words
 
+##################################
+# Corners
+##################################
+
 fcorners                =            [0x00000000, # 0
                             0x80000000, # -0
                             0x3f800000, # 1.0
@@ -147,6 +151,18 @@ fcornersH               = [0x0000, # 0.0
             0xC93A]  # -10.4531 random negative
 
 # fcornersQ = [] # TODO: Fill out quad precision F corners
+
+vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
+                  "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
+vcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorcorners]
+vcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorcorners]
+vcornersemul4  = [(vcorner + "_emul4" ) for vcorner in vectorcorners]
+vcornersemul8  = [(vcorner + "_emul8" ) for vcorner in vectorcorners]
+vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners]
+vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
+vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
+vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
+v_corners_ls   = ["vs_corner_zero", "vs_corner_random_within_2vlmax"]
 
 ##################################
 # Functions to be implemented by importer
@@ -573,8 +589,144 @@ seg8_stores = [
 
 seg8 = seg8_stores + seg8_loads
 
-segment_loads  = seg2_stores + seg3_stores + seg4_stores + seg5_stores + seg6_stores + seg7_stores + seg8_stores
-segment_stores = seg2_loads  + seg3_loads  + seg4_loads  + seg5_loads  + seg6_loads  + seg7_loads  + seg8_stores
+whole_register_ls = [
+  "vl1re8.v",  "vl2re8.v",  "vl4re8.v",  "vl8re8.v",
+  "vl1re16.v", "vl2re16.v", "vl4re16.v", "vl8re16.v",
+  "vl1re32.v", "vl2re32.v", "vl4re32.v", "vl8re32.v",
+  "vl1re64.v", "vl2re64.v", "vl4re64.v", "vl8re64.v",
+  "vs1r.v",    "vs2r.v",    "vs4r.v",    "vs8r.v"
+]
+
+eew8_ins = [
+    "vle8.v",
+    "vlseg2e8.v",
+    "vlseg3e8.v",
+    "vlseg4e8.v",
+    "vlseg5e8.v",
+    "vlseg6e8.v",
+    "vlseg7e8.v",
+    "vlseg8e8.v",
+    "vle8ff.v",
+    "vlseg2e8ff.v",
+    "vlseg3e8ff.v",
+    "vlseg4e8ff.v",
+    "vlseg5e8ff.v",
+    "vlseg6e8ff.v",
+    "vlseg7e8ff.v",
+    "vlseg8e8ff.v",
+    "vlse8.v",
+    "vlsseg2e8.v",
+    "vlsseg3e8.v",
+    "vlsseg4e8.v",
+    "vlsseg5e8.v",
+    "vlsseg6e8.v",
+    "vlsseg7e8.v",
+    "vlsseg8e8.v",
+    "vluxei8.v", "vluxseg2ei8.v", "vluxseg3ei8.v", "vluxseg4ei8.v", "vluxseg5ei8.v", "vluxseg6ei8.v", "vluxseg7ei8.v", "vluxseg8ei8.v",
+    "vloxei8.v", "vloxseg2ei8.v", "vloxseg3ei8.v", "vloxseg4ei8.v", "vloxseg5ei8.v", "vloxseg6ei8.v", "vloxseg7ei8.v", "vloxseg8ei8.v",
+    "vse8.v", "vsseg2e8.v", "vsseg3e8.v", "vsseg4e8.v", "vsseg5e8.v", "vsseg6e8.v", "vsseg7e8.v", "vsseg8e8.v",
+    "vsse8.v", "vssseg2e8.v", "vssseg3e8.v", "vssseg4e8.v", "vssseg5e8.v", "vssseg6e8.v", "vssseg7e8.v", "vssseg8e8.v",
+    "vsuxei8.v", "vsuxseg2ei8.v", "vsuxseg3ei8.v", "vsuxseg4ei8.v", "vsuxseg5ei8.v", "vsuxseg6ei8.v", "vsuxseg7ei8.v", "vsuxseg8ei8.v",
+    "vsoxei8.v", "vsoxseg2ei8.v", "vsoxseg3ei8.v", "vsoxseg4ei8.v", "vsoxseg5ei8.v", "vsoxseg6ei8.v", "vsoxseg7ei8.v", "vsoxseg8ei8.v",
+    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v", "vs8r.v"
+]
+
+eew16_ins = [
+    "vle16.v", "vlseg2e16.v", "vlseg3e16.v", "vlseg4e16.v", "vlseg5e16.v", "vlseg6e16.v", "vlseg7e16.v", "vlseg8e16.v", "vle16ff.v", "vlseg2e16ff.v", "vlseg3e16ff.v", "vlseg4e16ff.v", "vlseg5e16ff.v", "vlseg6e16ff.v", "vlseg7e16ff.v", "vlseg8e16ff.v",
+    "vlse16.v", "vlsseg2e16.v", "vlsseg3e16.v", "vlsseg4e16.v", "vlsseg5e16.v", "vlsseg6e16.v", "vlsseg7e16.v", "vlsseg8e16.v",
+    "vluxei16.v", "vluxseg2ei16.v", "vluxseg3ei16.v", "vluxseg4ei16.v", "vluxseg5ei16.v", "vluxseg6ei16.v", "vluxseg7ei16.v", "vluxseg8ei16.v",
+    "vloxei16.v", "vloxseg2ei16.v", "vloxseg3ei16.v", "vloxseg4ei16.v", "vloxseg5ei16.v", "vloxseg6ei16.v", "vloxseg7ei16.v", "vloxseg8ei16.v",
+    "vse16.v", "vsseg2e16.v", "vsseg3e16.v", "vsseg4e16.v", "vsseg5e16.v", "vsseg6e16.v", "vsseg7e16.v", "vsseg8e16.v",
+    "vsse16.v", "vssseg2e16.v", "vssseg3e16.v", "vssseg4e16.v", "vssseg5e16.v", "vssseg6e16.v", "vssseg7e16.v", "vssseg8e16.v",
+    "vsuxei16.v", "vsuxseg2ei16.v", "vsuxseg3ei16.v", "vsuxseg4ei16.v", "vsuxseg5ei16.v", "vsuxseg6ei16.v", "vsuxseg7ei16.v", "vsuxseg8ei16.v",
+    "vsoxei16.v", "vsoxseg2ei16.v", "vsoxseg3ei16.v", "vsoxseg4ei16.v", "vsoxseg5ei16.v", "vsoxseg6ei16.v", "vsoxseg7ei16.v", "vsoxseg8ei16.v",
+    "vl1re16.v", "vl2re16.v", "vl4re16.v", "vl8re16.v"
+]
+
+eew32_ins = [
+    "vle32.v", "vlseg2e32.v", "vlseg3e32.v", "vlseg4e32.v", "vlseg5e32.v", "vlseg6e32.v", "vlseg7e32.v", "vlseg8e32.v",
+    "vle32ff.v", "vlseg2e32ff.v", "vlseg3e32ff.v", "vlseg4e32ff.v", "vlseg5e32ff.v", "vlseg6e32ff.v", "vlseg7e32ff.v", "vlseg8e32ff.v",
+    "vlse32.v", "vlsseg2e32.v", "vlsseg3e32.v", "vlsseg4e32.v", "vlsseg5e32.v", "vlsseg6e32.v", "vlsseg7e32.v", "vlsseg8e32.v",
+    "vluxei32.v", "vluxseg2ei32.v", "vluxseg3ei32.v", "vluxseg4ei32.v", "vluxseg5ei32.v", "vluxseg6ei32.v", "vluxseg7ei32.v", "vluxseg8ei32.v",
+    "vloxei32.v", "vloxseg2ei32.v", "vloxseg3ei32.v", "vloxseg4ei32.v", "vloxseg5ei32.v", "vloxseg6ei32.v", "vloxseg7ei32.v", "vloxseg8ei32.v",
+    "vse32.v", "vsseg2e32.v", "vsseg3e32.v", "vsseg4e32.v", "vsseg5e32.v", "vsseg6e32.v", "vsseg7e32.v", "vsseg8e32.v",
+    "vsse32.v", "vssseg2e32.v", "vssseg3e32.v", "vssseg4e32.v", "vssseg5e32.v", "vssseg6e32.v", "vssseg7e32.v", "vssseg8e32.v",
+    "vsuxei32.v", "vsuxseg2ei32.v", "vsuxseg3ei32.v", "vsuxseg4ei32.v", "vsuxseg5ei32.v", "vsuxseg6ei32.v", "vsuxseg7ei32.v", "vsuxseg8ei32.v",
+    "vsoxei32.v", "vsoxseg2ei32.v", "vsoxseg3ei32.v", "vsoxseg4ei32.v", "vsoxseg5ei32.v", "vsoxseg6ei32.v", "vsoxseg7ei32.v", "vsoxseg8ei32.v",
+    "vl1re32.v", "vl2re32.v", "vl4re32.v", "vl8re32.v"
+]
+
+eew64_ins = [
+    "vle64.v", "vlseg2e64.v", "vlseg3e64.v", "vlseg4e64.v", "vlseg5e64.v", "vlseg6e64.v", "vlseg7e64.v", "vlseg8e64.v",
+    "vle64ff.v", "vlseg2e64ff.v", "vlseg3e64ff.v", "vlseg4e64ff.v", "vlseg5e64ff.v", "vlseg6e64ff.v", "vlseg7e64ff.v", "vlseg8e64ff.v",
+    "vlse64.v", "vlsseg2e64.v", "vlsseg3e64.v", "vlsseg4e64.v", "vlsseg5e64.v", "vlsseg6e64.v", "vlsseg7e64.v", "vlsseg8e64.v",
+    "vluxei64.v", "vluxseg2ei64.v", "vluxseg3ei64.v", "vluxseg4ei64.v", "vluxseg5ei64.v", "vluxseg6ei64.v", "vluxseg7ei64.v", "vluxseg8ei64.v",
+    "vloxei64.v", "vloxseg2ei64.v", "vloxseg3ei64.v", "vloxseg4ei64.v", "vloxseg5ei64.v", "vloxseg6ei64.v", "vloxseg7ei64.v", "vloxseg8ei64.v",
+    "vse64.v", "vsseg2e64.v", "vsseg3e64.v", "vsseg4e64.v", "vsseg5e64.v", "vsseg6e64.v", "vsseg7e64.v", "vsseg8e64.v",
+    "vsse64.v", "vssseg2e64.v", "vssseg3e64.v", "vssseg4e64.v", "vssseg5e64.v", "vssseg6e64.v", "vssseg7e64.v", "vssseg8e64.v",
+    "vsuxei64.v", "vsuxseg2ei64.v", "vsuxseg3ei64.v", "vsuxseg4ei64.v", "vsuxseg5ei64.v", "vsuxseg6ei64.v", "vsuxseg7ei64.v", "vsuxseg8ei64.v",
+    "vsoxei64.v", "vsoxseg2ei64.v", "vsoxseg3ei64.v", "vsoxseg4ei64.v", "vsoxseg5ei64.v", "vsoxseg6ei64.v", "vsoxseg7ei64.v", "vsoxseg8ei64.v",
+    "vl1re64.v", "vl2re64.v", "vl4re64.v", "vl8re64.v"
+]
+
+
+segment_stores  = seg2_stores + seg3_stores + seg4_stores + seg5_stores + seg6_stores + seg7_stores + seg8_stores
+segment_loads   = seg2_loads  + seg3_loads  + seg4_loads  + seg5_loads  + seg6_loads  + seg7_loads  + seg8_loads
+
+vector_loads  = segment_loads + [
+   # Unit-stride loads
+    "vle8.v", "vle16.v", "vle32.v", "vle64.v",
+    # Fault-only-first loads
+    "vle8ff.v", "vle16ff.v", "vle32ff.v", "vle64ff.v",
+    # Strided loads
+    "vlse8.v", "vlse16.v", "vlse32.v", "vlse64.v",
+    # Indexed unordered loads
+    "vluxei8.v", "vluxei16.v", "vluxei32.v", "vluxei64.v",
+    # Indexed ordered Loads
+    "vloxei8.v", "vloxei16.v", "vloxei32.v", "vloxei64.v",
+    # Whole Register Loads
+    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v",
+    "vl1re16.v", "vl2re16.v", "vl4re16.v", "vl8re16.v",
+    "vl1re32.v", "vl2re32.v", "vl4re32.v", "vl8re32.v",
+    "vl1re64.v", "vl2re64.v", "vl4re64.v", "vl8re64.v",
+    # Mask Load
+    "vlm.v"
+]
+
+vector_stores = segment_stores + [
+   # Unit-stride Stores
+    "vse8.v", "vse16.v", "vse32.v", "vse64.v",
+    # Strided Stores
+    "vsse8.v", "vsse16.v", "vsse32.v", "vsse64.v",
+    # Indexed unordered Stores
+    "vsuxei8.v", "vsuxei16.v", "vsuxei32.v", "vsuxei64.v",
+    # Indexed ordered Stores
+    "vsoxei8.v", "vsoxei16.v", "vsoxei32.v", "vsoxei64.v",
+     # Whole Register Stores
+    "vs1r.v", "vs2r.v", "vs4r.v", "vs8r.v",
+    # Mask Store
+    "vsm.v"
+]
+
+
+seg_vv_load   = [
+    # Indexed unordered loads
+    "vluxseg2ei8.v", "vluxseg2ei16.v", "vluxseg2ei32.v", "vluxseg2ei64.v",
+    "vluxseg3ei8.v", "vluxseg3ei16.v", "vluxseg3ei32.v", "vluxseg3ei64.v",
+    "vluxseg4ei8.v", "vluxseg4ei16.v", "vluxseg4ei32.v", "vluxseg4ei64.v",
+    "vluxseg5ei8.v", "vluxseg5ei16.v", "vluxseg5ei32.v", "vluxseg5ei64.v",
+    "vluxseg6ei8.v", "vluxseg6ei16.v", "vluxseg6ei32.v", "vluxseg6ei64.v",
+    "vluxseg7ei8.v", "vluxseg7ei16.v", "vluxseg7ei32.v", "vluxseg7ei64.v",
+    "vluxseg8ei8.v", "vluxseg8ei16.v", "vluxseg8ei32.v", "vluxseg8ei64.v",
+    # Indexed ordered Loads
+    "vloxseg2ei8.v", "vloxseg2ei16.v", "vloxseg2ei32.v", "vloxseg2ei64.v",
+    "vloxseg3ei8.v", "vloxseg3ei16.v", "vloxseg3ei32.v", "vloxseg3ei64.v",
+    "vloxseg4ei8.v", "vloxseg4ei16.v", "vloxseg4ei32.v", "vloxseg4ei64.v",
+    "vloxseg5ei8.v", "vloxseg5ei16.v", "vloxseg5ei32.v", "vloxseg5ei64.v",
+    "vloxseg6ei8.v", "vloxseg6ei16.v", "vloxseg6ei32.v", "vloxseg6ei64.v",
+    "vloxseg7ei8.v", "vloxseg7ei16.v", "vloxseg7ei32.v", "vloxseg7ei64.v",
+    "vloxseg8ei8.v", "vloxseg8ei16.v", "vloxseg8ei32.v", "vloxseg8ei64.v"
+]
 
 ##################################
 # Data Generation
@@ -602,6 +754,9 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
         writeLine(f"{vs}_random_{suite}_{t:03d}:")
         for i in range(num_words):
             randomElem = getrandbits(32)
+            if vs == "vd_load":
+              byte_align = sew // 8
+              randomElem = (randomElem // byte_align) * byte_align
             writeLine(f"    .word 0x{randomElem:08x}")
 
   writeLine("")
@@ -666,8 +821,11 @@ def genVsCorners(test, sew, emul):
     "max":    2**(eew - 1) - 1,
     "maxm1":  2**(eew - 1) - 2,
     "walkeven": sum(1 << i for i in range(eew) if i % 2 == 0),
-    "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1)
+    "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1),
   }
+
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
+  v_register_corners["random_within_2vlmax"] = r
   while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
   v_register_corners["random"] = r
 
@@ -782,7 +940,7 @@ def loadVFloatReg(reg, val, sew):
   writeLine(f"{storeop} x3, 0(x2)", f"# store {formatstrFP.format(val)} in memory")
   writeLine(f"{loadop} v{reg}, 0(x2)", f"# load {formatstrFP.format(val)} from memory into v{reg}")
 
-def loadVecReg(register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
+def loadVecReg(instruction, register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
     scalar_registers_used = list(scalar_registers_used)
     register_data         = vector_register_data[register_argument_name]
 
@@ -797,7 +955,7 @@ def loadVecReg(register_argument_name: str, vector_register_data, sew, lmul, *sc
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
     load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
-        or (register_emul > 1 and register_data['reg_type'] == "scalar")
+        or (register_emul > 1 and register_data['reg_type'] == "scalar") or (instruction in whole_register_ls and lmul != getInstructionSegments(instruction))
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -822,17 +980,49 @@ def loadVecReg(register_argument_name: str, vector_register_data, sew, lmul, *sc
     writeLine(f"la x{tempReg}, {register_val_pointer}", "# Load address of desired value")
     writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
-    if load_unique_vtype: # return vl and vtype register to what it was before
+    load_vls_random_corner = register_val_pointer == "vs_corner_random_within_2vlmax"
+
+    if load_vls_random_corner:
+      vtypeReg = 1
+      while vtypeReg in scalar_registers_used:
+        vtypeReg = randint(1,31)
+      scalar_registers_used.append(vtypeReg)
+
+      vlmaxReg = 10
+      while vlmaxReg in scalar_registers_used:
+        vlmaxReg = randint(1,31)
+      scalar_registers_used.append(vlmaxReg)
+
+      avlReg = 9
+      while avlReg in scalar_registers_used:
+        avlReg = randint(1,31)
+      scalar_registers_used.append(avlReg)
+
+      writeLine(f"csrr x{vtypeReg}, vtype",                       f"# save vtype register for after load")
+      writeLine(f"csrr x{avlReg}, vl",                            f"# save vl register for after load")
+      writeLine(f"vsetvl x{vlmaxReg}, x0, x{vtypeReg}",           f"# set vl to vlmax")
+      writeLine(f"csrr x{vlmaxReg}, vl",                          f"# save vlmax to x{vlmaxReg}")
+      writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",     f"# save vlmax * 2")
+      writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}", f"# ensure all values are within (-2*vlmax, 2*vlmax)")
+
+    if load_unique_vtype or load_vls_random_corner: # return vl and vtype register to what it was before
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}", "# restore vl and vtype setting")
 
     return scalar_registers_used
 
 def loadScalarReg(register_argument_name: str, scalar_register_data):
-  register_data   = scalar_register_data[register_argument_name]
-  register        = register_data['reg']
-  register_value  = register_data['val']
+  register_data     = scalar_register_data[register_argument_name]
+  register          = register_data['reg']
+  register_value    = register_data['val']
 
   writeLine(f"li x{register}, {formatstr.format(register_value)}", "# Load immediate value into integer register")
+
+def loadScalarAddress(register_argument_name: str, scalar_register_data):
+  register_data     = scalar_register_data[register_argument_name]
+  register          = register_data['reg']
+  register_pointer  = register_data['val_pointer']
+
+  writeLine(f"la x{register}, {register_pointer}", "# Load address pointer integer register for loads")
 
 # handleSignaturePointerConflict switches to a different signature pointer if the current one is needed for the test
 def handleSignaturePointerConflict(*registers):
@@ -936,11 +1126,11 @@ def writeTest(description, instruction, instruction_data,
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
-    vd              = vector_register_data        ['vd'] ['reg']
+    vd              = vector_register_data['vd'] ['reg']
 
-    rd              = scalar_register_data        ['rd'] ['reg']
-    rs1             = scalar_register_data        ['rs1']['reg']
-    rs2             = scalar_register_data        ['rs2']['reg']
+    rd              = scalar_register_data['rd'] ['reg']
+    rs1             = scalar_register_data['rs1']['reg']
+    rs2             = scalar_register_data['rs2']['reg']
 
     scalar_registers_used = [rd, rs1, rs2]
 
@@ -992,10 +1182,14 @@ def writeTest(description, instruction, instruction_data,
     elif instruction in vvrtype     : instruction_arguments = ['vd', 'vs1',        'vm']
     elif instruction in vvvxtype    : instruction_arguments = ['vd', 'vs2',        'vm']
     elif instruction in vitype      : instruction_arguments = ['vd', 'imm',        'vm']
-    elif instruction in type_vsx    : instruction_arguments = []
-    elif instruction in type_vsxm   : instruction_arguments = []
-    elif instruction in type_vsxxm  : instruction_arguments = []
-    elif instruction in type_vsxvm  : instruction_arguments = []
+    elif instruction in type_vsx    : instruction_arguments = ['vs3','rs1'             ]
+    elif instruction in type_vsxm   : instruction_arguments = ['vs3','rs1',        'vm']
+    elif instruction in type_vsxxm  : instruction_arguments = ['vs3','rs1', 'rs2', 'vm']
+    elif instruction in type_vsxvm  : instruction_arguments = ['vs3','rs1', 'vs2', 'vm']
+    elif instruction in type_vx     : instruction_arguments = ['vd', 'rs1'             ]
+    elif instruction in type_vxm    : instruction_arguments = ['vd', 'rs1',        'vm']
+    elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
+    elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
     else:
       print("Error: %s type not implemented yet" % instruction)
       return
@@ -1013,11 +1207,15 @@ def writeTest(description, instruction, instruction_data,
       elif arguement == 'imm':
         testline = testline + f"{imm_val}"
       elif arguement[0] == 'v':
-        scalar_registers_used = loadVecReg(arguement, vector_register_data, sew, lmul, *scalar_registers_used)
+        scalar_registers_used = loadVecReg(instruction, arguement, vector_register_data, sew, lmul, *scalar_registers_used)
         testline = testline + f"v{vector_register_data[arguement]['reg']}"
       elif arguement[0] == 'r':
-        loadScalarReg(arguement, scalar_register_data)
-        testline = testline + f"x{scalar_register_data[arguement]['reg']}"
+        if arguement == "rs1" and (instruction in vector_loads or instruction in vector_stores):
+          loadScalarAddress(arguement, scalar_register_data)
+          testline = testline + f"(x{scalar_register_data[arguement]['reg']})"
+        else:
+          loadScalarReg(arguement, scalar_register_data)
+          testline = testline + f"x{scalar_register_data[arguement]['reg']}"
       elif arguement[0] == 'f':
         # TODO : implement load value for floating point
         testline = testline + f"f{floating_point_register_data[arguement]['reg']}"
@@ -1028,10 +1226,8 @@ def writeTest(description, instruction, instruction_data,
 
     testline = testline[:-2] # remove the ", " at the end of the test
 
-    if vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar":
-      single_vector_register_store = True
-    else:
-      single_vector_register_store = False
+    single_vector_register_store = vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar" \
+                                    or (instruction in whole_register_ls and lmul != getInstructionSegments(instruction))
 
     if (maskval is not None) or (vl is not None):
       writeVecTest(vd, sew, testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store)
@@ -1121,12 +1317,6 @@ def randomizeRegister(register_argument_name: str, reg_count: int, register_pres
     if register_value is None:
       register_data['val'] = randint(0, (2**xlen)-1)
 
-    # TODO: this is not where values are randomized for f and v
-    # elif register_type == "f":
-    #   register_value = randint(0, (2**flen)-1)
-    # elif register_type == "v":
-    #   register_value = randint(0, (2**sew)-1)
-
   return register_data
 
 def getVectorEmulMultipliers(instruction):
@@ -1176,7 +1366,7 @@ def getInstructionRegisterOverlapConstraints (instruction):
   elif instruction in v_mins          : no_overlap = [['v0', 'vs2'], ['v0', 'vs1'], ['v0', 'vd']]
   elif instruction in mv_mins         : no_overlap = [['vd','vs2'],['v0','vs2'],['vd','vs1'],['v0','vs1']]
   elif instruction in vcompressins    : no_overlap = [['vd', 'vs2', 'vs1']                      ]
-  elif instruction in segment_loads   : no_overlap = [['vd', 'vs2']                             ]
+  elif instruction in seg_vv_load     : no_overlap = [['vd', 'vs2']                             ]
 
   return no_overlap
 
@@ -1197,9 +1387,9 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
     no_overlap = no_overlap + instruction_overlap_constaints
 
   scalar_register_preset_data         = {
-    'rd'  : {'reg' : None, 'val' : None},
-    'rs1' : {'reg' : None, 'val' : None},
-    'rs2' : {'reg' : None, 'val' : None}
+    'rd'  : {'reg' : None, 'val' : None, "val_pointer" : None},
+    'rs1' : {'reg' : None, 'val' : None, "val_pointer" : None},
+    'rs2' : {'reg' : None, 'val' : None, "val_pointer" : None}
   }
 
   floating_point_register_preset_data = {
@@ -1268,35 +1458,13 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
     # TODO: need to support conrer values as strings
     # if not isinstance(value, int) or not  isinstance(value, String):
     #   raise TypeError(f"Unexpected value for key '{variable}': '{value}'")
-
-  if   instruction in seg2 :
-    vector_register_preset_data['vs3']['segments'] = 2
-    vector_register_preset_data['vs1']['segments'] = 2
-    vector_register_preset_data[ 'vd']['segments'] = 2
-  elif instruction in seg3 :
-    vector_register_preset_data['vs3']['segments'] = 3
-    vector_register_preset_data['vs1']['segments'] = 3
-    vector_register_preset_data[ 'vd']['segments'] = 3
-  elif instruction in seg4 :
-    vector_register_preset_data['vs3']['segments'] = 4
-    vector_register_preset_data['vs1']['segments'] = 4
-    vector_register_preset_data[ 'vd']['segments'] = 4
-  elif instruction in seg5 :
-    vector_register_preset_data['vs3']['segments'] = 5
-    vector_register_preset_data['vs1']['segments'] = 5
-    vector_register_preset_data[ 'vd']['segments'] = 5
-  elif instruction in seg6 :
-    vector_register_preset_data['vs3']['segments'] = 6
-    vector_register_preset_data['vs1']['segments'] = 6
-    vector_register_preset_data[ 'vd']['segments'] = 6
-  elif instruction in seg7 :
-    vector_register_preset_data['vs3']['segments'] = 7
-    vector_register_preset_data['vs1']['segments'] = 7
-    vector_register_preset_data[ 'vd']['segments'] = 7
-  elif instruction in seg8 :
-    vector_register_preset_data['vs3']['segments'] = 8
-    vector_register_preset_data['vs1']['segments'] = 8
-    vector_register_preset_data[ 'vd']['segments'] = 8
+  if instruction in whole_register_ls:
+    lmul      = max(lmul, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
+  else:
+    segments  = getInstructionSegments(instruction)
+    vector_register_preset_data['vs3']['segments'] = segments
+    vector_register_preset_data['vs1']['segments'] = segments
+    vector_register_preset_data[ 'vd']['segments'] = segments
 
   ####################################################################################
 
@@ -1312,6 +1480,7 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
 
     scalar_register_data         ['rd' ] = randomizeRegister('rd',  xreg_count, scalar_register_preset_data)
     scalar_register_data         ['rs1'] = randomizeRegister('rs1', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs2'] = randomizeRegister('rs2', xreg_count, scalar_register_preset_data)
 
     floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
     floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
@@ -1331,6 +1500,7 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
 
     scalar_register_data         ['rd' ] = randomizeRegister('rd',  xreg_count, scalar_register_preset_data)
     scalar_register_data         ['rs1'] = randomizeRegister('rs1', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs2'] = randomizeRegister('rs2', xreg_count, scalar_register_preset_data)
 
     floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
     floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
@@ -1381,10 +1551,12 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
 
   ####################################################################################
 
-  if vector_register_data['vs3']['val_pointer'] is None: vector_register_data['vs3']['val_pointer'] = f"vs3_random_{suite}_{test_count:03d}"
-  if vector_register_data['vd' ]['val_pointer'] is None: vector_register_data['vd' ]['val_pointer'] = f" vd_random_{suite}_{test_count:03d}"
-  if vector_register_data['vs1']['val_pointer'] is None: vector_register_data['vs1']['val_pointer'] = f"vs1_random_{suite}_{test_count:03d}"
-  if vector_register_data['vs2']['val_pointer'] is None: vector_register_data['vs2']['val_pointer'] = f"vs2_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs3']['val_pointer'] is None: vector_register_data['vs3']['val_pointer'] =     f"vs3_random_{suite}_{test_count:03d}"
+  if vector_register_data['vd' ]['val_pointer'] is None: vector_register_data['vd' ]['val_pointer'] =      f"vd_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs1']['val_pointer'] is None: vector_register_data['vs1']['val_pointer'] =     f"vs1_random_{suite}_{test_count:03d}"
+  if vector_register_data['vs2']['val_pointer'] is None: vector_register_data['vs2']['val_pointer'] =     f"vs2_random_{suite}_{test_count:03d}"
+
+  if scalar_register_data['rs1']['val_pointer'] is None: scalar_register_data['rs1']['val_pointer'] = f"vd_load_random_{suite}_{test_count:03d}"
 
   # TODO : implement floating point data address
 
@@ -1398,6 +1570,16 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
     immval = immediate_preset_data
 
   return [vector_register_data, scalar_register_data, floating_point_register_data, immval]
+
+def getInstructionSegments(instruction):
+  if   instruction in seg2 : return 2
+  elif instruction in seg3 : return 3
+  elif instruction in seg4 : return 4
+  elif instruction in seg5 : return 5
+  elif instruction in seg6 : return 6
+  elif instruction in seg7 : return 7
+  elif instruction in seg8 : return 8
+  else                     : return 1
 
 ##################################
 # length suite
