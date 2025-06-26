@@ -23,7 +23,7 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
-`define G 4				// Set G as needed (0, 1, 2, etc.)
+`define G 4		// Set G as needed (0, 1, 2, etc.)
 //`define G_IS_0  // Uncomment this line iff G = 0
 
 `define g (2**(`G+2))	// Region size = 2^(G+2)

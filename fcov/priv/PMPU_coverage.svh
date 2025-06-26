@@ -23,7 +23,7 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
-`define G 4				// Set G as needed (0, 1, 2, etc.)
+`define G 4	// Set G as needed (0, 1, 2, etc.)
 //`define G_IS_0  // Uncomment this line iff G = 0
 
 `define g (2**(`G+2))	// Region size = 2^(G+2)
@@ -43,11 +43,7 @@
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
-covergroup PMPU_cg with function sample(
-										ins_t ins,
-										logic [16*XLEN-1:0] pack_pmpaddr,	// 16 packed pmpaddress registers
-										logic [29:0] pmpcfg_a				// first 15 regions A fields
-										);
+covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpaddr, logic [29:0] pmpcfg_a);
 	option.per_instance = 0;
 	`include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
@@ -119,7 +115,7 @@ covergroup PMPU_cg with function sample(
 		bins cfg_0111 = {8'b00011111};
 	}
 
-	all_pmp_entries_off: coverpoint {pmpcfg_a,ins.current.csr[12'h3AF]} { // Including Background Top PMP Entry
+	all_pmp_entries_off: coverpoint pmpcfg_a { // Including Background Top PMP Entry
 		bins PMP_OFF = {0};
 	}
 
@@ -145,56 +141,54 @@ covergroup PMPU_cg with function sample(
 		bins pmpaddr13  = {12'h3BD};
 		bins pmpaddr14  = {12'h3BE};
 		bins pmpaddr15  = {12'h3BF};
-		`ifdef PMP_64
-			bins pmpaddr16  = {12'h3C0};
-			bins pmpaddr17  = {12'h3C1};
-			bins pmpaddr18  = {12'h3C2};
-			bins pmpaddr19  = {12'h3C3};
-			bins pmpaddr20  = {12'h3C4};
-			bins pmpaddr21  = {12'h3C5};
-			bins pmpaddr22  = {12'h3C6};
-			bins pmpaddr23  = {12'h3C7};
-			bins pmpaddr24  = {12'h3C8};
-			bins pmpaddr25  = {12'h3C9};
-			bins pmpaddr26  = {12'h3CA};
-			bins pmpaddr27  = {12'h3CB};
-			bins pmpaddr28  = {12'h3CC};
-			bins pmpaddr29  = {12'h3CD};
-			bins pmpaddr30  = {12'h3CE};
-			bins pmpaddr31  = {12'h3CF};
-			bins pmpaddr32  = {12'h3D0};
-			bins pmpaddr33  = {12'h3D1};
-			bins pmpaddr34  = {12'h3D2};
-			bins pmpaddr35  = {12'h3D3};
-			bins pmpaddr36  = {12'h3D4};
-			bins pmpaddr37  = {12'h3D5};
-			bins pmpaddr38  = {12'h3D6};
-			bins pmpaddr39  = {12'h3D7};
-			bins pmpaddr40  = {12'h3D8};
-			bins pmpaddr41  = {12'h3D9};
-			bins pmpaddr42  = {12'h3DA};
-			bins pmpaddr43  = {12'h3DB};
-			bins pmpaddr44  = {12'h3DC};
-			bins pmpaddr45  = {12'h3DD};
-			bins pmpaddr46  = {12'h3DE};
-			bins pmpaddr47  = {12'h3DF};
-			bins pmpaddr48  = {12'h3E0};
-			bins pmpaddr49  = {12'h3E1};
-			bins pmpaddr50  = {12'h3E2};
-			bins pmpaddr51  = {12'h3E3};
-			bins pmpaddr52  = {12'h3E4};
-			bins pmpaddr53  = {12'h3E5};
-			bins pmpaddr54  = {12'h3E6};
-			bins pmpaddr55  = {12'h3E7};
-			bins pmpaddr56  = {12'h3E8};
-			bins pmpaddr57  = {12'h3E9};
-			bins pmpaddr58  = {12'h3EA};
-			bins pmpaddr59  = {12'h3EB};
-			bins pmpaddr60  = {12'h3EC};
-			bins pmpaddr61  = {12'h3ED};
-			bins pmpaddr62  = {12'h3EE};
-			bins pmpaddr63  = {12'h3EF};
-		`endif
+		bins pmpaddr16  = {12'h3C0};
+		bins pmpaddr17  = {12'h3C1};
+		bins pmpaddr18  = {12'h3C2};
+		bins pmpaddr19  = {12'h3C3};
+		bins pmpaddr20  = {12'h3C4};
+		bins pmpaddr21  = {12'h3C5};
+		bins pmpaddr22  = {12'h3C6};
+		bins pmpaddr23  = {12'h3C7};
+		bins pmpaddr24  = {12'h3C8};
+		bins pmpaddr25  = {12'h3C9};
+		bins pmpaddr26  = {12'h3CA};
+		bins pmpaddr27  = {12'h3CB};
+		bins pmpaddr28  = {12'h3CC};
+		bins pmpaddr29  = {12'h3CD};
+		bins pmpaddr30  = {12'h3CE};
+		bins pmpaddr31  = {12'h3CF};
+		bins pmpaddr32  = {12'h3D0};
+		bins pmpaddr33  = {12'h3D1};
+		bins pmpaddr34  = {12'h3D2};
+		bins pmpaddr35  = {12'h3D3};
+		bins pmpaddr36  = {12'h3D4};
+		bins pmpaddr37  = {12'h3D5};
+		bins pmpaddr38  = {12'h3D6};
+		bins pmpaddr39  = {12'h3D7};
+		bins pmpaddr40  = {12'h3D8};
+		bins pmpaddr41  = {12'h3D9};
+		bins pmpaddr42  = {12'h3DA};
+		bins pmpaddr43  = {12'h3DB};
+		bins pmpaddr44  = {12'h3DC};
+		bins pmpaddr45  = {12'h3DD};
+		bins pmpaddr46  = {12'h3DE};
+		bins pmpaddr47  = {12'h3DF};
+		bins pmpaddr48  = {12'h3E0};
+		bins pmpaddr49  = {12'h3E1};
+		bins pmpaddr50  = {12'h3E2};
+		bins pmpaddr51  = {12'h3E3};
+		bins pmpaddr52  = {12'h3E4};
+		bins pmpaddr53  = {12'h3E5};
+		bins pmpaddr54  = {12'h3E6};
+		bins pmpaddr55  = {12'h3E7};
+		bins pmpaddr56  = {12'h3E8};
+		bins pmpaddr57  = {12'h3E9};
+		bins pmpaddr58  = {12'h3EA};
+		bins pmpaddr59  = {12'h3EB};
+		bins pmpaddr60  = {12'h3EC};
+		bins pmpaddr61  = {12'h3ED};
+		bins pmpaddr62  = {12'h3EE};
+		bins pmpaddr63  = {12'h3EF};
 	}
 
 	pmpcfg_entries: coverpoint ins.current.insn[31:20] {
@@ -202,34 +196,33 @@ covergroup PMPU_cg with function sample(
 		bins pmpcfg1   = {12'h3A1};
 		bins pmpcfg2   = {12'h3A2};
 		bins pmpcfg3   = {12'h3A3};
-		`ifdef PMP_64
-			bins pmpcfg4   = {12'h3A4};
-			bins pmpcfg5   = {12'h3A5};
-			bins pmpcfg6   = {12'h3A6};
-			bins pmpcfg7   = {12'h3A7};
-			bins pmpcfg8   = {12'h3A8};
-			bins pmpcfg9   = {12'h3A9};
-			bins pmpcfg10  = {12'h3AA};
-			bins pmpcfg11  = {12'h3AB};
-			bins pmpcfg12  = {12'h3AC};
-			bins pmpcfg13  = {12'h3AD};
-			bins pmpcfg14  = {12'h3AE};
-			bins pmpcfg15  = {12'h3AF};
-		`endif
+		bins pmpcfg4   = {12'h3A4};
+		bins pmpcfg5   = {12'h3A5};
+		bins pmpcfg6   = {12'h3A6};
+		bins pmpcfg7   = {12'h3A7};
+		bins pmpcfg8   = {12'h3A8};
+		bins pmpcfg9   = {12'h3A9};
+		bins pmpcfg10  = {12'h3AA};
+		bins pmpcfg11  = {12'h3AB};
+		bins pmpcfg12  = {12'h3AC};
+		bins pmpcfg13  = {12'h3AD};
+		bins pmpcfg14  = {12'h3AE};
+		bins pmpcfg15  = {12'h3AF};
 	}
 
 	csrrw: coverpoint ins.current.insn {
 		wildcard bins csrrw  = {32'b????????????_?????_010_?????_1110011};
 	}
 
-    mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
-        bins set   = {1};
+	mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
+		bins set   = {1};
 		bins unset = {0};
-    }
-    mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
-        bins U_mode = {2'b00};
-        bins M_mode = {2'b11};
-    }
+	}
+
+	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
+		bins U_mode = {2'b00};
+		bins M_mode = {2'b11};
+	}
 
 	lxwr: coverpoint ins.current.csr[12'h3A0][7:0] {
 		bins cfg_1000 = {8'b10011000};
@@ -284,13 +277,6 @@ covergroup PMPU_cg with function sample(
 	cp_none_lw: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, read_instr_lw ;
 	cp_none_sw: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
-
-	cp_pmpaddr_access_u: cross priv_mode_u, csrrw, pmpaddr_entries ;
-	cp_pmpcfg_access_u: cross priv_mode_u, csrrw, pmpcfg_entries ;
-
-	cp_mprv_jalr: cross priv_mode_u, mprv_mstatus, mpp_mstatus, lxwr, exec_instr, standard_region, addr_in_region ;
-	cp_mprv_lw: cross priv_mode_u, mprv_mstatus, mpp_mstatus, lxwr, read_instr_lw, standard_region, addr_in_region ;
-	cp_mprv_sw: cross priv_mode_u, mprv_mstatus, mpp_mstatus, lxwr, write_instr_sw, standard_region, addr_in_region ;
 
 	cp_cfg_A_off_jalr: cross priv_mode_u, cfg_A_off, exec_instr, addr_in_region ;
 	cp_cfg_A_off_lw: cross priv_mode_u, cfg_A_off, read_instr_lw, addr_in_region ;
@@ -357,6 +343,14 @@ covergroup PMPU_cg with function sample(
 		ignore_bins ig3  = binsof(addr_offset.last_word_in_region);
 		ignore_bins ig4  = binsof(addr_offset.far_above);
 	}
+
+	cp_mprv_jalr: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, exec_instr, standard_region, addr_in_region ;
+	cp_mprv_lw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, read_instr_lw, standard_region, addr_in_region ;
+	cp_mprv_sw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, write_instr_sw, standard_region, addr_in_region ;
+
+	cp_pmpaddr_access_u: cross priv_mode_u, csrrw, pmpaddr_entries ;
+	cp_pmpcfg_access_u: cross priv_mode_u, csrrw, pmpcfg_entries ;
+
 endgroup
 
 function void pmpu_sample(int hart, int issue, ins_t ins);
@@ -384,6 +378,7 @@ function void pmpu_sample(int hart, int issue, ins_t ins);
 
 	`ifdef XLEN32
 		pmpcfg_a =  {
+					ins.current.csr[12'h3A3][28:27],
 					ins.current.csr[12'h3A3][20:19],
 					ins.current.csr[12'h3A3][12:11],
 					ins.current.csr[12'h3A3][4:3],
@@ -403,6 +398,7 @@ function void pmpu_sample(int hart, int issue, ins_t ins);
 	`endif
 	`ifdef XLEN64
 		pmpcfg_a =  {
+					ins.current.csr[12'h3A2][60:59],
 					ins.current.csr[12'h3A2][52:51],
 					ins.current.csr[12'h3A2][44:43],
 					ins.current.csr[12'h3A2][36:35],
