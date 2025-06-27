@@ -598,30 +598,9 @@ whole_register_ls = [
 ]
 
 eew8_ins = [
-    "vle8.v",
-    "vlseg2e8.v",
-    "vlseg3e8.v",
-    "vlseg4e8.v",
-    "vlseg5e8.v",
-    "vlseg6e8.v",
-    "vlseg7e8.v",
-    "vlseg8e8.v",
-    "vle8ff.v",
-    "vlseg2e8ff.v",
-    "vlseg3e8ff.v",
-    "vlseg4e8ff.v",
-    "vlseg5e8ff.v",
-    "vlseg6e8ff.v",
-    "vlseg7e8ff.v",
-    "vlseg8e8ff.v",
-    "vlse8.v",
-    "vlsseg2e8.v",
-    "vlsseg3e8.v",
-    "vlsseg4e8.v",
-    "vlsseg5e8.v",
-    "vlsseg6e8.v",
-    "vlsseg7e8.v",
-    "vlsseg8e8.v",
+    "vle8.v", "vlseg2e8.v", "vlseg3e8.v", "vlseg4e8.v", "vlseg5e8.v", "vlseg6e8.v", "vlseg7e8.v", "vlseg8e8.v",
+    "vle8ff.v", "vlseg2e8ff.v", "vlseg3e8ff.v", "vlseg4e8ff.v", "vlseg5e8ff.v", "vlseg6e8ff.v", "vlseg7e8ff.v", "vlseg8e8ff.v",
+    "vlse8.v", "vlsseg2e8.v", "vlsseg3e8.v", "vlsseg4e8.v", "vlsseg5e8.v", "vlsseg6e8.v", "vlsseg7e8.v", "vlsseg8e8.v",
     "vluxei8.v", "vluxseg2ei8.v", "vluxseg3ei8.v", "vluxseg4ei8.v", "vluxseg5ei8.v", "vluxseg6ei8.v", "vluxseg7ei8.v", "vluxseg8ei8.v",
     "vloxei8.v", "vloxseg2ei8.v", "vloxseg3ei8.v", "vloxseg4ei8.v", "vloxseg5ei8.v", "vloxseg6ei8.v", "vloxseg7ei8.v", "vloxseg8ei8.v",
     "vse8.v", "vsseg2e8.v", "vsseg3e8.v", "vsseg4e8.v", "vsseg5e8.v", "vsseg6e8.v", "vsseg7e8.v", "vsseg8e8.v",
@@ -708,6 +687,7 @@ vector_stores = segment_stores + [
     "vsm.v"
 ]
 
+vector_ls_ins = vector_stores + vector_loads
 
 seg_vv_load   = [
     # Indexed unordered loads
@@ -946,16 +926,19 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
-    if register_data['reg_type'] == "mask":
-      register_sew        = 8
-    else:
-      register_sew        = register_data['size_multiplier'] * sew
     register_emul         = lmul * register_data['size_multiplier']
+
+    if register_data['reg_type'] == "mask" : register_sew = 8
+    if instruction in vector_ls_ins        : register_sew = sew # regsiters are read with sew and lmul in vtype csr, size multiplier is used for nfields
+    else                                   : register_sew = register_data['size_multiplier'] * sew
 
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
-    load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
-        or (register_emul > 1 and register_data['reg_type'] == "scalar") or (instruction in whole_register_ls and lmul != getInstructionSegments(instruction))
+    if instruction in whole_register_ls:
+      load_unique_vtype = lmul != getInstructionSegments(instruction)
+    else:
+      load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
+        or (register_emul > 1 and register_data['reg_type'] == "scalar")
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1376,7 +1359,7 @@ def getInstructionRegisterOverlapConstraints (instruction):
 # lmul               - the lmul set in vtype csr
 # **preset_variables - any value in preset_data can be set here, for example vd = 2 will ensure vd is set to the v2 register above all else
 # return             - returns an array of all randomized values following constraints
-def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
+def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
   preset_variables.update(getVectorEmulMultipliers(instruction))
   no_overlap = []
 
@@ -1455,16 +1438,28 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
     if not found :
       raise TypeError(f"Unexpected keyword argument: '{variable}'")
 
-    # TODO: need to support conrer values as strings
-    # if not isinstance(value, int) or not  isinstance(value, String):
-    #   raise TypeError(f"Unexpected value for key '{variable}': '{value}'")
+
   if instruction in whole_register_ls:
     lmul      = max(lmul, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
   else:
     segments  = getInstructionSegments(instruction)
     vector_register_preset_data['vs3']['segments'] = segments
+    vector_register_preset_data['vs2']['segments'] = segments
     vector_register_preset_data['vs1']['segments'] = segments
     vector_register_preset_data[ 'vd']['segments'] = segments
+
+
+  eew = None
+  if   instruction in eew64_ins : eew = 64
+  elif instruction in eew32_ins : eew = 32
+  elif instruction in eew16_ins : eew = 16
+  elif instruction in eew8_ins  : eew = 8
+
+  if eew is not None: # if emul is greater than 1 use it for the size multiplier
+    vector_register_preset_data['vs3']['size_multiplier'] = max(int(eew/sew), 1)
+    vector_register_preset_data['vs2']['size_multiplier'] = max(int(eew/sew), 1)
+    vector_register_preset_data['vs1']['size_multiplier'] = max(int(eew/sew), 1)
+    vector_register_preset_data[ 'vd']['size_multiplier'] = max(int(eew/sew), 1)
 
   ####################################################################################
 
@@ -1484,6 +1479,9 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
 
     floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
     floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
+
+  if getVectorInstructionExceptions(instruction, vector_register_data) is not None:
+    register_overlap = False
 
   ####################################################################################
   # check and resolve and register overlap
@@ -1546,7 +1544,7 @@ def randomizeVectorInstructionData(instruction, test_count, suite="base", lmul=1
 
     max_randomization_count = 1000
     if (randomization_count >= max_randomization_count):
-      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" after {max_randomization_count} attempts')
+      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" with sew "{sew}" and lmul "{lmul}" after {max_randomization_count} attempts')
     randomization_count = randomization_count + 1
 
   ####################################################################################
@@ -1580,6 +1578,9 @@ def getInstructionSegments(instruction):
   elif instruction in seg7 : return 7
   elif instruction in seg8 : return 8
   else                     : return 1
+
+def getVectorInstructionExceptions(instruction, vector_register_data):
+  return
 
 ##################################
 # length suite
