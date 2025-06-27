@@ -41,9 +41,9 @@ priv: privheaders | $(PRIVDIR64) $(PRIVDIR32)
 covergroupgen: bin/covergroupgen.py
 	bin/covergroupgen.py
 
-testgen: covergroupgen bin/testgen.py bin/vector-testgen.py bin/combinetests.py
+testgen: covergroupgen bin/testgen.py bin/vector-testgen-unpriv.py bin/combinetests.py
 	bin/testgen.py
-	bin/vector-testgen.py
+	bin/vector-testgen-unpriv.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
 # bin/combinetests.py
 

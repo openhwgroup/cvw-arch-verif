@@ -90,8 +90,8 @@ function string get_gpr_name(int key);
     31: return "t6";
 `endif
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_gpr_name(%0s) not found gpr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_gpr_name(%0s) not found gpr", key);
+          $fatal(1);
       end
   endcase
 endfunction
@@ -132,8 +132,8 @@ function string get_fpr_name(int key);
     30: return "f30";
     31: return "f31";
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_fpr_name(%0s) not found fpr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_fpr_name(%0s) not found fpr", key);
+          $fatal(1);
       end
   endcase
 endfunction
@@ -174,8 +174,8 @@ function string get_vr_name(int key);
     30: return "v30";
     31: return "v31";
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_vr_name(%0s) not found vr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_vr_name(%0s) not found vr", key);
+          $fatal(1);
       end
   endcase
 endfunction
@@ -203,8 +203,8 @@ function string get_c_gpr_name(int key);
     7: return "a5";
 `endif
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_c_gpr_name(%0s) not found compressed gpr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_c_gpr_name(%0s) not found compressed gpr", key);
+          $fatal(1);
       end
   endcase
 endfunction
@@ -221,8 +221,8 @@ function string get_c_fpr_name(int key);
     6: return "f14";
     7: return "f15";
     default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_c_fpr_name(%0s) not found compressed fpr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_c_fpr_name(%0s) not found compressed fpr", key);
+          $fatal(1);
       end
   endcase
 endfunction
