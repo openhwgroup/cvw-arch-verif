@@ -40,6 +40,7 @@ def make_custom(test, xlen):
 def make_vd(instruction, sew, rng):
 
   for v in rng:
+    print(v)
     description = f"cp_vd (Test destination vd = v" + str(v) + ")"
     instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v)
 
@@ -233,10 +234,18 @@ def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
 
 ##################################### length suite (vl!=1) test generation #####################################
 
-def make_vl_lmul(instruction, sew, maxlmul=8):
+def getMaxlmul(sew, eew, maxlmul):
+  if eew is None:
+    return maxlmul
+
+  lmulMultiplier = eew/sew
+
+  return min(maxlmul, int(8 / lmulMultiplier))
+
+def make_vl_lmul(instruction, sew, maxlmul=8, eew = None):
   global legalvlmuls
 
-  numlmul = int(math.log2(maxlmul))
+  numlmul = int(math.log2(getMaxlmul(sew, eew, maxlmul)))
   minlmul = min(legalvlmuls)
   for l in range(minlmul, numlmul+1):
     for k in range(3):
@@ -270,11 +279,11 @@ def make_mask_corners(instruction, sew):
     incrememntLengthtestCount()
     vsAddressCount("length")
 
-def make_vtype_agnostic(instruction, sew, maxlmul=8):
+def make_vtype_agnostic(instruction, sew, maxlmul=8, eew = None):
   global legalvlmuls
   for t in [0,1]:
     for m in [0,1]:
-      lmul = 2 ** randint(0, int(math.log2(maxlmul))) # pick random integer LMUL to ensure that coverpoints are hit
+      lmul = 2 ** randint(0, int(math.log2(getMaxlmul(sew, eew, maxlmul)))) # pick random integer LMUL to ensure that coverpoints are hit
 
       maskval = randomizeMask(instruction)
       no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
@@ -376,15 +385,47 @@ def makeTest(coverpoints, test, sew=None):
     elif coverpoint == "cp_imm_corners_5bit_u"        : pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
     elif coverpoint == "cp_csr_vxrm"                  : pass # already tested in cross coverpoints with vs2 and vs1/rs1/imm
     ############################ length suite ############################
-    elif coverpoint == "cp_masking_corners"           : make_mask_corners(test, sew)
-    elif coverpoint == "cr_vl_lmul"                   : make_vl_lmul(test, sew) # includes tests for legal LMUL up to 8
-    elif coverpoint in "cr_vl_lmul_lmul4max"          : make_vl_lmul(test, sew, maxlmul=4) # includes tests for legal LMUL up to 4
-    elif coverpoint in "cr_vl_lmul_lmul2max"          : make_vl_lmul(test, sew, maxlmul=2) # includes tests for legal LMUL up to 4
-    elif coverpoint in "cr_vl_lmul_lmul1max"          : make_vl_lmul(test, sew, maxlmul=1) # includes tests for legal LMUL up to 4
-    elif coverpoint == "cr_vtype_agnostic"            : make_vtype_agnostic(test, sew, maxlmul=8)
-    elif coverpoint == "cr_vtype_agnostic_lmul4max"   : make_vtype_agnostic(test, sew, maxlmul=4)
-    elif coverpoint == "cr_vtype_agnostic_lmul2max"   : make_vtype_agnostic(test, sew, maxlmul=2)
-    elif coverpoint == "cr_vtype_agnostic_lmul1max"   : make_vtype_agnostic(test, sew, maxlmul=1)
+    elif coverpoint == "cp_masking_corners"             : make_mask_corners(test, sew)
+    elif coverpoint == "cr_vl_lmul"                     : make_vl_lmul(test, sew) # includes tests for legal LMUL up to 8
+    elif coverpoint == "cr_vl_lmul_lmul4max"            : make_vl_lmul(test, sew, maxlmul=4) # includes tests for legal LMUL up to 4
+    elif coverpoint == "cr_vl_lmul_lmul2max"            : make_vl_lmul(test, sew, maxlmul=2) # includes tests for legal LMUL up to 4
+    elif coverpoint == "cr_vl_lmul_lmul1max"            : make_vl_lmul(test, sew, maxlmul=1) # includes tests for legal LMUL up to 4
+    elif coverpoint == "cr_vl_lmul_e8"                  : make_vl_lmul(test, sew, eew = 8 )
+    elif coverpoint == "cr_vl_lmul_e16"                 : make_vl_lmul(test, sew, eew = 16)
+    elif coverpoint == "cr_vl_lmul_e32"                 : make_vl_lmul(test, sew, eew = 32)
+    elif coverpoint == "cr_vl_lmul_e64"                 : make_vl_lmul(test, sew, eew = 64)
+    elif coverpoint == "cr_vl_lmul_lmul4max_e8"         : make_vl_lmul(test, sew, eew = 8,  maxlmul=4)
+    elif coverpoint == "cr_vl_lmul_lmul4max_e16"        : make_vl_lmul(test, sew, eew = 16, maxlmul=4)
+    elif coverpoint == "cr_vl_lmul_lmul4max_e32"        : make_vl_lmul(test, sew, eew = 32, maxlmul=4)
+    elif coverpoint == "cr_vl_lmul_lmul4max_e64"        : make_vl_lmul(test, sew, eew = 64, maxlmul=4)
+    elif coverpoint == "cr_vl_lmul_lmul2max_e8"         : make_vl_lmul(test, sew, eew = 8,  maxlmul=2)
+    elif coverpoint == "cr_vl_lmul_lmul2max_e16"        : make_vl_lmul(test, sew, eew = 16, maxlmul=2)
+    elif coverpoint == "cr_vl_lmul_lmul2max_e32"        : make_vl_lmul(test, sew, eew = 32, maxlmul=2)
+    elif coverpoint == "cr_vl_lmul_lmul2max_e64"        : make_vl_lmul(test, sew, eew = 64, maxlmul=2)
+    elif coverpoint == "cr_vl_lmul_lmul1max_e8"         : make_vl_lmul(test, sew, eew = 8,  maxlmul=1)
+    elif coverpoint == "cr_vl_lmul_lmul1max_e16"        : make_vl_lmul(test, sew, eew = 16, maxlmul=1)
+    elif coverpoint == "cr_vl_lmul_lmul1max_e32"        : make_vl_lmul(test, sew, eew = 32, maxlmul=1)
+    elif coverpoint == "cr_vl_lmul_lmul1max_e64"        : make_vl_lmul(test, sew, eew = 64, maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic"              : make_vtype_agnostic(test, sew)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max"     : make_vtype_agnostic(test, sew, maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max"     : make_vtype_agnostic(test, sew, maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max"     : make_vtype_agnostic(test, sew, maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic_e8"           : make_vtype_agnostic(test, sew, eew = 8 )
+    elif coverpoint == "cr_vtype_agnostic_e16"          : make_vtype_agnostic(test, sew, eew = 16)
+    elif coverpoint == "cr_vtype_agnostic_e32"          : make_vtype_agnostic(test, sew, eew = 32)
+    elif coverpoint == "cr_vtype_agnostic_e64"          : make_vtype_agnostic(test, sew, eew = 64)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max_e8"  : make_vtype_agnostic(test, sew, eew = 8,  maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max_e16" : make_vtype_agnostic(test, sew, eew = 16, maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max_e32" : make_vtype_agnostic(test, sew, eew = 32, maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul4max_e64" : make_vtype_agnostic(test, sew, eew = 64, maxlmul=4)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max_e8"  : make_vtype_agnostic(test, sew, eew = 8,  maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max_e16" : make_vtype_agnostic(test, sew, eew = 16, maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max_e32" : make_vtype_agnostic(test, sew, eew = 32, maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul2max_e64" : make_vtype_agnostic(test, sew, eew = 64, maxlmul=2)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max_e8"  : make_vtype_agnostic(test, sew, eew = 8,  maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max_e16" : make_vtype_agnostic(test, sew, eew = 16, maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max_e32" : make_vtype_agnostic(test, sew, eew = 32, maxlmul=1)
+    elif coverpoint == "cr_vtype_agnostic_lmul1max_e64" : make_vtype_agnostic(test, sew, eew = 64, maxlmul=1)
     elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
       pass # helper coverpoints, crossed in cr_vtype_agnostic
     elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
@@ -396,7 +437,13 @@ def makeTest(coverpoints, test, sew=None):
                          "cp_csr_vtype_lmul_all_sew16_lmul1max", "cp_csr_vtype_lmul_all_sew32_lmul1max", "cp_csr_vtype_lmul_all_sew64_lmul1max", "cp_csr_vtype_lmul_all_sew8_lmul2max",
                          "cp_csr_vtype_lmul_all_sew8_lmul_le_1", "cp_vtype_lmul_1", "cp_vtype_lmul_ge_1_le_4", "cp_vtype_lmul_ge_1_le_2", "cp_csr_vtype_lmul_all_sew8_lmul_le_2",
                          "cp_csr_vtype_lmul_all_sew32_lmul_le_1", "cp_csr_vtype_lmul_all_sew64_lmul_le_2", "cp_csr_vtype_lmul_all_lmul4max_sew64_lmul_le_4", "cp_csr_vtype_lmul_all_sew16_lmul_le_2",
-                         "cp_csr_vtype_lmul_all_sew16_lmul_le_1", "cp_csr_vtype_lmul_all_sew32_lmul_le_2", "cp_csr_vtype_lmul_all_sew64_lmul_le_1", ]):
+                         "cp_csr_vtype_lmul_all_sew16_lmul_le_1", "cp_csr_vtype_lmul_all_sew32_lmul_le_2", "cp_csr_vtype_lmul_all_sew64_lmul_le_1", "cp_csr_vtype_lmul_all_le_8_e16",
+                         "cp_vtype_lmul_ge_1_e16", "cp_csr_vtype_lmul_all_le_8_e32", "cp_csr_vtype_lmul_all_le_8_e64", "cp_csr_vtype_lmul_all_le_8_e8", "cp_vtype_lmul_ge_1_e32",
+                         "cp_vtype_lmul_ge_1_e64", "cp_vtype_lmul_ge_1_e8", "cp_csr_vtype_lmul_all_le_8_lmul4max_e16", "cp_csr_vtype_lmul_all_le_8_lmul4max_e32", "cp_csr_vtype_lmul_all_le_8_lmul4max_e64",
+                         "cp_csr_vtype_lmul_all_le_8_lmul4max_e8", "cp_vtype_lmul_ge_1_lmul2max_e16", "cp_vtype_lmul_ge_1_lmul2max_e32", "cp_csr_vtype_lmul_all_le_8_lmul2max_e64",
+                         "cp_csr_vtype_lmul_all_le_8_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul2max_e16", "cp_csr_vtype_lmul_all_le_8_lmul2max_e32", "cp_vtype_lmul_ge_1_lmul2max_e64",
+                         "cp_vtype_lmul_ge_1_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul1max_e16", "cp_vtype_lmul_ge_1_lmul1max_e16", "cp_vtype_lmul_ge_1_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul1max_e16",
+                         "cp_csr_vtype_lmul_all_le_8_lmul1max_e32", "cp_vtype_lmul_ge_1_lmul1max_e32"]):
       pass # helper coverpoints, crossed in cr_vl_lmul
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)

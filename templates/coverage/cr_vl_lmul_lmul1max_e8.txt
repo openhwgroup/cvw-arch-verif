@@ -1,7 +1,7 @@
 
 
     //////////////////////////////////////////////////////////////////////////////////
-    // cr_vl_lmul1max_e8
+    // cr_vl_lmul_lmul1max_e8
     //////////////////////////////////////////////////////////////////////////////////
 
     cp_csr_vtype_lmul_all_le_8_lmul1max_e8 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 0) {

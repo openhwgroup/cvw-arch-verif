@@ -1077,6 +1077,18 @@ def getLMULIfdef(lmul):
     ifdef = "#ifdef LMULf8_SUPPORTED\n"
   return ifdef
 
+def getELENIfdef(instruction):
+  ifdef = ""
+  if   instruction in eew64_ins:
+    ifdef = "#if ELEN >= 64\n"
+  elif instruction in eew32_ins:
+    ifdef = "#if ELEN >= 32\n"
+  elif instruction in eew16_ins:
+    ifdef = "#if ELEN >= 16\n"
+  elif instruction in eew8_ins:
+    ifdef = "#if ELEN >= 8\n"
+  return ifdef
+
 def prepMaskV(maskval, sew, tempReg):
   if (maskval == "zeroes"):
     writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
@@ -1128,6 +1140,8 @@ def writeTest(description, instruction, instruction_data,
     # deal with conflict before generating lmul ifdefs to not cause issue if the test is unused
 
     writeLine("\n" + getLMULIfdef(lmul))
+
+    writeLine(getELENIfdef(instruction))
 
     writeLine("# Testcase " + str(description))
 
@@ -1218,6 +1232,8 @@ def writeTest(description, instruction, instruction_data,
       writeVecTest(vd, sew, testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store)
 
     if (getLMULIfdef(lmul) != ""):
+      writeLine("#endif")
+    if (getELENIfdef(instruction) != ""):
       writeLine("#endif")
 
 def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
@@ -1363,6 +1379,8 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
   preset_variables.update(getVectorEmulMultipliers(instruction))
   no_overlap = []
 
+  print(f'instruction "{instruction}" with sew "{sew}" and lmul "{lmul}"')
+
   instruction_overlap_constaints = getInstructionRegisterOverlapConstraints(instruction)
   if additional_no_overlap is not None:
     no_overlap = no_overlap + additional_no_overlap
@@ -1440,7 +1458,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
 
 
   if instruction in whole_register_ls:
-    lmul      = max(lmul, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
+    lmul      = max(1, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
   else:
     segments  = getInstructionSegments(instruction)
     vector_register_preset_data['vs3']['segments'] = segments
@@ -1448,6 +1466,9 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     vector_register_preset_data['vs1']['segments'] = segments
     vector_register_preset_data[ 'vd']['segments'] = segments
 
+    lmul = getInstructionEmul(instruction, lmul)
+
+  print(f"lmul: {lmul}")
 
   eew = None
   if   instruction in eew64_ins : eew = 64
@@ -1479,9 +1500,6 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
 
     floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
     floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
-
-  if getVectorInstructionExceptions(instruction, vector_register_data) is not None:
-    register_overlap = False
 
   ####################################################################################
   # check and resolve and register overlap
@@ -1579,8 +1597,12 @@ def getInstructionSegments(instruction):
   elif instruction in seg8 : return 8
   else                     : return 1
 
-def getVectorInstructionExceptions(instruction, vector_register_data):
-  return
+def getInstructionEmul(instruction, sew, lmul):
+  if   instruction in eew8_ins  and 8 /sew > 1  : return 8 /sew * lmul
+  elif instruction in eew16_ins and 16/sew > 1  : return 16/sew * lmul
+  elif instruction in eew32_ins and 32/sew > 1  : return 32/sew * lmul
+  elif instruction in eew64_ins and 64/sew > 1  : return 64/sew * lmul
+  else                                          : return lmul
 
 ##################################
 # length suite
