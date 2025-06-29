@@ -28,9 +28,6 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
 
     // building blocks for the main coverpoints
 
-    sip_seip_one: coverpoint ins.current.csr[12'h144][9] {
-        bins one = {1};
-    }
     mstatus_mie: coverpoint ins.current.csr[12'h300][3]  {
         // autofill 0/1
     }
@@ -288,7 +285,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_trigger_sti:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_stip_one;
     cp_trigger_ssi_mip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_ssip_one;
     cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_sip_ssip;
-    cp_trigger_sei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, sip_seip_one, s_ext_intr_high;
+    cp_trigger_sei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_high;
     cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_low;
     cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
@@ -333,8 +330,17 @@ endgroup
 function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
     /*
-    $display("priv_mode=%b, mie=%b,\nmip=%b, mideleg=%b, sip=%b, \nmstatus=%b, sstatus=%b",
-            ins.prev.mode, ins.current.csr[12'h304][11:0], ins.current.csr[12'h344][11:0], ins.current.csr[12'h303][11:0],
-            ins.current.csr[12'h144][11:0], ins.current.csr[12'h300], ins.current.csr[12'h100]);
+    $display("PC: %h Instr: %s\n  priv_mode=%b, mstatus.mie=%b mstatus.sie=%b mie=%h mideleg=%h mip=%h",
+            ins.current.pc_rdata, ins.current.disass,
+            ins.prev.mode, ins.current.csr[12'h300][3], ins.current.csr[12'h300][1],
+            ins.current.csr[12'h304][11:0], ins.current.csr[12'h303][11:0], ins.current.csr[12'h344][11:0]);
+    $display("  priv_mode_s: %b mstatus_mie_zero %b mstatus_sie %b mie_ones %b mideleg_ones_zeros %b mip_stip_one %b",
+                ins.prev.mode == 2'b01,
+                ins.current.csr[12'h300][3] == 0,
+                ins.current.csr[12'h300][1] == 0,
+                ins.current.csr[12'h304][15:0] == 16'h0AAA,
+                ins.current.csr[12'h303][15:0] == 16'h0222,
+                ins.current.csr[12'h344][5] == 1
+            );
     */
 endfunction
