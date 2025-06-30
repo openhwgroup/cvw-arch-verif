@@ -298,15 +298,17 @@ def getSigInfo(floatdest):
       offsetInc = 8
   return storeinstr, offsetInc
 
-def getSigSpace(xlen, flen,sigupd_count, sigupd_countF):
+def getSigSpace(xlen, flen,sigupd_count, sigupd_countF, test):
   #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
   signatureWords = sigupd_count
   if sigupd_countF > 0:
-    if flen >= xlen:
+    if flen > xlen:
       mult = flen//xlen
-      signatureWords = 3 * sigupd_count + (sigupd_countF * ((mult)))   ###*2)-1))(past edit for open issue 3 * is to make parachute) # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double the count for alignment (4 and 8 need 16 byts)
+      hasXregHaz = 1 if test in F2Xtype or test in fTOrtype else 2 #when test is not to Xtype hazards cause sigupd_count missalignment skips
+      signatureWords = hasXregHaz*sigupd_count + (sigupd_countF * mult)   # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double sigupd_count for alignment in hazard cases
     else:
-      signatureWords =  sigupd_count + sigupd_countF + 10 # (+10 for double buffer from start) all Sigupd Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+      signatureWords =  sigupd_count + sigupd_countF  #all Sigupd, when Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
+  signatureWords += (4//(xlen//32))*(((signatureWords*(xlen//32))*4)//2016) # add additional space for offset overflow adjustment offset reset at offset of 2016 so calculate ofset amount from sigwords then multiply by addisional sigwords needed to cover the overflow realignment
   return signatureWords
 
 # writeTest appends the test to the lines.
@@ -655,7 +657,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + str(int(unsignedImm5(immval))*mul)  + " \n"
     if test == "c.fsd":
-        sigupd_count += 1
+        sigupd_count += 1 if xlen == 32 else 0 #needs more space in rv32
         WIDTH = 8 #bytes
     else:
         WIDTH = "REGWIDTH"
@@ -681,7 +683,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines = lines + test + " x" + str(rs2) + ", " + makeImm(immval, 12, 1) +  "(x" + str(sigReg) + ")  \n"
       lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", "  + makeImm(immval, 12, True) + " \n"
       if test == "sd":
-        sigupd_count += 1
+        sigupd_count += 1 if xlen == 32 else 0 #needs more space in rv32
         WIDTH = 8 #bytes
       else:
         WIDTH = "REGWIDTH"
@@ -709,7 +711,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
     if test in ["c.sd", "c.fsd","c.sdsp", "c.fsdsp"]:
         WIDTH = 8 #bytes
-        sigupd_count += 1
+        sigupd_count += 1 if xlen == 32 else 0 #needs more space in rv32
     else:
         WIDTH = "REGWIDTH"
     lines = lines + "addi x" + str(sigReg) + ", x"  + str(sigReg) + ", " + str(WIDTH)   + " # Incrementing base register\n"
@@ -799,7 +801,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     storeline = test + " f" + str(rs2)  + ", " + signedImm12(immval) + "(x" + str(rs1) + ") # perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     if test == "fsd":
-        sigupd_count += 1
+        sigupd_count += 1 if xlen == 32 else 0 #needs more space in rv32
         WIDTH = 8 #bytes
     else:
         WIDTH = "REGWIDTH"
@@ -1050,7 +1052,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     lines += "addi " + 2*(regconfig[1] + str(sigReg) + ", ") + makeImm(immvalb, 12, True) + "\n"
     if testb in ['sd', 'fsd', 'c.sdsp', 'c.fsdsp', 'c.fsd', 'c.sd']:
         WIDTH = 8 #bytes
-        sigupd_count += 2
+        sigupd_count += 2 if xlen == 32 else 1
     else:
         WIDTH = "REGWIDTH"
     lines += "addi " + 2 * (regconfig[1] + str(sigReg) + ", ") + str(WIDTH)  + " # Increment base Register\n"
@@ -2673,7 +2675,7 @@ if __name__ == '__main__':
           write_tests(coverpoints[test], test, xlen)
 
           # print footer
-          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF) #figure out how many words are needed for signature
+          signatureWords = getSigSpace(xlen, flen, sigupd_count, sigupd_countF, test) #figure out how many words are needed for signature
           insertTemplate("testgen_footer.S")
 
           # Finish
