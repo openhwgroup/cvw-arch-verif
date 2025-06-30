@@ -1089,6 +1089,18 @@ def getELENIfdef(instruction):
     ifdef = "#if ELEN >= 8\n"
   return ifdef
 
+def getSEWMINIfdef(instruction):
+  ifdef = ""
+  if   instruction in eew64_ins:
+    ifdef = "#if SEWMIN <= 64\n"
+  elif instruction in eew32_ins:
+    ifdef = "#if SEWMIN <= 32\n"
+  elif instruction in eew16_ins:
+    ifdef = "#if SEWMIN <= 16\n"
+  elif instruction in eew8_ins:
+    ifdef = "#if SEWMIN <= 8\n"
+  return ifdef
+
 def prepMaskV(maskval, sew, tempReg):
   if (maskval == "zeroes"):
     writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
@@ -1142,6 +1154,8 @@ def writeTest(description, instruction, instruction_data,
     writeLine("\n" + getLMULIfdef(lmul))
 
     writeLine(getELENIfdef(instruction))
+
+    writeLine(getSEWMINIfdef(instruction))
 
     writeLine("# Testcase " + str(description))
 
@@ -1235,6 +1249,9 @@ def writeTest(description, instruction, instruction_data,
       writeLine("#endif")
     if (getELENIfdef(instruction) != ""):
       writeLine("#endif")
+    if (getSEWMINIfdef(instruction) != ""):
+      writeLine("#endif")
+
 
 def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
   scalar_registers_used = list(scalar_registers_used)
@@ -1379,7 +1396,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
   preset_variables.update(getVectorEmulMultipliers(instruction))
   no_overlap = []
 
-  print(f'instruction "{instruction}" with sew "{sew}" and lmul "{lmul}"')
+  # print(f'instruction "{instruction}" with sew "{sew}" and lmul "{lmul}"')
 
   instruction_overlap_constaints = getInstructionRegisterOverlapConstraints(instruction)
   if additional_no_overlap is not None:
@@ -1466,9 +1483,9 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     vector_register_preset_data['vs1']['segments'] = segments
     vector_register_preset_data[ 'vd']['segments'] = segments
 
-    lmul = getInstructionEmul(instruction, lmul)
+    lmul = getInstructionEmul(instruction, sew, lmul)
 
-  print(f"lmul: {lmul}")
+  # print(f"elmul: {lmul}")
 
   eew = None
   if   instruction in eew64_ins : eew = 64

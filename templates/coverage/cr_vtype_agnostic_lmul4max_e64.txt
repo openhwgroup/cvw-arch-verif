@@ -10,20 +10,6 @@
         bins agnostic    = {1};
     }
 
-    cp_vtype_lmul_ge_1_e64 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
-        bins one    = {[0
-        `ifdef COVER_VX16
-        :1
-        `endif
-        `ifdef COVER_VX32
-        :2
-        `endif
-        `ifdef COVER_VX64
-        :2
-        `endif
-        ]};
-    }
-
     cr_vtype_agnostic_e64 : cross cp_csr_vtype_vta,cp_csr_vtype_vma,cp_vtype_lmul_ge_1 iff (ins.trap == 0 )  {
         //Cross coverage of vector tail and mask agnostic behaviors
     }
