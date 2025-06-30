@@ -18,7 +18,7 @@
 # DO NOT MODIFY unless you also update the test generation script.
 ///////////////////////////////////////////////////////////////
 
-# Sw.S
+# sw.S
 # Test word-aligned sw operations
     li t2, 0x12345678
     li t3, 0x9ABCDEF0

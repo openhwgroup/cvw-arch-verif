@@ -6,13 +6,11 @@
     la t0, scratch
     li t2, 0xF2345678
     sc.w t1, t2, (t0)
+    sc.w.rl t3, t2, (t0)
+    sc.w.aqrl t4, t2, (t0)
     RVTEST_SIGUPD(SIGPOINTER, t1)
-    sc.w.rl t1, t2, (t0)
-    RVTEST_SIGUPD(SIGPOINTER, t1)
-    sc.w.aqrl t1, t2, (t0)
-    RVTEST_SIGUPD(SIGPOINTER, t1)
-
-   // SIG_POINTER_INCREMENT(16) # number - (space in bytes for words). Always add after completing a region of memory offsets.
+    RVTEST_SIGUPD(SIGPOINTER, t3)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
 
 # cp_custom_sc_lrsc
     li t3, 0x23456789
@@ -26,8 +24,8 @@
     # should fail because of intervening sc
     lr.w t1, (t0)
     sc.w t2, t3, (t0) # succeeds
-    RVTEST_SIGUPD(SIGPOINTER, t2)
     sc.w t5, t4, (t0) # fails
+    RVTEST_SIGUPD(SIGPOINTER, t2)
     RVTEST_SIGUPD(SIGPOINTER, t5)
 
 
@@ -82,7 +80,6 @@
     sc.w t5, t4, (t0) # succeeds
     RVTEST_SIGUPD(SIGPOINTER, t5)
 
-    //SIG_POINTER_INCREMENT(16) # number - (space in bytes for words). Always add after completing a region of memory offsets.
 
     lr.w t1, (t0)
     lh t3, 2(t0)      # load half

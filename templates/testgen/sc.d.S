@@ -6,11 +6,11 @@
     la t0, scratch
     li t2, 0x123456789ABCDEF0
     sc.d t1, t2, (t0)
+    sc.d.rl t3, t2, (t0)
+    sc.d.aqrl t4, t2, (t0)
     RVTEST_SIGUPD(SIGPOINTER, t1)
-    sc.d.rl t1, t2, (t0)
-    RVTEST_SIGUPD(SIGPOINTER, t1)
-    sc.d.aqrl t1, t2, (t0)
-    RVTEST_SIGUPD(SIGPOINTER, t1)
+    RVTEST_SIGUPD(SIGPOINTER, t3)
+    RVTEST_SIGUPD(SIGPOINTER, t4)
 
 # cp_custom_sc_lrsc
     li t3, 0x2345678998765432
@@ -35,8 +35,8 @@
     # should fail because of intervening sc
     lr.d t1, (t0)
     sc.d t2, t3, (t0) # succeeds
-    RVTEST_SIGUPD(SIGPOINTER, t2)
     sc.d t5, t4, (t0) # fails
+    RVTEST_SIGUPD(SIGPOINTER, t2)
     RVTEST_SIGUPD(SIGPOINTER, t5)
 
 # cp_custom_sc_after_store

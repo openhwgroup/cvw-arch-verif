@@ -11,7 +11,7 @@
     lr.d.aq t2, (t0)
     RVTEST_SIGUPD(SIGPOINTER, t2)
     lr.d.aqrl t3, (t0)
-    RVTEST_SIGUPD(SIGPOINTER, t2)
+    RVTEST_SIGUPD(SIGPOINTER, t3)
 
 # cp_custom_rd_corners
     li t4, 0x0
