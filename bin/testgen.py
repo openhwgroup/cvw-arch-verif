@@ -412,7 +412,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       lines += writeSIGUPD(rs2)
   elif (test in citype):
     if "sp" in test: #ensure no sp conflicts
-      while rs1 == 2 or rs2 == 2:
+      while rs1 == 2 or rs2 == 2 or rs2 == sigReg or rs1 == sigReg:
         rs1 = randint(1,31)
         rs2 = randint(1,31)
     if(test == "c.lui" and rd == 2): # rd ==2 is illegal operand
