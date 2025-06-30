@@ -100,6 +100,7 @@
   `endif
 `endif
 
+
 // supported SEWs based on what coverages are enabled
 `ifdef VX64_COVERAGE
   `define SEW64_SUPPORTED
