@@ -33,11 +33,6 @@
                 bins half   = {7};
             `endif
         `endif
-
-        `ifdef COVER_VX32
-
-        `endif
-        `ifdef COVER_VX64 // need to only support supported nfields
         bins one    = {0};
         `ifndef COVER_VX8
             bins two    = {1};
@@ -47,7 +42,6 @@
                     bins eight  = {3};
                 `endif
             `endif
-        `endif
         `endif
     }
 

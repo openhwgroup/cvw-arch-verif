@@ -33,16 +33,10 @@
                 bins half   = {7};
             `endif
         `endif
-
-        `ifdef COVER_VX32
-
-        `endif
-        `ifdef COVER_VX64 // need to only support supported nfields
         bins one    = {0};
         bins two    = {1};
         bins four   = {2};
         bins eight  = {3};
-        `endif
     }
 
     cp_csr_vl_corners : coverpoint vl_check(ins.hart, ins.issue)  iff (ins.trap == 0 )  {

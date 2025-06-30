@@ -1,10 +1,10 @@
 
 
     //////////////////////////////////////////////////////////////////////////////////
-    // cr_vl_lmul_e32_emul4max
+    // cr_vl_lmul_e32_emul2max
     //////////////////////////////////////////////////////////////////////////////////
 
-    cp_csr_vtype_lmul_all_le_8_e32_emul4max : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 0) {
+    cp_csr_vtype_lmul_all_le_8_e32_emul2max : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul")  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 0) {
         // Value of VTYPE.vlmul (vector register grouping)
         //////////////////////// SEW 8  ////////////////////
         `ifdef COVER_VX8
@@ -33,16 +33,11 @@
                 bins half   = {7};
             `endif
         `endif
-
-        `ifdef COVER_VX32
-
-        `endif
-        `ifdef COVER_VX64 // need to only support supported nfields
-        bins one    = {0};
-        bins two    = {1};
         `ifndef COVER_VX8
-            bins four   = {2};
-        `endif
+            bins one    = {0};
+            `ifndef COVER_VX16
+                bins two    = {1};
+            `endif
         `endif
     }
 
@@ -52,7 +47,7 @@
         ignore_bins vl_illegal = {vl_illegal};
     }
 
-    cr_vl_lmul_e32_emul4max : cross cp_csr_vtype_lmul_all_le_8_e32_emul4max, cp_csr_vl_corners
+    cr_vl_lmul_e32_emul2max : cross cp_csr_vtype_lmul_all_le_8_e32_emul2max, cp_csr_vl_corners
     iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") ==
     `ifdef COVER_VX8
     0
