@@ -46,7 +46,7 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     mstatus_sie_one: coverpoint ins.current.csr[12'h300][1] {
         bins one = {1};
     }
-    mstatus_sie_zero: coverpoint ins.current.csr[12'h300][1] {
+    prev_mstatus_sie_zero: coverpoint ins.prev.csr[12'h300][1] {
         bins zero = {0};
     }
     mstatus_tw:  coverpoint ins.current.csr[12'h300][21] {
@@ -287,11 +287,11 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_trigger_ssi_sip:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, csrrs, write_sip_ssip;
     cp_trigger_sei:             cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_high;
     cp_trigger_sei_seip:        cross priv_mode_s, mstatus_mie_zero, mstatus_sie, mie_ones, mideleg_ones_zeros, mip_seip_one, s_ext_intr_low;
-    cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
-    cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_sti: cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, mip_stip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
+    cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
     cp_interrupts_s:            cross priv_mode_s, mstatus_mie_zero, mideleg_ones_zeros, mtvec_direct, mip_walking, mie_walking;
-    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, mstatus_sie_zero, mie_ones, mideleg_ones, stvec_mode, mip_walking, csrrs, write_sstatus_sie;
+    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, stvec_mode, mip_walking, csrrs, write_sstatus_sie;
     cp_priority_mip_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mip_combinations, mie_ones,   mideleg_ones_zeros;
     cp_priority_mie_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_ones,   mideleg_ones_zeros;
     cp_priority_both_s:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_mie_eq, mideleg_ones_zeros;
@@ -329,7 +329,7 @@ endgroup
 
 function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
-    /*
+
     $display("PC: %h Instr: %s\n  priv_mode=%b, mstatus.mie=%b mstatus.sie=%b mie=%h mideleg=%h mip=%h",
             ins.current.pc_rdata, ins.current.disass,
             ins.prev.mode, ins.current.csr[12'h300][3], ins.current.csr[12'h300][1],
@@ -342,5 +342,5 @@ function void interruptss_sample(int hart, int issue, ins_t ins);
                 ins.current.csr[12'h303][15:0] == 16'h0222,
                 ins.current.csr[12'h344][5] == 1
             );
-    */
+
 endfunction
