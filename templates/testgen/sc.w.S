@@ -80,7 +80,6 @@
     sc.w t5, t4, (t0) # succeeds
     RVTEST_SIGUPD(SIGPOINTER, t5)
 
-
     lr.w t1, (t0)
     lh t3, 2(t0)      # load half
     sc.w t5, t4, (t0) # succeeds
