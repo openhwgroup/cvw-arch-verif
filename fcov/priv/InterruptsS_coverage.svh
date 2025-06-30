@@ -49,6 +49,9 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     prev_mstatus_sie_zero: coverpoint ins.prev.csr[12'h300][1] {
         bins zero = {0};
     }
+    prev_mstatus_sie_one: coverpoint ins.prev.csr[12'h300][1] {
+        bins one = {1};
+    }
     mstatus_tw:  coverpoint ins.current.csr[12'h300][21] {
         // autofill 0/1
     }
@@ -291,12 +294,12 @@ covergroup InterruptsS_cg with function sample(ins_t ins);
     cp_trigger_changingtos_ssi: cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, mip_ssip_one, csrrs, write_sstatus_sie;
     cp_trigger_changingtos_sei: cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, mip_seip_one, csrrs, write_sstatus_sie;
     cp_interrupts_s:            cross priv_mode_s, mstatus_mie_zero, mideleg_ones_zeros, mtvec_direct, mip_walking, mie_walking;
-    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_zero, mie_ones, mideleg_ones, stvec_mode, mip_walking, csrrs, write_sstatus_sie;
-    cp_priority_mip_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mip_combinations, mie_ones,   mideleg_ones_zeros;
-    cp_priority_mie_s:          cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_ones,   mideleg_ones_zeros;
-    cp_priority_both_s:         cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_combinations, mip_mie_eq, mideleg_ones_zeros;
-    cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mideleg_combinations, mip_ones, mie_ones;
-    cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mideleg_combinations, mip_ones, mideleg_mie_eq;
+    cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mie_ones, mideleg_ones, stvec_mode, mip_walking;
+    cp_priority_mip_s:          cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mip_combinations, mie_ones,   mideleg_ones_zeros;
+    cp_priority_mie_s:          cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mie_combinations, mip_ones,   mideleg_ones_zeros;
+    cp_priority_both_s:         cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mie_combinations, mip_mie_eq, mideleg_ones_zeros;
+    cp_priority_mideleg_m:      cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mideleg_combinations, mip_ones, mie_ones;
+    cp_priority_mideleg_s:      cross priv_mode_s, mstatus_mie_zero, prev_mstatus_sie_one, mideleg_combinations, mip_ones, mideleg_mie_eq;
     cp_wfi:                     cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw, mie_mtie_one, mip_mtip_one; // could cause funky coverage since WFI often doesn't retire. Revisit later
     cp_wfi_timeout_m:           cross priv_mode_s, wfi, mstatus_mie, mstatus_sie, mideleg_ones_zeros, mstatus_tw_one, mie_mtie, timeout;
 
@@ -334,13 +337,15 @@ function void interruptss_sample(int hart, int issue, ins_t ins);
             ins.current.pc_rdata, ins.current.disass,
             ins.prev.mode, ins.current.csr[12'h300][3], ins.current.csr[12'h300][1],
             ins.current.csr[12'h304][11:0], ins.current.csr[12'h303][11:0], ins.current.csr[12'h344][11:0]);
-    $display("  priv_mode_s: %b mstatus_mie_zero %b mstatus_sie %b mie_ones %b mideleg_ones_zeros %b mip_stip_one %b",
+    $display("  priv_mode_s: %b mstatus_mie %b mstatus_sie %b stvec_mode %b mideleg_ones_zeros %h mie %h mip %h",
                 ins.prev.mode == 2'b01,
-                ins.current.csr[12'h300][3] == 0,
-                ins.current.csr[12'h300][1] == 0,
-                ins.current.csr[12'h304][15:0] == 16'h0AAA,
-                ins.current.csr[12'h303][15:0] == 16'h0222,
-                ins.current.csr[12'h344][5] == 1
+                ins.current.csr[12'h300][3],
+                ins.current.csr[12'h300][1],
+                ins.current.csr[12'h105][1:0],
+                ins.current.csr[12'h303][15:0],
+                ins.current.csr[12'h304][15:0],
+                ins.current.csr[12'h344][15:0]
             );
+    // cp_vectored_s:              cross priv_mode_s, mstatus_mie_zero, mstatus_sie_one, mie_ones, mideleg_ones, stvec_mode, mip_walking;
 
 endfunction
