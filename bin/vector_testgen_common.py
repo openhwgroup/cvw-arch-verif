@@ -729,7 +729,10 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
       num_words = math.ceil((vl * eew) / 32)
     else:
       maxVtests = lengthtest_count
-      num_words = math.ceil(maxVLEN / 32)
+      if (test in vd_widen_ins and vs == "vd") or (test in vs2_widen_ins and vs == "vs2"):
+        num_words = math.ceil(maxVLEN * 2 / 32)
+      else:
+        num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
         writeLine(f"{vs}_random_{suite}_{t:03d}:")
         for i in range(num_words):
