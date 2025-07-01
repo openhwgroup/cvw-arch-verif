@@ -48,6 +48,10 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
 
+    cfg_for_menvcfg: coverpoint ins.current.csr[12'h30A]{
+        bins configuration = {64'b?_?_?_?_??????????????????????????_??_????????????????????????_1_1_01_???_?}; //menvcfg.CBIE, CBCFE, CBZE = 1
+    }
+
     pmpaddr: coverpoint ins.current.csr[12'h3B0]{
         bins region = {(`REGIONSTART>>2) | ((1 << 12) - 1) }; //for 4KiB region, No of trailing ones = 12
     }
@@ -78,10 +82,10 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
         bins pmpcfg3 = {8'b10011011}; //XWR = 011
     }
 
-    cp_cbo_clean : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cbo_clean_instr;
-    cp_cbo_flush : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cbo_flush_instr;
-    cp_cbo_inval : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cbo_inval_instr;
-    cp_cbo_zero  : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cbo_zero_instr;
+    cp_cbo_clean : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cfg_for_menvcfg, cbo_clean_instr;
+    cp_cbo_flush : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cfg_for_menvcfg, cbo_flush_instr;
+    cp_cbo_inval : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cfg_for_menvcfg, cbo_inval_instr;
+    cp_cbo_zero  : cross priv_mode_m, pmpaddr, pmpcfg_for_cp_cbo, addr_in_region, cfg_for_menvcfg, cbo_zero_instr;
 
     prefetch_i_instr: coverpoint ins.current.insn{
         wildcard bins prefetch_i_instr = {32'b???????_00000_?????_110_00000_0010011};
@@ -104,9 +108,9 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
         bins pmpcfg6 = {8'b10011111}; //XWR = 111
     }
 
-    cp_prefetch_i: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch, prefetch_i_instr;
-    cp_prefetch_r: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch, prefetch_r_instr;
-    cp_prefetch_w: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch, prefetch_w_instr;
+    cp_prefetch_i: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch,cfg_for_menvcfg, prefetch_i_instr;
+    cp_prefetch_r: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch,cfg_for_menvcfg, prefetch_r_instr;
+    cp_prefetch_w: cross priv_mode_m, addr_in_region, pmpaddr, pmpcfg_for_cp_prefetch,cfg_for_menvcfg, prefetch_w_instr;
 
 endgroup
 
