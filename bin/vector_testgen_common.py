@@ -57,7 +57,6 @@ length_suite_test_count = 0
 
 sigupd_count            = 10 # number of entries in signature - start with a margin of 10 spaces
 sigupd_countF           = 0  #initialize signature update count for F tests
-signatureWords          = 0 #initialize signature words
 
 ##################################
 # Corners
@@ -179,12 +178,13 @@ def writeLine(argument: str, comment = ""):
 ##################################
 
 def newInstruction():
-  global sigReg, lengthtest_count, basetest_count, base_suite_test_count, length_suite_test_count
+  global sigReg, lengthtest_count, basetest_count, base_suite_test_count, length_suite_test_count, sigupd_count
   sigReg                    = 3
   lengthtest_count          = 0
   basetest_count            = 0
   base_suite_test_count     = 0
   length_suite_test_count   = 0
+  sigupd_count              = 0
 
 def setXlen(new_xlen):
     global xlen, formatstr
@@ -744,6 +744,28 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
 
   writeLine("")
 
+def genRandomVectorLS():
+  writeLine("\n")
+  writeLine("///////////////////////////////////////////")
+  writeLine(f"// vector_ls_random_base data")
+  writeLine("///////////////////////////////////////////\n")
+  writeLine(".section .data\n")
+  writeLine(f"    .align 3")
+  writeLine("// Corner Vectors")
+
+  num_words_either_side = int((maxELEN / 32) * 2 * maxVLEN) # 2 times max vlen elements on either side of pointer (sewMAX = 64)
+
+  writeLine(f"vector_ls_random_base_header:")
+  for i in range(num_words_either_side):
+      randomElem = getrandbits(32)
+      writeLine(f"    .word 0x{randomElem:08x}")
+  writeLine(f"vector_ls_random_base:")
+  for i in range(num_words_either_side):
+      randomElem = getrandbits(32)
+      writeLine(f"    .word 0x{randomElem:08x}")
+
+  writeLine("")
+
 def genVMaskCorners():
   num_words = math.ceil(maxVLEN / 32)
 
@@ -835,8 +857,7 @@ def myhash(s):
     h = (h * 31 + ord(c)) & 0xFFFFFFFF
   return h
 
-def insertTemplate(test, name):
-    global signatureWords
+def insertTemplate(test, signatureWords, name):
     writeLine(f"\n# {name}")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
@@ -929,19 +950,23 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
-    register_emul         = lmul * register_data['size_multiplier']
+    register_emul         = lmul * register_data['size_multiplier'] * register_data['segments']
 
     if register_data['reg_type'] == "mask" : register_sew = 8
-    if instruction in vector_ls_ins        : register_sew = sew # regsiters are read with sew and lmul in vtype csr, size multiplier is used for nfields
+    if instruction in vector_ls_ins        : register_sew = sew # regsiters are read with sew and lmul in vtype csr
     else                                   : register_sew = register_data['size_multiplier'] * sew
 
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
-    if instruction in whole_register_ls:
-      load_unique_vtype = lmul != getInstructionSegments(instruction)
+    # safely loading new vtype for fractional lmul to make sure all desired elements are loaded
+    if lmul < 1:
+      load_unique_vtype = True
     else:
-      load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
-        or (register_emul > 1 and register_data['reg_type'] == "scalar")
+      if instruction in whole_register_ls:
+        load_unique_vtype = lmul != getInstructionSegments(instruction)
+      else:
+        load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
+          or (register_emul > 1 and register_data['reg_type'] == "scalar")
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1022,7 +1047,7 @@ def handleSignaturePointerConflict(*registers):
   if (sigReg != oldSigReg):
     writeLine("mv x" + str(sigReg) + ", x" + str(oldSigReg), "# switch signature pointer register to avoid conflict with test")
 
-def getSigSpace(xlen, flen, sigupd_count, sigupd_countF):
+def getSigSpace(xlen, flen):
   #function to calculate the space needed for the signature memory. with different reg sizes to accommodate different xlen and flen only when needed to minimize space
   signatureWords = sigupd_count
   if sigupd_countF > 0:
@@ -1162,13 +1187,13 @@ def writeTest(description, instruction, instruction_data,
 
     writeLine("# Testcase " + str(description))
 
-    scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
-
     # If mask value specified, load to v0
     if maskval is not None:
       prepMaskV(maskval, sew, tempReg)
     elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype]):
       writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
+
+    scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
     if vfloattype is not None:
       scalar_registers_used = loadFloatRoundingMode(vfloattype, *scalar_registers_used)
@@ -1310,7 +1335,7 @@ def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
 
   return scalar_registers_used
 
-def randomizeRegister(register_argument_name: str, reg_count: int, register_preset_data, lmul = 1) :
+def randomizeRegister(instruction, register_argument_name: str, reg_count: int, register_preset_data, lmul = 1) :
 
   register_data   = register_preset_data[register_argument_name].copy()
   register_type   = register_argument_name[0]
@@ -1332,9 +1357,14 @@ def randomizeRegister(register_argument_name: str, reg_count: int, register_pres
   register_data['reg'] = register
 
   if   register_type == "r":
-    register_value = register_data['val']
-    if register_value is None:
-      register_data['val'] = randint(0, (2**xlen)-1)
+    if register_data['val'] is None:
+      if instruction in vector_loads and register_argument_name == "rs2": # loads and stores stride
+         register_data['val'] = randint(-4, 4)
+      else:
+        register_data['val'] = randint(0, (2**xlen)-1)
+    if register_data['val_pointer'] is None:
+      if instruction in vector_loads and register_argument_name == "rs1": # needs to point to an address
+          register_data['val_pointer'] = "vector_ls_random_base"
 
   return register_data
 
@@ -1402,6 +1432,8 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
   # print(f'instruction "{instruction}" with sew "{sew}" and lmul "{lmul}"')
 
   instruction_overlap_constaints = getInstructionRegisterOverlapConstraints(instruction)
+
+
   if additional_no_overlap is not None:
     no_overlap = no_overlap + additional_no_overlap
   if instruction_overlap_constaints is not None:
@@ -1486,10 +1518,6 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     vector_register_preset_data['vs1']['segments'] = segments
     vector_register_preset_data[ 'vd']['segments'] = segments
 
-    lmul = getInstructionEmul(instruction, sew, lmul)
-
-  # print(f"elmul: {lmul}")
-
   eew = None
   if   instruction in eew64_ins : eew = 64
   elif instruction in eew32_ins : eew = 32
@@ -1509,17 +1537,17 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
   if no_overlap == []:
     register_overlap = False
 
-    vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vd' ] = randomizeRegister('vd',  vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vs1'] = randomizeRegister('vs1', vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vs2'] = randomizeRegister('vs2', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs3'] = randomizeRegister(instruction, 'vs3', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vd' ] = randomizeRegister(instruction, 'vd',  vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs1'] = randomizeRegister(instruction, 'vs1', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs2'] = randomizeRegister(instruction, 'vs2', vreg_count, vector_register_preset_data, lmul)
 
-    scalar_register_data         ['rd' ] = randomizeRegister('rd',  xreg_count, scalar_register_preset_data)
-    scalar_register_data         ['rs1'] = randomizeRegister('rs1', xreg_count, scalar_register_preset_data)
-    scalar_register_data         ['rs2'] = randomizeRegister('rs2', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rd' ] = randomizeRegister(instruction, 'rd',  xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs1'] = randomizeRegister(instruction, 'rs1', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs2'] = randomizeRegister(instruction, 'rs2', xreg_count, scalar_register_preset_data)
 
-    floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
-    floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
+    floating_point_register_data ['fd' ] = randomizeRegister(instruction, 'fd',  freg_count, floating_point_register_preset_data)
+    floating_point_register_data ['fs1'] = randomizeRegister(instruction, 'fs1', freg_count, floating_point_register_preset_data)
 
   ####################################################################################
   # check and resolve and register overlap
@@ -1529,17 +1557,17 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
 
   while register_overlap:
 
-    vector_register_data         ['vs3'] = randomizeRegister('vs3', vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vd' ] = randomizeRegister('vd',  vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vs1'] = randomizeRegister('vs1', vreg_count, vector_register_preset_data, lmul)
-    vector_register_data         ['vs2'] = randomizeRegister('vs2', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs3'] = randomizeRegister(instruction, 'vs3', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vd' ] = randomizeRegister(instruction, 'vd',  vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs1'] = randomizeRegister(instruction, 'vs1', vreg_count, vector_register_preset_data, lmul)
+    vector_register_data         ['vs2'] = randomizeRegister(instruction, 'vs2', vreg_count, vector_register_preset_data, lmul)
 
-    scalar_register_data         ['rd' ] = randomizeRegister('rd',  xreg_count, scalar_register_preset_data)
-    scalar_register_data         ['rs1'] = randomizeRegister('rs1', xreg_count, scalar_register_preset_data)
-    scalar_register_data         ['rs2'] = randomizeRegister('rs2', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rd' ] = randomizeRegister(instruction, 'rd',  xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs1'] = randomizeRegister(instruction, 'rs1', xreg_count, scalar_register_preset_data)
+    scalar_register_data         ['rs2'] = randomizeRegister(instruction, 'rs2', xreg_count, scalar_register_preset_data)
 
-    floating_point_register_data ['fd' ] = randomizeRegister('fd',  freg_count, floating_point_register_preset_data)
-    floating_point_register_data ['fs1'] = randomizeRegister('fs1', freg_count, floating_point_register_preset_data)
+    floating_point_register_data ['fd' ] = randomizeRegister(instruction, 'fd',  freg_count, floating_point_register_preset_data)
+    floating_point_register_data ['fs1'] = randomizeRegister(instruction, 'fs1', freg_count, floating_point_register_preset_data)
 
     register_overlap = False
     for no_overlap_set in no_overlap:
@@ -1567,13 +1595,13 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
               bottom_no_overlap = True     # save for reserved section below
               register = register[:-7]  # remove "_top" from register name
 
-            emul = int(vector_register_preset_data[register]['size_multiplier'] * lmul)  # need to avoid 1.0
+            emul = int(vector_register_preset_data[register]['size_multiplier'] * lmul * vector_register_preset_data[register]['segments'])  # need to avoid 1.0
             if vector_register_preset_data[register]['reg_type'] == "scalar" or vector_register_preset_data[register]['reg_type'] == "mask" or emul < 1:
               start_no_register_overlap = 0
               end_register_no_overlap   = 1
             else:
               start_no_register_overlap = emul-lmul if top_no_overlap    and lmul >= 1 else 0
-              end_register_no_overlap   = lmul      if bottom_no_overlap and lmul >= 1 else emul * vector_register_preset_data[register]['segments'] # need to include nfields (there is no bottom or top overlap allowed)
+              end_register_no_overlap   = lmul      if bottom_no_overlap and lmul >= 1 else emul # need to include nfields (there is no bottom or top overlap allowed)
             for i in range(start_no_register_overlap, end_register_no_overlap):
               registers_occupied.append(vector_register_data[register]['reg'] + i) # add register to reserved list to prevent overlap
 
@@ -1617,13 +1645,12 @@ def getInstructionSegments(instruction):
   elif instruction in seg8 : return 8
   else                     : return 1
 
-def getInstructionEmul(instruction, sew, lmul):
-  if   instruction in eew8_ins  and 8 /sew > 1  : return 8 /sew * lmul
-  elif instruction in eew16_ins and 16/sew > 1  : return 16/sew * lmul
-  elif instruction in eew32_ins and 32/sew > 1  : return 32/sew * lmul
-  elif instruction in eew64_ins and 64/sew > 1  : return 64/sew * lmul
-  else                                          : return lmul
-
+def getBaseLmul(instruction, sew):
+  if   instruction in eew8_ins  and 8  / sew > 1: return sew / 8
+  elif instruction in eew16_ins and 16 / sew > 1: return sew / 16
+  elif instruction in eew32_ins and 32 / sew > 1: return sew / 32
+  elif instruction in eew64_ins and 64 / sew > 1: return sew / 64
+  else                                          : return 1
 ##################################
 # length suite
 ##################################
