@@ -116,32 +116,33 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 	}
 
 	addr_in_consecutive_regions: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		`ifndef G_IS_0
-			bins inside_first_region   = {`REGIONSTART};
-			bins straddle_first_second = {`REGIONSTART + `g - 2};
-			bins inside_second_region  = {`REGIONSTART + `g};
-			bins straddle_second_third = {`REGIONSTART + 2*`g - 2 };
-		`endif
-		`ifdef G_IS_0
-			bins straddle_first_second = {`REGIONSTART + 2};
-			bins straddle_second_third = {`REGIONSTART + 6};
-		`endif
+		bins inside_first_region   = {`REGIONSTART};
+		bins straddle_first_second = {`REGIONSTART + `g - 2};
+		bins inside_second_region  = {`REGIONSTART + `g};
+		bins straddle_second_third = {`REGIONSTART + 2*`g - 2 };
 	}
 
+	`ifdef G_IS_0
+		addr_in_consecutive_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
+			bins straddle_first_second = {`REGIONSTART + 2};
+			bins straddle_second_third = {`REGIONSTART + 6};
+		}
+	`endif
 
 	addr_adjacent_to_pmp_boundary: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins just_below_pmp = {`REGIONSTART - 2};        // 2 bytes before region start (possible straddle)
 		bins at_start_pmp   = {`REGIONSTART};            // aligned to start of region
-		`ifdef G_IS_0
+		bins at_end_pmp     = {`REGIONSTART + `g - 2};   // 2 bytes before end → straddles out
+		bins just_above_pmp = {`REGIONSTART + `g};       // just outside region
+	}
+
+	`ifdef G_IS_0
+		addr_adjacent_to_na4_boundary: coverpoint (ins.current.rs1_val + ins.current.imm) {
 			// NA4 region (4 bytes): (REGIONSTART, REGIONSTART + 4)
 			bins at_end_pmp     = {`REGIONSTART + 2};     // 2 bytes before end → straddles out
 			bins just_above_pmp = {`REGIONSTART + 4};     // just outside region
-		`else
-			// General region size: `g = 2^(`G + 2)
-			bins at_end_pmp     = {`REGIONSTART + `g - 2}; // 2 bytes before end → straddles out
-			bins just_above_pmp = {`REGIONSTART + `g};     // just outside region
-		`endif
-	}
+		}
+	`endif
 
 	// First three consecutive standard napot regions.
 	// Region 0 -> LXWR 1111, Region 1 -> LXWR 1111, Region 2 -> LXWR 1000
@@ -205,8 +206,8 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 	cp_cret_tor: cross priv_mode_m, tor_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary;
 
 	`ifdef G_IS_0
-		cp_misaligned_na4: cross priv_mode_m, cfg_consecutive_na4, pmpaddr_consecutive_na4, addr_in_consecutive_regions, uncompressed_jalr;
-		cp_cret_na4: cross priv_mode_m, na4_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary;
+		cp_misaligned_na4: cross priv_mode_m, cfg_consecutive_na4, pmpaddr_consecutive_na4, addr_in_consecutive_na4, uncompressed_jalr;
+		cp_cret_na4: cross priv_mode_m, na4_region_setup, exec_c_instr, addr_adjacent_to_na4_boundary;
 	`endif
 
 	cp_misaligned_off: cross priv_mode_m, cfg_consecutive_off, addr_in_consecutive_regions, uncompressed_jalr;
