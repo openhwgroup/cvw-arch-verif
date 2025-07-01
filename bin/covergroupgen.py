@@ -129,6 +129,9 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
                 finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
             for cp in cps:
                 if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
+                    if "cr_vl_lmul" in cp:
+                        effew = arch[2:]
+                        cp = cp + "_sew" + effew
                     f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
             if (vectorwiden):
                 f.write(customizeTemplate(covergroupTemplates, "endgroup_vector_widen", arch, instr))

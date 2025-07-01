@@ -1129,22 +1129,23 @@ def getSEWMINIfdef(instruction):
     ifdef = "#if SEWMIN <= 8\n"
   return ifdef
 
-def prepMaskV(maskval, sew, tempReg):
+def prepMaskV(maskval, sew, tempReg, lmul):
+  lmulflag = getLmulFlag(lmul)
   if (maskval == "zeroes"):
     writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
   elif (maskval == "ones"):
-    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
     writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
     writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX) ? 1 : 0")
   elif (maskval == "vlmaxm1_ones"):
-    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"addi x{tempReg}, x{tempReg}, -1",             f"# x{tempReg} = VLMAX - 1")
     writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
     writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
     writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX-1) ? 1 : 0")
   elif (maskval == "vlmaxd2p1_ones"):
-    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",  f"# x{tempReg} = VLMAX")
+    writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"srli x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2")
     writeLine(f"addi x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2 + 1")
     writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
@@ -1189,7 +1190,7 @@ def writeTest(description, instruction, instruction_data,
 
     # If mask value specified, load to v0
     if maskval is not None:
-      prepMaskV(maskval, sew, tempReg)
+      prepMaskV(maskval, sew, tempReg, lmul)
     elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype]):
       writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
 
@@ -1281,8 +1282,7 @@ def writeTest(description, instruction, instruction_data,
       writeLine("#endif")
 
 
-def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
-  scalar_registers_used = list(scalar_registers_used)
+def getLmulFlag(lmul):
   lmulflag = lmul
 
   if (lmul == 0.5):
@@ -1291,6 +1291,13 @@ def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
     lmulflag = "f4"
   elif (lmul == 0.125):
     lmulflag = "f8"
+
+  return lmulflag
+
+def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
+  scalar_registers_used = list(scalar_registers_used)
+
+  lmulflag = getLmulFlag(lmul)
 
   if ma is None:
     maflag = " "
