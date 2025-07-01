@@ -1,9 +1,296 @@
 #!/usr/bin/env python3
 ##################################
-# privtestgen.py
+# vector-testgen-priv.py
 #
-# G Tai jacassidy@hmc.edu 30 March 2025
+# Georgia Tai ytai@hmc.edu 26 June 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
-# Generate directed privilaged tests for functional coverage
+# Generate directed privilaged tests for functional coverage of the vector extension
 ##################################
+
+##################################
+# libraries
+##################################
+import os
+import csv
+import sys
+import re
+import math
+import filecmp
+from datetime import datetime
+from random import randint, seed, getrandbits
+
+from vector_testgen_common import *
+import vector_testgen_common as common
+
+# obtained and modified from covergroupgen.py
+def readTestplans():
+    coverplanDir = f'{ARCH_VERIF}/testplans/priv'
+    testplans = dict()
+    for file in os.listdir(coverplanDir):
+        if file.endswith(".csv"):
+            arch = re.search("(.*).csv", file).group(1)
+            if (arch == "ExceptionsV"):
+                with open(os.path.join(coverplanDir, file)) as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    tp = dict()
+                    for row in reader:
+                        #print(f"row = {row}")
+                        if ("Instruction" not in row):
+                            print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
+                            exit(1)
+                        instr = row["Instruction"]
+                        cps = []
+                        del row["Instruction"]
+                        for key, value in row.items():
+                            if (type(value) == str and value != ''):
+                                if(key == "Type"):
+                                    cps.append("sample_" + value)
+                                else:
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                        key = key + "_" + value
+                                    cps.append(key)
+                        tp[instr] = cps
+                testplans[arch] = tp
+    return testplans
+
+
+def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
+    for instr in k:
+        cps = tp[instr]
+        match32 = ("RV32" in cps) ^ (not hasRV32)
+        match64 = ("RV64" in cps) ^ (not hasRV64)
+        vectorwiden = (arch.startswith("Vx")) and (instr.startswith("vw") or (".w" in instr))
+        if (match32 and match64):
+            for cp in cps:
+                if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
+                    if ("lmul_sew" in cp):
+                        pass # these coverpoints do not need version appended
+                    elif ("lmul" in cp):
+                        effew = arch[2:]  # e.g. "8" from "Vx8"
+                        cp = cp + "_sew" + effew
+                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+            if (vectorwiden):
+                f.write(customizeTemplate(covergroupTemplates, "endgroup_vector_widen", arch, instr))
+            else:
+                f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+
+
+def writeLine(argument: str, comment = ""):
+    tab_over_distance = 50
+
+    argument = str(argument)
+
+    if comment != "":
+        padding = max(0, tab_over_distance - len(argument))
+        comment = " " * padding + str(comment)
+
+    f.write(argument + comment +"\n")
+
+#####################################       test for each coverpoint      #####################################
+
+def make_vill(instruction):
+    description = f"cp_vill"
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
+                                                      vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
+
+    writePrivTestPrep(description, instruction)
+    writeLine(f"vsetivli  x8, 1, e64, mf8, tu, mu",  f"# SEW = 64 and LMUL = 1/8, illegal config which sets vill = 1")
+    writePrivTestLine(instruction, instruction_data)
+
+
+def make_vstart(instruction, maxlmul = 8):
+    vstartvals = ["one", "vlmaxm1", "vlmaxd2", "random"]
+    for vstartval in vstartvals:
+        lmul = 2 ** randint(0, int(math.log2(maxlmul))) # pick random integer LMUL to ensure that coverpoints are hit
+
+        maskval = randomizeMask(instruction)
+        no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
+
+        description = f"cp_vstart (vstart = {vstartval})"
+        instruction_data = randomizeVectorInstructionData(instruction, getLengthSuiteTestCount(), suite = "length", lmul = lmul,
+                                                          vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
+                                                          vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random",
+                                                          additional_no_overlap=no_overlap)
+
+        writePrivTestPrep(description, instruction, lmul = lmul, vl = "vlmax")
+        prepVstart(vstartval)
+        writePrivTestLine(instruction, instruction_data, lmul = lmul, vl = "vlmax", maskval = maskval)
+
+def make_vstart_gt_vl(instruction):
+    randvl = randint(1, maxVLEN)
+    randvstart = randint(1, maxVLEN)
+    description = f"cp_vstart_gt_vl"
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
+                                                      vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
+
+    writePrivTestPrep(description, instruction, lmul = 4, vl = "vlmax", vstart = True)
+    writeLine(f"li a0, {randvl}",            f"# load random number to a0, place holder for vl")
+    writeLine(f"li a0, {randvstart}",        f"# load random number to a1, place holder for vstart")
+    writeLine(f"jal cp_vstart_gt_vl_setup",  f"# jump to set up vstart and vl for the test")
+    writePrivTestLine(instruction, instruction_data, vl = "vlmax", lmul = 4)
+
+#####################################           test generation           #####################################
+
+def makeTest(coverpoints, instruction):
+    writeLine("\n")
+    writeLine("///////////////////////////////////////////")
+    writeLine(f"// ExceptionsV tests for {instruction}")
+    writeLine("///////////////////////////////////////////")
+    for coverpoint in coverpoints:
+        # produce a deterministic seed for repeatable random numbers distinct for each instruction and coverpoint
+        testname = instruction + coverpoint
+        hashval = myhash(testname)
+        seed(hashval)
+
+        if   ((coverpoint in ['RV32', 'RV64', 'EFFEW8', 'EFFEW16', 'EFFEW32', 'EFFEW64']) or
+              ("sample" in coverpoint))                      : pass
+        elif (coverpoint == "cp_vill")                       : make_vill(instruction)
+        elif (coverpoint == "cp_vstart")                     : make_vstart(instruction)
+        elif (coverpoint == "cp_vstart_gt_vl")               : make_vstart_gt_vl(instruction)
+        else:
+            print("Warning: " + coverpoint + " not implemented yet for " + instruction)
+
+def writePrivTestPrep(description, instruction, lmul = 1, vl = 1, vstart = False):
+    instruction_arguments = getInstructionArguments(instruction)
+
+    writeLine("\n# Testcase " + str(description))
+
+    if (vstart):
+        writeLine(f"csrw vstart, 0",                        f"# initialize vstart  = 0 for preparing")
+
+    if (vl == "vlmax"):
+      writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, tu, mu",  f"# initialize vl = VLMAX, LMUL = 1, SEW = SEWMIN")
+    else:
+      writeLine(f"vsetivli x8, {vl}, SEWSIZE, m{lmul}, tu, mu",  f"# initialize vl = {vl}, LMUL = 1, SEW = SEWMIN")
+
+    writeLine(f"la x2, random_mask_0",                      f"# load a random vector ") # TODO: change back to vector_random
+    if ("vd" in instruction_arguments):
+        writeLine(f"VLESEWMIN v8, (x2)",                    f"# load to initialize vd (v8) ")
+    if ("vs2" in instruction_arguments):
+        writeLine(f"VLESEWMIN v16, (x2)",                   f"# load to initialize vs2 (v16)")
+    if ("vs1" in instruction_arguments):
+        writeLine(f"VLESEWMIN v24, (x2)",                   f"# load to initialize vs1 (v24)")
+
+def writePrivTestLine(instruction, instruction_data, vl=1, lmul=1, maskval=None):
+    instruction_arguments = getInstructionArguments(instruction)
+    [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
+
+    testline = instruction + " "
+
+    for argument in instruction_arguments:
+        if   argument == 'vm':
+            if maskval is not None:
+                testline = testline + "v0.t"
+            else:
+                testline = testline[:-2] # remove the ", " since theres no argument
+        elif argument == 'v0':
+            testline = testline + "v0"
+        elif argument == 'imm':
+            testline = testline + f"{imm_val}"
+        elif argument[0] == 'v':
+            testline = testline + f"v{vector_register_data[argument]['reg']}"
+        elif argument[0] == 'r':
+            loadScalarReg(argument, scalar_register_data)
+            testline = testline + f"x{scalar_register_data[argument]['reg']}"
+        elif argument[0] == 'f':
+            testline = testline + f"f{floating_point_register_data[argument]['reg']}"
+        else:
+            raise TypeError(f"Instruction Argument type not supported: '{argument}'")
+
+        testline = testline + ", "
+
+    testline = testline[:-2] # remove the ", " at the end of the test
+
+    if vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar":
+        single_vector_register_store = True
+    else:
+        single_vector_register_store = False
+
+    vd = vector_register_data ['vd'] ['reg']
+    rd = scalar_register_data ['rd'] ['reg']
+
+    if (maskval is not None) or (vl is not None):
+        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store, trap = True)
+    else:
+        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store, trap = True)
+
+
+
+#####################################                main                 #####################################
+
+if __name__ == '__main__':
+    common.writeLine        = writeLine
+    common.mtrap_sig_count  = 2000  # TODO: check if hard code
+    signatureWords          = 10000  # TODO: check if hard code
+
+
+    author = "David_Harris@hmc.edu"
+    xlens = [32, 64]
+    maxXLEN = 64
+    numrand = 3
+    corners = []
+    fcorners = []
+
+    # setup
+    seed(0) # make tests reproducible
+
+    testplans = readTestplans()
+    extensions = list(testplans.keys())
+
+    for extension in extensions:
+        setExtension(extension)
+        setXlen(maxXLEN)
+        instructions = list(testplans[extension].keys())
+
+        pathname = f"{ARCH_VERIF}/tests/priv/vector"
+
+        cmd = "mkdir -p " + pathname # make directory
+        os.system(cmd)
+
+        basename = extension
+        fname = pathname + "/" + basename + ".S"
+        tempfname = pathname + "/" + basename + "_temp.S"
+
+        print("Generating tests for " + fname)
+
+        ############################### starting test file ###############################
+        # print custom header part
+        f = open(tempfname, "w")
+        line = "///////////////////////////////////////////\n"
+        f.write(line)
+        line = "// "+fname+ "\n// " + author + "\n"
+        f.write(line)
+
+        # insert generic header
+        insertTemplate(basename, 0, "testgen_header_vector_priv.S")
+
+        ###############################     test body      ###############################
+        for instruction in instructions:
+            coverpoints = list(testplans[extension][instruction])
+            makeTest(coverpoints, instruction)
+
+        insertTemplate(basename, 0, "cp_vstart_gt_vl_setup.S")
+
+        ###############################  ending test file  ###############################
+        # print footer (before DATA)
+        insertTemplate(basename, 0, "testgen_footer_vector1.S")
+
+        # generate vector data (random and corners)
+        genVMaskCorners() # TODO: change to generate a good random (vector_random)
+
+        # print footer (after DATA)
+        signatureWords = getSigSpace(maxXLEN, flen) #figure out how many words are needed for signature
+        insertTemplate(basename, signatureWords, "testgen_footer_vector2.S")
+
+        # Finish
+        f.close()
+        # if new file is different from old file, replace old file with new file
+        if os.path.exists(fname):
+            if filecmp.cmp(fname, tempfname): # files are the same
+                os.system(f"rm {tempfname}") # remove temp file
+            else:
+                os.system(f"mv {tempfname} {fname}")
+                print("Updated " + fname)
+        else:
+            os.system(f"mv {tempfname} {fname}")

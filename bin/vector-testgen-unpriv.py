@@ -41,7 +41,7 @@ def make_vd(instruction, sew, rng, lmul = 1):
 
   for v in rng:
     description = f"cp_vd (Test destination vd = v" + str(v) + ")"
-    instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vd = v)
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vd = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -51,7 +51,7 @@ def make_vs3(instruction, sew, rng, lmul = 1):
 
   for v in rng:
     description = f"cp_vs2 (Test source vs3 = v" + str(v) + ")"
-    instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs3 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vs3 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -61,7 +61,7 @@ def make_vs2(instruction, sew, rng, lmul = 1):
 
   for v in rng:
     description = f"cp_vs2 (Test source vs2 = v" + str(v) + ")"
-    instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs2 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -71,7 +71,7 @@ def make_vs1(instruction, sew, rng):
 
   for v in rng:
     description       = f"cp_vs1 (Test source vs1 = v" + str(v) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1 = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs1 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -81,7 +81,7 @@ def make_vd_vs2(instruction, sew, rng, lmul = 1):
 
   for v in rng:
     description = f"cmp_vd_vs2 (Test vd = vs2 = v{v})"
-    instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vd = v, vs2 = v)
+    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vd = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -91,7 +91,7 @@ def make_vd_vs1(instruction, sew, rng):
 
   for v in rng:
     description       = f"cmp_vd_vs1 (Test vd = vs1 = v" + str(v) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v, vs1 = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vd = v, vs1 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -101,7 +101,7 @@ def make_vd_vs1_vs2(instruction, sew, rng):
 
   for v in rng:
     description       = f"cmp_vd_vs1_vs2 (Test vd = vs1 = vs2 = v" + str(v) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v, vs1 = v, vs2 = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vd = v, vs1 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -111,7 +111,7 @@ def make_vs1_vs2(instruction, sew, rng):
 
   for v in rng:
     description       = f"cmp_vs1_vs2 (Test vs1 = vs2 = v" + str(v) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1 = v, vs2 = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs1 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -121,7 +121,7 @@ def make_vs3_vs2(instruction, sew, rng, lmul = 1):
 
   for v in rng:
     description       = f"cmp_vs3_vs2 (Test vs3 = vs2 = v" + str(v) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs3 = v, vs2 = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vs3 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -131,7 +131,7 @@ def make_rs1_v(instruction, sew, rng, lmul = 1):
 
   for r in rng:
     description       = f"cp_rs1 (Test rs1 = " + str(r) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs1 = r)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, rs1 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -140,7 +140,7 @@ def make_rs2_v(instruction, sew, rng, lmul = 1):
 
   for r in rng:
     description       = f"cp_rs2 (Test rs2 = " + str(r) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs2 = r)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, rs2 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -152,7 +152,7 @@ def make_rs1_rs2_v(instruction, sew, rng, lmul = 1):
 
   for r in rng:
     description       = f"cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs1 = r, rs2 = r)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, rs1 = r, rs2 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
@@ -162,14 +162,14 @@ def make_imm_v(instruction, sew):
   if (test in imm_31):
     for uimm in range(0,32):
       description       = "cp_imm_5bit_u (Test uimm = " + str(uimm) + ")"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), imm = uimm)
+      instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, imm = uimm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
       incrementBasetestCount()
   else:
     for imm in range(-16,16):
       description       = "cp_imm_5bit (Test imm = " + str(imm) + ")"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), imm = imm)
+      instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, imm = imm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
       incrementBasetestCount()
@@ -178,7 +178,7 @@ def make_rdv(instruction, sew, rng):
 
   for r in rng:
     description       = "cp_rd (Test rd = " + str(r) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), rd = r)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, rd = r)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -188,7 +188,7 @@ def make_vs2_corners(instruction, sew, vcorners, vl=1, lmul = 1):
 
   for v in vcorners:
     description       = f"cp_vs2_corners (Test source vs2 value = " + v + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs2_val_pointer = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, lmul = lmul, vs2_val_pointer = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, vl=vl, lmul = lmul)
     incrementBasetestCount()
@@ -197,7 +197,7 @@ def make_vs1_corners(instruction, sew, vcorners, vl=1):
 
   for v in vcorners:
     description       = f"cp_vs1_corners (Test source vs1 value = " + v + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1_val_pointer = v)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs1_val_pointer = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
     incrementBasetestCount()
@@ -206,7 +206,7 @@ def make_rs1_corners_v(instruction, sew, rcornersv):
 
   for rcorner in rcornersv:
     description       = f"cp_rs1_corners (Test source rs1 value = " + hex(rcorner) + ")"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), rs1_val = rcorner)
+    instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, rs1_val = rcorner)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -215,7 +215,7 @@ def make_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners, vl=1):
   for v1 in vs1corners:
     for v2 in vs2corners:
       description = "cr_vs2_vs1_corners"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1_val_pointer = v1, vs2_val_pointer = v2, additional_no_overlap=[['vs1', 'vs2']])
+      instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs1_val_pointer = v1, vs2_val_pointer = v2, additional_no_overlap=[['vs1', 'vs2']])
 
       writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
 
@@ -223,7 +223,7 @@ def make_vs2_rs1_corners(instruction, sew, vs2corners):
   for r1 in rcornersv:
     for v2 in vs2corners:
       description = "cr_vs2_rs1_corners"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
+      instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs2_val_pointer = v2, rs1_val = r1)
 
       writeTest(description, instruction, instruction_data, sew=sew)
 
@@ -231,7 +231,7 @@ def make_vs2_imm_corners(instruction, sew, vs2corners):
   for imm in immcornersv:
     for v2 in vs2corners:
       description = "cr_vs2_imm_corners"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
+      instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs2_val_pointer = v2, imm = imm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
 
@@ -240,7 +240,7 @@ def make_vxrm_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners):
     for v1 in vs1corners:
       for v2 in vs2corners:
         description = "cr_vxrm_vs2_vs1_corners (Test vxrm = " + vxrm + ")"
-        instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, vs1_val_pointer = v1, additional_no_overlap=[['vs1','vs2']])
+        instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs2_val_pointer = v2, vs1_val_pointer = v1, additional_no_overlap=[['vs1','vs2']])
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
 
@@ -249,7 +249,7 @@ def make_vxrm_vs2_rs1_corners(instruction, sew, vs2corners):
     for r1 in rcornersv:
       for v2 in vs2corners:
         description = "cr_vxrm_vs2_rs1_corners (Test vxrm = " + vxrm + ")"
-        instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
+        instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs2_val_pointer = v2, rs1_val = r1)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
 
@@ -258,7 +258,7 @@ def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
     for imm in immcornersv:
       for v2 in vs2corners:
         description = "cr_vxrm_vs2_imm_corners (Test vxrm = " + vxrm + ")" + str(imm)
-        instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
+        instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), sew = sew, vs2_val_pointer = v2, imm = imm)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
 
@@ -292,7 +292,7 @@ def make_vl_lmul(instruction, sew, maxemul=8, eew = None):
       no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
 
       description = f"cr_vl_lmul (Test lmul = {lmul}, vl = {vl})"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = lmul, additional_no_overlap=no_overlap)
+      instruction_data  = randomizeVectorInstructionData(instruction, getLengthSuiteTestCount(), sew = sew, suite="length", lmul = lmul, additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl=vl, maskval=maskval, vta=vta)
       incrememntLengthtestCount()
@@ -306,7 +306,7 @@ def make_mask_corners(instruction, sew, lmul = 1):
     vma = randint(0,1)
 
     description = f"cp_masking_corners (Test v0 = {m})"
-    instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), lmul=lmul, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']])
+    instruction_data  = randomizeVectorInstructionData(instruction, getLengthSuiteTestCount(), sew = sew, lmul=lmul, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']])
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="vlmax", maskval=m, vma=vma)
     incrememntLengthtestCount()
@@ -329,7 +329,7 @@ def make_vtype_agnostic(instruction, sew, maxemul=8, eew = None):
       vma = m
 
       description = f"cr_vtype_agnostic (Test vta = {vta}, vma = {vma})"
-      instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = lmul, additional_no_overlap=no_overlap)
+      instruction_data  = randomizeVectorInstructionData(instruction, getLengthSuiteTestCount(), sew = sew, suite="length", lmul = lmul, additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="random", maskval=maskval, vta=vta, vma=vma)
       incrememntLengthtestCount()

@@ -1,5 +1,5 @@
 ##################################
-# vector-testgen.py
+# vector_testgen_common.py
 #
 # James Kaden Cassidy kacassidy@hmc.edu 25 Jun 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
@@ -56,7 +56,8 @@ base_suite_test_count   = 0
 length_suite_test_count = 0
 
 sigupd_count            = 10 # number of entries in signature - start with a margin of 10 spaces
-sigupd_countF           = 0  #initialize signature update count for F tests
+sigupd_countF           = 0  # initialize signature update count for F tests
+mtrap_sig_count         = 64 # signature space for priviliged, default to 64
 
 ##################################
 # Corners
@@ -861,18 +862,24 @@ def insertTemplate(test, signatureWords, name):
     writeLine(f"\n# {name}")
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
-    # Split extension into components based on capital letters
-    ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
-    ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
-    if 'V' in ext_parts_no_I:
-      ext_parts_no_I = ['M'] + ext_parts_no_I
-    ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
-    # Construct the regex part
-    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
-    test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
-    # Replace placeholders
 
+    if (test == "ExceptionsVx"):
+      ISAEXT = "RV32IMV_Zicsr, RV64IMV_Zicsr"
+      test_case_line = "//check ISA:=regex(.*I.*M.*V.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True"
+    else:
+      # Split extension into components based on capital letters
+      ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
+      ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
+      if 'V' in ext_parts_no_I:
+        ext_parts_no_I = ['M'] + ext_parts_no_I
+      ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
+      # Construct the regex part
+      ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
+      test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
+
+    # Replace placeholders
     template = template.replace("sigupd_count", str(signatureWords))
+    template = template.replace("mtrap_sig_count", str(mtrap_sig_count))
     template = template.replace("ISAEXT", ISAEXT)
     template = template.replace("TestCase", test_case_line)
     template = template.replace("Instruction", test)
@@ -909,10 +916,14 @@ def writeSIGUPD_V(vd, sew, avl=1, single_register_store = False):
     while tempReg == sigReg:
       tempReg = randint(1,31)
 
-    if single_register_store:
-      writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma", "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
-
-    writeLine(f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})", f"# stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
+    if ("SEWMIN" in sew):
+      if single_register_store:
+        writeLine(f"vsetvli x{tempReg}, x0, SEWSIZE, m1, ta, ma",                 "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
+      writeLine(f"RVTEST_SIGUPD_V_SEWMIN(x{sigReg}, x{tempReg}, {avl}, v{vd})",  f"# stores v{vd} (sew = SEWMIN, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
+    else:
+      if single_register_store:
+        writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m1, ta, ma",                  "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
+      writeLine(f"RVTEST_SIGUPD_V(x{sigReg}, x{tempReg}, {avl}, {sew},  v{vd})", f"# stores v{vd} (sew = {sew}, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")
 
 def vsAddressCount(suite="base"):
     global base_suite_test_count, length_suite_test_count
@@ -1058,16 +1069,20 @@ def getSigSpace(xlen, flen):
       signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
-def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, single_vector_register_store = False):
-    writeLine(testline)
-    if (test in vd_widen_ins) or (test in wvsins):
-      writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
-    elif (test in maskins):
-      writeSIGUPD_V(vd, 8, avl=vl, single_register_store=single_vector_register_store)      # EEW of vd = 1 for mask
-    elif (test in xvtype):
-      writeSIGUPD(rd)
-    else:
-      writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store)
+def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, lmul=1, single_vector_register_store = False, trap = False):
+  writeLine(testline)
+  if (trap):
+    writeLine(f"nop",                                       f"# nop after possible trap")
+    writeLine(f"vsetivli x8, 1, SEWSIZE, m{lmul}, tu, mu",  f"# re-initialize vl = 1, LMUL = 1, SEW = SEWMIN for signature")
+
+  if (test in vd_widen_ins) or (test in wvsins):
+    writeSIGUPD_V(vd, 2*sew, avl=vl, single_register_store=single_vector_register_store)  # EEW of vd = 2 * SEW for widening
+  elif (test in maskins):
+    writeSIGUPD_V(vd, 8, avl=vl, single_register_store=single_vector_register_store)      # EEW of vd = 1 for mask
+  elif (test in xvtype):
+    writeSIGUPD(rd)
+  else:
+    writeSIGUPD_V(vd, sew, avl=vl, single_register_store=single_vector_register_store)
 
 # TODO : Make this works with vector FP
 def loadFloatRoundingMode(vfloattype, *scalar_registers_used):
@@ -1156,6 +1171,55 @@ def prepMaskV(maskval, sew, tempReg, lmul):
     writeLine(f"la x{tempReg}, {maskval}")
     writeLine(f"vlm.v v0, (x{tempReg})",                      f"# Load mask value into v0")
 
+def prepVstart(vstartval, lmul = 1):
+  if   (vstartval == "one"):
+    writeLine(f"li x8, 1",                                    f"# Load x8 = 1 for vstart")
+  elif (vstartval == "vlmaxm1"):
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
+    writeLine(f"addi x8, x8, -1",                             f"# x8 = VLMAX - 1")
+  elif (vstartval == "vlmaxd2"):
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
+    writeLine(f"srli x8, x8, 1",                              f"# x8 = VLMAX / 2")
+  else: # random vstart
+    randvstart = randint(3, maxVLEN)  # TODO: check logic for this
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
+    writeLine(f"la t3, {randvstart}")
+    writeLine(f"remu t3, t3, x8",                             f"# Ensure that vl < VLMAX")
+  writeLine(f"csrw vstart, x8",                               f"# Write desired vstart value to the CSR")
+
+def getInstructionArguments(instruction):
+  instruction_arguments = []
+  # test writing
+  if   instruction in vvvmtype    : instruction_arguments = ['vd', 'vs2', 'vs1', 'vm']
+  elif instruction in vvvtype     : instruction_arguments = ['vd', 'vs2', 'vs1'      ]
+  elif instruction in vvvmrtype   : instruction_arguments = ['vd', 'vs1', 'vs2', 'vm']
+  elif instruction in vvxmtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'vm']
+  elif instruction in vxvmtype    : instruction_arguments = ['vd', 'rs1', 'vs2', 'vm']
+  elif instruction in vvimtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'vm']
+  elif instruction in vvivtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'v0']
+  elif instruction in vvvvtype    : instruction_arguments = ['vd', 'vs2', 'vs1', 'v0']
+  elif instruction in vvxvtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'v0']
+  elif instruction in xvmtype     : instruction_arguments = ['rd', 'vs2',        'vm']
+  elif instruction in xvtype      : instruction_arguments = ['rd', 'vs2',            ]
+  elif instruction in vvmtype     : instruction_arguments = ['vd', 'vs2',        'vm']
+  elif instruction in vmtype      : instruction_arguments = ['vd',               'vm']
+  elif instruction in vxtype      : instruction_arguments = ['vd', 'rs1',            ]
+  elif instruction in vvrtype     : instruction_arguments = ['vd', 'vs1',        'vm']
+  elif instruction in vvvxtype    : instruction_arguments = ['vd', 'vs2',        'vm']
+  elif instruction in vitype      : instruction_arguments = ['vd', 'imm',        'vm']
+  elif instruction in type_vsx    : instruction_arguments = ['vs3','rs1'             ]
+  elif instruction in type_vsxm   : instruction_arguments = ['vs3','rs1',        'vm']
+  elif instruction in type_vsxxm  : instruction_arguments = ['vs3','rs1', 'rs2', 'vm']
+  elif instruction in type_vsxvm  : instruction_arguments = ['vs3','rs1', 'vs2', 'vm']
+  elif instruction in type_vx     : instruction_arguments = ['vd', 'rs1'             ]
+  elif instruction in type_vxm    : instruction_arguments = ['vd', 'rs1',        'vm']
+  elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
+  elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
+  else:
+    print("Error: %s type not implemented yet" % instruction)
+
+  return instruction_arguments
+
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
               vfrm=None, vfloattype=None, vxsat=None, vta=0, vma=0):
@@ -1203,64 +1267,35 @@ def writeTest(description, instruction, instruction_data,
     elif vxrm is not None:
       scalar_registers_used = loadVxrmRoundingMode(vxrm, *scalar_registers_used)
 
-    instruction_arguments = []
-    # test writing
-    if   instruction in vvvmtype    : instruction_arguments = ['vd', 'vs2', 'vs1', 'vm']
-    elif instruction in vvvtype     : instruction_arguments = ['vd', 'vs2', 'vs1'      ]
-    elif instruction in vvvmrtype   : instruction_arguments = ['vd', 'vs1', 'vs2', 'vm']
-    elif instruction in vvxmtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'vm']
-    elif instruction in vxvmtype    : instruction_arguments = ['vd', 'rs1', 'vs2', 'vm']
-    elif instruction in vvimtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'vm']
-    elif instruction in vvivtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'v0']
-    elif instruction in vvvvtype    : instruction_arguments = ['vd', 'vs2', 'vs1', 'v0']
-    elif instruction in vvxvtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'v0']
-    elif instruction in xvmtype     : instruction_arguments = ['rd', 'vs2',        'vm']
-    elif instruction in xvtype      : instruction_arguments = ['rd', 'vs2',            ]
-    elif instruction in vvmtype     : instruction_arguments = ['vd', 'vs2',        'vm']
-    elif instruction in vmtype      : instruction_arguments = ['vd',               'vm']
-    elif instruction in vxtype      : instruction_arguments = ['vd', 'rs1',            ]
-    elif instruction in vvrtype     : instruction_arguments = ['vd', 'vs1',        'vm']
-    elif instruction in vvvxtype    : instruction_arguments = ['vd', 'vs2',        'vm']
-    elif instruction in vitype      : instruction_arguments = ['vd', 'imm',        'vm']
-    elif instruction in type_vsx    : instruction_arguments = ['vs3','rs1'             ]
-    elif instruction in type_vsxm   : instruction_arguments = ['vs3','rs1',        'vm']
-    elif instruction in type_vsxxm  : instruction_arguments = ['vs3','rs1', 'rs2', 'vm']
-    elif instruction in type_vsxvm  : instruction_arguments = ['vs3','rs1', 'vs2', 'vm']
-    elif instruction in type_vx     : instruction_arguments = ['vd', 'rs1'             ]
-    elif instruction in type_vxm    : instruction_arguments = ['vd', 'rs1',        'vm']
-    elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
-    elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
-    else:
-      print("Error: %s type not implemented yet" % instruction)
-      return
+    instruction_arguments = getInstructionArguments(instruction)
 
     testline = instruction + " "
 
-    for arguement in instruction_arguments:
-      if   arguement == 'vm':
+    for argument in instruction_arguments:
+      if   argument == 'vm':
         if maskval is not None:
           testline = testline + "v0.t"
         else:
           testline = testline[:-2] # remove the ", " since theres no argument
-      elif arguement == 'v0':
+      elif argument == 'v0':
         testline = testline + "v0"
-      elif arguement == 'imm':
+      elif argument == 'imm':
         testline = testline + f"{imm_val}"
-      elif arguement[0] == 'v':
-        scalar_registers_used = loadVecReg(instruction, arguement, vector_register_data, sew, lmul, *scalar_registers_used)
-        testline = testline + f"v{vector_register_data[arguement]['reg']}"
-      elif arguement[0] == 'r':
-        if arguement == "rs1" and (instruction in vector_loads or instruction in vector_stores):
-          loadScalarAddress(arguement, scalar_register_data)
-          testline = testline + f"(x{scalar_register_data[arguement]['reg']})"
+      elif argument[0] == 'v':
+        scalar_registers_used = loadVecReg(instruction, argument, vector_register_data, sew, lmul, *scalar_registers_used)
+        testline = testline + f"v{vector_register_data[argument]['reg']}"
+      elif argument[0] == 'r':
+        if argument == "rs1" and (instruction in vector_loads or instruction in vector_stores):
+          loadScalarAddress(argument, scalar_register_data)
+          testline = testline + f"(x{scalar_register_data[argument]['reg']})"
         else:
-          loadScalarReg(arguement, scalar_register_data)
-          testline = testline + f"x{scalar_register_data[arguement]['reg']}"
-      elif arguement[0] == 'f':
+          loadScalarReg(argument, scalar_register_data)
+          testline = testline + f"x{scalar_register_data[argument]['reg']}"
+      elif argument[0] == 'f':
         # TODO : implement load value for floating point
-        testline = testline + f"f{floating_point_register_data[arguement]['reg']}"
+        testline = testline + f"f{floating_point_register_data[argument]['reg']}"
       else:
-        raise TypeError(f"Instruction Argument type not supported: '{arguement}'")
+        raise TypeError(f"Instruction Argument type not supported: '{argument}'")
 
       testline = testline + ", "
 
@@ -1432,7 +1467,7 @@ def getInstructionRegisterOverlapConstraints (instruction):
 # lmul               - the lmul set in vtype csr
 # **preset_variables - any value in preset_data can be set here, for example vd = 2 will ensure vd is set to the v2 register above all else
 # return             - returns an array of all randomized values following constraints
-def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
+def randomizeVectorInstructionData(instruction, test_count, sew = None, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
   preset_variables.update(getVectorEmulMultipliers(instruction))
   no_overlap = []
 
@@ -1466,7 +1501,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
 
   immediate_preset_data               = None
 
-  vector_additional_arguements        = ['v0']
+  vector_additional_arguments        = ['v0']
 
   ####################################################################################
   # set all incoming data to
@@ -1509,7 +1544,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     if data_name == 'imm':
       immediate_preset_data = value
       found = True
-    elif data_name in vector_additional_arguements :
+    elif data_name in vector_additional_arguments :
       found = True
 
     if not found :
