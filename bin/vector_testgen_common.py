@@ -1182,9 +1182,9 @@ def writeTest(description, instruction, instruction_data,
 
     writeLine("\n" + getLMULIfdef(lmul))
 
-    writeLine(getELENIfdef(instruction))
+    # writeLine(getELENIfdef(instruction))
 
-    writeLine(getSEWMINIfdef(instruction))
+    # writeLine(getSEWMINIfdef(instruction))
 
     writeLine("# Testcase " + str(description))
 
@@ -1276,10 +1276,10 @@ def writeTest(description, instruction, instruction_data,
 
     if (getLMULIfdef(lmul) != ""):
       writeLine("#endif")
-    if (getELENIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getSEWMINIfdef(instruction) != ""):
-      writeLine("#endif")
+    # if (getELENIfdef(instruction) != ""):
+    #   writeLine("#endif")
+    # if (getSEWMINIfdef(instruction) != ""):
+    #   writeLine("#endif")
 
 
 def getLmulFlag(lmul):
