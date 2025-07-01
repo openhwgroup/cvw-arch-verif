@@ -115,7 +115,6 @@
         bins target = {1'b1};
     }
 
-
     vl_max: coverpoint (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl")
                         == get_vtype_vlmax(ins.hart, ins.issue, `SAMPLE_BEFORE)) {
         bins target = {1'b1};
@@ -135,7 +134,7 @@
 
     vtype_all_lmul_supported_sew8 : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         `ifdef LMULf8_SUPPORTED
-        bins eigth  = {5};
+        bins eighth  = {5};
         `endif
         `ifdef LMULf4_SUPPORTED
         bins fourth = {6};

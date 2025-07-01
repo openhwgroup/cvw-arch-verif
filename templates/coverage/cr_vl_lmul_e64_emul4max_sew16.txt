@@ -1,0 +1,30 @@
+
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // cr_vl_lmul_e64_emul4max
+    //////////////////////////////////////////////////////////////////////////////////
+
+    cp_csr_vtype_lmul_all_le_8_e64_emul4max : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul"){
+        // Value of VTYPE.vlmul (vector register grouping)
+        `ifdef LMULf4_SUPPORTED
+            bins fourth = {6};
+        `endif
+        `ifdef LMULf2_SUPPORTED
+            bins half   = {7};
+        `endif
+        bins one    = {0};
+        // lmul 2 not supported for sew =16 eew = 64
+        // lmul 4 not supported for sew =16 eew = 64
+    }
+
+    cp_csr_vl_corners : coverpoint vl_check(ins.hart, ins.issue)  iff (ins.trap == 0 )  {
+        // Corners values of VL (vector length)
+        ignore_bins vl_zero   = {vl_zero};
+        ignore_bins vl_illegal = {vl_illegal};
+    }
+
+    cr_vl_lmul_e64_emul4max_sew16 : cross cp_csr_vtype_lmul_all_le_8_e64_emul4max, cp_csr_vl_corners  iff (ins.trap == 0 & get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") == 1)  {
+        //Cross coverage all legal LMULs (excluding LMUL = 8) for SEW = 8 and vl corners (1, random, vlmax)
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////

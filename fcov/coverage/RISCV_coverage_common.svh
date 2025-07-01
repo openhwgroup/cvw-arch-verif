@@ -72,28 +72,34 @@
 `elsif VLEN32
   `define VLEN 32
   `ifdef VX64_COVERAGE
-    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN32
+    // the missing `define is intentional
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN32 // this is meant to throw an error letting the user know coverage is not supported in this case as it would cause negative indexing
   `endif
 `elsif VLEN16
   `define VLEN 16
   `ifdef VX64_COVERAGE
-    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+    // the missing `define is intentional
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN16 // this is meant to throw an error letting the user know coverage is not supported in this case
   `endif
   `ifdef VX32_COVERAGE
-    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN16
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN16 // this is meant to throw an error letting the user know coverage is not supported in this case
   `endif
 `else
   `define VLEN 8
   `ifdef VX64_COVERAGE
-    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+    // the missing `define is intentional
+    `VX64_COVERAGE_NOT_SUPPORTED_WITH_VLEN8 // this is meant to throw an error letting the user know coverage is not supported in this case
   `endif
   `ifdef VX32_COVERAGE
-    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+    // the missing `define is intentional
+    `VX32_COVERAGE_NOT_SUPPORTED_WITH_VLEN8 // this is meant to throw an error letting the user know coverage is not supported in this case
   `endif
   `ifdef VX16_COVERAGE
-    `VX16_COVERAGE_NOT_SUPPORTED_WITH_VLEN8
+    // the missing `define is intentional
+    `VX16_COVERAGE_NOT_SUPPORTED_WITH_VLEN8 // this is meant to throw an error letting the user know coverage is not supported in this case
   `endif
 `endif
+
 
 // supported SEWs based on what coverages are enabled
 `ifdef VX64_COVERAGE
@@ -492,8 +498,8 @@ function bit get_vm(string s);
     "v0"   : return 1'b0;
     ""     : return 1'b1;
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
+      $fatal(1);
     end
   endcase
 endfunction
