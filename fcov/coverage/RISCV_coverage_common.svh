@@ -498,8 +498,8 @@ function bit get_vm(string s);
     "v0"   : return 1'b0;
     ""     : return 1'b1;
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
+      $fatal(1);
     end
   endcase
 endfunction
