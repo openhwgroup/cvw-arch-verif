@@ -1,8 +1,0 @@
-        "INSTR"     : begin
-            ins.add_rd(0);
-            ins.add_rs1(1);
-            ins.add_eSEW(2);
-            ins.add_mLMUL(3);
-            ins.add_ta(4);
-            ins.add_ma(5);
-        end

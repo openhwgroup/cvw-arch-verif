@@ -81,7 +81,7 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
 
 //     set_vstart_pow_2: cross vstart_write, rs1_val_pow_2;
 
-//     arithmatic_vstart_pow_2: cross vstart_write, rs1_val_pow_2, vector_vector_arithmatic_instruction;
+//     arithmetic_vstart_pow_2: cross vstart_write, rs1_val_pow_2, vector_vector_arithmetic_instruction;
 
 //     //TODO find new home for coverpoint above on spreadsheet (currently at top of exceptions I think)
 
@@ -91,15 +91,15 @@ covergroup ExceptionsV_exceptions_cg with function sample(ins_t ins);
 //         //boolean coverpoint
 //     }
 
-//     vector_vector_arithmatic_instruction: coverpoint ins.current.insn[14:0] {
-//         bins arithmatic_vv_opcode = {15'b000_?????_1010111};
+//     vector_vector_arithmetic_instruction: coverpoint ins.current.insn[14:0] {
+//         bins arithmetic_vv_opcode = {15'b000_?????_1010111};
 //     }
 
 //     vtype_prev_vill_set: coverpoint 1'(get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill")) {
 //         bins vill_set = {1'b1};
 //     }
 //     //TODO coverpoint may be unreachable
-//     vstart_not_modified_illegal_instruction: cross vtype_prev_vill_set, vector_vector_arithmatic_instruction, vstart_set_non_zero;
+//     vstart_not_modified_illegal_instruction: cross vtype_prev_vill_set, vector_vector_arithmetic_instruction, vstart_set_non_zero;
 
 endgroup
 

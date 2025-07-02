@@ -240,8 +240,8 @@ class RISCV_instruction
       "t6": return x31;
 `endif
       default: begin
-          $display("ERROR: SystemVerilog Functional Coverage: get_gpr_reg(%0s) not found gpr", key);
-          $finish(-1);
+          $error("ERROR: SystemVerilog Functional Coverage: get_gpr_reg(%0s) not found gpr", key);
+          $fatal(1);
       end
     endcase
   endfunction
@@ -266,8 +266,8 @@ class RISCV_instruction
       "x15": return c_x15;
       "a5": return c_x15;
       default: begin
-        $display("ERROR: SystemVerilog Functional Coverage: get_gpr_c_reg(%0s) not found gpr", key);
-        $finish(-1);
+        $error("ERROR: SystemVerilog Functional Coverage: get_gpr_c_reg(%0s) not found gpr", key);
+        $fatal(1);
       end
     endcase
   endfunction
@@ -324,8 +324,8 @@ class RISCV_instruction
       "f30": return f30;
       "f31": return f31;
       default: begin
-        $display("ERROR: SystemVerilog Functional Coverage: get_fpr_reg(%0s) not found fpr", key);
-        $finish(-1);
+        $error("ERROR: SystemVerilog Functional Coverage: get_fpr_reg(%0s) not found fpr", key);
+        $fatal(1);
       end
     endcase
   endfunction
@@ -341,8 +341,8 @@ class RISCV_instruction
       "f14": return c_f14;
       "f15": return c_f15;
       default: begin
-        $display("ERROR: SystemVerilog Functional Coverage: get_fpr_c_reg(%0s) not found fpr", key);
-        $finish(-1);
+        $error("ERROR: SystemVerilog Functional Coverage: get_fpr_c_reg(%0s) not found fpr", key);
+        $fatal(1);
       end
     endcase
   endfunction
@@ -384,8 +384,8 @@ class RISCV_instruction
       "v30": return v30;
       "v31": return v31;
       default: begin
-        $display("ERROR: SystemVerilog Functional Coverage: get_vr_reg(%0s) not found vr", key);
-        $finish(-1);
+        $error("ERROR: SystemVerilog Functional Coverage: get_vr_reg(%0s) not found vr", key);
+        $fatal(1);
       end
     endcase
   endfunction
@@ -523,6 +523,11 @@ class RISCV_instruction
     current.has_vs3 = 1;
     current.vs3 = ops[offset].key;
     current.vs3_val = prev.v_wdata[get_vr_num(ops[offset].key)];
+  endfunction
+
+  virtual function void add_v0();
+    current.has_v0 = 1;
+    current.v0_val = prev.v_wdata[0];
   endfunction
 
   virtual function void add_vm(int offset);

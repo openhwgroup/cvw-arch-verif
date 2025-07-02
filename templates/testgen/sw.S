@@ -1,5 +1,9 @@
-
 ///////////////////////////////////////////////////////////////
+# Custom Test
+#
+# Written: mbellido@hmc.edu       June 10 2025
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
 # CUSTOM TESTS GUIDE (Short Version)
 #
 # - Use SIGPOINTER for all signature memory accesses.
