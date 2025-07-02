@@ -29,7 +29,6 @@
 `define G_IS_0			 // Uncomment this when G=0
 `define g (2**(`G+2))	// Region size = 2^(G+2)
 `define k ((`G > 1) ? (`G - 1) : 0)
-`define c ((`G==0)? 1: `G) //cannot have 0 multiplier.
 
 // Define PMP_16 or PMP_64
 `define PMP_16
@@ -416,31 +415,38 @@ covergroup PMPM_cg with function sample(
 	}
 //-------------------------------------------------------
 	//pattern write inside pmpaddr[0]
-	pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
-		bins all_zero = {0};
-		bins all_one  = {{(`XLEN-2){1'b1}}};
-		bins checkerboard = {{((`XLEN-2)/2){2'b10}} }; //checkerboard pattern
-	}
+	`ifndef G_IS_0
+		pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
+			bins all_zero = {0};
+			bins all_one  = {{(`XLEN){1'b1}}};
+			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
+		}
 
-	csrrw_to_pmpaddr0: coverpoint ins.current.insn {
-		wildcard bins csrrw  = {32'b001110110000_?????_010_?????_1110011}; // A write is being performed to pmpaddr[0]
-	}
+		pmpcfg0_A_mode_OFF: coverpoint pmpcfg[0] {
+  			wildcard bins OFF = {8'b00000???};
+		}
 
-	pmpcfg0_A_mode_OFF: coverpoint pmpcfg[0] {
-  		wildcard bins OFF = {8'b00000???};
-	}
-
-	pmpcfg0_A_mode_NAPOT: coverpoint pmpcfg[0] {
-  		bins NAPOT = {8'b00011???};
-	}
+		pmpcfg0_A_mode_NAPOT: coverpoint pmpcfg[0] {
+  			wildcard bins NAPOT = {8'b00011???};
+		}
+	`endif
 
 	pmpcfg_for_cp_grain_check: coverpoint pmpcfg[0] {
 		bins zero = {0};
 	}
 
-	pmpaddr0_for_cp_grain_check: coverpoint pmpaddr[0]{
-		bins one = {{(`XLEN-2){1'b1}}};
+	pmpaddr0_for_cp_grain_check: coverpoint ins.prev.rs1_val {
+		bins one = {{(`XLEN){1'b1}}};
 	}
+
+	csrrw_to_pmpaddr0: coverpoint ins.prev.insn {
+		wildcard bins csrrw  = {32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpaddr[0]
+	}
+
+	csrr_to_pmpaddr0: coverpoint ins.current.insn {
+		wildcard bins csrr  = {32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpaddr[0]
+	}
+
 //-------------------------------------------------------
 
 	pmpcfg_for_tor0: coverpoint {pmpcfg[0][7:0]} {
@@ -932,7 +938,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	csrrw: coverpoint ins.current.insn {
-		wildcard bins csrrw  = {32'b????????????_?????_010_?????_1110011}; // Try to write pmpaddr or pmpcfg
+		wildcard bins csrrw  = {32'b????????????_?????_001_?????_1110011}; // Try to write pmpaddr or pmpcfg
 	}
 
 	legal_pmpaddr_entries: coverpoint ins.current.insn[31:20] {
@@ -1297,10 +1303,15 @@ covergroup PMPM_cg with function sample(
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
 	//crossess for cp_grain
-	cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
-	cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+	//Changing pmpcfg.A and reading back pmpaddr0 will be a part of the test.
 
-	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0;
+	/*                     ****Needs fixing***
+	`ifndef G_IS_0
+		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
+		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+	`endif
+	*/
+	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.
 	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, read_instr_for_misaligned;
