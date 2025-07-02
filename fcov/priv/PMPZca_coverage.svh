@@ -26,8 +26,8 @@
 `define G 4		// Set G as needed (0, 1, 2, etc.)
 //`define G_IS_0  // Uncomment this line iff G = 0
 
-`define g (2**(`G+2))	// Region size = 2^(G+2)
-`define k ((`G > 1) ? (`G - 1) : 0)
+`define k ((`G > 1) ? (`G - 1) : 0)		// k = max(0,G-1) no of trailing ones in napot region.
+`define g (2**(`k+3))	// Region size = 2^(G+2) for napot and tor => min size of 8 bytes.
 
 // Define PMP_16 or PMP_64
 `define PMP_16
@@ -174,7 +174,7 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 	}
 
 	tor_region_setup: coverpoint ({ins.current.csr[12'h3B1],ins.current.csr[12'h3B0],ins.current.csr[12'h3A0][7:0]}) {
-		bins tor_lxwr = {(`REGIONSTART + `g) >> 2,(`REGIONSTART >> 2) 8'b10001111}; // TOR region with LXWR 1111
+		bins tor_lxwr = {(`REGIONSTART + `g) >> 2,(`REGIONSTART >> 2), 8'b10001111}; // TOR region with LXWR 1111
 	}
 
 	`ifdef G_IS_0
