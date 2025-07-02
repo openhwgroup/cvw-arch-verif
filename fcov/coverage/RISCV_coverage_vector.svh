@@ -385,3 +385,30 @@ function vl_t vl_check(int hart, int issue);
     end
   endcase
 endfunction
+
+
+typedef enum {
+  vstart_one,
+  vstart_vlmaxm1,
+  vstart_vlmaxd2,
+  vstart_legal,
+  vstart_illegal
+} vstart_t;
+
+function vstart_t vstart_check(int hart, int issue);
+  `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
+  bit legal;
+  if (vstart < vlmax) legal = 1'b1; // check legal condition
+  else                legal = 1'b0;
+
+  case(vstart)
+    1:           return vstart_one;
+    vlmax-1:     return vstart_vlmaxm1;
+    vlmax/2:     return vstart_vlmaxd2;
+    default: begin
+      if (legal) return vstart_legal;
+      else       return vstart_illegal;
+    end
+  endcase
+endfunction

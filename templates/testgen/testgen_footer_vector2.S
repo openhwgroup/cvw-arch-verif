@@ -17,7 +17,7 @@ signature_base:
 tsig_begin_canary:
 CANARY;
 mtrap_sigptr:
-    .fill 64*(XLEN/32),4,0xdeadbeef
+    .fill mtrap_sig_count*(XLEN/32),4,0xb0bacafe
 tsig_end_canary:
 CANARY;
 
