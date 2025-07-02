@@ -916,7 +916,7 @@ def writeSIGUPD_V(vd, sew, avl=1, single_register_store = False):
     while tempReg == sigReg:
       tempReg = randint(1,31)
 
-    if ("SEWMIN" in sew):
+    if ("SEWMIN" in str(sew)):
       if single_register_store:
         writeLine(f"vsetvli x{tempReg}, x0, SEWSIZE, m1, ta, ma",                 "# change lmul to 1 and set vl to vlmax to store whole register (offgroup)")
       writeLine(f"RVTEST_SIGUPD_V_SEWMIN(x{sigReg}, x{tempReg}, {avl}, v{vd})",  f"# stores v{vd} (sew = SEWMIN, AVL = {avl}) in signature with base (x{sigReg}) and helper (x{tempReg}) register")

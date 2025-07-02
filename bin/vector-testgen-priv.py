@@ -102,7 +102,7 @@ def make_vill(instruction):
 def make_vstart(instruction, maxlmul = 8):
     vstartvals = ["one", "vlmaxm1", "vlmaxd2", "random"]
     for vstartval in vstartvals:
-        lmul = 2 ** randint(0, int(math.log2(maxlmul))) # pick random integer LMUL to ensure that coverpoints are hit
+        lmul = 2 ** randint(1, int(math.log2(maxlmul))) # pick random integer LMUL to ensure that coverpoints are hit
 
         maskval = randomizeMask(instruction)
         no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
