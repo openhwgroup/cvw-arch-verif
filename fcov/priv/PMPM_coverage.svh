@@ -88,6 +88,37 @@ covergroup PMPM_cg with function sample(
 		bins highest_word  = {`REGIONSTART +`g-4};
 	}
 
+	addr_offset_cp_cfg_A_napot_all: coverpoint (ins.current.rs1_val + ins.current.imm) {
+  		bins below_base   = {`REGIONSTART-4};
+  		bins above_base   = {`REGIONSTART+4};
+  		bins just_beyond  = {`REGIONSTART+`g};
+	}
+
+	addr_offset_cp_cfg_A_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+  		bins at_base      = {`REGIONSTART};
+  		bins below_base   = {`REGIONSTART-4};
+  		bins above_base   = {`REGIONSTART+4};
+  		bins just_beyond  = {`REGIONSTART+`g};
+		bins highest_word  = {`REGIONSTART +`g-4};
+	}
+
+	addr_offset_cp_cfg_A_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
+  		bins at_base      = {`REGIONSTART};
+  		bins above_base   = {`REGIONSTART+4};
+  		bins just_beyond  = {`REGIONSTART+`g};
+	}
+
+	addr_offset_cp_cfg_A_NA4_all: coverpoint (ins.current.rs1_val + ins.current.imm) {
+  		bins at_base      = {`REGIONSTART};
+  		bins below_base   = {`REGIONSTART-4};
+  		bins above_base   = {`REGIONSTART+4};
+	}
+
+	addr_offset_cp_cfg_A_tor0: coverpoint (ins.current.rs1_val + ins.current.imm) {
+  		bins at_base      = {`REGIONSTART};
+  		bins below_base   = {`REGIONSTART-4};
+	}
+
 	exec_instr: coverpoint ins.current.insn {
 		wildcard bins jalr = {32'b????????????_?????_000_?????_1100111};
 	}
@@ -108,12 +139,30 @@ covergroup PMPM_cg with function sample(
 		`endif
 	}
 
+	read_instr_for_misaligned: coverpoint ins.current.insn {
+		wildcard bins lh  = {32'b????????????_?????_001_?????_0000011};
+		wildcard bins lhu = {32'b????????????_?????_101_?????_0000011};
+		wildcard bins lw  = {32'b????????????_?????_010_?????_0000011};
+		`ifdef XLEN64
+			wildcard bins lwu = {32'b????????????_?????_110_?????_0000011};
+			wildcard bins ld  = {32'b????????????_?????_011_?????_0000011};
+		`endif
+	}
+
 	write_instr_sw: coverpoint ins.current.insn {
 		wildcard bins sw = {32'b???????_?????_?????_010_?????_0100011};
 	}
 
 	write_instr: coverpoint ins.current.insn {
 		wildcard bins sb = {32'b???????_?????_?????_000_?????_0100011};
+		wildcard bins sh = {32'b???????_?????_?????_001_?????_0100011};
+		wildcard bins sw = {32'b???????_?????_?????_010_?????_0100011};
+		`ifdef XLEN64
+			wildcard bins sd = {32'b???????_?????_?????_011_?????_0100011};
+		`endif
+	}
+
+	write_instr_for_misaligned: coverpoint ins.current.insn {
 		wildcard bins sh = {32'b???????_?????_?????_001_?????_0100011};
 		wildcard bins sw = {32'b???????_?????_?????_010_?????_0100011};
 		`ifdef XLEN64
@@ -365,23 +414,38 @@ covergroup PMPM_cg with function sample(
 		wildcard bins NAPOT14 = {45'b11????????????????????????????_100000000000000};
 	}
 //-------------------------------------------------------
-/*
-	//the patterns to be written inside pmpaddr[0]
-	pmpaddr0_for_cp_grain: coverpoint{pmpaddr[0]}{
-		bins all_zero = {{(`XLEN-2){1'b0}}};
-		bins all_one  = {{(`XLEN-2){1'b1}}};
-		bins checkerboard = {{((`XLEN-2)/2){2’b10}} }; //checkerboard pattern
+	//pattern write inside pmpaddr[0]
+	`ifndef G_IS_0
+		pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
+			bins all_zero = {0};
+			bins all_one  = {{(`XLEN){1'b1}}};
+			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
+		}
+
+		pmpcfg0_A_mode_OFF: coverpoint pmpcfg[0] {
+  			wildcard bins OFF = {8'b00000???};
+		}
+
+		pmpcfg0_A_mode_NAPOT: coverpoint pmpcfg[0] {
+  			wildcard bins NAPOT = {8'b00011???};
+		}
+	`endif
+
+	pmpcfg_for_cp_grain_check: coverpoint pmpcfg[0] {
+		bins zero = {0};
 	}
 
-	pmpaddr0_low_bits: coverpoint {pmpaddr[0][`G-1:0]}{
-		bins all_zero = {1'b1,{(`G-1){1'b1}}};
+	pmpaddr0_for_cp_grain_check: coverpoint ins.prev.rs1_val {
+		bins one = {{(`XLEN){1'b1}}};
 	}
 
-	pmpcfg0_A_mode: coverpoint pmpcfg[0][4:3] {
-  		bins OFF   = {2'b00};
-  		bins TOR   = {2'b01};
-  		bins NAPOT = {2'b10};
-	}*/
+	csrrw_to_pmpaddr0: coverpoint ins.prev.insn {
+		wildcard bins csrrw  = {32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpaddr[0]
+	}
+
+	csrr_to_pmpaddr0: coverpoint ins.current.insn {
+		wildcard bins csrr  = {32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpaddr[0]
+	}
 
 //-------------------------------------------------------
 
@@ -874,7 +938,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	csrrw: coverpoint ins.current.insn {
-		wildcard bins csrrw  = {32'b????????????_?????_010_?????_1110011}; // Try to write pmpaddr or pmpcfg
+		wildcard bins csrrw  = {32'b????????????_?????_001_?????_1110011}; // Try to write pmpaddr or pmpcfg
 	}
 
 	legal_pmpaddr_entries: coverpoint ins.current.insn[31:20] {
@@ -1147,43 +1211,18 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_OFF_allw : cross priv_mode_m, pmpcfgA_OFF, RWXL0001, write_instr, addr_in_region;
 	cp_cfg_A_OFF_allx : cross priv_mode_m, pmpcfgA_OFF, RWXL0001, exec_instr, addr_in_region;
 
-	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, RWXL0001, read_instr_lw, addr_offset {
-		ignore_bins ig1  = binsof(addr_offset.above_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_before_start);
-	}
+	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, RWXL0001, read_instr_lw, addr_offset_cp_cfg_A_napot_all;
 
-	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, exec_instr {
-		ignore_bins ig1  = binsof(addr_offset.just_before_start);
-	}
-	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, read_instr_lw {
-		ignore_bins ig1  = binsof(addr_offset.just_before_start);
-	}
-	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset, write_instr_sw {
-		ignore_bins ig1  = binsof(addr_offset.just_before_start);
-	}
+	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, exec_instr;
+	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, read_instr_lw;
+	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, write_instr_sw;
 
-	cp_cfg_A_na4_x : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, exec_instr {
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_before_start);
-	}
-	cp_cfg_A_na4_r : cross priv_mode_m,legal_RWX_L_NA4, addr_offset, read_instr_lw {
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_before_start);
-	}
-	cp_cfg_A_na4_w : cross priv_mode_m, legal_RWX_L_NA4, addr_offset, write_instr_sw {
-		ignore_bins ig1  = binsof(addr_offset.below_base);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_before_start);
-	}
 
-	cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, RWXL0001, read_instr_lw, addr_offset {
-		ignore_bins ig1  = binsof(addr_offset.just_beyond);
-		ignore_bins ig2  = binsof(addr_offset.highest_word);
-		ignore_bins ig3  = binsof(addr_offset.just_before_start);
-	}
+	cp_cfg_A_na4_x : cross priv_mode_m, legal_RWX_L_NA4, addr_offset_cp_cfg_A_na4, exec_instr ;
+	cp_cfg_A_na4_r : cross priv_mode_m,legal_RWX_L_NA4, addr_offset_cp_cfg_A_na4, read_instr_lw;
+	cp_cfg_A_na4_w : cross priv_mode_m, legal_RWX_L_NA4, addr_offset_cp_cfg_A_na4, write_instr_sw;
+
+	cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, RWXL0001, read_instr_lw, addr_offset_cp_cfg_A_NA4_all;
 
 	//we have 6 variants for each region,  with unique legal_RWX_L_TOR combination, pmpaddr_for_tor_regioni
 	//reuse the pmpaddr regions with increasing sizes, access addresses correspond to pmpaddri-1 for each region
@@ -1209,26 +1248,9 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor_x_5: cross priv_mode_m, pmpaddr_for_tor_region5, legal_RWX_L_TOR_5, exec_instr ;
 	cp_cfg_A_tor_x_6: cross priv_mode_m, pmpaddr_for_tor_region6, legal_RWX_L_TOR_6, exec_instr ;
 
-	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, read_instr_lw {
-		ignore_bins ig1 = binsof(addr_offset.above_base);
-		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_before_start);
-		ignore_bins ig4 = binsof(addr_offset.highest_word);
-	}
-
-	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, write_instr_sw {
-		ignore_bins ig1 = binsof(addr_offset.above_base);
-		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_before_start);
-		ignore_bins ig4 = binsof(addr_offset.highest_word);
-	}
-
-	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset, pmp_addr_for_tor0, exec_instr {
-		ignore_bins ig1 = binsof(addr_offset.above_base);
-		ignore_bins ig2 = binsof(addr_offset.just_beyond);
-		ignore_bins ig3 = binsof(addr_offset.just_before_start);
-		ignore_bins ig4 = binsof(addr_offset.highest_word);
-	}
+	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, read_instr_lw ;
+	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, write_instr_sw ;
+	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, exec_instr;
 
 	cp_cfg_A_tor_all0: cross priv_mode_m, cp_cfg_A_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i001_pmp0cfg, read_instr_lw;
 	cp_cfg_A_tor_all1: cross priv_mode_m, cp_cfg_A_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
@@ -1283,80 +1305,42 @@ covergroup PMPM_cg with function sample(
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
 	//crossess for cp_grain
-	//cp_grain : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpaddr0_low_bits, pmpcfg0_A_mode;
+	//Changing pmpcfg.A and reading back pmpaddr0 will be a part of the test.
+
+	/*                     ****Needs fixing***
+	`ifndef G_IS_0
+		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
+		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+	`endif
+	*/
+	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.
-	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
-	cp_misaligned_napot_start_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
+	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_napot_start_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, write_instr_for_misaligned;
 
 	//crosses boundary for napot region at the end of the region.
-	cp_misaligned_napot_end_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
-	cp_misaligned_napot_end_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
+	cp_misaligned_napot_end_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_napot_end_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, write_instr_for_misaligned;
 
-	cp_misaligned_tor_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
+	cp_misaligned_tor_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_tor_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, write_instr_for_misaligned;
 
-	cp_misaligned_tor_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
+	cp_misaligned_tor_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_tor_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, write_instr_for_misaligned;
 
-	cp_misaligned_tor_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
+	cp_misaligned_off_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_off_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, write_instr_for_misaligned;
 
-	cp_misaligned_tor_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
-
-	cp_misaligned_off_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
-
-	cp_misaligned_off_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
-
-	cp_misaligned_off_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, read_instr{
-		ignore_bins ig1 = binsof(read_instr.lb);
-		ignore_bins ig2 = binsof(read_instr.lbu);
-	}
-
-	cp_misaligned_off_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, write_instr{
-		ignore_bins ig1 = binsof(write_instr.sb);
-	}
+	cp_misaligned_off_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_off_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, write_instr;
 
 	`ifdef G_IS_0
-		cp_misaligned_na4_start_r: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_start, read_instr{
-			ignore_bins ig1 = binsof(read_instr.lb);
-			ignore_bins ig2 = binsof(read_instr.lbu);
-		}
+		cp_misaligned_na4_start_r: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_start, read_instr_for_misaligned;
+		cp_misaligned_na4_start_w: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_start, write_instr_for_misaligned;
 
-		cp_misaligned_na4_start_w: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_start, write_instr{
-			ignore_bins ig1 = binsof(write_instr.sb);
-		}
-
-		cp_misaligned_na4_end_r: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_end, read_instr{
-			ignore_bins ig1 = binsof(read_instr.lb);
-			ignore_bins ig2 = binsof(read_instr.lbu);
-		}
-
-		cp_misaligned_na4_end_w: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_end, write_instr{
-			ignore_bins ig1 = binsof(write_instr.sb);
-		}
+		cp_misaligned_na4_end_r: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_end, read_instr_for_misaligned;
+		cp_misaligned_na4_end_w: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_end, write_instr_for_misaligned;
 	`endif
 
     `ifdef XLEN64
