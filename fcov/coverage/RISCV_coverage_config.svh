@@ -19,7 +19,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
- Unprivileged extensions
+// Unprivileged extensions
 `ifdef I_COVERAGE
   `include "I_coverage.svh"
 `endif
