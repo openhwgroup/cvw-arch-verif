@@ -1265,8 +1265,10 @@ covergroup PMPM_cg with function sample(
 		cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 	`endif
 
-	cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
-	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+	`ifdef PMP_64
+		cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
+		cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+	`endif
 
 	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, read_instr_lw ;
 	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, write_instr_sw ;
