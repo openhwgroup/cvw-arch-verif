@@ -173,8 +173,8 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 		bins first_three_regions = {{(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART + 2*`g) >> 2, (`REGIONSTART + `g) >> 2}};
 	}
 
-	tor_region_setup: coverpoint ({ins.current.csr[12'h3B0],ins.current.csr[12'h3A0][7:0]}) {
-		bins napot_lxwr = {(`REGIONSTART + `g) >> 2, 8'b10001111}; // TOR region with LXWR 1111
+	tor_region_setup: coverpoint ({ins.current.csr[12'h3B1],ins.current.csr[12'h3B0],ins.current.csr[12'h3A0][7:0]}) {
+		bins tor_lxwr = {(`REGIONSTART + `g) >> 2,(`REGIONSTART >> 2) 8'b10001111}; // TOR region with LXWR 1111
 	}
 
 	`ifdef G_IS_0
