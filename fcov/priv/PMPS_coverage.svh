@@ -222,7 +222,7 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	}
 
 	csrrw: coverpoint ins.current.insn {
-		wildcard bins csrrw  = {32'b????????????_?????_010_?????_1110011};
+		wildcard bins csrrw  = {32'b????????????_?????_001_?????_1110011};
 	}
 
 	mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
@@ -231,8 +231,7 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	}
 
 	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
-		bins U_mode = {2'b00};
-		bins M_mode = {2'b11};
+		bins S_mode = {2'b01};
 	}
 
 	lxwr: coverpoint ins.current.csr[12'h3A0][7:0] {
@@ -314,8 +313,8 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	cp_mprv_lw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, read_instr_lw, standard_region, addr_in_region ;
 	cp_mprv_sw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, write_instr_sw, standard_region, addr_in_region ;
 
-	cp_pmpaddr_access_u: cross priv_mode_s, csrrw, pmpaddr_entries ;
-	cp_pmpcfg_access_u: cross priv_mode_s, csrrw, pmpcfg_entries ;
+	cp_pmpaddr_access_s: cross priv_mode_s, csrrw, pmpaddr_entries ;
+	cp_pmpcfg_access_s: cross priv_mode_s, csrrw, pmpcfg_entries ;
 
 endgroup
 
