@@ -140,7 +140,7 @@ module testbench;
           "TRAP":           num = $sscanf(val, "%b", trap);
           "DEBUG_MODE":     num = $sscanf(val, "%b", debug_mode);
           "PC":             num = $sscanf(val, "%h", pc_rdata);
-          "MODE":           num = $sscanf(val, "%b", mode);
+          "MODE":           num = $sscanf(val, "%d", mode);
           // Interrupts
           "M_EXT_INTR":     num = $sscanf(val, "%b", m_ext_intr);
           "S_EXT_INTR":     num = $sscanf(val, "%b", s_ext_intr);
