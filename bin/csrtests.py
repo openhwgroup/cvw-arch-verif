@@ -20,18 +20,24 @@ def printwalk(regs):
             continue
         print("\n// Testing walking zeros and ones for CSR "+reg)
         print("\tcsrr s0, "+reg+"\t# save CSR")
+        print("\tRVTEST_SIGWRITE(x3, s0)\t# save CSR to Signature")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
-        print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
+        print("1:  csrrc t6, "+reg+", t1    # clear all bits")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tcsrrs t6, "+reg+", t0    # set walking 1")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tli t0, 1            # 1 in lsb")
         print("1:  csrrs t6, "+reg+", t1    # set all bits")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
 
 def csrwalk(pathname, regs, hregs):
     outfile = open(pathname, 'w')
@@ -169,7 +175,7 @@ seed(0) # make tests reproducible
 mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"]
 mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
-uregs = ["fflags", "frm", "fcsr"]
+uregs = ["fflags", "frm", "fcsr", "vtype", "vlenb", "vl", "vxrm", "vxsat", "vcsr"] # removed (, "vstart") since it is buggy in sail and caused signature mismatch
 mcntrs = ["mcycle", "mcountinhibit", "minstret",
           "mhpmcounter3", "mhpmcounter4", "mhpmcounter5", "mhpmcounter6", "mhpmcounter7", "mhpmcounter8", "mhpmcounter9", "mhpmcounter10", "mhpmcounter11", "mhpmcounter12", "mhpmcounter13", "mhpmcounter14", "mhpmcounter15",
           "mhpmcounter16", "mhpmcounter17", "mhpmcounter18", "mhpmcounter19", "mhpmcounter20", "mhpmcounter21", "mhpmcounter22", "mhpmcounter23", "mhpmcounter24", "mhpmcounter25", "mhpmcounter26", "mhpmcounter27", "mhpmcounter28", "mhpmcounter29", "mhpmcounter30", "mhpmcounter31",
