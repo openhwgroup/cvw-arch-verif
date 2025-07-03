@@ -41,6 +41,9 @@ RVTEST_SIGBASE(SIG_BASE, signature_base)
         #define LMULf2_SUPPORTED
     #elif ELEN == 16
         #define LMULf2_SUPPORTED
+    #elif ELEN == 8
+    #else
+        #error "ELEN unsupported, check SEWMIN"
     #endif
 #elif SEWMIN == 16
     #if ELEN == 64
@@ -48,9 +51,15 @@ RVTEST_SIGBASE(SIG_BASE, signature_base)
         #define LMULf2_SUPPORTED
     #elif ELEN == 32
         #define LMULf2_SUPPORTED
+    #elif ELEN == 16
+    #else
+        #error "ELEN unsupported, check SEWMIN"
     #endif
 #elif SEWMIN == 32
     #if ELEN == 64
         #define LMULf2_SUPPORTED
+    #elif ELEN == 32
+    #else
+        #error "ELEN unsupported, check SEWMIN"
     #endif
 #endif
