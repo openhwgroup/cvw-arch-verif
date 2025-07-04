@@ -816,16 +816,16 @@ covergroup PMPM_cg with function sample(
 	}
 
 	write_pmp_csr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110001_00000_010_?????_1110011}; // Try to write value of x0 in pmpaddr1
-		wildcard bins write_pmpcfg   = {32'b001110100001_00000_010_?????_1110011}; // Try to write value of x0 in pmpcfg1
+		wildcard bins write_pmpaddr  = {32'b001110110001_00000_001_?????_1110011}; // Try to write value of x0 in pmpaddr1
+		wildcard bins write_pmpcfg   = {32'b001110100001_00000_001_?????_1110011}; // Try to write value of x0 in pmpcfg1
 	}
 
 	write_lower_pmpaddr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110000_?????_010_?????_1110011}; // Try to write pmpaddr0
+		wildcard bins write_pmpaddr  = {32'b001110110000_?????_001_?????_1110011}; // Try to write pmpaddr0
 	}
 
 	write_lower_pmpcfg: coverpoint ins.prev.insn {
-		wildcard bins write_pmpcfg   = {32'b001110100000_?????_010_?????_1110011}; // Try to write pmpcfg0
+		wildcard bins write_pmpcfg   = {32'b001110100000_?????_001_?????_1110011}; // Try to write pmpcfg0
 	}
 
 //-------------------------------------------------------

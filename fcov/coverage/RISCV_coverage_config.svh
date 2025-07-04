@@ -161,6 +161,7 @@
 `ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
   `include "PMPU_coverage.svh"
+  `include "PMPS_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
   `include "PMPZalrsc_coverage.svh"
@@ -169,6 +170,7 @@
 `ifdef RV32PMP_COVERAGE
   `include "PMPM_coverage.svh"
   `include "PMPU_coverage.svh"
+  `include "PMPS_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
   `include "PMPZalrsc_coverage.svh"
