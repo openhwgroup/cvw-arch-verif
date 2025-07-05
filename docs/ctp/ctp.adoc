@@ -1,11 +1,10 @@
 [[manual:ctp,RISC-V Certification Test Plan Draft Proposal]]
 = RISC-V Certification Test Plan Draft Proposal
-:sectnums:
-David Harris
-3 July 2025
+Draft of {docdatetime}
 
-include::../docs-resources/global-config.adoc[]
-:description: Unprivileged Architecture
+// These attributes have been copied over from riscv-isa-manual and are not yet all tested
+//{approx} include::../docs-resources/global-config.adoc[]
+:description: Certification Test Plan
 :colophon:
 :preface-title: Preamble
 :appendix-caption: Appendix
@@ -58,8 +57,7 @@ endif::[]
 :csrname: envcfg
 :imagesdir: images
 
-_Contributors to all versions of the spec in alphabetical order (please contact editors to suggest
-corrections): Derek Atkins,
+_Contributors to all versions of the spec in alphabetical order_
 David Harris
 
 _This document is released under a Creative Commons Attribution 4.0 International License._
@@ -68,6 +66,8 @@ This is a draft Certification Test Plan.  It reflects the coverpoints and tests
 presently being developed in the https://github.com/openhwgroup/cvw-arch-verif/:[cvw-arch-verif] repository soon to migrate to
 https://github.com/riscv-non-isa/riscv-arch-test:[riscv-arch-test] cvw branch.  It is intended for discussion as a possible format
 of test plan for RISC-V Certification.
+
+:toc:
 
 == Introduction
 
@@ -139,85 +139,399 @@ It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values.  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. footnote:[The random values should be selected in a deterministic way so that regenerating tests use the same random values where possible, minimizing differences between tests.  This can be done by seeding the random number generator with a has of the instruction and coverpoint name.]
+Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly.
+
+[NOTE]
+====
+The random values are preferably selected in a deterministic way so that regenerating tests use the same random values where possible, minimizing differences between tests.  This can be done by seeding the random number generator with a has of the instruction and coverpoint name.
+====
 
 Unprivileged tests are designed to never trap. Their results are independent of the privilege mode in which they are run, so they generally are run only in machine mode.  They generally involve no privileged instructions, except that floating-point and vector tests turn on the mstatus.{FS/VS} bits to enable these extensions.
 
 === Unprivileged Coverpoints
 
-The following coverpoints are used in most of the unprivileged test plans in subsequent sections.
+The coverpoints in <<t-unprivileged-coverpoints>> are used in most of the unprivileged test plans in subsequent sections.
 
-[cols="1,3" options=header]
+[[t-unprivileged-coverpoints]]
+.Coverpoint Definitions
+[cols="3,1,10" options=header]
+[%AUTOWIDTH]
 |===
-|Coverpoint|Definition
-|cp_asm_count| Number of times the instruction is executed in the test, must be greater than 0.
-|cp_rs1| The rs1 register number (0-31) used in the instruction.
-|cp_rs2| The rs2 register number (0-31) used in the instruction.
-|cp_rd| The rd register number (0-31) used in the instruction.
+|Coverpoint|Bins|Definition
+3+^|Basic Coverpoints
+|cp_asm_count|1|Number of times the instruction is executed in the test, must be greater than 0.
+|cp_rs1|32|The rs1 register number used in the instruction.
+|cp_rs2|32|The rs2 register number used in the instruction.
+|cp_rd|32|The rd register number used in the instruction.
+|cp_rs1_corners|16|Corner values for rs1 (see <<t-integer-corner-definitions>>).
+|cp_rs2_corners|16|Corner values for rs2 (see <<t-integer-corner-definitions>>).
+|cp_imm_corners|16|Corner values for 12-bit immediates (see <<t-immediate-corner-definitions>>).
+|cr_rs1_imm_corners|16*20|Cross-product of rs1 and 12-bit immediate corners (see <<t-immediate-corner-definitions>>).
+|cr_rs1_rs2_corners|16*16|Cross-product of rs1 and rs2 corners, used for instructions with two source registers.
+|cmp_rd_rs1_eqval|32|The result value in the rd register is equal to the value in the rs1 register.
+|cmp_rd_rs2_eqval|32|The result value in the rd register is equal to the value in the rs2 register.
+|cmp_rs1_rs2|32|The rs1 and rs2 registers have the same register number.
+|cmp_rd_rs1|32|The rd register has the same register number as the rs1 register.
+|cmp_rd_rs2|32|The rd register has the same register number as the rs2 register.
+|cmp_rd_rs1_rs2|32|The rd register has the same register number as both the rs1 and rs2 registers.
+|cp_offset|2|A branch or jalr instruction has a positive and negative offset.
+|cp_uimm|`XLEN`|Exercise all XLEN unsigned immediate values, such as shift amounts.
+|cp_align|≤ 8|Alignment of naturally-aligned sub-doubleword load/store operand within doubleword
+|cp_gpr_hazard|4|General-purpose register hazard detection: RAW, WAR, WAW, and no hazard.
+3+^|Coverpoints for Compressed Instructions
+|cp_rs1p|8|The rs1 register number used in compressed instructions supporting x8-x15.
+|cp_rs2p|8|The rs2 register number used in compressed instructions supporting x8-x15.
+|cp_rdp|8|The rd register number used in compressed instructions supporting x8-x15.
+|cp_fdp|8|The fd register number used in compressed floating-point instructions supporting x8-x15.
+|cp_fs2p|8|The fs2 register number used in compressed floating-point instructions supporting x8-x15.
+|cp_imm_mul|8|7-bit immediate that is a multiple of 4 (for word-sized load/store instructions).
+3+^|Coverpoints for Floating-Point Instructions
+|cp_fs1|32|The fs1 register number used in the instruction.
+|cp_fs2|32|The fs2 register number used in the instruction.
+|cp_fs3|32|The fs3 register number used in the instruction.
+|cp_fd|32|The fd register number used in the instruction.
+|cp_fs1_corners|26|Corner values for fs1 (see <<t-fp-corner-definitions>>)
+|cp_fs2_corners|26|Corner values for fs2 (see <<t-fp-corner-definitions>>)
+|cp_fs3_corners|26|Corner values for fs3 (see <<t-fp-corner-definitions>>)
+|cmp_fd_fs1|32|The fd register has the same register number as the fs1 register.
+|cmp_fd_fs2|32|The fd register has the same register number as the fs2 register.
+|cmp_fd_fs3|32|The fd register has the same register number as the fs3 register.
+|cp_frm|5|The floating-point rounding mode used in the instruction: rne, rdn, rup, rtz, rmm, dyn.
+|cp_csr_fflags|10|The instruction sets the {NV, DZ, OF, UF, NX} flags in the fflags CSR.
+|cp_csr_frm|6|Dynamic rounding mode in the frm CSR: rne, rdn, rup, rtz, rmm, illegal
+|cr_fs1_fs2_corners|26*26|Cross product of corners of fs1 and fs2 registers.
+|cr_fs1_fs3_corners|26*26|Cross product of corners of fs1 and fs3 registers.
+|cp_fclass|10|All 10 fclass classes.
+|cp_NaNBox|1|Upper bits of NaN-boxed value are all 1s
+|cp_fs1_badNB|12|The fs1 register contains an incorrectly-NaN-boxed lower-precision value.
+|cp_fs2_badNB|12|The fs2 register contains an incorrectly-NaN-boxed lower-precision value.
+|cp_fs3_badNB|12|The fs3 register contains an incorrectly-NaN-boxed lower-precision value.
+|cp_fpr_hazard|4|Floating-point register hazard detection: RAW, WAR, WAW, and no hazard.
+3+^|Miscellaneous Coverpoints
+|cp_bs|4|Byte select field for 32-bit AES instructions
+|cp_rnum|11|Round nummber for AES instructions
+|cp_sc|2|Store conditional instruction has a success and failure case.
 |===
 
-*** x, words in coverpoints
+Notes:
+
+* These coverpoints are adapted from the Imperas https://github.com/riscv-verification/riscvISACOV[riscvISACOV] functional coverage project.
+
+* Register number is a 5-bit ID (e.g. x7), while register value is an `XLEN`-sized number.
+
+* Most coverpoints typically have 32 bins because they exercise all 32 integer registers.
+
+* Cross-products exercise all combinations of two or more coverpoints. They can have a large number of bins.
+
+* The cmp_*_eqval coverpoints are automatically hit by the cr_rs1_rs2_corners tests and do not require additional tests.
+
+* Each of these coverpoints can optionally have a modifer appended.  For example, cp_rs1_nx0 is a modified version of cp_rs1, covering all 31 rs1 register numbers excluding x0.  It is used for load/store/jalr instructions that can't rely on address 0 specified by x0 being legal. Modifiers are defined in the extensions that they apply to.
+
+* The cmp_* and cp_*_hazard coverpoints occupy the fuzzy land at the edge of certification and verification.  They are included because they are easy.
+
+[[t-integer-corner-definitions]]
+.Integer Corner Definitions
+[options=header]
+|===
+|Bin|RV32|RV64
+|zero    |`00000000000000000000000000000000`|`0000000000000000000000000000000000000000000000000000000000000000`
+|one     |`00000000000000000000000000000001`|`0000000000000000000000000000000000000000000000000000000000000001`
+|two     |`00000000000000000000000000000010`|`0000000000000000000000000000000000000000000000000000000000000010`
+|min     |`10000000000000000000000000000000`|`1000000000000000000000000000000000000000000000000000000000000000`
+|minp1   |`10000000000000000000000000000001`|`1000000000000000000000000000000000000000000000000000000000000001`
+|max     |`01111111111111111111111111111111`|`0111111111111111111111111111111111111111111111111111111111111111`
+|maxm1   |`01111111111111111111111111111110`|`0111111111111111111111111111111111111111111111111111111111111111`
+|ones    |`11111111111111111111111111111111`|`1111111111111111111111111111111111111111111111111111111111111111`
+|onesm1  |`11111111111111111111111111111110`|`1111111111111111111111111111111111111111111111111111111111111110`
+|walkeodd|`10101010101010101010101010101010`|`1010101010101010101010101010101010101010101010101010101010101010`
+|walkeven|`01010101010101010101010101010101`|`0101010101010101010101010101010101010101010101010101010101010101`
+|random  |`01???????????????????????????010`|`01???????????????????????????????????????????????????????????010`
+|Wmax    |n/a|`0000000000000000000000000000000011111111111111111111111111111111`
+|Wmaxm1  |n/a|`0000000000000000000000000000000011111111111111111111111111111110`
+|Wmaxp1  |n/a|`0000000000000000000000000000000100000000000000000000000000000000`
+|Wmaxp2  |n/a|`0000000000000000000000000000000100000000000000000000000000000001`
+|===
+
+[[t-immediate-corner-definitions]]
+.Immediate Corner Definitions (12-bit)
+[options=header]
+[%autowidth]
+|===
+|Bin|12-bit Signed Value
+|zero|0
+|p0|1
+|p1|2
+|three|3
+|p2|4
+|p3|8
+|p4|16
+|p5|32
+|p6|64
+|p7|128
+|p8|256
+|p9|512
+|hm1|1023
+|p10|1024
+|max|2047
+|min|-2048
+|minp1|-2047
+|onesm1|-2
+|ones|-1
+|randomp|1795
+|===
+
+[[t-fp-corner-definitions]]
+.Floating-Point Corner Definitions
+[options=header]
+|===
+|Bin|Half|Float|Double
+|pos0|`0000`|`00000000`|`0000000000000000`
+|neg0|`8000`|`80000000`|`8000000000000000`
+|pos1|`3C00`|`3F800000`|`3FF0000000000000`
+|neg1|`BC00`|`BF800000`|`BFF0000000000000`
+|pos1p5|`3E00`|`3F000000`|`3FE0000000000000`
+|neg1p5|`BE00`|`BF000000`|`BFE0000000000000`
+|pos2|`4000`|`40000000`|`4000000000000000`
+|neg2|`C000`|`C0000000`|`C000000000000000`
+|posminnorm|`0400`|`00800000`|`0010000000000000`
+|negminnorm|`8400`|`80800000`|`8010000000000000`
+|posmaxnorm|`7BFF`|`7F7FFFFF`|`7FEFFFFFFFFFFFFF`
+|negmaxnorm|`FBFF`|`FF7FFFFF`|`FFEFFFFFFFFFFFFF`
+|posmax_subnorm|`03FF`|`007FFFFF`|`000FFFFFFFFFFFFF`
+|negmax_subnorm|`83FF`|`807FFFFF`|`800FFFFFFFFFFFFF`
+|posmid_subnorm|`0200`|`00400000`|`0008000000000000`
+|negmid_subnorm|`8200`|`80400000`|`8008000000000000`
+|posmin_subnorm|`0001`|`00000001`|`0000000000000001`
+|negmin_subnorm|`8001`|`80000001`|`8000000000000001`
+|posinfinity|`7C00`|`7F800000`|`7FF0000000000000`
+|neginfinity|`FC00`|`FF800000`|`FFF0000000000000`
+|posQNaN|`7E00`-`7FFF`|`7FC00000`-`7FFFFFFF`|`7FF8000000000000`-`7FFFFFFFFFFFFFFF`
+|posSNaN|`7C01`-`7DFF`|`7F800001`-`7FBFFFFF`|`7FF0000000000001`-`7FF7FFFFFFFFFFFF`
+|negQNaN|`FE00`-`FFFF`|`FFC00000`-`FFFFFFFF`|`FFF8000000000000`-`FFFFFFFFFFFFFFFF`
+|negSNaN|`FC01`-`FDFF`|`FF800001`-`FFBFFFFF`|`FFF0000000000001`-`FFF7FFFFFFFFFFFF`
+|posrandom|`58B4`|`7ef8654f`|`3FF58B4C00000000`
+|negrandom|`C93A`|`813d9ab0`|`A6E895993737426C`
+|===
+
+
+[NOTE]
+====
+The register corner cases are selected to include extreme values and their immediate neighbors.  They also include walking 1s and a random number to exercise intermediate values.  RV64 adds corners near the 32-bit boundary to stress W-type instructions.  Immediate corners exercise each bit of the immediate and the extreme corners and one random intermediate value.
+====
+
 
 === I Extension
 
+<<t-I-coverpoints>> summarizes the coverpoints for the I extension.  The Type column is used to generate tests with the appropriate operands. An x in the RV32 or RV64 colunn indicates that the instruction is supported in that XLEN.  The remaining columns refer to coverpoints defined in <<t-unprivileged-coverpoints>>.
+
+[[t-I-coverpoints]]
+.I Instruction Coverpoints
 [options=header]
+[%AUTOWIDTH]
 |===
-|Instruction|Type|RV32|RV64|cp_asm_count|cp_rs1|cp_rs2|cp_rd|cp_rs1_corners|cp_rs2_corners|cr_rs1_imm_corners|cr_rs1_rs2_corners|cmp_rd_rs1_eqval|cmp_rd_rs2_eqval|cmp_rs1_rs2|cmp_rd_rs1|cmp_rd_rs2|cmp_rd_rs1_rs2|cp_offset|cp_uimm|cp_imm_corners|cp_rs1p|cp_rs2p|cp_rdp|cp_fdp|cp_fs2p|cp_imm_mul|cp_bs|cp_rnum|cp_sc|cbo|cp_fpr_hazard|cp_gpr_hazard|cp_fs1|cp_fs2|cp_fs3|cp_fd|cp_fs1_corners|cp_fs2_corners|cp_fs3_corners|cmp_fd_fs1|cmp_fd_fs2|cmp_fd_fs3|cp_frm|cp_csr_fflags|cp_csr_frm|cr_fs1_fs2_corners|cr_fs1_fs3_corners|cr_fs1_fs2_corners|cr_fs1_fs3_corners|cp_fclass|cp_NaNBox|cp_fs1_badNB|cp_fs2_badNB|cp_fs3_badNB|cp_align
-|add|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|addi|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|addiw|I||x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|addw|R||x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|and|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|andi|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|auipc|U|x|x|x|||x|||||||||||||20bit||||||||||||w|||||||||||||||||||||||
-|beq|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|bge|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|bgeu|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|blt|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|bltu|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|bne|B|x|x|x|x|x||x|x||x|x||x||||x||||||||||||||r|||||||||||||||||||||||
-|jal|J|x|x|x|||x|||||||||||||jal||||||||||||w|||||||||||||||||||||||
-|jalr|JR|x|x|x|nx0||x||||||||nx0|||jalr||x||||||||||||rw|||||||||||||||||||||||
-|lb|L|x|x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||byte
-|lbu|L|x|x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||byte
-|ld|L||x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||
-|lh|L|x|x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||hword
-|lhu|L|x|x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||hword
-|lui|U|x|x|x|||x|||||||||||||20bit||||||||||||w|||||||||||||||||||||||
-|lw|L|x|x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||word
-|lwu|L||x|x|nx0||x||||||||nx0|||||x||||||||||||rw|||||||||||||||||||||||word
-|or|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|ori|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|sb|S|x|x|x|nx0|x|||x|||||||||||x||||||||||||r|||||||||||||||||||||||byte
-|sd|S||x|x|nx0|x|||x|||||||||||x||||||||||||r|||||||||||||||||||||||
-|sh|S|x|x|x|nx0|x|||x|||||||||||x||||||||||||r|||||||||||||||||||||||hword
-|sll|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|slli|IS|x|x|x|x||x|x||||x|||x||||x|||||||||||||rw|||||||||||||||||||||||
-|slliw|IS||x|x|x||x|x||||x|||x||||5|||||||||||||rw|||||||||||||||||||||||
-|sllw|R||x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|slt|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|slti|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|sltiu|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|sltu|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|sra|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|srai|IS|x|x|x|x||x|x||||x|||x||||x|||||||||||||rw|||||||||||||||||||||||
-|sraiw|IS||x|x|x||x|x||||x|||x||||5|||||||||||||rw|||||||||||||||||||||||
-|sraw|R||x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|srl|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|srli|IS|x|x|x|x||x|x||||x|||x||||x|||||||||||||rw|||||||||||||||||||||||
-|srliw|IS||x|x|x||x|x||||x|||x||||5|||||||||||||rw|||||||||||||||||||||||
-|srlw|R||x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|sub|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|subw|R||x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|sw|S|x|x|x|nx0|x|||x|||||||||||x||||||||||||r|||||||||||||||||||||||word
-|xor|R|x|x|x|x|x|x|x|x||x|x|x|x|x|x|x|||||||||||||||rw|||||||||||||||||||||||
-|xori|I|x|x|x|x||x|x||x||x|||x|||||x||||||||||||rw|||||||||||||||||||||||
-|fence|F|x|x|x|||||||||||||||||||||||||||||||||||||||||||||||||||
+include::t-I-coverpoints.adoc[]
+|===
+
+
+<<t-I-coverpoints>> uses the following coverpoint modifiers:
+
+[[t-I-modified-coverpoints]]
+.I Modified Coverpoints
+[cols="2, 1, 4" options=header]
+|===
+|Modified Coverpoint|Bins|Definition
+|cp_rs1_nx0|31|The rs1 register number used in the instruction, excluding x0.  x0 is hardwired to 0, which results in potentially access faults for loads, stores, and jalr.
+|cmp_rd_rs1_nx0|31|See cp_rs1_nx0
+|cp_offset_jalr|6|cp_offset + 2*2 combinations of rs1_val[0] and imm[0] affecting lsb of jalr address
+|cp_uimm_5|32|5-bit unsigned immediate shift amount for {slliw/srliw/sraiw}
+|cp_imm_corners_20bit|27|20-bit variant of <<t-immediate-corner-definitions>> for `lui` and `auipc`.
+|cp_imm_corners_jal|23|20-bit positive and negative jump offsets for `jal`.  Note that testing the full 20-bit range takes a large amount of program memory, so tests may cover a subset of this range.
+|cp_gpr_hazard_r|2|RAR and no hazard for instructions that only write a register
+|cp_gpr_hazard_w|3|WAW, WAR and no hazard for instructions that only write a register
+|cp_gpr_hazard_rw|4|RAW, WAW, WAR and no hazard for instructions that read and write registers
+|cp_align_{byte/hword/word}|8/4/2|Alignment of naturally-aligned load/store operand within doubleword in memory
+|===
+
+<<t-I-normative-statements>> summarizes the normative statements in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>.
+
+[[t-I-normative-statements]]
+.I Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|2.1|For RV32I, the 32 `x` registers are each 32 bits wide, i.e., `XLEN=32`.| cp_rs1, cp_rs2, cp_rd, cp_rs1_corners
+|2.1|Register `x0` is hardwired with all bits equal to 0.|cp_rs1, cp_rs2, cp_rd
+|2.2|In the base RV32I ISA, there are four core instruction formats (R/I/S/U)|cp_asm_count
+|2.2|Except for the 5-bit immediates used in CSR instructions (Chapter 6), immediates are always sign-extended|cp_imm_corners
+|2.2|Each immediate subfield is labeled with the bit position (imm[x]) in
+the immediate value being produced.|cp_imm_corners
+|2.3|The only difference between the S and B formats is that the 12-bit
+immediate field is used to encode branch offsets in multiples of 2 in
+the B format. Instead of shifting all bits in the instruction-encoded
+immediate left by one in hardware as is conventionally done, the middle
+bits (imm[10:1]) and sign bit stay in fixed positions, while the lowest
+bit in S format (inst[7]) encodes a high-order bit in B format.|{store/branch}/cp_imm_corners
+|2.3|[T]he only difference between the U and J formats is that the
+20-bit immediate is shifted left by 12 bits to form U immediates and by
+1 bit to form J immediates. The location of instruction bits in the U
+and J format immediates is chosen to maximize overlap with the other
+formats and with each other.|{lui/jalr}/cp_imm_corners
+|2.3|Sign extensions always uses inst[31].|cp_imm_corners
+|2.4|Most integer computational instructions operate on XLEN bits of values held in the integer register file.|cp_rs1, cp_rs2, cr_rs1_rs2_corners
+|2.4|Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format.|cp_rs1, cp_cp_rs1_imm_corners
+|2.4|The destination is register rd for both register-immediate and register-register instructions.|cp_rd
+|2.4|No integer computational instructions cause arithmetic exceptions.|untestable
+|2.4.1|ADDI adds the sign-extended 12-bit immediate to register _rs1_.
+Arithmetic overflow is ignored and the result is simply the low XLEN
+bits of the result.|addi/cp_rs1_imm_corners
+|2.4.1|SLTI (set less than immediate) places the value 1 in register _rd_ if
+register _rs1_ is less than the sign-extended immediate when both are
+treated as signed numbers, else 0 is written to _rd_.|slti/cp_rs1_imm_corners
+|2.4.1|SLTIU is similar
+but compares the values as unsigned numbers (i.e., the immediate is
+first sign-extended to XLEN bits then treated as an unsigned number).|sltiu/cp_rs1_imm_corners
+|2.4.1|ANDI, ORI, XORI are logical operations that perform bitwise AND, OR, and
+XOR on register _rs1_ and the sign-extended 12-bit immediate and place
+the result in _rd_.|{andi/ori/xori}/cp_rs1_imm_corners
+|2.4.1|Shifts by a constant are encoded as a specialization of the I-type
+format. The operand to be shifted is in _rs1_, and the shift amount is
+encoded in the lower 5 bits of the I-immediate field. The right shift
+type is encoded in bit 30. SLLI is a logical left shift (zeros are
+shifted into the lower bits); SRLI is a logical right shift (zeros are
+shifted into the upper bits); and SRAI is an arithmetic right shift (the
+original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_corners, cp_uimm
+|2.4.1|LUI (load upper immediate) is used to build 32-bit constants and uses
+the U-type format. LUI places the 32-bit U-immediate value into the
+destination register _rd_, filling in the lowest 12 bits with zeros.|lui/cp_imm_corners_20bit, cp_rd
+|2.4.1|AUIPC (add upper immediate to `pc`) is used to build `pc`-relative
+addresses and uses the U-type format. AUIPC forms a 32-bit offset from
+the U-immediate, filling in the lowest 12 bits with zeros, adds this
+offset to the address of the AUIPC instruction, then places the result
+in register _rd_.|auipc/cp_imm_corners_20bit, cp_rd
+|2.4.2|RV32I defines several arithmetic R-type operations. All operations read
+the _rs1_ and _rs2_ registers as source operands and write the result
+into register _rd_. The _funct7_ and _funct3_ fields select the type of
+operation.|cr_rs1_rs2_corners, cp_rs1, cp_rs2, cp_rd
+|2.4.2|ADD performs the addition of _rs1_ and _rs2_.|add/cp_rs1_rs2_corners
+|2.4.2|SUB performs the
+subtraction of _rs2_ from _rs1_. Overflows are ignored and the low XLEN
+bits of results are written to the destination _rd_. |sub/cp_rs1_rs2_corners
+|2.4.2|SLT and SLTU
+perform signed and unsigned compares respectively, writing 1 to _rd_ if
+_rs1_ < _rs2_, 0 otherwise.|{slt/sltu}/cp_rs1_rs2_corners
+|2.4.2|AND, OR, and XOR perform bitwise
+logical operations.|{and/or/xor}/cp_rs1_rs2_corners
+|2.4.2|SLL, SRL, and SRA perform logical left, logical right, and arithmetic
+right shifts on the value in register _rs1_ by the shift amount held in
+the lower 5 bits of register _rs2_.|{sll/srl/sra}/cp_rs1_rs2_corners, cp_rs2
+|2.4.3|The NOP instruction does not change any architecturally visible state,
+except for advancing the `pc` and incrementing any applicable
+performance counters. NOP is encoded as ADDI _x0, x0, 0_.|addi/cp_rs1_imm_corners
+|2.5.1|The jump and link (JAL) instruction uses the J-type format, where the
+J-immediate encodes a signed offset in multiples of 2 bytes. The offset
+is sign-extended and added to the address of the jump instruction to
+form the jump target address.|jal/cp_imm_corners_jal
+|2.5.1|Plain unconditional jumps (assembler pseudoinstruction J) are encoded as
+a JAL with _rd_=`x0`.|jal/cp_rd
+|2.5.1|The indirect jump instruction JALR (jump and link register) uses the
+I-type encoding. The target address is obtained by adding the
+sign-extended 12-bit I-immediate to the register _rs1_, then setting the
+least-significant bit of the result to zero. The address of the
+instruction following the jump (`pc`+4) is written to register _rd_.
+Register `x0` can be used as the destination if the result is not
+required.|jalr/{cp_offset_jalr, cp_rd, cp_imm_corners}
+|2.5.2|All branch instructions use the B-type instruction format. The 12-bit
+B-immediate encodes signed offsets in multiples of 2 bytes. The offset
+is sign-extended and added to the address of the branch instruction to
+give the target address.|{beq/bne/blt/bge/bltu/bgeu}/cp_offset, *** more via Issue 717
+|2.5.2|BEQ and BNE take the branch
+if registers _rs1_ and _rs2_ are equal or unequal respectively.|{beq/bne}/cp_rs1_rs2_corners
+|2.5.2|BLT and
+BLTU take the branch if _rs1_ is less than _rs2_, using signed and
+unsigned comparison respectively. |{blt/bltu}/cp_rs1_rs2_corners
+|2.5.2|BGE and BGEU take the branch if _rs1_
+is greater than or equal to _rs2_, using signed and unsigned comparison
+respectively.|{bge/bgeu}/cp_rs1_rs2_corners
+|2.6|The effective address is obtained by adding register _rs1_ to the
+sign-extended 12-bit offset.|cp_imm_corners
+|2.6|Loads copy a value from memory to register
+_rd_.|{lb/lbu/lh/lhu/lw}/{cp_rd}
+|2.6|Stores copy the value in register _rs2_ to memory.|{sb/sh/sw}/{cp_rs2}
+|2.6|The LW instruction loads a 32-bit value from memory into _rd_.|{cp_rd}
+|2.6|LH loads
+a 16-bit value from memory, then sign-extends to 32-bits before storing
+in _rd_. LHU loads a 16-bit value from memory but then zero extends to
+32-bits before storing in _rd_. LB and LBU are defined analogously for
+8-bit values.|{lh/lhu/lb/lbu}/{cp_rd} hits these with random values ***good enough?
+|2.6|The SW, SH, and SB instructions store 32-bit, 16-bit, and
+8-bit values from the low bits of register _rs2_ to memory.|{sw/sh/sb}/cp_rs2_corners
+|2.6|loads and stores whose effective addresses are
+naturally aligned shall not raise an address-misaligned exception.|untestable
+|2.7|FENCE instructions are used to order device I/O and memory accesses as
+viewed by other RISC-V harts and external devices or coprocessors.|fence/cp_asm_count; behavior untestable from a single core
+|2.9|Implementations are always allowed to ignore the
+encoded hints.|Untested because they may not be implemented.
+3+^|RV64-Specific Statements
+|4.1|RV64I widens the integer registers and supported user address space to 64 bits|cp_rs1, cp_rs2, cp_rs1_rs2_corners
+|4.2.1|ADDIW is an RV64I instruction that adds the sign-extended 12-bit immediate to register rs1 and produces the proper sign extension of a 32-bit result in rd. Overflows are ignored and the result is the low 32 bits of the result sign-extended to 64 bits.|cp_rs1_imm_corners
+|4.2.1|Shifts by a constant are encoded as a specialization of the I-type format using the same instruction opcode as RV32I. The operand to be shifted is in rs1, and the shift amount is encoded in the lower 6 bits of the I-immediate field for RV64I. The right shift type is encoded in bit 30. SLLI is a logical left shift (zeros are shifted into the lower bits); SRLI is a logical right shift (zeros are shifted into the upper bits); and SRAI is an arithmetic right shift (the original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_corners, cp_uimm
+|4.2.1|SLLIW, SRLIW, and SRAIW are RV64I-only instructions that are analogously
+defined but operate on 32-bit values and sign-extend their 32-bit
+results to 64 bits.|{slliw/srliw/sraiw}/cp_rs1_imm_corners, cp_uimm
+|4.2.1|LUI (load upper immediate) uses the same opcode as RV32I. LUI places the
+32-bit U-immediate into register _rd_, filling in the lowest 12 bits
+with zeros. The 32-bit result is sign-extended to 64 bits.|lui/cp_imm_corners_20bit, cp_rd
+|4.2.1|AUIPC (add upper immediate to `pc`) uses the same opcode as RV32I. AUIPC
+is used to build `pc`-relative addresses and uses the U-type format.
+AUIPC forms a 32-bit offset from the U-immediate, filling in the lowest
+12 bits with zeros, sign-extends the result to 64 bits, adds it to the
+address of the AUIPC instruction, then places the result in register
+_rd_.|auipc/cp_imm_corners_20bit, cp_rd
+|4.2.2|ADDW and SUBW are RV64I-only instructions that are defined analogously
+to ADD and SUB but operate on 32-bit values and produce signed 32-bit
+results. Overflows are ignored, and the low 32-bits of the result is
+sign-extended to 64-bits and written to the destination register.|{addw/subw}/cp_rs1_rs2_corners
+|4.2.2|SLL, SRL, and SRA perform logical left, logical right, and arithmetic
+right shifts on the value in register _rs1_ by the shift amount held in
+register _rs2_. In RV64I, only the low 6 bits of _rs2_ are considered
+for the shift amount.|{sll/srl/sra}/cp_rs1_rs2_corners
+|4.2.2|SLLW, SRLW, and SRAW are RV64I-only instructions that are analogously
+defined but operate on 32-bit values and sign-extend their 32-bit
+results to 64 bits. The shift amount is given by _rs2[4:0]_.|{sllw/srlw/sraw}/cp_rs1_rs2_corners, cp_rs2
+|4.3|RV64I extends the address space to 64 bits. The execution environment
+will define what portions of the address space are legal to access.|untestable
+|4.3|The LD instruction loads a 64-bit value from memory into register _rd_
+for RV64I.|ld/cp_rd
+|4.3|The LW instruction loads a 32-bit value from memory and sign-extends
+this to 64 bits before storing it in register _rd_ for RV64I. The LWU
+instruction, on the other hand, zero-extends the 32-bit value from
+memory for RV64I. LH and LHU are defined analogously for 16-bit values,
+as are LB and LBU for 8-bit values.|{lw/lwu/lh/lhu/lb/lbu}/cp_rd, ***sext
+|4.3|The SD, SW, SH, and SB instructions
+store 64-bit, 32-bit, 16-bit, and 8-bit values from the low bits of
+register _rs2_ to memory respectively.|{sd/sw/sh/sb}/cp_rs2_corners
+|4.4|The additional computational instructions in RV64I expand both the
+standard and custom HINT encoding spaces.|untestable
+|===
+
+***
+[[t-I-normative-reserved]]
+.I Reserved Behavior
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|4.2.1|SLLIW, SRLIW, and SRAIW encodings with
+_imm[5] &#8800; 0_ are reserved.|
+
 |===
 
 === M Multiply Extension
 
 === Zca Compressed Extension
+
+|2.5.2|Instruction-address-misaligned exceptions are not possible on machines
+that support extensions with 16-bit aligned instructions, such as the
+compressed instruction-set extension, C.|
 
 === Zcb Additional CompressedExtension
 
@@ -228,6 +542,8 @@ The following coverpoints are used in most of the unprivileged test plans in sub
 === Zfh Half-Precision FP Extension
 
 ***
+
+=== Zifencei Instruction-Fetch Fence
 
 === V Vector Extension
 
@@ -338,7 +654,9 @@ Running long vectors is computationally expensive, so only a subset of vectors t
 
 Table *** defines the coverpoints used in vector instructions.  Unless otherwise specified, each coverpoint uses vector length vl=1 and length multiplier LMUL=1, no mask (vm=1), and vstart=0. Hence, they act on exactly one vector element. For such coverpoints, instructions that require a mask use v0=0.
 
+.Vector Coverpoint Definitions
 [cols="2,1,5" options=header]
+[%AUTOWIDTH]
 |===
 |Coverpoint|# Bins|Definition
 |cp_vd|32|All vector destination registers vd=0-31
@@ -371,11 +689,11 @@ Table *** defines the coverpoints used in vector instructions.  Unless otherwise
 |cr_vtype_agnostic||Cross
 |cp_vxsat|n/a|S
 |cp_vl_0|1|vl=0
-|cp_vtypei_legal|
-|cp_rs2_vtype_legal_corners|
-|cp_rs1_corners_avl|
-|cp_rs2_corners_ls|
-|cp_vs2_corners_ls|
+|cp_vtypei_legal||
+|cp_rs2_vtype_legal_corners||
+|cp_rs1_corners_avl||
+|cp_rs2_corners_ls||
+|cp_vs2_corners_ls||
 |===
 
 As with other unprivileged testplans, an x in the spreadsheet indicates to use the coverpoint.  Other values in the spreadsheet indicate a variant of the coverpoint:
@@ -454,3 +772,42 @@ Privileged https://drive.google.com/drive/folders/11hTR2Yl48kOMODxhwrSsC-eXYtM_r
 ZicsrV
 ExceptionsV
 SsstrictV
+
+
+[[t-I-priv-normative-statements]]
+.I Privileged Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|2.2|The base ISA has IALIGN=32, meaning that instructions must
+be aligned on a four-byte boundary in memory. An instruction-address-misaligned exception is
+generated on a taken branch or unconditional jump if the target address is not IALIGN-bit aligned. This
+exception is reported on the branch or jump instruction, not on the target instruction.|
+|2.2|No instruction-address-misaligned exception is generated for a conditional branch that is not taken.|
+|2.5|If an instruction access-fault or instruction page-fault exception
+occurs on the target of a jump or taken branch, the exception is
+reported on the target instruction, not on the jump or branch
+instruction.|
+|2.5.1|The JAL and JALR instructions will generate an
+instruction-address-misaligned exception if the target address is not
+aligned to a four-byte boundary.|
+|2.5.2|The conditional branch instructions will generate an
+instruction-address-misaligned exception if the target address is not
+aligned to a four-byte boundary and the branch condition evaluates to
+true.|
+|2.5.2|If the branch condition evaluates to false, the
+instruction-address-misaligned exception will not be raised.|
+|2.5.2|Loads with a destination of
+`x0` must still raise any exceptions and cause any other side effects
+even though the load value is discarded.|
+|2.5.2|The EEI will define whether the memory system is little-endian or
+big-endian. In RISC-V, endianness is byte-address invariant.|
+|2.6|Loads
+and stores whose effective address is not naturally aligned to the
+referenced datatype (i.e., the effective address is not divisible by the
+size of the access in bytes) have behavior dependent on the EEI.| *** more in 2.6 spec
+|2.8|The `ECALL` instruction is used to make a service request to the execution
+environment.|
+|2.8|The `EBREAK` instruction is used to return control to a debugging
+environment.|
+|===
