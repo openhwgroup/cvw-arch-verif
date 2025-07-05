@@ -25,7 +25,7 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
-`define G 0				// Set G as needed (0, 1, 2, etc.)
+`define G 0			// Set G as needed (0, 1, 2, etc.)
 `define G_IS_0			 // Uncomment this when G=0
 `define g (2**(`G+2))	// Region size = 2^(G+2)
 `define k ((`G > 1) ? (`G - 1) : 0)
@@ -416,7 +416,7 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 	//pattern write inside pmpaddr[0]
 	`ifndef G_IS_0
-		pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
+		pmpaddr0_for_cp_grain: coverpoint ins.prev.rs1_val {
 			bins all_zero = {0};
 			bins all_one  = {{(`XLEN){1'b1}}};
 			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
@@ -1302,15 +1302,12 @@ covergroup PMPM_cg with function sample(
 	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
-	//crossess for cp_grain
 	//Changing pmpcfg.A and reading back pmpaddr0 will be a part of the test.
-
-	/*                     ****Needs fixing***
 	`ifndef G_IS_0
-		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
-		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF, csrr_to_pmpaddr0;
+		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT, csrr_to_pmpaddr0;
 	`endif
-	*/
+
 	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.
