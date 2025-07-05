@@ -129,6 +129,7 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 [%AUTOWIDTH]
 |===
 |Coverpoint|Bins|Definition
+|===
 
 
 == General Test Plan Strategy
