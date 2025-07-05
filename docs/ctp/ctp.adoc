@@ -106,7 +106,7 @@ Certifying a RISC-V Device-Under-Test (DUT) involves the following steps:
 * Selecting a profile for the DUT
 * Providing a Unified Database (UDB) with configuration options for the DUT, such as optional extensions, peripheral addresses, and PMP granularity
 * Generating self-checking tests based on the selected profile and UDB
-* Running the tests and reportig pass/fail
+* Running the tests and reporting pass/fail
 * Generating a coverage report confirming that the tests hit all the coverpoints footnote:[Open question whether to generate coverage from a Sail log or the DUT.  DUT requires a suitable testbench with RVVI interface, but is more robust to check that the tests fully run.]
 
 == Profiles & Test Suites
@@ -121,7 +121,14 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 ** RVA23 less vector and hypervisor
 * https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
 
-Table XREF summarizes the coverage files applicable to each profile.
+<<t-profiles>> summarizes the coverage files applicable to each profile.
+
+[[t-profiles]]
+.Profile Coverage Files
+[cols="3,1,10" options=header]
+[%AUTOWIDTH]
+|===
+|Coverpoint|Bins|Definition
 
 
 == General Test Plan Strategy
