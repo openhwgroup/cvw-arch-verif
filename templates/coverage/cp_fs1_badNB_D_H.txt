@@ -5,7 +5,7 @@
         bins pos1             = {64'h7fffffffffff_3C00};
         bins neg1             = {64'hfeedbee5beef_BC00};
         bins posminnorm       = {64'hffffffefffff_0400};
-        bins mnegminnorm      = {64'h00000000ffff_8400};
+        bins negminnorm       = {64'h00000000ffff_8400};
         bins posmaxnorm       = {64'hefffffffffff_7BFF};
         bins negmaxnorm       = {64'hc0dec0dec0de_FBFF};
         bins posinfinity      = {64'ha83ef1cc4f1a_7C00};

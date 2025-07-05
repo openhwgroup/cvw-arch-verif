@@ -1,7 +1,68 @@
-= Certification Test Plan
+[[manual:ctp,RISC-V Certification Test Plan Draft Proposal]]
+= RISC-V Certification Test Plan Draft Proposal
 :sectnums:
 David Harris
 3 July 2025
+
+include::../docs-resources/global-config.adoc[]
+:description: Unprivileged Architecture
+:colophon:
+:preface-title: Preamble
+:appendix-caption: Appendix
+:imagesdir: ../docs-resources/images
+:title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
+ifdef::draft-watermark[]
+:page-background-image: image:draft.png[opacity=20%]
+endif::[]
+//:title-page-background-image: none
+//:back-cover-image: image:backpage.png[opacity=25%]
+:back-cover-image: image:riscv-horizontal-color.svg[opacity=25%]
+// Settings:
+:experimental:
+:reproducible:
+:imagesoutdir: {docdir}/../build/images-out
+:bibtex-file: src/resources/riscv-spec.bib
+:bibtex-order: alphabetical
+:bibtex-style: apa
+:bibtex-format: asciidoc
+:bibtex-throw: false
+:icons: font
+:lang: en
+:example-caption: Example
+:listing-caption: Listing
+:sectnums:
+:sectnumlevels: 5
+:toc: left
+:toclevels: 5
+:source-highlighter: pygments
+ifdef::backend-pdf[]
+:source-highlighter: rouge
+endif::[]
+:table-caption: Table
+:figure-caption: Figure
+:xrefstyle: short
+:chapter-refsig: Chapter
+:section-refsig: Section
+:appendix-refsig: Appendix
+// Uncomment :data-uri: if your eBook reader is not capable of rendering
+// embedded images. One known affected device is PocketBook InkPad 3.
+:data-uri:
+:hide-uri-scheme:
+:stem: latexmath
+:footnote:
+:le: &#8804;
+:ge: &#8805;
+:ne: &#8800;
+:approx: &#8776;
+:inf: &#8734;
+:csrname: envcfg
+:imagesdir: images
+
+_Contributors to all versions of the spec in alphabetical order (please contact editors to suggest
+corrections): Derek Atkins,
+David Harris
+
+_This document is released under a Creative Commons Attribution 4.0 International License._
 
 This is a draft Certification Test Plan.  It reflects the coverpoints and tests
 presently being developed in the https://github.com/openhwgroup/cvw-arch-verif/:[cvw-arch-verif] repository soon to migrate to
