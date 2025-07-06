@@ -338,9 +338,9 @@ The register corner cases are selected to include extreme values and their immed
 .I Instruction Coverpoints
 [options=header]
 [%AUTOWIDTH]
-|===
-include::t-I-coverpoints.adoc[]
-|===
+,===
+include::../../testplans/I.csv[]
+,===
 
 
 <<t-I-coverpoints>> uses the following coverpoint modifiers:
