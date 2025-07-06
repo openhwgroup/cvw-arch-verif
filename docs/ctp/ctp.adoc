@@ -116,20 +116,172 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 * https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified)
 ** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
 * Microcontroller Profile (Not Ratified, but market demand)
-** RV{32/64}IMC_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
+** RV{32/64}IMZcaZcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
 * https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
 ** RVA23 less vector and hypervisor
 * https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
 
-<<t-profiles>> summarizes the coverage files applicable to each profile.
+<<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
+
+Coverage files with multiple extensions in the name apply when all the extensions are supported; for example, ZfaZfhD is used in a system supporting Zfa, Zfh, and D extensions.
 
 [[t-profiles]]
 .Profile Coverage Files
-[cols="3,1,10" options=header]
+[options=header]
 [%AUTOWIDTH]
 |===
-|Coverpoint|Bins|Definition
+|Coverage File|RVI20_32|uController|RVB23S64|RVA23S64
+|XLEN|32/64|32|64|64
+5+^|Unprivileged
+|I|x|x|x|x
+|M|o|x|x|x
+|Zmmul||||
+|Zaamo|o|x|x|x
+|Zalrsc|o|x|x|x
+|Zca|o|x|x|x
+|Zcb||x|x|x
+|ZcbM||x|x|x
+|ZcbZba||x|x|x
+|ZcbZbb||x|x|x
+|Zcf|o|||
+|Zcd|o||x|x
+|F|o||x|x
+|D|o||x|x
+|Zfh|||o|o
+|ZfhD|||o|o
+|Zfhmin|||o|x
+|ZfhminD|||o|x
+|ZfaF|||x|x
+|ZfaD|||x|x
+|ZfaZfh|||o|o
+|ZfaZfhD|||o|o
+|Zba||x|x|x
+|Zbb||x|x|x
+|Zbc||||o
+|Zbs||x|x|x
+|Zbkb|||o|
+|Zbkc|||o|
+|Zbkx|||o|
+|Zknd|||o|
+|Zkne|||o|
+|Zknh|||o|
+|Zicsr|||x|x
+|Zicond|||x|x
+|Zifencei|o|x||x ***others
+5+^|Privileged
+|ZicsrM||x|x|x
+|ZicsrS|||x|x
+|ZicsrU||x|x|x
+|ZicsrF|x||x|x
+|ExceptionsM||x|x|x
+|ExceptionsS|||x|x
+|ExceptionsU||x|x|x
+|ExceptionsF||x|x|x
+|ExceptionsZalrsc||x|x|x
+|ExceptionsZaammo||x|x|x
+|ExceptionsZc||x|x|x
+|ExceptionsZicboS|||x|x
+|ExceptionsZicboU|||x|x
+|ExceptionsVM|||x|x
+|ExceptionsVMZalrsc|||x|x
+|ExceptionsVMZaamo|||x|x
+|InterruptsM||x|x|x
+|InterruptsS|||x|x
+|InterruptsU||x|x|x
+|InterruptsSstc|||x|x
+|ZicntrM|o|x|x|x
+|ZicntrS|||x|x
+|ZicntrU||x|x|x
+|EndianM||||
+|EndianS||||
+|EndianU||||
+|EndianZaamo||||
+|EndianZalrsc||||
+|PMPM||x||
+|PMPS||||
+|PMPU||x||
+|PMPZca||||
+|PMPZicbo||||
+|PMPZaamo||||
+|PMPZalrsc||||
+|RV32VM||||
+|RV32VM_PMP||||
+|RV32CBO_VM||||
+|RV32CBO_PMP||||
+|RV64VM|||Sv39; 48 and 57 optional|Sv39; 48 and 57 optional
+|RV64VM_PMP||||
+|RV64CBO_VM||||
+|RV64CBO_PMP||||
+|Svinval||||
+5+^|Vector In Progress
+|Vx8|||o|x
+|Vx16|||o|x
+|Vx32|||o|x
+|Vx64|||o|x
+|Vls8|||o|x
+|Vls16|||o|x
+|Vls32|||o|x
+|Vls64|||o|x
+|Vf16 (Zvfh)|||o|o
+|Vf32|||o|x
+|Vf64|||o|x
+|Zvbb8|||o|x
+|Zvbb16|||o|x
+|Zvbb32|||o|x
+|Zvbb64|||o|x
+|Zvbc64|||o|o
+|Zvg32|||o|o
+|Zvkned32||o|o|
+|Zvknha32||||
+|Zvknhb64|||o|o
+5+^|Vector Privileged
+|ExceptionsV|||o|x
+|ExceptionsHV|||o|x
+|ZicsrV|||o|x
+5+^|Strict
+|SsstrictM|||o|o
+|SsstrictS|||o|o
+|SsstrictV||||
 |===
+
+***Need to add Zicbom and Zicboz to unpriv table & tests
+***Zihintpause is in Zicsr*, probably should be its own
+**** V listed in Table A.6 for 20.  Seems wrong
+*** Zicclsm
+*** Zihpm tested with Zicntr
+***Zihintntl not listed
+***Zimop
+***Zcmpo
+***Zawrs
+***Zabha
+***Hypervisor
+***Zacas
+*** Zvfhmin
+***Zfbfmin
+***Zvfbfmin
+***Zvfbfwma
+***Svade/Svadu
+***Sstvecd
+***Sstvala
+***Sscounterenw
+***Svpbmt
+***Svnapot
+***Sscofpmf
+Sdtrig/Sdext
+***H
+***SSSTATEEN
+***SHCOUNTERENW
+***SHVSTVALA
+***SHVALA
+***SHVSTVECD
+***Shvsatpa
+***Shgatpa
+***Ssnpn
+***Supm
+***Zicfilp
+***Zicfiss
+***Sha
+***Zkr
 
 
 == General Test Plan Strategy
@@ -137,6 +289,21 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 Coverpoints are written with one file that covers both RV32 and RV64, to reduce the duplication and risk of becoming out of sync.  When a coverage file contains coverpoints that apply only to one XLEN or the other (e.g. 32 or 64-bit corner values), they are separated by ``ifdef XLEN32` or `XLEN64` directives.
 
 Privileged tests are mostly written by hand and share a single .S file that can be compiled for either RV32 or RV64, again with `ifdef` directives to separate the two.  Unprivileged tests are generated from a template using a Python script, and are divided into RV32 and RV64 directories because the random values differ with XLEN.
+
+=== Configuration
+
+* UDB
+* Profiles, options, configuration parameters
+* Other parameters: PMP entries, PMP granularity
+
+=== Unspecified, Reserved, Bitfield, Strict, and Illegal Behaviors
+
+Some RISC-V behaviors are UNSPECIFIED, which means an implementation can do anything. For example, the behavior of a reserved instruction is UNSPECIFIED. These behaviors are not tested because there is no wrong answer.
+
+WARL, WLRL, WPRI
+
+
+*** definitions, which isn't tested
 
 == Unprivileged Test Plan
 
@@ -733,7 +900,7 @@ The coverpoints for each vector instruction are given in the following sections.
 
 ==== Vf
 
-== Zvfh* Vector Half-Precision Floating-Point Extension
+=== Zvfh* Vector Half-Precision Floating-Point Extension
 
 ***
 
