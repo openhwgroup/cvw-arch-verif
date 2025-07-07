@@ -118,7 +118,7 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 * https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified)
 ** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
 * Microcontroller Profile (Not Ratified, but market demand)
-** RV{32/64}IMZcaZcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
+** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
 * https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
 ** RVA23 less vector and hypervisor
 * https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
@@ -132,7 +132,7 @@ Coverage files with multiple extensions in the name apply when all the extension
 [options=header]
 [%AUTOWIDTH]
 |===
-|Coverage File|RVI20_32|uController|RVB23S64|RVA23S64
+|Coverage File|RVI20|uController|RVB23S64|RVA23S64
 |XLEN|32/64|32|64|64
 5+^|Unprivileged
 |I|x|x|x|x
@@ -318,7 +318,7 @@ categories: standard, reserved, and custom. ... Reserved encodings are currently
 
 === CSR Bitfields
 
-CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xststus`, `xenvcfg`, `,mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
+CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xststus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
 
 WPRI and WLRL fields require careful testing ***.  WARL fields can be tested by trying all possible values of the field.  CSR tests (<<***>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
 
@@ -825,7 +825,7 @@ of the corresponding M-extension instructions. |{mul/mulh/mulhu/mulhsu/mulw}/cr_
 
 === C Compressed Extension
 
-The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF profiles also contain Zcf, and RV{32/64}CD profiles also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions.
+The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions.
 
 ==== Zca Compressed Extension
 
@@ -915,7 +915,7 @@ include::../../testplans/ZcbZbb.csv[]
 
 === Floating-Point Extensions
 
-Supporting floating-point involves enablign at least the F extension.  Other extensions depend on F.  The coverpoints are specified in the following sections. Some tests only apply when multiple extensions are supported.
+Supporting floating-point involves enabling at least the F extension.  Other extensions depend on F.  The coverpoints are specified in the following sections. Some tests only apply when multiple extensions are supported.
 
 ==== F Single-Precision FP
 
@@ -1051,12 +1051,6 @@ include::../../testplans/Zba.csv[]
 ,===
 include::../../testplans/Zbb.csv[]
 ,===
-
-[%AUTOWIDTH]
-,===
-include::../../testplans/ZfaZfhD.csv[]
-,===
-
 
 ==== Zbc Carry-less Multiplication
 
