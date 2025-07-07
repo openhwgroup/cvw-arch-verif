@@ -197,6 +197,9 @@ Coverage files with multiple extensions in the name apply when all the extension
 |Zicond|||x|x
 |Zifencei|o|x|x|x
 5+^|Privileged
+|PrivM||x|x|x
+|PrivS|||x|x
+|PrivU||x|x|x
 |ZicsrM||x|x|x
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
@@ -344,7 +347,7 @@ categories: standard, reserved, and custom. ... Reserved encodings are currently
 
 === CSR Bitfields
 
-CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xststus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
+CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xstatus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
 
 WPRI and WLRL fields require careful testing ***.  WARL fields can be tested by trying all possible values of the field.  CSR tests (<<***>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
 
@@ -1724,25 +1727,6 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 Privileged https://drive.google.com/drive/folders/11hTR2Yl48kOMODxhwrSsC-eXYtM_rJJE?usp=share_link:[test plan spreadsheets] are available.  They need to be edited into a more standarized format. Each test plan spreadsheet contains multiple columns for the applicable configurations.  For example, ZicsrM applies to any configuration with machine mode, ZicsrS applies to any configuration with supervisor mode, and ZicsrF applies to any configuration with floating-point.
 
-* Zicsr
-    *** check WARL, WLRL, WPRI behaviors
-* Exceptions
-* Interrupts
-* PMP
-* RV64CBO footnote:[why just 64?]
-* Endian
-* RVVM Virtual Memory
-* Svinval
-* Zicntr
-* Ssstrict
-- get rid of SsstrictM
-
-
-ZicsrV
-ExceptionsV
-SsstrictV
-
-
 [[t-I-priv-normative-statements]]
 .I Privileged Normative Statements
 [cols="1, 4, 2" options=header]
@@ -1780,6 +1764,143 @@ environment.|
 |2.8|The `EBREAK` instruction is used to return control to a debugging
 environment.|
 |===
+
+=== Privileged Instructions
+
+==== PrivM
+
+==== PrivS
+
+==== PrivU
+
+=== Zicsr
+
+==== ZicsrM
+
+==== ZicsrS
+
+==== ZicsrU
+
+==== ZicsrF
+
+==== ZicsrV
+
+==== ZicsrUF
+
+==== ZicsrUV
+
+
+   TODO check WARL, WLRL, WPRI behaviors
+
+=== Exceptions
+
+==== ExceptionsM
+
+==== ExceptionsS
+
+==== ExceptionsU
+
+==== ExceptionsF
+
+==== ExceptionsV
+
+==== ExceptionsZalrsc
+
+==== ExceptionsZaammo
+
+==== ExceptionsZc
+
+==== ExceptionsZicboS
+
+==== ExceptionsZicboU
+
+==== ExceptionsVM
+
+==== ExceptionsVMZalrsc
+
+==== ExceptionsVMZaamo
+
+=== Interrupts
+
+==== InterruptsM
+
+==== InterruptsS
+
+==== InterruptsU
+
+==== InterruptsSstc
+
+=== Zicntr
+
+counters and hpms
+
+==== ZicntrM
+
+==== ZicntrS
+
+==== ZicntrU
+
+=== Endian
+
+==== EndianM
+
+==== EndianS
+
+==== EndianU
+
+==== EndianZaamo
+
+==== EndianZalrsc
+
+=== Ssstrict
+
+The Ssstrict extension indicates that reserved instructions throw an illegal instruction exception, delegated to supervisor mode.
+
+==== SsstrictS
+
+==== SsstrictV
+
+*** get rid of SsstrictM
+
+
+=== Svinval
+
+=== PMP
+
+==== PMPM
+
+==== PMPS
+
+==== PMPU
+
+==== PMPZca
+
+==== PMPZicbo
+
+==== PMPZaamo
+
+==== PMPZalrsc
+
+=== Sv* Virtual Memory
+
+==== RV32VM
+
+==== RV32VM_PMP
+
+==== RV64VM
+
+==== RV64VM_PMP
+
+=== CBO
+
+*** why RV64CBO?
+
+==== RV64CBO_VM
+
+==== RV64CBO_PMP
+
+
+
 
 
 == List of Non-deterministic behaviors
