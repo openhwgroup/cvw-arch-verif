@@ -96,13 +96,6 @@ function string disassemble (logic [31:0] instrRaw);
   automatic string  ta    = get_vtype_ta_name(instr[27]);
   automatic string  ma    = get_vtype_ma_name(instr[26]);
 
-  decoded = "unknown"; //debug statement
-
-  $display( "Decoded_was:", decoded );//debug statement
-
-  $display( "instr: %b", instr ); //debug statement
-
-
   casez (instr)
     // Base Instructions
 
@@ -1222,7 +1215,7 @@ function string disassemble (logic [31:0] instrRaw);
     default: decoded = "illegal";
   endcase
 
-  $display( "Decoded_is:", decoded );
+
 
   // Return possibly truncated instruction and decoded assembly
   if (compressedInstruction)
