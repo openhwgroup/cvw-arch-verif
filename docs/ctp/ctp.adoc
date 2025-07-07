@@ -751,7 +751,7 @@ _imm[5] &#8800; 0_ are reserved.|
 
 === M Multiply Extension
 
-<<t-M-coverpoints>> summarizes the coverpoints for the M extension.
+<<t-M-coverpoints>> summarizes the coverpoints for the M extension. <<t-M-normative-statements>> summarizes the relevant normative statements.
 
 [[t-M-coverpoints]]
 .M Instruction Coverpoints
@@ -760,6 +760,44 @@ _imm[5] &#8800; 0_ are reserved.|
 ,===
 include::../../testplans/M.csv[]
 ,===
+
+[[t-M-normative-statements]]
+.M Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|12.1|MUL performs an XLEN-bit×XLEN-bit multiplication of
+`rs1` by `rs2` and places the lower XLEN bits in the destination
+register. |mul/{cp_rs1, cp_rs2, cp_rd, cr_rs1_rs2_corners}
+|12.1|MULH, MULHU, and MULHSU perform the same multiplication but
+return the upper XLEN bits of the full 2×XLEN-bit
+product, for signed×signed,
+unsigned×unsigned, and `rs1`×unsigned `rs2` multiplication.|{mulh/mulhu/mulhsu}/cr_rs1_rs2_corners
+|12.1|MULW is an RV64 instruction that multiplies the lower 32 bits of the
+source registers, placing the sign extension of the lower 32 bits of the
+result into the destination register.|mulw/cr_rs1_rs2_corners
+|12.2|DIV and DIVU perform an XLEN bits by XLEN bits signed and unsigned
+integer division of `rs1` by `rs2`, rounding towards zero.|{div/divu}/cr_rs1_rs2_corners
+|12.2|REM and REMU
+provide the remainder of the corresponding division operation. For REM,
+the sign of a nonzero result equals the sign of the dividend.|{rem/remu}/cr_rs1_rs2_corners
+|12.2|DIVW and DIVUW are RV64 instructions that divide the lower 32 bits of
+`rs1` by the lower 32 bits of `rs2`, treating them as signed and
+unsigned integers, placing the 32-bit quotient in `rd`,
+sign-extended to 64 bits. |{divw/divuw}/cr_rs1_rs2_corners
+|12.2|REMW and REMUW are RV64 instructions that
+provide the corresponding signed and unsigned remainder operations. Both
+REMW and REMUW always sign-extend the 32-bit result
+to 64 bits, including on a divide by zero.|{remw/remuw}/cr_rs1_rs2_corners
+|12.2|The semantics for division by zero and division overflow are summarized
+in <<divby0>>. The quotient of division by zero has all bits
+set, and the remainder of division by zero equals the dividend. Signed
+division overflow occurs only when the most-negative integer is divided
+by latexmath:[$-1$]. The quotient of a signed division with overflow is
+equal to the dividend, and the remainder is zero. Unsigned division
+overflow cannot occur.|cp_rs1_rs2_corners
+|===
+
 
 ==== Zmmul
 
@@ -773,13 +811,21 @@ The Zmmul extension is a subset of the M extension that includes only the multip
 include::../../testplans/Zmmul.csv[]
 ,===
 
+[[t-Zmmul-normative-statements]]
+.Zmmul Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|12.3|The `Zmmul` extension implements the multiplication subset of the M
+extension. It adds all of the instructions defined in
+<<Multiplication Operations>>, namely: MUL, MULH, MULHU,
+MULHSU, and (for RV64 only) MULW. The encodings are identical to those
+of the corresponding M-extension instructions. |{mul/mulh/mulhu/mulhsu/mulw}/cr_rs1_rs2_corners
+|===
+
 === C Compressed Extension
 
-The C extension has been subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF profiles also contain Zcf, and RV{32/64}CD profiles also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions.
-
-|2.5.2|Instruction-address-misaligned exceptions are not possible on machines
-that support extensions with 16-bit aligned instructions, such as the
-compressed instruction-set extension, C.| ***
+The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF profiles also contain Zcf, and RV{32/64}CD profiles also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions.
 
 ==== Zca Compressed Extension
 
@@ -988,31 +1034,151 @@ include::../../testplans/ZfaZfhD.csv[]
 
 ==== Zba Bit-Manipulation for Addressing
 
+[[t-Zba-coverpoints]]
+.Zba Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zba.csv[]
+,===
+
 ==== Zbb Basic Bit-Manipulation
+
+[[t-Zbb-coverpoints]]
+.Zbb Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbb.csv[]
+,===
+
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaZfhD.csv[]
+,===
+
 
 ==== Zbc Carry-less Multiplication
 
+[[t-Zbc-coverpoints]]
+.Zbc Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbc.csv[]
+,===
+
+
 ==== Zbs Single-Bit Manipulation
+
+[[t-Zbs-coverpoints]]
+.Zbs Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbs.csv[]
+,===
+
 
 ==== Zbkb Bit-Manipulation for Cryptography
 
+[[t-Zbkb-coverpoints]]
+.Zbkb Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbkb.csv[]
+,===
+
+
 ==== Zbkc Carry-less Multiplication for Cryptography
 
+[[t-Zbkc-coverpoints]]
+.Zbkc Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbkc.csv[]
+,===
+
+
 ==== Zbkx Permutation
+
+[[t-Zbkx-coverpoints]]
+.Zbkx Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zbkx.csv[]
+,===
 
 === Zk*  Cryptographic Extensions
 
 ==== Zkne NIST AES Encryption
 
+[[t-Zkne-coverpoints]]
+.Zkne Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zkne.csv[]
+,===
+
+
 ==== Zknd NIST AES Decryption
+
+[[t-Zknd-coverpoints]]
+.Zknd Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zknd.csv[]
+,===
+
 
 ==== Zknh NIST SHA2 Hashing
 
+[[t-Zknh-coverpoints]]
+.Zknh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zknh.csv[]
+,===
+
+
 === Zicond Conditional Instructions
+
+[[t-Zicond-coverpoints]]
+.Zicond Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zicond.csv[]
+,===
+
 
 === Zicsr Control/Status Register Instructions
 
+[[t-Zicsr-coverpoints]]
+.Zicsr Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zicsr.csv[]
+,===
+
+
 === Zifencei Instruction-Fetch Fence
+
+[[t-Zifencei-coverpoints]]
+.Zifencei Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zifencei.csv[]
+,===
+
 
 === V Vector Extension
 
@@ -1282,3 +1448,16 @@ environment.|
 |2.8|The `EBREAK` instruction is used to return control to a debugging
 environment.|
 |===
+
+|2.5.2|Instruction-address-misaligned exceptions are not possible on machines
+that support extensions with 16-bit aligned instructions, such as the
+compressed instruction-set extension, C.| ***
+
+
+|28.4|MISA.C is set if the following extensions are selected:
+* Zca and not F
+* Zca, Zcf and F (but not D) is specified (RV32 only)
+* Zca, Zcf and Zcd if D is specified (RV32 only)
+** this configuration excludes Zcmp, Zcmt
+* Zca, Zcd if D is specified (RV64 only)
+** this configuration excludes Zcmp, Zcmt|
