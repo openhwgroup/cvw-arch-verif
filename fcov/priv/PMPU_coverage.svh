@@ -23,20 +23,26 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
+`undef G
 `define G 4	// Set G as needed (0, 1, 2, etc.)
 //`define G_IS_0  // Uncomment this line iff G = 0
 
+`undef g
 `define g (2**(`G+2))	// Region size = 2^(G+2)
+
+`undef k
 `define k ((`G > 1) ? (`G - 1) : 0)
 
 // Define PMP_16 or PMP_64
 `define PMP_16
 
+`undef NON_STANDARD_REGION
 // NA4 or TOR region
 `define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
 
+`undef STANDARD_REGION
 // NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
+`define STANDARD_REGION	(`REGIONSTART >> 2) | ((2**`k) - 1) // yyyy...0111
 
 //------------------------------------------------------------
 
