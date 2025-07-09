@@ -87,29 +87,56 @@ Coverpoints are organized into .svh SystemVerilog coverage files, each of which 
 
 Tests are written in assembly language .S files.Tests are organized into directories for each extension, and into a privileged directory.  The coverpoints are hit by running all of the applicable tests in a directory.  For example, RV32I coverage involves running add.S, addi.S, sub.S, etc.  RV64I coverage also involves running addw.S, which is unique to RV64.
 
-=== Current Status
+=== Glossary
 
-At present, coverpoints and tests are being developed in the https://github.com/openhwgroup/cvw-arch-verif/[cvw-arch-verif] repository and being tested on the https://github.com/openhwgroup/cvw[CORE-V Wally] processor.  The goal is to be able to certify RVA23S64 as well as spec-compliant machine mode.
+The following terms are used in this test plan:
 
-This test plan exists in the form of spreadsheets, and is being converted to ASCII Doc.
+* Extensions: named and ratified RISC-V extensions, such as RV32I, M, Zbb, or Zicsr.
 
-As of June 2025, all unprivileged and privileged RVA23S64 features have tests hitting 100% of the coverpoints, with the following exceptions:
+* Parameters: options describing the behavior of extensions.  Parameters may or may not have an official RISC-V name.  For example, the Sm machine mode extension defines
+Physical Memory Protection, which has a named parameter G defining the granularity and an unnamed parameter indicating 0, 16, or 64 PMP regions.  The Sv* virtual memory extensions have additional Svade and Svadu extensions, which are parameters defining whether setting the Accessed and Dirty bits is done with a page fault exception or by the Hardware Page Table Walker. There is a completely unnamed parameter defining whether misaligned exceptions have higher or lower priority than access-fault exceptions.
+Parameters will eventually all have formal names in UDB when they are all identified.
 
-* The Vector extension is in progress
-* Interrupt tests coverpoints complete, tests partially complete
-* PMP tests in progress
-* Virtual memory: Sv39 and Sv48 100% coverage, Sv48 debugging one coverpoint
-* Hypervisor not started
+* Configuration: A set of extensions and parameters partially or fully describing the behavior of a RISC-V hart.  A full configuration is sufficient for a reference model to exactly match the behavior of a DUT except with regard to non-deterministic behaviors.
+
+* Non-deterministic Behaviors: behaviors that are unpredictable despite a full configuration.  For example, a tail-agnostic vector instruction might copy vector elements from the source, or might provide elements that are all 1s.  Either behavior is correct, and the hart might change behaviors from one instruction to the next, so the DUT and reference model cannot be guaranteed to exactly match.  Self-checking tests must accept all legal outcomes for non-deterministic behaviors.
+
+* Profile: A named collection of required and optional extensions, such as RVI20 or RVA23S64.  Profiles may be ratified by RISC-V or developed by the Certification Steering Committee to meet certification market needs, such as a simple microcontroller. A profile is a partial configuration.  The test plan must allow the DUT configuration to indicate which optional extensions and other parameters are used, and fully test all optional profile extensions provided by the DUT.
+
+
+* UDB: https://github.com/riscv-software-src/riscv-unified-db[Unified Database], a standardized way to describe the configurat***
+
+* Coverage files: a SystemVerilog .svh file containing all of the covergroups for an extension or combination of extensions, such as I_coverage.svh or ZfaD_coverage.svh.
+
+* Covergroup: A SystemVerilog construct that contains one or more coverpoints.  Covergroups are used to collect functional coverage of a particular feature or set of features in the RISC-V architecture.  For example, the I_coverage.svh file contains a covergroup for each instruction in the I extension, such as add, addi, sub, etc.  ***privileged example
+
+* Coverpoint: A SystemVerilog construct describing a set of conditions to test.  For example, the cp_rd coverpoint checks that all 32 destination registers x0-x31 are exercised by instructions that don't trap. Each coverpoint has one or more bins; for example, cp_rd has 32 bins for the different registers.
+
+* Bin: One target value for a coverpoint.  Each bin may be covered or not by a test suite.
+
+* Test files: A file containing one or more tests, typically written in assembly language.  For example, rv32/I/add.S contains all of the RV32 tests to exercise the add_cg covergroup in I_coverage.svh.
+
+* Tests: A program, typically a sequence of assembly language instructions, that exercises at least one bin of a coverpoint.
+
+* Test Suite: A collection of coverage and test files to test a particular extension, combination of extensions, or group of extensions.  For example, the RV32I test suite contains the I_coverage.svh coverage file and the rv32/I/add.S, addi.S, sub.S, and other tests files with tests that hit the coverpoints in that coverage file.  The RV64ZfaD test suite contains the ZfaD_coverage.svh coverage file and the rv64/ZfaD/fround.d.S, and other tests files with tests that hit the coverpoints in that coverage file.  The RVA23S64 test suite contains all of the required and selected optional test suites for the profile, incluidng RV64I, RV64ZfaD, ExceptionsS, etc.
+
+[NOTE]
+====
+Beware that Test Suite is also used outside this document to mean a full set of tests for a given profile from a given provider.  For example, Synopsys, Breker, and riscv-arch-test all have test suites for the RVI20U32 profile.
+====
+
 
 == Certification Process
 
 Certifying a RISC-V Device-Under-Test (DUT) involves the following steps:
 
 * Selecting a profile for the DUT
-* Providing a Unified Database (UDB) with configuration options for the DUT, such as optional extensions, peripheral addresses, and PMP granularity
+* Providing a Unified Database (UDB) configuration for the DUT, such as optional extensions, peripheral addresses, and PMP granularity
 * Generating self-checking tests based on the selected profile and UDB
 * Running the tests and reporting pass/fail
-* Generating a coverage report confirming that the tests hit all the coverpoints footnote:[Open question whether to generate coverage from a Sail log or the DUT.  DUT requires a suitable testbench with RVVI interface, but is more robust to check that the tests fully run.]
+
+Test developers also need to
+* Generate a coverage report confirming that the tests hit all the coverpoints footnote:[Open question whether to generate coverage from a Sail log or the DUT.  DUT requires a suitable testbench with RVVI interface, but is more robust to check that the tests fully run.]
 
 == Profiles & Test Suites
 
@@ -126,6 +153,8 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 <<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
 
 Coverage files with multiple extensions in the name apply when all the extensions are supported; for example, ZfaZfhD is used in a system supporting Zfa, Zfh, and D extensions.
+
+*** also list the applicable extensions for each profile
 
 [[t-profiles]]
 .Profile Coverage Files
@@ -171,6 +200,9 @@ Coverage files with multiple extensions in the name apply when all the extension
 |Zicond|||x|x
 |Zifencei|o|x|x|x
 5+^|Privileged
+|PrivM||x|x|x
+|PrivS|||x|x
+|PrivU||x|x|x
 |ZicsrM||x|x|x
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
@@ -318,7 +350,7 @@ categories: standard, reserved, and custom. ... Reserved encodings are currently
 
 === CSR Bitfields
 
-CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xststus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
+CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xstatus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
 
 WPRI and WLRL fields require careful testing ***.  WARL fields can be tested by trying all possible values of the field.  CSR tests (<<***>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
 
@@ -825,7 +857,62 @@ of the corresponding M-extension instructions. |{mul/mulh/mulhu/mulhsu/mulw}/cr_
 
 === C Compressed Extension
 
-The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions.
+The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions. <<t-C-normative-statements>> lists the normative statements in the RV{32/64}C specification applicable to all instructions, and the unprivileged coverpoints that exercise them.  Normative statements related to privileged behavior of C instructions are given in <<
+
+[[t-C-normative-statements]]
+.C Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|27.1|The C extension allows
+16-bit instructions to be freely intermixed with 32-bit instructions, with the latter now able to start on
+any 16-bit boundary, i.e., IALIGN=16.|***
+|27.1|The compressed instruction encodings are mostly common across RV32C and
+RV64C, but as shown in <<rvc-instr-table0, Table 34>>, a few opcodes are used for
+different purposes depending on base ISA.|Run relevant test suites.
+|27.1|If the C extension is implemented, the appropriate compressed
+floating-point load and store instructions must be provided whenever the relevant standard floating-
+point extension (F and/or D) is also implemented.|Run relevant test suites.
+|27.2|CR, CI, and CSS can use any of the 32 RVI registers, but CIW,
+CL, CS, CA, and CB are limited to just 8 of them.|cp_rs1p, cp_rs2p, cp_rdp
+|27.2|Compressed register-based floating-point loads and stores also use the
+CL and CS formats respectively, with the eight registers mapping to `f8` to `f15`.|cp_fdp, cp_fs2p
+|27.2|For many RVC instructions, zero-valued immediates are disallowed and
+`x0` is not a valid 5-bit register specifier.|cp_rs1_imm_corners,cp_imm_mul, _nx0 coverpoints
+|27.4|As with base RVI instructions, the offsets of all RVC
+control transfer instructions are in multiples of 2 bytes.|***
+|27.7|A portion of the RVC encoding space is reserved for microarchitectural
+HINTs. ...these instructions do not
+modify any architectural state, except for advancing the `pc` and any
+applicable performance counters. HINTs are executed as no-ops on
+implementations that ignore them.|Hints are not tested
+|===
+
+***move***
+
+[[t-C-priv-normative-statements]]
+.C Privileged Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Section|Normative Statement|Coverpoints
+|Unpriv 2.5.2|Instruction-address-misaligned exceptions are not possible on machines
+that support extensions with 16-bit aligned instructions, such as the
+compressed instruction-set extension, C.| ***
+|Unpriv 27.1|With the addition of the C extension, no instructions can raise
+instruction-address-misaligned exceptions.|***
+|Unpriv 27.5.4|A 16-bit instruction with all bits zero is permanently reserved as an illegal instruction.|***
+|Unpriv 27.5.4|Debuggers can use the `C.EBREAK` instruction, which expands to `ebreak`,
+to cause control to be transferred back to the debugging environment.
+`C.EBREAK` shares the opcode with the `C.ADD` instruction, but with _rd_ and
+_rs2_ both zero, thus can also use the `CR` format.|***
+|Unpriv 28.4|MISA.C is set if the following extensions are selected:|***read MISA
+|===
+
+***
+On implementations that support the C extension, compressed forms of the
+I instructions permitted inside constrained LR/SC sequences, as
+described in <<sec:lrscseq>>, are also permitted
+inside constrained LR/SC sequences.
 
 ==== Zca Compressed Extension
 
@@ -839,6 +926,160 @@ The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations suppor
 include::../../testplans/Zca.csv[]
 ,===
 
+*** update all coverpoint refs
+
+[[t-Zca-normative-statements]]
+.Zca Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|27.3.1|C.LWSP loads a 32-bit value from memory into register rd. It computes an effective address by adding
+the zero-extended offset, scaled by 4, to the stack pointer, x2. It expands to lw rd, offset(x2). C.LWSP
+is valid only when rd≠x0; the code points with rd=x0 are reserved.|c.lwsp/***
+|27.3.1|C.LDSP is an RV64C-only instruction that loads a 64-bit value from memory into register rd. It
+computes its effective address by adding the zero-extended offset, scaled by 8, to the stack pointer, x2.
+It expands to ld rd, offset(x2). C.LDSP is valid only when rd≠x0; the code points with rd=x0 are
+reserved.|c.ldsp/*** */
+|27.3.1|C.SWSP stores a 32-bit value in register rs2 to memory. It computes an effective address by adding
+the zero-extended offset, scaled by 4, to the stack pointer, x2. It expands to sw rs2, offset(x2).|c.swsp/***
+|27.3.1|C.SDSP is an RV64C-only instruction that stores a 64-bit value in register rs2 to memory. It computes
+an effective address by adding the zero-extended offset, scaled by 8, to the stack pointer, x2. It
+expands to sd rs2, offset(x2).|c.sdsp/***
+|27.3.2|C.LW loads a 32-bit value from memory into register
+`_rd′_`. It computes an effective address by adding the
+_zero_-extended offset, scaled by 4, to the base address in register
+`_rs1′_`. It expands to `lw rd′, offset(rs1′)`.|c.lw/{}
+|27.3.2|C.LD is an RV64C-only instruction that loads a 64-bit value from
+memory into register `_rd′_`. It computes an effective
+address by adding the _zero_-extended offset, scaled by 8, to the base
+address in register `_rs1′_`. It expands to
+`ld rd′, offset(rs1′)`.|c.ld/{}
+|27.3.2|C.SW stores a 32-bit value in register rs2′ to memory. It computes an effective address by adding the
+zero-extended offset, scaled by 4, to the base address in register rs1′. It expands to sw rs2′, offset(rs1′).|c.sw/{}
+|27.3.2|C.SW stores a 32-bit value in register `_rs2′_` to memory.
+It computes an effective address by adding the _zero_-extended offset,
+scaled by 4, to the base address in register `_rs1′_`. It
+expands to `sw rs2′, offset(rs1′)`.|c.sw/{}
+|27.3.2|C.SD is an RV64C-only instruction that stores a 64-bit value in
+register `_rs2′_` to memory. It computes an effective
+address by adding the _zero_-extended offset, scaled by 8, to the base
+address in register `_rs1′_`. It expands to
+`sd rs2′, offset(rs1′)`.|c.sd/{}
+|27.4|C.J performs an unconditional control transfer. The offset is
+sign-extended and added to the `pc` to form the jump target address. C.J
+can therefore target a &#177;2 KiB range. C.J expands to
+`jal x0, offset`.|c.j/{}
+|27.4|C.JAL is an RV32C-only instruction that performs the same operation as
+C.J, but additionally writes the address of the instruction following
+the jump (`pc+2`) to the link register, `x1`. C.JAL expands to
+`jal x1, offset`.|c.jal/{}
+|27.4|C.JR (jump register) performs an unconditional control transfer to the
+address in register _rs1_. C.JR expands to `jalr x0, 0(rs1)`. C.JR is
+valid only when _rs1_≠`x0`; the code
+point with _rs1_=`x0` is reserved.|c.jr/{}
+|27.4|C.JALR (jump and link register) performs the same operation as C.JR, but
+additionally writes the address of the instruction following the jump
+(`pc`+2) to the link register, `x1`. C.JALR expands to
+`jalr x1, 0(rs1)`. C.JALR is valid only when
+_rs1_≠`x0`; the code point with
+_rs1_=`x0` corresponds to the C.EBREAK
+instruction.|c.jalr/{}, c.ebreak/***
+|27.4|C.BEQZ performs conditional control transfers. The offset is
+sign-extended and added to the `pc` to form the branch target address.
+It can therefore target a &#177;256 B range. C.BEQZ takes the
+branch if the value in register _rs1′_ is zero. It
+expands to `beq rs1′, x0, offset`.|c.beqz/{}
+|27.4|C.BNEZ is defined analogously, but it takes the branch if
+_rs1′_ contains a nonzero value. It expands to
+`bne rs1′, x0, offset`.|c.bnez/{}
+|27.5.1|C.LI loads the sign-extended 6-bit immediate, _imm_, into register _rd_.
+C.LI expands into `addi rd, x0, imm`.
+The C.LI code points with _rd_=`x0` are HINTs.|c.li/{}
+|27.5.1|C.LUI loads the non-zero 6-bit immediate field into bits 17–12 of the
+destination register, clears the bottom 12 bits, and sign-extends bit 17
+into all higher bits of the destination. C.LUI expands into
+`lui rd, imm`. C.LUI is valid only when
+_rd_≠`x2`,
+and when the immediate is not equal to zero. The code points with
+_imm_=0 are reserved.|c.lui/{}
+|27.5.2|C.ADDI adds the non-zero sign-extended 6-bit immediate to the value in register rd then writes the
+result to rd. C.ADDI expands into addi rd, rd, imm. C.ADDI is valid only when rd≠x0 and imm≠0.|c.addi/{}
+|27.5.2|C.ADDIW is an RV64C-only instruction that performs the same
+computation but produces a 32-bit result, then sign-extends result to 64
+bits. C.ADDIW expands into `addiw rd, rd, imm`. The immediate can be
+zero for C.ADDIW, where this corresponds to `sext.w rd`.|c.addiw/{}
+|27.5.2|C.ADDI16SP (add immediate to stack pointer)
+shares the opcode with C.LUI, but has a destination field of
+`x2`. C.ADDI16SP adds the non-zero sign-extended 6-bit immediate to the
+value in the stack pointer (`sp=x2`), where the immediate is scaled to
+represent multiples of 16 in the range [-512, 496]. C.ADDI16SP is used to
+adjust the stack pointer in procedure prologues and epilogues. It
+expands into `addi x2, x2, nzimm[9:4]`. C.ADDI16SP is valid only when
+_nzimm_≠0; the code point with _nzimm_=0 is reserved.|c.addi16sp/{}
+|27.5.2|C.ADDI4SPN (add immediate to stack pointer, non-destructive)
+is a CIW-format instruction that adds a _zero_-extended
+non-zero immediate, scaled by 4, to the stack pointer, `x2`, and writes
+the result to `rd′`. This instruction is used to generate
+pointers to stack-allocated variables, and expands to
+`addi rd′, x2, nzuimm[9:2]`. C.ADDI4SPN is valid only when
+_nzuimm_≠0; the code points with _nzuimm_=0 are
+reserved.|c.addi4spn/{}
+|27.5.2|C.SLLI is a CI-format instruction that performs a logical left shift of
+the value in register _rd_ then writes the result to _rd_. The shift
+amount is encoded in the _shamt_ field.
+C.SLLI expands into `slli rd, rd, shamt[5:0]`.|c.slli/{}
+|27.5.2|C.SRLI is a CB-format instruction that performs a logical right shift of
+the value in register _rd′_ then writes the result to
+_rd′_. The shift amount is encoded in the _shamt_ field.
+C.SRLI expands into `srli rd′, rd′, shamt`.|c.srli/{}
+|27.5.2|C.SRAI is defined analogously to C.SRLI, but instead performs an
+arithmetic right shift. C.SRAI expands to
+`srai rd′, rd′, shamt`.|c.srai/{}
+|27.5.2|For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
+are designated for custom extensions.|c.{slli,srli, srai}/{}
+|27.5.2|C.ANDI is a CB-format instruction that computes the bitwise AND of the
+value in register _rd′_ and the sign-extended 6-bit
+immediate, then writes the result to _rd′_. C.ANDI
+expands to `andi rd′, rd′, imm`.|c.andi/{}
+|27.5.3|C.MV copies the value in register _rs2_ into register _rd_. C.MV expands
+into `add rd, x0, rs2`. C.MV is valid only when
+_rs2_≠`x0`|c.mv/{}
+|27.5.3|C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
+to register _rd_. C.ADD expands into `add rd, rd, rs2`. C.ADD is only
+valid when _rs2_≠`x0`|c.add/{}
+|27.5.3|`C.AND` computes the bitwise `AND` of the values in registers
+_rd′_ and _rs2′_, then writes the result
+to register _rd′_. `C.AND` expands into
+`and rd′, rd′, rs2′`.|c.and/{}
+|27.5.3|`C.OR` computes the bitwise `OR` of the values in registers
+_rd′_ and _rs2′_, then writes the result
+to register _rd′_. `C.OR` expands into
+`or rd′, rd′, rs2′`.|c.or/{}
+|27.5.3|`C.XOR` computes the bitwise `XOR` of the values in registers
+_rd′_ and _rs2′_, then writes the result
+to register _rd′_. `C.XOR` expands into
+`xor rd′, rd′, rs2′`.|c.xor/{}
+|27.5.3|`C.SUB` subtracts the value in register _rs2′_ from the
+value in register _rd′_, then writes the result to
+register _rd′_. `C.SUB` expands into
+`sub rd′, rd′, rs2′`.|c.sub/{}
+|27.5.3|`C.ADDW` is an RV64C-only instruction that adds the values in
+registers _rd′_ and _rs2′_, then
+sign-extends the lower 32 bits of the sum before writing the result to
+register _rd′_. `C.ADDW` expands into
+`addw rd′, rd′, rs2′`.|c.addw/{}
+|27.5.3|`C.SUBW` is an RV64C-only instruction that subtracts the value in
+register _rs2′_ from the value in register
+_rd′_, then sign-extends the lower 32 bits of the
+difference before writing the result to register _rd′_.
+`C.SUBW` expands into `subw rd′, rd′, rs2′`.
+|27.5.6|`C.NOP` is a CI-format instruction that does not change any user-visible
+state, except for advancing the `pc` and incrementing any applicable
+performance counters. `C.NOP` expands to `nop`.|c.nop/{}
+|===
+
+
+
 ==== Zcf Compressed Floating-Point Extension
 
 <<t-Zcf-coverpoints>> summarizes the coverpoints for the Zcf extension.
@@ -850,6 +1091,32 @@ include::../../testplans/Zca.csv[]
 ,===
 include::../../testplans/Zcf.csv[]
 ,===
+
+[[t-Zcf-normative-statements]]
+.Zcf Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|27.3.1|C.FLWSP is an RV32FC-only instruction that loads a single-precision floating-point value from memory
+into floating-point register rd. It computes its effective address by adding the zero-extended offset,
+scaled by 4, to the stack pointer, x2. It expands to flw rd, offset(x2).|c.flwsp/***
+|27.3.1|C.FSWSP is an RV32FC-only instruction that stores a single-precision floating-point value in floating-
+point register rs2 to memory. It computes an effective address by adding the zero-extended offset,
+scaled by 4, to the stack pointer, x2. It expands to fsw rs2, offset(x2).|c.fswsp/***
+|27.3.2|C.FLW is an RV32FC-only instruction that loads a single-precision
+floating-point value from memory into floating-point register
+`_rd′_`. It computes an effective address by adding the
+_zero_-extended offset, scaled by 4, to the base address in register
+`_rs1′_`. It expands to
+`flw rd′, offset(rs1′)`.|c.flw/{}
+|27.3.2|C.FSW is an RV32FC-only instruction that stores a single-precision
+floating-point value in floating-point register `_rs2′_` to
+memory. It computes an effective address by adding the _zero_-extended
+offset, scaled by 4, to the base address in register
+`_rs1′_`. It expands to
+`fsw rs2′, offset(rs1′)`.|c.fsw/{}
+
+|===
 
 
 ==== Zcd Compressed Double-Precision FP Extension
@@ -864,6 +1131,30 @@ include::../../testplans/Zcf.csv[]
 include::../../testplans/Zcd.csv[]
 ,===
 
+[[t-Zcd-normative-statements]]
+.Zcd Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|27.3.1|C.FLDSP is an RV32DC/RV64DC-only instruction that loads a double-precision floating-point value
+from memory into floating-point register rd. It computes its effective address by adding the zero
+-extended offset, scaled by 8, to the stack pointer, x2. It expands to fld rd, offset(x2).|c.fldsp/***
+|27.3.1|C.FSDSP is an RV32DC/RV64DC-only instruction that stores a double-precision floating-point value in
+floating-point register rs2 to memory. It computes an effective address by adding the zero-extended
+offset, scaled by 8, to the stack pointer, x2. It expands to fsd rs2, offset(x2).|c.fsdsp/***
+|27.3.2|C.FLD is an RV32DC/RV64DC-only instruction that loads a double-precision
+floating-point value from memory into floating-point register
+`_rd′_`. It computes an effective address by adding the
+_zero_-extended offset, scaled by 8, to the base address in register
+`_rs1′_`. It expands to
+`fld rd′, offset(rs1′)`.|c.fld/{}
+|27.3.2|C.FSD is an RV32DC/RV64DC-only instruction that stores a
+double-precision floating-point value in floating-point register
+`_rs2′_` to memory. It computes an effective address by
+adding the _zero_-extended offset, scaled by 8, to the base address in
+register `_rs1′_`. It expands to
+`fsd rs2′, offset(rs1′)`.|c.fsd/{}
+|===
 
 ==== Zcb Additional Compressed Instructions
 
@@ -877,6 +1168,22 @@ include::../../testplans/Zcd.csv[]
 include::../../testplans/Zcb.csv[]
 ,===
 
+[[t-Zcb-normative-statements]]
+.Zcb Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|28.12.1|c.lbu lloads a byte from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting byte is zero extended to XLEN bits and is written to _rd'_.|c.lbu/{}
+|28.12.2|c.lhu loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is zero extended to XLEN bits and is written to _rd'_.|c.lhu/{}
+|28.12.3|c.lh loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is sign extended to XLEN bits and is written to _rd'_.|c.lh/{}
+|28.12.4|c.sb stores the least significant byte of _rs2'_ to the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_.|c.sb/{}
+|28.12.5|c.sh stores the least significant halfword of _rs2'_ to the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_.|c.sh/{}
+|28.12.6|c.zext.b takes a single source/destination operand.
+It zero-extends the least-significant byte of the operand to XLEN bits by inserting zeros into all of
+the bits more significant than 7.|c.zext.b/{}
+|28.12.11|c.not takes the one's complement of _rd'/rs1'_ and writes the result to the same register.|c.not/{}
+|===
+
 ===== ZcbM
 
 When both Zcb and M are supported, add the instruction in <<t-ZcbM-coverpoints>> to the Zcb coverpoints.
@@ -888,6 +1195,14 @@ When both Zcb and M are supported, add the instruction in <<t-ZcbM-coverpoints>>
 ,===
 include::../../testplans/ZcbM.csv[]
 ,===
+
+[[t-ZcbM-normative-statements]]
+.ZcbM Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|28.12.12|c.mul multiplies XLEN bits of the source operands from _rsd'_ and _rs2'_ and writes the lowest XLEN bits of the result to _rsd'_.|c.mul/{}
+|===
 
 ===== ZcbZba
 
@@ -901,6 +1216,15 @@ When both Zcb and Zba are supported, add the instruction in <<t-ZcbZba-coverpoin
 include::../../testplans/ZcbZba.csv[]
 ,===
 
+[[t-ZcbZba-normative-statements]]
+.ZcbZba Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|28.12.10|c.zext.w takes a single source/destination operand.
+It zero-extends the least-significant word of the operand to XLEN bits by inserting zeros into all of
+the bits more significant than 31.|c.zext.w/{}
+|===
 ===== ZcbZbb
 
 When both Zcb and Zbb are supported, add the instructions in <<t-ZcbZbb-coverpoints>> to the Zcb coverpoints.
@@ -912,6 +1236,21 @@ When both Zcb and Zbb are supported, add the instructions in <<t-ZcbZbb-coverpoi
 ,===
 include::../../testplans/ZcbZbb.csv[]
 ,===
+
+[[t-ZcbZbb-normative-statements]]
+.ZcbZbb Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|28.12.7|c.sext.b takes a single source/destination operand. It sign-extends the least-significant byte in
+the operand to XLEN bits by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-
+significant bits.|c.sext.b/{}
+|28.12.8|c.zext.h takes a single source/destination operand. It zero-extends the least-significant
+halfword of the operand to XLEN bits by inserting zeros into all of the bits more significant than 15.|c.zext.h/{}
+|28.12.9|c.sext.h takes a single source/destination operand.
+It sign-extends the least-significant halfword in the operand to XLEN bits by copying the most-significant bit
+in the halfword (i.e., bit 15) to all of the more-significant bits.|c.sext.h/{}
+|===
 
 === Floating-Point Extensions
 
@@ -1186,10 +1525,20 @@ The tests detect VLMAX and set the vector length accordingly, up to some configu
 
 ==== Vector File Organization
 
-Figure *** summarizes the structure of the coverpoint and test files for the vector extension.  The unprivileged vector tests are organized by integer (Vx), load/store (Vls), and floating-point (Vf) types of instructions. Each applies to SEW=8, 16, 32, and/or 64. The ExceptionsV, ZicsrV, and SsstrictV privileged tests are described in section XREF.
+<<f-vector-organization>> summarizes the structure of the coverpoint and test files for the vector extension.  The unprivileged vector tests are organized by integer (Vx), load/store (Vls), and floating-point (Vf) types of instructions. Each applies to SEW=8, 16, 32, and/or 64. The ExceptionsV, ZicsrV, and SsstrictV privileged tests are described in section XREF.
 
 The vector tests are organized by XLEN=32 and XLEN=64 because the scalar registers behavior differs by XLEN.  For example, vadd.vx with SEW=64 sign-extends XLEN=32 scalar registers but does not modify XLEN=64 scalar registers.  For a given XLEN, the vector tests are organized by type (Vx/Vls/Vf) and SEW (8/16/32/64).  Each directory contains a .S file for every vector instruction of that type footnote:[Certain instructions are omitted if not supported for a given SEW.  For example, widening add vwadd.vv is not supported for SEW=64, and vrgatherei16.v is not supported for SEW=8.].  Vector load/store instructions run with any SEW but also specify EEW as part of the instruction name.  For example, vle8.v and vle16.v can both be executed in either SEW=8 or SEW=16, and the EMUL behavior is different between these modes.  Therefore, all the load/store variants are included in all of Vls{8/16/32/64}.
 
+[NOTE]
+====
+Vx and Vf are separated because certain extensions such as Zve64x do not support
+floating-point.  Vls could be lumped with Vx, but the coverpoints are so different that
+it is easier to define the tests separately, and facilitates just running integer vs. load/store tests during development.
+====
+
+[[f-vector-organization]]
+.Vector Organization
+----
 fcov
     unpriv
         Vx8_coverage.svh
@@ -1268,6 +1617,7 @@ tests
         ExceptionsV.S
         ZicsrV.S
         SsstrictV.S
+----
 
 When an instruction's EEW is not a supported SEW, the coverage files and tests exclude the instruction from testing.  For example, vwadd.vv is not supported when SEW=32 and ELEN = 32 because it cannot widen to 64 bits.
 
@@ -1281,13 +1631,15 @@ The coverpoints and tests are parameterized by the minimum supported element wid
 
 Running long vectors is computationally expensive, so only a subset of vectors tests run on mult-element vectors.  Coverpoints for source and destination registers, corner values, etc. run on a vector length of vl = 1.
 
-Table *** defines the coverpoints used in vector instructions.  Unless otherwise specified, each coverpoint uses vector length vl=1 and length multiplier LMUL=1, no mask (vm=1), and vstart=0. Hence, they act on exactly one vector element. For such coverpoints, instructions that require a mask use v0=0.
+<<t-vector-coverpoints>> defines the coverpoints used in vector instructions.  Unless otherwise specified, each coverpoint uses vector length vl=1 and length multiplier LMUL=1, no mask (vm=1), and vstart=0. Hence, they act on exactly one vector element. For such coverpoints, instructions that require a mask use v0=0.
 
+[[t-vector-coverpoints]]
 .Vector Coverpoint Definitions
 [cols="2,1,5" options=header]
 [%AUTOWIDTH]
 |===
 |Coverpoint|# Bins|Definition
+3+^|Coverpoints acting on single element vl=1
 |cp_vd|32|All vector destination registers vd=0-31
 |cp_vs2|32|All vector source registers vs2=0-31
 |cp_vs1|32|All vector source registers vs1=0-31
@@ -1299,30 +1651,28 @@ Table *** defines the coverpoints used in vector instructions.  Unless otherwise
 |cmp_vd_vs2|32|vd and vs2 are same register ID
 |cmp_vd_vs1|32|vd and vs1 are same register ID
 |cmp_vs2_vs1|32|vs2 and vs1 are same register ID
+|cmp_vs3_vs2|32|vs3 and vs2 are the same register ID
 |cmp_vd_vs1_vs2|32|vd and vs1 and vs2 are same register ID
 |cp_rs1_corners|9|0, 1, 2, -1, -2, most negative, most negative+1, most positive, most positive-1
+|cp_rs2_corners|5|0, 1, 2, -1, -2 (for strided vector load/store)
 |cp_fs1_corners|20|0, -1, -smallest subnorm, -inf, 1, 1+ulp, 0.5, 1.5, 2, 4, pi, 2^emax, largest normal, smallest normal, largest subnormal, subnormal with leading 1 in fraction, infinity, canonical quite NaN, noncanonical quiet NaN, signaling NaN with payload of 1
-|cp_vs2_corners|9|see cp_rs1_corners
-|cp_vs1_corners|9|see cp_rs1_corners
-|cr_vs2_vs1_corners|9*9|Cross-product of corners of vs2 and vs1
+|cp_vs2_corners|9 or 20|see cp_rs1_corners or cp_fs1_corners
+|cp_vs1_corners|9 or 20|see cp_rs1_corners
+|cr_vs2_vs1_corners|9^2 or 20^2|Cross-product of corners of vs2 and vs1
 |cr_vs2_rs1_corners|9*9|Cross-product of corners of vs2 and rs1
+|cr_vs2_fs1_corners|20*20|Cross-product of corners of vs2 and fs1
 |cr_vs2_imm_corners|9*9|Cross-product of corners of vs2 and imm={0, 1, 2, 14, 15, -1, -2, -15,-16}
 |cr_vxrm_vs2_vs1_corners|9*9*4|Cross-product of corners of vs2 and vs1 with vector rounding mode={rod, rdn, rne, rnu}
 |cr_vxrm_vs2_rs1_corners|9*9*4|See cr_vxrm_vs2_vs1_corners
 |cr_vxrm_vs2_imm_corners|9*9*4|See cr_vxrm_vs2_vs1_corners
-|cp_frm_vs2_corners|5*20|Cross-product of corners of vs2 and floating-point rounding mode={rdn, rmm, rne, rtz, rup}
-*** other fp corners
-|cp_frm_vs1_vs2_corners|5*20*20|Cross-product of corners of vs1 and vs2 with frm
-|cp_masking_corners|5|Mask corners v0=all 1s, all 0s, random, first VLMAX-1 ones, first VLMAX/2+1 ones; vl=VLMAX
-|cr_vl_lmul|7*3|Cross legal combinations of LMUL={1/2/4/8/f2/f4/f8} and vl={1, random, VLMAX}, while randomizing whether to mask and the mask value
-|cr_vtype_agnostic||Cross
-|cp_vxsat|n/a|S
-|cp_vl_0|1|vl=0
-|cp_vtypei_legal||
-|cp_rs2_vtype_legal_corners||
-|cp_rs1_corners_avl||
-|cp_rs2_corners_ls||
-|cp_vs2_corners_ls||
+|cp_csr_frm|5*10|Floating-point rounding mode={rdn, rmm, rne, rtz, rup} with 10 random inputs per mode
+|cp_csr_fflags|5*2|Floating-point sets and clears all applicable flags
+3+^|Coverpoints acting on multiple elements vl ≠ 1
+|cp_masking_corners|5|Mask corners v0=all 1s, all 0s, random, first VLMAX-1 ones, first VLMAX/2+1 ones; vl=VLMAX, vm=1 to mask, vma = random, vta = 0
+|cr_vl_lmul|7*3|Cross legal combinations of LMUL={1/2/4/8/f2/f4/f8} and vl={1, random, VLMAX}, while randomizing v0 mask value, vm, vta, vma.
+|cr_vtype_agnostic|4|Cross vta={0/1} and vma={0/1}. Random legal LMUL, random legal vl, vm=1, v0=random mask
+|cp_vxsat|2|vxsat={0, 1}.  Hit by cr_vs2_vs1_corners so no tests needed.
+|cp_vl_0|1|vl=0.  LMUL=1, no mask, vma=0, vta=1
 |===
 
 As with other unprivileged testplans, an x in the spreadsheet indicates to use the coverpoint.  Other values in the spreadsheet indicate a variant of the coverpoint:
@@ -1350,17 +1700,43 @@ The coverpoints for each vector instruction are given in the following sections.
 
 ==== Vx
 
+The Vx testplan is the same for SEW={8, 16, 32, 64}.  Each SEW has its own coverage file (e.g. Vx8_coverages.svh) independent of XLEN, as well as tests that depend on XLEN (e.g. rv32/Vx8/vadd.vx.S).
+
+[[t-Vx-coverpoints]]
+.Vx Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Vx.csv[]
+,===
+
 ==== Vls
+
+[[t-Vls-coverpoints]]
+.Vls Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Vls.csv[]
+,===
 
 ==== Vf
 
+[[t-Vf-coverpoints]]
+.Vf Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Vf.csv[]
+,===
+
 === Zvfh* Vector Half-Precision Floating-Point Extension
 
-***
+Note that half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, all of these tests are in the same directory structure, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16.  Zvfhmin only exercises the widening and narrowing conversions:
 
-Note that half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, all of these tests are in the same directory structure.
+* vfwcvt.f.f.v
 
-
+* vfncvt.f.f.w
 
 === Zvb* Vector Bit Manipulation Extension
 
@@ -1368,7 +1744,23 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 
 ==== Zvbb Vector Basic Bit Manipulation Extension
 
+[[t-Zvbb-coverpoints]]
+.Zvbb Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvbb.csv[]
+,===
+
 ==== Zvbc Vector Caryless Multiplication Extension
+
+[[t-Zvbc-coverpoints]]
+.Zvbc Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvbc.csv[]
+,===
 
 === Zvk* Vector Cryptography Extension
 
@@ -1376,34 +1768,51 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 ==== Zvkb Vector Crypto Bit Manipulation Extension
 
+[[t-Zvkb-coverpoints]]
+.Zvkb Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvkb.csv[]
+,===
+
 ==== Zvkg Vector Crypto Galois Field Extension
+
+[[t-Zvkg-coverpoints]]
+.Zvkg Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvkg.csv[]
+,===
+
 
 ==== Zvkned Vector NIST Encryption and Decryption
 
+[[t-Zvkned-coverpoints]]
+.Zvkned Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvkned.csv[]
+,===
+
+
 ==== Zvknh{a/b} Vector NIST Hashing
+
+<<t-Zvknh-coverpoints>> lists the vector hashing instructions.  These apply to both Zknha and Zknhb.
+
+[[t-Zvknh-coverpoints]]
+.Zvknh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zvknh.csv[]
+,===
 
 == Privileged Test Plan
 
 Privileged https://drive.google.com/drive/folders/11hTR2Yl48kOMODxhwrSsC-eXYtM_rJJE?usp=share_link:[test plan spreadsheets] are available.  They need to be edited into a more standarized format. Each test plan spreadsheet contains multiple columns for the applicable configurations.  For example, ZicsrM applies to any configuration with machine mode, ZicsrS applies to any configuration with supervisor mode, and ZicsrF applies to any configuration with floating-point.
-
-* Zicsr
-    *** check WARL, WLRL, WPRI behaviors
-* Exceptions
-* Interrupts
-* PMP
-* RV64CBO footnote:[why just 64?]
-* Endian
-* RVVM Virtual Memory
-* Svinval
-* Zicntr
-* Ssstrict
-- get rid of SsstrictM
-
-
-ZicsrV
-ExceptionsV
-SsstrictV
-
 
 [[t-I-priv-normative-statements]]
 .I Privileged Normative Statements
@@ -1443,15 +1852,169 @@ environment.|
 environment.|
 |===
 
-|2.5.2|Instruction-address-misaligned exceptions are not possible on machines
-that support extensions with 16-bit aligned instructions, such as the
-compressed instruction-set extension, C.| ***
+=== Privileged Instructions
+
+==== PrivM
+
+==== PrivS
+
+==== PrivU
+
+=== Zicsr
+
+==== ZicsrM
+
+==== ZicsrS
+
+==== ZicsrU
+
+==== ZicsrF
+
+==== ZicsrV
+
+==== ZicsrUF
+
+==== ZicsrUV
 
 
-|28.4|MISA.C is set if the following extensions are selected:
-* Zca and not F
-* Zca, Zcf and F (but not D) is specified (RV32 only)
-* Zca, Zcf and Zcd if D is specified (RV32 only)
-** this configuration excludes Zcmp, Zcmt
-* Zca, Zcd if D is specified (RV64 only)
-** this configuration excludes Zcmp, Zcmt|
+   TODO check WARL, WLRL, WPRI behaviors
+
+=== Exceptions
+
+==== ExceptionsM
+
+==== ExceptionsS
+
+==== ExceptionsU
+
+==== ExceptionsF
+
+==== ExceptionsV
+
+==== ExceptionsZalrsc
+
+==== ExceptionsZaammo
+
+==== ExceptionsZc
+
+==== ExceptionsZicboS
+
+==== ExceptionsZicboU
+
+==== ExceptionsVM
+
+==== ExceptionsVMZalrsc
+
+==== ExceptionsVMZaamo
+
+=== Interrupts
+
+==== InterruptsM
+
+==== InterruptsS
+
+==== InterruptsU
+
+==== InterruptsSstc
+
+=== Zicntr
+
+counters and hpms
+
+==== ZicntrM
+
+==== ZicntrS
+
+==== ZicntrU
+
+=== Endian
+
+==== EndianM
+
+==== EndianS
+
+==== EndianU
+
+==== EndianZaamo
+
+==== EndianZalrsc
+
+=== Ssstrict
+
+The Ssstrict extension indicates that reserved instructions throw an illegal instruction exception, delegated to supervisor mode.
+
+==== SsstrictS
+
+==== SsstrictV
+
+*** get rid of SsstrictM
+
+
+=== Svinval
+
+=== PMP
+
+==== PMPM
+
+==== PMPS
+
+==== PMPU
+
+==== PMPZca
+
+==== PMPZicbo
+
+==== PMPZaamo
+
+==== PMPZalrsc
+
+=== Sv* Virtual Memory
+
+==== RV32VM
+
+==== RV32VM_PMP
+
+==== RV64VM
+
+==== RV64VM_PMP
+
+=== CBO
+
+*** why RV64CBO?
+
+==== RV64CBO_VM
+
+==== RV64CBO_PMP
+
+
+
+
+
+== List of Non-deterministic behaviors
+
+* Mask and tail agnostic vector operations
+* Traps on misaligned accesses
+* TODO
+* need more discussion about whether this is a meaningful and usable idea
+
+== To Do
+
+I think we might want to rethink some of our privileged testing structure and switch to having Sm, S, and U testplans/coverpoints/tests instead of lumping most of that into ZicsrM/S/U. I will also be more apparent what is being tested where that way.
+
+Also pull out hint and pause
+
+Test instructions and remove unused coverpoints
+
+=== Current Status
+
+At present, coverpoints and tests are being developed in the https://github.com/openhwgroup/cvw-arch-verif/[cvw-arch-verif] repository and being tested on the https://github.com/openhwgroup/cvw[CORE-V Wally] processor.  The goal is to be able to certify RVA23S64 as well as spec-compliant machine mode.
+
+This test plan exists in the form of spreadsheets, and is being converted to ASCII Doc.
+
+As of June 2025, all unprivileged and privileged RVA23S64 features have tests hitting 100% of the coverpoints, with the following exceptions:
+
+* The Vector extension is in progress
+* Interrupt tests coverpoints complete, tests partially complete
+* PMP tests in progress
+* Virtual memory: Sv39 and Sv48 100% coverage, Sv48 debugging one coverpoint
+* Hypervisor not started
