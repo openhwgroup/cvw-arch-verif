@@ -394,7 +394,7 @@ It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly.
+Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.
 
 [NOTE]
 ====
@@ -2018,3 +2018,170 @@ As of June 2025, all unprivileged and privileged RVA23S64 features have tests hi
 * PMP tests in progress
 * Virtual memory: Sv39 and Sv48 100% coverage, Sv48 debugging one coverpoint
 * Hypervisor not started
+
+[appendix]
+== Appendix A: Examples
+
+This appendix gives examples of coverpoints and tests consistent with the test plan.  These examples are not the only way to satisfy the testplan.
+
+=== Unprivileged example: `add`
+
+Coverage is in I_coverage.svh:
+
+[[f-add-covergroup]]
+.`add` Covergroup
+----
+covergroup I_add_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    cp_asm_count : coverpoint ins.ins_str == "add"  iff (ins.trap == 0 )  {
+        //Number of times instruction is executed
+        bins count[]  = {1};
+    }
+    cp_rs1 : coverpoint ins.get_gpr_reg(ins.current.rs1)  iff (ins.trap == 0 )  {
+        //RS1 register assignment
+    }
+    cp_rs2 : coverpoint ins.get_gpr_reg(ins.current.rs2)  iff (ins.trap == 0 )  {
+        //RS2 register assignment
+    }
+    cp_rd : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.trap == 0 )  {
+        //RD register assignment
+    }
+    cp_rs1_corners : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
+        `ifdef XLEN32
+            bins zero  =    {0};
+            bins one  =     {32'b00000000000000000000000000000001};
+            bins two  =     {32'b00000000000000000000000000000010};
+            bins min  =     {32'b10000000000000000000000000000000};
+            bins minp1  =   {32'b10000000000000000000000000000001};
+            bins max  =     {32'b01111111111111111111111111111111};
+            bins maxm1  =   {32'b01111111111111111111111111111110};
+            bins ones  =    {32'b11111111111111111111111111111111};
+            bins onesm1  =  {32'b11111111111111111111111111111110};
+            bins walkeodd = {32'b10101010101010101010101010101010};
+            bins walkeven = {32'b01010101010101010101010101010101};
+            wildcard bins random = {32'b01???????????????????????????010};
+        `else
+            bins zero  = {0};
+            bins one      = {64'b0000000000000000000000000000000000000000000000000000000000000001};
+            bins two      = {64'b0000000000000000000000000000000000000000000000000000000000000010};
+            bins min      = {64'b1000000000000000000000000000000000000000000000000000000000000000};
+            bins minp1    = {64'b1000000000000000000000000000000000000000000000000000000000000001};
+            bins Wmax     = {64'b0000000000000000000000000000000011111111111111111111111111111111};
+            bins Wmaxm1   = {64'b0000000000000000000000000000000011111111111111111111111111111110};
+            bins Wmaxp1   = {64'b0000000000000000000000000000000100000000000000000000000000000000};
+            bins Wmaxp2   = {64'b0000000000000000000000000000000100000000000000000000000000000001};
+            bins max      = {64'b0111111111111111111111111111111111111111111111111111111111111111};
+            bins maxm1    = {64'b0111111111111111111111111111111111111111111111111111111111111110};
+            bins ones     = {64'b1111111111111111111111111111111111111111111111111111111111111111};
+            bins onesm1   = {64'b1111111111111111111111111111111111111111111111111111111111111110};
+            bins walkeodd = {64'b1010101010101010101010101010101010101010101010101010101010101010};
+            bins walkeven = {64'b0101010101010101010101010101010101010101010101010101010101010101};
+            wildcard bins random = {64'b01???????????????????????????????????????????????????????????010};
+        `endif
+    }
+    cp_rs2_corners : coverpoint unsigned'(ins.current.rs2_val)  iff (ins.trap == 0 )  {
+        `ifdef XLEN32
+            bins zero  =    {0};
+ ...
+        `else
+            bins zero  = {0};
+            ...
+        `endif
+    }
+    cr_rs1_rs2_corners : cross cp_rs1_corners,cp_rs2_corners  iff (ins.trap == 0 )  {
+        //Cross coverage of RS1 corners and RS2 corners
+    }
+    cmp_rd_rs1_eqval : coverpoint ins.current.rd_val == ins.current.rs1_val  iff (ins.trap == 0 )  {
+        //Compare RD and RS1 register values
+        bins rd_eqval_rs1  = {1};
+        bins rd_neval_rs1  = {0};
+    }
+    cmp_rd_rs2_eqval : coverpoint ins.current.rd_val == ins.current.rs2_val  iff (ins.trap == 0 )  {
+        //Compare RD and RS2 register values
+        bins rd_eqval_rs2  = {1};
+        bins rd_neval_rs2  = {0};
+    }
+    cmp_rs1_rs2 : coverpoint ins.get_gpr_reg(ins.current.rs1)  iff (ins.current.rs1 == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs1 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs1 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs2 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs1_rs2 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs1 & ins.current.rd == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cp_gpr_hazard_rw : coverpoint check_gpr_hazards(ins.hart, ins.issue)  iff (ins.trap == 0 )  {
+        //GPR Hazard
+        bins hazards[]  = {NO_HAZARD, RAW_HAZARD, WAW_HAZARD, WAR_HAZARD};
+    }
+endgroup
+----
+
+Corresponding RV32 tests are in tests/rv32/I/I-add.S.  Observe how the directed tests align with the coverpoints and bins.  Register numbers and values are randomized unless they are swept by the coverpoint. The RVTEST_SIGUPD macro compares the result against an expected signature produced by a reference model. When register 0 is used, it is loaded with a random value, but hardwired to 0, so the reference model will show that it behaves as 0.
+
+[[f-add-tests]]
+.`add` Tests
+----
+# Testcase cp_rs1 (Test source rs1 = x0)
+li x0, 0xb4e96718 # initialize rs1
+li x24, 0xeaa512b3 # initialize rs2
+add x25, x0, x24 # perform operation
+RVTEST_SIGUPD(x3, x25)
+
+# Testcase cp_rs1 (Test source rs1 = x1)
+li x1, 0x81c4ef2a # initialize rs1
+li x6, 0x917cfa69 # initialize rs2
+add x7, x1, x6 # perform operation
+RVTEST_SIGUPD(x3, x7)
+
+...
+
+# Testcase cp_rs1 (Test source rs1 = x31)
+mv x21, x31 # switch signature pointer register to avoid conflict with test
+li x31, 0x1508dd4e # initialize rs1
+li x14, 0x830d07b0 # initialize rs2
+add x11, x31, x14 # perform operation
+RVTEST_SIGUPD(x21, x11)
+
+
+# Testcase cp_rd (Test destination rd = x0)
+li x19, 0x1d01c852 # initialize rs1
+li x9, 0x1bfbf146 # initialize rs2
+add x0, x19, x9 # perform operation
+RVTEST_SIGUPD(x20, x0)
+
+# Testcase cp_rd (Test destination rd = x1)
+li x26, 0x1e3aafcf # initialize rs1
+li x19, 0x986da37b # initialize rs2
+add x1, x26, x19 # perform operation
+RVTEST_SIGUPD(x20, x1)
+
+...
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x0)
+li x15, 0x00000000 # initialize rs1
+li x5, 0x00000000 # initialize rs2
+add x11, x15, x5 # perform operation
+RVTEST_SIGUPD(x10, x11)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x1)
+li x1, 0x00000000 # initialize rs1
+li x31, 0x00000001 # initialize rs2
+add x20, x1, x31 # perform operation
+RVTEST_SIGUPD(x10, x20)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x2)
+li x27, 0x00000000 # initialize rs1
+li x3, 0x00000002 # initialize rs2
+add x11, x27, x3 # perform operation
+RVTEST_SIGUPD(x10, x11)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x80000000)
+li x8, 0x00000000 # initialize rs1
+li x5, 0x80000000 # initialize rs2
+add x16, x8, x5 # perform operation
+RVTEST_SIGUPD(x10, x16)
+----
