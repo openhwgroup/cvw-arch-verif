@@ -102,10 +102,46 @@ sim:
 
 	$(MAKE) merge
 
+interrupts:
+	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
+	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsM.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsM.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
+	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Mmode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Mmode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
+	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Smode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Smode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
+	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Umode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Umode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
+	cd ${WALLY}/addins/cvw-arch-verif
+	cp -r ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsM.S/ref/ref.elf ${TESTDIR}/priv/rv64/InterruptsM.elf
+	cp -r ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Mmode.S/ref/ref.elf ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf
+	cp -r ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Smode.S/ref/ref.elf ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf
+	cp -r ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Umode.S/ref/ref.elf ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf
+	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases ${TESTDIR}/priv/rv64/InterruptsM.elf > ${TESTDIR}/priv/rv64/InterruptsM.elf.objdump
+	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf > ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf.objdump
+	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf > ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf.objdump
+	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf > ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf.objdump
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input ${TESTDIR}/priv/rv64/InterruptsM.elf --output ${TESTDIR}/priv/rv64/InterruptsM.elf.memfile
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf --output ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf.memfile
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf --output ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf.memfile
+	riscv64-unknown-elf-elf2hex --bit-width 64 --input ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf --output ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf.memfile
+	extractFunctionRadix.sh ${TESTDIR}/priv/rv64/InterruptsM.elf.objdump
+	extractFunctionRadix.sh ${TESTDIR}/priv/rv64/InterruptsS_Mmode.elf.objdump
+	extractFunctionRadix.sh ${TESTDIR}/priv/rv64/InterruptsS_Smode.elf.objdump
+	extractFunctionRadix.sh ${TESTDIR}/priv/rv64/InterruptsS_Umode.elf.objdump
+
+
+# Modify the following line to run a specific test
+	wsim rv64gc $(TESTDIR)/priv/rv64/InterruptsS_Smode.elf --fcov --lockstepverbose > log
+	#wsim rv64gc $(TESTDIR)/priv/rv64/InterruptsM.elf --fcov --lockstep
+	#wsim rv64gc $(TESTDIR)/priv/rv64/InterruptsS_Mmode.elf --fcov --lockstepverbose > log
+	#wsim rv64gc $(TESTDIR)/priv/rv64/InterruptsS_Smode.elf --fcov --lockstep
+	#wsim rv64gc $(TESTDIR)/priv/rv64/InterruptsS_Umode.elf --fcov --lockstep
+
+	$(MAKE) merge
+
 # Merge coverage files and generate report
 merge: $(WORK)
 	rm -f work/merge*.ucdb
 	bin/coverreport.py
+
+
 
 # Create directories
 $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK):
