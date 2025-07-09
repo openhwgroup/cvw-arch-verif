@@ -21,7 +21,7 @@
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
-covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpaddr, logic [29:0] pmpcfg_a);
+covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpaddr, logic [29:0] pmpcfg_a);
 	option.per_instance = 0;
 	`include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
@@ -209,8 +209,7 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	}
 
 	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
-		bins U_mode = {2'b00};
-		bins M_mode = {2'b11};
+		bins S_mode = {2'b01};
 	}
 
 	lxwr: coverpoint ins.current.csr[12'h3A0][7:0] {
@@ -259,45 +258,45 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 
 //-------------------------------------------------------
 
-	cp_cfg_X: cross priv_mode_u, legal_lxwr, exec_instr, standard_region, addr_in_region ;
-	cp_cfg_R: cross priv_mode_u, legal_lxwr, read_instr, standard_region, addr_in_region ;
-	cp_cfg_W: cross priv_mode_u, legal_lxwr, write_instr, standard_region, addr_in_region ;
+	cp_cfg_X: cross priv_mode_s, legal_lxwr, exec_instr, standard_region, addr_in_region ;
+	cp_cfg_R: cross priv_mode_s, legal_lxwr, read_instr, standard_region, addr_in_region ;
+	cp_cfg_W: cross priv_mode_s, legal_lxwr, write_instr, standard_region, addr_in_region ;
 
-	cp_none_lw: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, read_instr_lw ;
-	cp_none_sw: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
-	cp_none_jalr: cross priv_mode_u, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
+	cp_none_lw: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, read_instr_lw ;
+	cp_none_sw: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
+	cp_none_jalr: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
-	cp_cfg_A_off_jalr: cross priv_mode_u, cfg_A_off, exec_instr, addr_in_region ;
-	cp_cfg_A_off_lw: cross priv_mode_u, cfg_A_off, read_instr_lw, addr_in_region ;
-	cp_cfg_A_off_sw: cross priv_mode_u, cfg_A_off, write_instr_sw, addr_in_region ;
+	cp_cfg_A_off_jalr: cross priv_mode_s, cfg_A_off, exec_instr, addr_in_region ;
+	cp_cfg_A_off_lw: cross priv_mode_s, cfg_A_off, read_instr_lw, addr_in_region ;
+	cp_cfg_A_off_sw: cross priv_mode_s, cfg_A_off, write_instr_sw, addr_in_region ;
 
 	// Access at start of region, start - 4, start + 4, highest word in region, just beyond top of the region
-	cp_cfg_A_napot_jalr: cross priv_mode_u, cfg_A_napot, exec_instr, addr_offset_napot ;
-	cp_cfg_A_napot_lw: cross priv_mode_u, cfg_A_napot, read_instr_lw, addr_offset_napot ;
-	cp_cfg_A_napot_sw: cross priv_mode_u, cfg_A_napot, write_instr_sw, addr_offset_napot ;
+	cp_cfg_A_napot_jalr: cross priv_mode_s, cfg_A_napot, exec_instr, addr_offset_napot ;
+	cp_cfg_A_napot_lw: cross priv_mode_s, cfg_A_napot, read_instr_lw, addr_offset_napot ;
+	cp_cfg_A_napot_sw: cross priv_mode_s, cfg_A_napot, write_instr_sw, addr_offset_napot ;
 
 	`ifdef G_IS_0
 		// Access at start of address, that address + 4, just beyond top of the region.
-		cp_cfg_A_na4_jalr: cross priv_mode_u, cfg_A_na4, exec_instr, addr_offset_na4 ;
-		cp_cfg_A_na4_lw: cross priv_mode_u, cfg_A_na4, read_instr_lw, addr_offset_na4 ;
-		cp_cfg_A_na4_sw: cross priv_mode_u, cfg_A_na4, write_instr_sw, addr_offset_na4 ;
+		cp_cfg_A_na4_jalr: cross priv_mode_s, cfg_A_na4, exec_instr, addr_offset_na4 ;
+		cp_cfg_A_na4_lw: cross priv_mode_s, cfg_A_na4, read_instr_lw, addr_offset_na4 ;
+		cp_cfg_A_na4_sw: cross priv_mode_s, cfg_A_na4, write_instr_sw, addr_offset_na4 ;
 	`endif
 
 	// Access at address, address-4, address-g, address-g-4.
-	cp_cfg_A_tor_jalr: cross priv_mode_u, cfg_A_tor, exec_instr, addr_offset_tor ;
-	cp_cfg_A_tor_lw: cross priv_mode_u, cfg_A_tor, read_instr_lw, addr_offset_tor ;
-	cp_cfg_A_tor_sw: cross priv_mode_u, cfg_A_tor, write_instr_sw, addr_offset_tor ;
+	cp_cfg_A_tor_jalr: cross priv_mode_s, cfg_A_tor, exec_instr, addr_offset_tor ;
+	cp_cfg_A_tor_lw: cross priv_mode_s, cfg_A_tor, read_instr_lw, addr_offset_tor ;
+	cp_cfg_A_tor_sw: cross priv_mode_s, cfg_A_tor, write_instr_sw, addr_offset_tor ;
 
 	cp_mprv_jalr: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, exec_instr, standard_region, addr_in_region ;
 	cp_mprv_lw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, read_instr_lw, standard_region, addr_in_region ;
 	cp_mprv_sw: cross priv_mode_m, mprv_mstatus, mpp_mstatus, lxwr, write_instr_sw, standard_region, addr_in_region ;
 
-	cp_pmpaddr_access_u: cross priv_mode_u, csrrw, pmpaddr_entries ;
-	cp_pmpcfg_access_u: cross priv_mode_u, csrrw, pmpcfg_entries ;
+	cp_pmpaddr_access_s: cross priv_mode_s, csrrw, pmpaddr_entries ;
+	cp_pmpcfg_access_s: cross priv_mode_s, csrrw, pmpcfg_entries ;
 
 endgroup
 
-function void pmpu_sample(int hart, int issue, ins_t ins);
+function void pmps_sample(int hart, int issue, ins_t ins);
 
 	logic [16*XLEN-1:0] pack_pmpaddr;
 	logic [29:0] pmpcfg_a;			// for first 15 Regions
@@ -360,5 +359,5 @@ function void pmpu_sample(int hart, int issue, ins_t ins);
 					ins.current.csr[12'h3A0][4:3]
 					};
 	`endif
-	PMPU_cg.sample(ins, pack_pmpaddr, pmpcfg_a);
+	PMPS_cg.sample(ins, pack_pmpaddr, pmpcfg_a);
 endfunction
