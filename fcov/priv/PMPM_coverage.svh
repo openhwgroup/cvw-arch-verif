@@ -18,31 +18,6 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------ Assuming it right for time being --------------
-
-`define RAMBASEADDR 32'h80000000
-`define LARGESTPROGRAM 32'h00010000
-`define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
-`define REGIONSTART `SAFEREGIONSTART
-
-`define G 0				// Set G as needed (0, 1, 2, etc.)
-`define G_IS_0			 // Uncomment this when G=0
-`define g (2**(`G+2))	// Region size = 2^(G+2)
-`define k ((`G > 1) ? (`G - 1) : 0)
-
-// Define PMP_16 or PMP_64
-`define PMP_16
-
-// --- These are values that can be found in PMPADDR ---
-
-// NA4 or TOR region
-`define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
-
-// NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
-
-//------------------------------------------------------------
-
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
@@ -2092,5 +2067,4 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
-	$display("PMPADDR = %h",`STANDARD_REGION);
 endfunction
