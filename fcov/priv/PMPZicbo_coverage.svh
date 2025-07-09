@@ -224,6 +224,6 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
 
 endgroup
 
-function void pmpZicbo_sample(int hart, int issue, ins_t ins);
+function void pmpzicbo_sample(int hart, int issue, ins_t ins);
     PMPZicbo_cg.sample(ins);
 endfunction
