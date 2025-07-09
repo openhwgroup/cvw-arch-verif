@@ -14,41 +14,39 @@ import sys
 
 def sailLog2Trace(inputLogFile, outputTraceFile):
     # Regular expression to match instruction lines
-    #                              [STEP]      [MODE]:  0xPC             (0xINSN)           DISASM
-    insn_pattern = re.compile(r'\[(\d+)\] \[([MSU])\]: (0x[0-9a-fA-F]+) \((0x[0-9a-fA-F]+)\) (.*)')
+    #                             [STEP]     [MODE]:    0xPC              (0xINSN)           DISASM
+    insn_pattern = re.compile(r'\[(\d+)\] \[([MSU])\]: 0x([0-9a-fA-F]+) \(0x([0-9a-fA-F]+)\) (.*)')
 
     # Regular expressions to match register updates
     reg_patterns = {
-        'CSR': re.compile(r'CSR .* \((0x[0-9a-fA-F]+)\) (?:<-|->) (0x[0-9a-fA-F]+)'),
-        'X': re.compile(r'x(\d+) <- (0x[0-9a-fA-F]+)'),
-        'F': re.compile(r'f(\d+) <- (0x[0-9a-fA-F]+)'),
-        'V': re.compile(r'v(\d+) <- (0x[0-9a-fA-F]+)'),
+        'CSR': re.compile(r'CSR .* \(0x([0-9a-fA-F]+)\) (?:<-|->) 0x([0-9a-fA-F]+)'),
+        'X':   re.compile(r'x(\d+) <- 0x([0-9a-fA-F]+)'),
+        'F':   re.compile(r'f(\d+) <- 0x([0-9a-fA-F]+)'),
+        'V':   re.compile(r'v(\d+) <- 0x([0-9a-fA-F]+)'),
     }
 
     # Mode mapping
     mode_map = {'M': '3', 'S': '1', 'U': '0'}
 
-    # TODO: Add support for detecting traps, interrupts, and VM signals
+    # TODO: Add support for parsing traps, interrupts, and VM signals
 
     # Main parsing of log file
     with open(inputLogFile, 'r') as f, open(outputTraceFile, "w") as outfile:
         lines = f.readlines()
-        i = 0
-        while i < len(lines):
+        output_line = ""
+        for i in range(len(lines)):
             line = lines[i]
 
             # Check for instruction line
             insn_match = insn_pattern.search(line)
             if insn_match:
-                _, mode, pc, insn, _ = insn_match.groups()
-                mode_num = mode_map.get(mode, mode)
-
-                # Remove '0x' prefix
-                pc = pc[2:]
-                insn = insn[2:]
+                order, prev_mode, pc, insn, _ = insn_match.groups()
+                prev_mode_num = mode_map.get(prev_mode)
 
                 # Format the beginning of the instruction line
-                output = f"PC {pc} INSN {insn} MODE {mode_num}"
+                # mode_num is set later based on the mode for the next instruction because RVVI expects the
+                # mode at the end of the instruction but Sail logs have the mode at the start of the instruction.
+                next_output = f"ORDER {order} PC {pc} INSN {insn} MODE " + "{mode_num}"
 
                 # Check for register updates until the next instruction line
                 j = i + 1
@@ -60,18 +58,19 @@ def sailLog2Trace(inputLogFile, outputTraceFile):
                         if reg_match:
                             reg_type = reg
                             reg_num, reg_val = reg_match.groups()
-                            reg_val = reg_val[2:]
-                            output += f" {reg_type} {reg_num} {reg_val}"
+                            next_output += f" {reg_type} {reg_num} {reg_val}"
                             break
                     if insn_pattern.search(lines[j]):
                         break
                     j += 1
 
                 # Reached end of instruction
-                output += "\n"
-                outfile.write(output)
+                next_output += "\n"
 
-            i += 1
+                # Update the previous instruction with the new privilege mode and output it to the trace file
+                output_line = output_line.format(mode_num=prev_mode_num)
+                outfile.write(output_line)
+                output_line = next_output
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
