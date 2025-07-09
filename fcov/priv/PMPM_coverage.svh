@@ -25,8 +25,8 @@
 `define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
 `define REGIONSTART `SAFEREGIONSTART
 
-`define G 0				// Set G as needed (0, 1, 2, etc.)
-`define G_IS_0			 // Uncomment this when G=0
+`define G 1			// Set G as needed (0, 1, 2, etc.)
+//`define G_IS_0			 // Uncomment this when G=0
 `define g (2**(`G+2))	// Region size = 2^(G+2)
 `define k ((`G > 1) ? (`G - 1) : 0)
 
@@ -416,18 +416,30 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 	//pattern write inside pmpaddr[0]
 	`ifndef G_IS_0
-		pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
+		pmpaddr0_for_cp_grain: coverpoint ins.prev.rs1_val {
 			bins all_zero = {0};
 			bins all_one  = {{(`XLEN){1'b1}}};
 			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
 		}
 
-		pmpcfg0_A_mode_OFF: coverpoint pmpcfg[0] {
-  			wildcard bins OFF = {8'b00000???};
+		pmpcfg0_A_mode_OFF_write: coverpoint {pmpcfg[0], ins.prev.insn} {
+  			wildcard bins OFF = {8'b00000???, 32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpcfg[0] with OFF mode
 		}
 
-		pmpcfg0_A_mode_NAPOT: coverpoint pmpcfg[0] {
-  			wildcard bins NAPOT = {8'b00011???};
+		pmpcfg0_A_mode_NAPOT_write: coverpoint {pmpcfg[0], ins.prev.insn} {
+  			wildcard bins OFF = {8'b00011???, 32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpcfg[0] with NAPOT mode
+		}
+
+		pmpcfg0_A_mode_OFF_read: coverpoint {pmpcfg[0], ins.current.insn} {
+  			wildcard bins OFF = {8'b00000???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with OFF mode
+		}
+
+		pmpcfg0_A_mode_NAPOT_read: coverpoint {pmpcfg[0], ins.current.insn} {
+  			wildcard bins OFF = {8'b00011???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with NAPOT mode
+		}
+
+		pmpcfg0_A_mode_TOR_read: coverpoint {pmpcfg[0], ins.current.insn} {
+  			wildcard bins OFF = {8'b00001???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with TOR mode
 		}
 	`endif
 
@@ -1304,15 +1316,16 @@ covergroup PMPM_cg with function sample(
 	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
-	//crossess for cp_grain
 	//Changing pmpcfg.A and reading back pmpaddr0 will be a part of the test.
-
-	/*                     ****Needs fixing***
 	`ifndef G_IS_0
-		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
-		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+		cp_grain_OFF_to_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_OFF_write, pmpcfg0_A_mode_OFF_read ;
+		cp_grain_OFF_to_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_OFF_write, pmpcfg0_A_mode_NAPOT_read ;
+		cp_grain_OFF_to_TOR : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_OFF_write, pmpcfg0_A_mode_TOR_read ;
+		cp_grain_NAPOT_to_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_NAPOT_write, pmpcfg0_A_mode_OFF_read ;
+		cp_grain_NAPOT_to_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_NAPOT_write, pmpcfg0_A_mode_NAPOT_read ;
+		cp_grain_NAPOT_to_TOR : cross priv_mode_m, pmpaddr0_for_cp_grain, pmpcfg0_A_mode_NAPOT_write, pmpcfg0_A_mode_TOR_read ;
 	`endif
-	*/
+
 	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.
