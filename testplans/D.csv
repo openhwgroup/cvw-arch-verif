@@ -31,7 +31,7 @@ fsgnjn.d,FR,x,x,x,,,,,x,x,,x,D,D,,x,x,,,,,D,,D,,,,,,,rw,
 fsgnjx.d,FR,x,x,x,,,,,x,x,,x,D,D,,x,x,,,,,D,,D,,,,,,,rw,
 fsqrt.d,FI,x,x,x,,,,,x,,,x,D,,,x,,,2,vn,x,,,,,,,,,,rw,
 fsub.d,FR,x,x,x,,,,,x,x,,x,D,D,,x,x,,3,von,x,frm_D,,frm_D,,,,,,,rw,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
 fadd.s,FR,x,x,,,,,,,,,,,,,,,,,,,,,,,,D_S,D_S,D_S,,,
 fclass.s,FIX,x,x,,,,,,,,,,,,,,,,,,,,,,,,,D_S,,,,
 fcvt.l.s,F2X,,x,,,,,,,,,,,,,,,,,,,,,,,,,D_S,,,,

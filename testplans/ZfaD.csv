@@ -9,7 +9,7 @@ fmvh.x.d,F2X,x,,x,,,x,,,x,,,D,,,,,,,,,,,,,r,w
 fmvp.d.x,PX2F,x,,x,x,x,,x,x,,,x,,,,,,,,,,,,,,w,r
 fround.d,FI,x,x,x,,,,,,x,,x,D,,x,,2,v,x,,,,,,,rw,
 froundnx.d,FI,x,x,x,,,,,,x,,x,D,,x,,2,vn,x,,,,,,,rw,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
 fleq.s,FC,x,x,,,,,,,,,,,,,,,,,,,,,D_S,D_S,,
 fli.s,FLI,x,x,,,,,,,,,,,,,,,,,,,,D_S,,,,
 fltq.s,FC,x,x,,,,,,,,,,,,,,,,,,,,,D_S,D_S,,
