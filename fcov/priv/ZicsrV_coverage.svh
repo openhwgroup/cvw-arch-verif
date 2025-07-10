@@ -86,6 +86,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     }
 
     //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
+    // Like std_vec, but the instruction might trap
     std_trap_vec : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
                         get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
                         get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0
@@ -201,7 +202,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     }
 
     vtype_lmul_8: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
-        bins two = {3};
+        bins eight = {3};
     }
 
     vtype_all_sew_supported: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew") {
