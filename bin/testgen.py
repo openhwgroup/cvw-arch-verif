@@ -2142,7 +2142,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
                          "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
                          "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
       pass # Zalrsc coverpoints handled custom
-    elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei"]):
+    elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei", "cp_custom_fence", "cp_custom_pause"]):
       make_custom(test, xlen)
     elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
