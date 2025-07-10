@@ -30,7 +30,10 @@ UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
 # Main targets
 all: unpriv priv
-Vx : riscv-arch-Vx8 riscv-arch-Vx16 riscv-arch-Vx32 riscv-arch-Vx64
+Vx  : riscv-arch-Vx8  riscv-arch-Vx16  riscv-arch-Vx32  riscv-arch-Vx64
+Vls : riscv-arch-Vls8 riscv-arch-Vls16 riscv-arch-Vls32 riscv-arch-Vls64
+V   : riscv-arch-Vx8  riscv-arch-Vx16  riscv-arch-Vx32  riscv-arch-Vx64 riscv-arch-Vls8 riscv-arch-Vls16 riscv-arch-Vls32 riscv-arch-Vls64
+
 
 unpriv: testgen
 	$(MAKE) $(UNPRIVOBJECTS)
