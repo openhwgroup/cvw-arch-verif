@@ -12,6 +12,7 @@
 ##################################
 import os
 import sys
+import csv
 import re
 import math
 import filecmp
@@ -205,7 +206,7 @@ def setExtension(new_extension):
     global extension
     extension = new_extension
 
-def incrememntLengthtestCount():
+def incrementLengthtestCount():
     global lengthtest_count
     lengthtest_count = lengthtest_count + 1
 
@@ -420,17 +421,18 @@ vs2_widen_ins = narrowins + wwvins + wwxins
 vvmins = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm"]
 vxmins = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm"]
 vimins = ["vadc.vim", "vmerge.vim"]
-mvvins = ["vmadc.vv", "vmsbc.vv", "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
-mvxins = ["vmadc.vx", "vmsbc.vx", "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
-mviins = ["vmadc.vi", "vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
+vm_nomask_ins = ["vmadc.vv", "vmsbc.vv", "vmadc.vx", "vmsbc.vx", "vmadc.vi"]
+mvvins = ["vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
+mvxins = ["vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
+mviins = ["vmseq.vi", "vmsne.vi", "vmsle.vi", "vmsleu.vi", "vmsgt.vi", "vmsgtu.vi"]
 mvvmins = ["vmadc.vvm", "vmsbc.vvm"]
 mvxmins = ["vmadc.vxm", "vmsbc.vxm"]
 mvimins = ["vmadc.vim"]
 mmins = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm"]
-maskins = mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
+maskins = vm_nomask_ins + mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
 
 v_mins = vvmins + vxmins + vimins
-mv_ins = mvvins + mvxins + mviins
+mv_ins = vm_nomask_ins + mvvins + mvxins + mviins
 mv_mins = mvvmins + mvxmins + mvimins
 # extending
 vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
@@ -457,7 +459,7 @@ ls_not_maskable = [
 
 vmvins          = vvrtype + vxtype + vitype + xvtype + vvvxtype + vcompressins
 vd_widen_ins    = wvvins + wvxins + wwvins + wwxins + wvsins
-not_maskable    = mv_ins + mmins + vmvins + ls_not_maskable
+not_maskable    = vm_nomask_ins + mmins + vmvins + ls_not_maskable
 
 # "vl1re8.v", "vl1re16.v", "vl1re32.v", "vl1re64.v"
 # "vs1r.v",
@@ -961,11 +963,12 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
+    register_value        = register_data['val']
     register_emul         = lmul * register_data['size_multiplier'] * register_data['segments']
 
     if register_data['reg_type'] == "mask" : register_sew = 8
     if instruction in vector_ls_ins        : register_sew = sew # regsiters are read with sew and lmul in vtype csr
-    else                                   : register_sew = register_data['size_multiplier'] * sew
+    else                                   : register_sew = int(register_data['size_multiplier'] * sew)
 
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
@@ -999,8 +1002,12 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       tempReg = randint(1,31)
     scalar_registers_used.append(tempReg)
 
-    writeLine(f"la x{tempReg}, {register_val_pointer}", "# Load address of desired value")
-    writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
+    if register_value is not None:
+      writeLine(f"li x{tempReg}, {register_value}", "# Load immediate value into integer register")
+      writeLine(f"vmv.v.x v{register}, x{tempReg}",       f"# Load desired value into v{register}")
+    else:
+      writeLine(f"la x{tempReg}, {register_val_pointer}",  "# Load address of desired value")
+      writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
     load_vls_random_corner = register_val_pointer == "vs_corner_random_within_2vlmax"
 
@@ -1037,7 +1044,7 @@ def loadScalarReg(register_argument_name: str, scalar_register_data):
   register          = register_data['reg']
   register_value    = register_data['val']
 
-  writeLine(f"li x{register}, {formatstr.format(register_value)}", "# Load immediate value into integer register")
+  writeLine(f"li x{register}, {register_value}", "# Load immediate value into integer register")
 
 def loadScalarAddress(register_argument_name: str, scalar_register_data):
   register_data     = scalar_register_data[register_argument_name]
@@ -1450,7 +1457,7 @@ def getInstructionRegisterOverlapConstraints (instruction):
   elif instruction in vmlogicalins    : no_overlap = [['vd',        'vs2']                      ]
   elif instruction in wvxins          : no_overlap = [['vd_bottom', 'vs2']                      ]
   elif instruction in mv_ins          : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
-  elif instruction in vextins         : no_overlap = [['vd',        'vs2']                      ]
+  elif instruction in vextins         : no_overlap = [['vd_bottom', 'vs2']                      ]
   elif instruction in narrowins       : no_overlap = [['vd',    'vs2_top'], ['vs2',       'vs1']]
   elif instruction in wvsins          : no_overlap = [['vd',        'vs2'], ['vs2',       'vs1']] # no "_bottom" in vd because its a reduction instruction
   elif instruction in wwvins          : no_overlap = [['vd_bottom', 'vs1'], ['vs1',       'vs2']]
@@ -1460,6 +1467,15 @@ def getInstructionRegisterOverlapConstraints (instruction):
   elif instruction in seg_vv_load     : no_overlap = [['vd', 'vs2']                             ]
 
   return no_overlap
+
+def randomizeOngroupVectorRegister(instruction, *preset_vreg, lmul=1, maskval=None):
+  if (instruction in v_mins) or (instruction in mv_mins) or (maskval is not None):
+    preset_vreg = preset_vreg + (0,)  # avoid v0 in the cases above
+  target_reg = randint(0, math.floor((vreg_count-1)/lmul)) * lmul
+  while (target_reg in preset_vreg):
+    target_reg = randint(0, math.floor((vreg_count-1)/lmul)) * lmul
+
+  return target_reg
 
 # randomizeVectorInstructionData generates all necessary random data for an instruction following constraints
 
@@ -1493,10 +1509,10 @@ def randomizeVectorInstructionData(instruction, test_count, sew = None, suite="b
   }
 
   vector_register_preset_data         = {
-    'vs3' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
-    'vd'  : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
-    'vs1' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
-    'vs2' : {'reg' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1}
+    'vs3' : {'reg' : None, 'val' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
+    'vd'  : {'reg' : None, 'val' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
+    'vs1' : {'reg' : None, 'val' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1},
+    'vs2' : {'reg' : None, 'val' : None, 'val_pointer' : None, 'size_multiplier' : 1, 'reg_type' : None, 'segments' : 1}
   }
 
   immediate_preset_data               = None
@@ -1572,6 +1588,11 @@ def randomizeVectorInstructionData(instruction, test_count, sew = None, suite="b
     vector_register_preset_data['vs1']['size_multiplier'] = max(int(eew/sew), 1)
     vector_register_preset_data[ 'vd']['size_multiplier'] = max(int(eew/sew), 1)
 
+  if instruction in vextins: # swapped lmul and emul of vext instr for the convenience of register managing
+    extend_factor = int(instruction[-1])
+    vector_register_preset_data['vd']['size_multiplier'] = extend_factor
+    lmul = lmul / extend_factor
+
   ####################################################################################
 
   register_overlap = True
@@ -1643,7 +1664,7 @@ def randomizeVectorInstructionData(instruction, test_count, sew = None, suite="b
               end_register_no_overlap   = 1
             else:
               start_no_register_overlap = emul-lmul if top_no_overlap    and lmul >= 1 else 0
-              end_register_no_overlap   = lmul      if bottom_no_overlap and lmul >= 1 else emul # need to include nfields (there is no bottom or top overlap allowed)
+              end_register_no_overlap   = int(lmul) if bottom_no_overlap and lmul >= 1 else emul # need to include nfields (there is no bottom or top overlap allowed)
             for i in range(start_no_register_overlap, end_register_no_overlap):
               registers_occupied.append(vector_register_data[register]['reg'] + i) # add register to reserved list to prevent overlap
 
@@ -1674,6 +1695,11 @@ def randomizeVectorInstructionData(instruction, test_count, sew = None, suite="b
       immval = randint(-16,15)
   else:
     immval = immediate_preset_data
+
+  if instruction in vextins: # switching lmul and emul of vext instr back for loading
+    extend_factor = int(instruction[-1])
+    vector_register_data['vd']['size_multiplier'] = 1
+    vector_register_data['vs2']['size_multiplier'] = 1/extend_factor
 
   return [vector_register_data, scalar_register_data, floating_point_register_data, immval]
 
@@ -1709,11 +1735,14 @@ def getLegalVlmul(elen, sewmin, sew):
     legalvlmuls.append(-3)
   return legalvlmuls
 
-def randomizeMask(test):
+def randomizeMask(test, always_masked = False):
   if (test in not_maskable):
     vm = 1
   else:
-    vm = randint(0,1)
+    if (always_masked):
+      vm = 0
+    else:
+      vm = randint(0,1)
 
   if (vm == 1):
     maskval = None
@@ -1721,3 +1750,40 @@ def randomizeMask(test):
     i = randint(0,2)
     maskval = f"random_mask_{i}"
   return maskval
+
+# obtained and modified from covergroupgen.py
+def readTestplans(priv=False):
+    coverplanDir = f'{ARCH_VERIF}/testplans'
+    if (priv):
+      coverplanDir = coverplanDir + "/priv"
+    testplans = dict()
+    for file in os.listdir(coverplanDir):
+        if file.endswith(".csv"):
+            arch = re.search("(.*).csv", file).group(1)
+            if (arch == "ExceptionsV" or arch.startswith("Vx")):
+                with open(os.path.join(coverplanDir, file)) as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    tp = dict()
+                    for row in reader:
+                        #print(f"row = {row}")
+                        if ("Instruction" not in row):
+                            print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
+                            exit(1)
+                        instr = row["Instruction"]
+                        cps = []
+                        del row["Instruction"]
+                        for key, value in row.items():
+                            if (type(value) == str and value != ''):
+                                if(key == "Type"):
+                                    cps.append("sample_" + value)
+                                else:
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                        key = key + "_" + value
+                                    cps.append(key)
+                        tp[instr] = cps
+                testplans[arch] = tp
+                if (arch == "Vx"):
+                    for effew in ["8", "16", "32", "64"]:
+                        testplans["Vx" + effew] = tp
+                    del testplans["Vx"]
+    return testplans

@@ -319,7 +319,9 @@ function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
     case (vsew)
+    `ifdef SEW8_SUPPORTED
     2'b00:   return {56'b0, val[7:0]};
+    `endif
     `ifdef SEW16_SUPPORTED
     2'b01:  return {48'b0, val[15:0]};
     `endif
