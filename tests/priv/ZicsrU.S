@@ -113,13 +113,13 @@ rvtest_sig_begin:
 sig_begin_canary:
 CANARY;
 signature_base:
-    .fill 400*(XLEN/32),4,0xdeadbeef
+    .fill 20*(XLEN/32),4,0xdeadbeef
 
 #ifdef rvtest_mtrap_routine
 tsig_begin_canary:
 CANARY;
 mtrap_sigptr:
-.fill 4000*(XLEN/32),4,0xb0bacafe
+.fill 20*(XLEN/32),4,0xb0bacafe
 #Prof Harris mentioned we should probably start with 10000
 tsig_end_canary:
 CANARY;

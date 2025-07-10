@@ -20,18 +20,24 @@ def printwalk(regs):
             continue
         print("\n// Testing walking zeros and ones for CSR "+reg)
         print("\tcsrr s0, "+reg+"\t# save CSR")
+        print("\tRVTEST_SIGWRITE(x3, s0)\t# save CSR to Signature")
         print("\tli t1, -1           # all 1s")
         print("\tli t0, 1            # 1 in lsb")
-        print("\t1: csrrc t6, "+reg+", t1    # clear all bits")
+        print("1:  csrrc t6, "+reg+", t1    # clear all bits")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tcsrrs t6, "+reg+", t0    # set walking 1")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tli t0, 1            # 1 in lsb")
         print("1:  csrrs t6, "+reg+", t1    # set all bits")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tcsrrc t6, "+reg+", t0    # clear walking 1")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
         print("\tslli t0, t0, 1      # walk the 1")
         print("\tbnez t0, 1b         # repeat until all bits are walked")
         print("\tcsrrw t6, "+reg+", s0    # restore CSR")
+        print("\tRVTEST_SIGWRITE(x3, t6)\t# save CSR to Signature")
 
 def csrwalk(pathname, regs, hregs):
     outfile = open(pathname, 'w')
@@ -160,6 +166,47 @@ def counterenwalkdouble(pathname, csr1, csr2, regs, hregs, mode):
             print("#endif")
         sys.stdout = sys.__stdout__
 
+
+def cp_vsetvl_i_rd_nx0_rs1_x0(pathname):
+    with open(pathname, 'w') as outfile:
+        sys.stdout = outfile
+        sews = ["8", "16", "32", "64"]
+        lmuls = ["1", "2", "4", "8", "f2", "f4", "f8"]
+
+        print("// Tests for cp_vsetvl_i_rd_nx0_rs1_x0")
+        for sew in sews:
+            for lmul in lmuls:
+                print("\t// SEW = " + sew + ", LMUL = " + lmul)
+                print("\tvsetvli  x8, x0, e" + sew + ", m" + lmul + ", tu, mu")
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+
+        for i in range(32):
+            if i not in [4, 12, 20, 28]: # LMUL = 3'b100 is reserved
+                ih = hex(i)
+                print(f"\t// vtype[7:0] = 0_0_{format(i >> 3, '03b')}_{format(i & 0b111, '03b')}")
+                print("\tli       t2, " + str(ih))
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+    outfile.close
+
+def cp_vsetivli_avl_corners(pathname):
+    with open(pathname, 'w') as outfile:
+        sys.stdout = outfile
+        sews = ["8", "16", "32", "64"]
+
+        print("// Tests for cp_vsetivli_avl_corners")
+        for sew in sews:
+            for i in range(32):
+                print("\t// SEW = " + sew + " and LMUL = 1")
+                print("\tvsetivli x8, " + str(i) + ", e" + sew + ", m1, tu, mu")
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+    outfile.close
+
 # setup
 seed(0) # make tests reproducible
 
@@ -169,7 +216,9 @@ seed(0) # make tests reproducible
 mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"]
 mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
-uregs = ["fflags", "frm", "fcsr"]
+fregs = ["fflags", "frm", "fcsr"]
+vregs = ["vtype", "vlenb", "vl", "vxrm", "vxsat", "vcsr"] # removed (, "vstart") since it is buggy in sail and caused signature mismatch
+
 mcntrs = ["mcycle", "mcountinhibit", "minstret",
           "mhpmcounter3", "mhpmcounter4", "mhpmcounter5", "mhpmcounter6", "mhpmcounter7", "mhpmcounter8", "mhpmcounter9", "mhpmcounter10", "mhpmcounter11", "mhpmcounter12", "mhpmcounter13", "mhpmcounter14", "mhpmcounter15",
           "mhpmcounter16", "mhpmcounter17", "mhpmcounter18", "mhpmcounter19", "mhpmcounter20", "mhpmcounter21", "mhpmcounter22", "mhpmcounter23", "mhpmcounter24", "mhpmcounter25", "mhpmcounter26", "mhpmcounter27", "mhpmcounter28", "mhpmcounter29", "mhpmcounter30", "mhpmcounter31",
@@ -210,13 +259,13 @@ pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrU-CSR-Tests.h"
 csrtests(pathname, uCsrSkip)
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrM-Walk.h"
-csrwalk(pathname, mregs + sregs + uregs + ["satp"], mregsh)
+csrwalk(pathname, mregs + sregs + ["satp"], mregsh)
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrS-Walk.h"
-csrwalk(pathname, sregs + uregs, [])
+csrwalk(pathname, sregs, [])
 
-pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrU-Walk.h"
-csrwalk(pathname, uregs, [])
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrUF-Walk.h"
+csrwalk(pathname, fregs, [])
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicntrM-Walk.h"
 csrwalk(pathname, mcntrs, mcntrsh)
@@ -241,3 +290,9 @@ counterenwalk(pathname, "scounteren", cntrs, cntrsh, "S")
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-SWalkU.h"
 counterenwalk(pathname, "scounteren", cntrs, cntrsh, "U")
+
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetvl-Tests.h"
+cp_vsetvl_i_rd_nx0_rs1_x0(pathname)
+
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetivli-Tests.h"
+cp_vsetivli_avl_corners(pathname)
