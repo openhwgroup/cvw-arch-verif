@@ -881,9 +881,9 @@ function string disassemble (logic [31:0] instrRaw);
     VFWNMSAC_VV:  $sformat(decoded, "vfwnmsac.vv %s, %s, %s%s",    vd, vs2, vs1, vm);
     VFWNMSAC_VF:  $sformat(decoded, "vfwnmsac.vf %s, %s, %s%s",    vd, vs2, fs1, vm);
 
-    VFSQRT_V:     $sformat(decoded, "vfsqrt.v %s, %s, %s%s",       vd, vs2, vm);
-    VFRSQRT7_V:   $sformat(decoded, "vfrsqrt7.v %s, %s, %s%s",     vd, vs2, vm);
-    VFREC7_V:     $sformat(decoded, "vfrec7.v %s, %s, %s%s",       vd, vs2, vm);
+    VFSQRT_V:     $sformat(decoded, "vfsqrt.v %s, %s%s",       vd, vs2, vm);
+    VFRSQRT7_V:   $sformat(decoded, "vfrsqrt7.v %s, %s%s",     vd, vs2, vm);
+    VFREC7_V:     $sformat(decoded, "vfrec7.v %s, %s%s",       vd, vs2, vm);
 
     VFMIN_VV:     $sformat(decoded, "vfmin.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
     VFMIN_VF:     $sformat(decoded, "vfmin.vf %s, %s, %s%s",       vd, vs2, fs1, vm);
@@ -911,9 +911,7 @@ function string disassemble (logic [31:0] instrRaw);
     VMFLT_VF:     $sformat(decoded, "vmflt.vf %s, %s, %s%s",       vd, vs2, fs1, vm);
     VMFLE_VV:     $sformat(decoded, "vmfle.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
     VMFLE_VF:     $sformat(decoded, "vmfle.vf %s, %s, %s%s",       vd, vs2, fs1, vm);
-    VMFGT_VV:     $sformat(decoded, "vmfgt.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
     VMFGT_VF:     $sformat(decoded, "vmfgt.vf %s, %s, %s%s",       vd, vs2, fs1, vm);
-    VMFGE_VV:     $sformat(decoded, "vmfge.vv %s, %s, %s%s",       vd, vs2, vs1, vm);
     VMFGE_VF:     $sformat(decoded, "vmfge.vf %s, %s, %s%s",       vd, vs2, fs1, vm);
 
     VFMERGE_VFM:  $sformat(decoded, "vfmerge.vfm %s, %s, %s, v0",  vd, vs2, fs1);
@@ -934,7 +932,7 @@ function string disassemble (logic [31:0] instrRaw);
     VFWCVT_RTZ_XU_F_V:  $sformat(decoded, "vfwcvt.rtz.xu.f.v %s, %s%s", vd, vs2, vm);
     VFNCVT_RTZ_XU_F_W:  $sformat(decoded, "vfncvt.rtz.xu.f.w %s, %s%s", vd, vs2, vm);
     VFCVT_RTZ_X_F_V:    $sformat(decoded, "vfcvt.rtz.xu.f.v %s, %s%s",  vd, vs2, vm);
-    VFWCVT_RTZ_X_F_V    $sformat(decoded, "vfwcvt.rtz.xu.f.v %s, %s%s", vd, vs2, vm);
+    VFWCVT_RTZ_X_F_V:   $sformat(decoded, "vfwcvt.rtz.xu.f.v %s, %s%s", vd, vs2, vm);
     VFNCVT_RTZ_X_F_W:   $sformat(decoded, "vfncvt.rtz.xu.f.w %s, %s%s", vd, vs2, vm);
     VFCVT_F_XU_V:       $sformat(decoded, "vfcvt.f.xu.v %s, %s%s",      vd, vs2, vm);
     VFWCVT_F_XU_V:      $sformat(decoded, "vfwcvt.f.xu.v %s, %s%s",     vd, vs2, vm);

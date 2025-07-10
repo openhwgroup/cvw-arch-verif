@@ -210,7 +210,7 @@ seed(0) # make tests reproducible
 mregs = ["mstatus", "mcause", "misa", "medeleg", "mideleg", "mie", "mtvec", "mcounteren", "mscratch", "mepc", "mtval", "mip", "menvcfg", "mseccfg"]
 mregsh = ["mstatush", "mseccfgh", "menvcfgh", "0x312" ]# 0x312 is medelegeh; RV64 compiler isn't accepting the name
 sregs = ["sstatus", "scause", "sie", "stvec", "scounteren", "senvcfg", "sscratch", "sepc", "stval", "sip", "0x120"] # 0x120 is scountinhibit, currently unsupported
-uregs = ["fflags", "frm", "fcsr", "vtype", "vlenb", "vl", "vstart", "vxrm", "vxsat", "vcsr"]
+uregs = ["fflags", "frm", "fcsr"]
 mcntrs = ["mcycle", "mcountinhibit", "minstret",
           "mhpmcounter3", "mhpmcounter4", "mhpmcounter5", "mhpmcounter6", "mhpmcounter7", "mhpmcounter8", "mhpmcounter9", "mhpmcounter10", "mhpmcounter11", "mhpmcounter12", "mhpmcounter13", "mhpmcounter14", "mhpmcounter15",
           "mhpmcounter16", "mhpmcounter17", "mhpmcounter18", "mhpmcounter19", "mhpmcounter20", "mhpmcounter21", "mhpmcounter22", "mhpmcounter23", "mhpmcounter24", "mhpmcounter25", "mhpmcounter26", "mhpmcounter27", "mhpmcounter28", "mhpmcounter29", "mhpmcounter30", "mhpmcounter31",

@@ -85,16 +85,6 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         bins true = {1'b1};
     }
 
-    //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero;
-    // Like std_vec, but the instruction might trap
-    std_trap_vec : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
-                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
-                        get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0
-                    }
-    {
-        bins true = {1'b1};
-    }
-
     misa_v_active : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "misa", "exts")[21] {
         bins vector = {1};
     }
@@ -119,8 +109,12 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     cp_mstatus_vs_set_dirty_arithmetic  : cross std_vec,        vector_vector_arithmetic_instruction,   mstatus_vs_initial_clean;
     cp_mstatus_vs_set_dirty_csr         : cross std_vec,        vsetvli_instruction,                    mstatus_vs_initial_clean;
 
-    cp_mstatus_vs_off_arithmetic        : cross std_trap_vec,   misa_v_active, mstatus_vs_inactive,     vector_vector_arithmetic_instruction;
-    cp_mstatus_vs_off_csr               : cross std_trap_vec,   misa_v_active, mstatus_vs_inactive,     vsetvli_instruction;
+    cp_mstatus_vs_off_arithmetic        : cross misa_v_active, mstatus_vs_inactive,     vector_vector_arithmetic_instruction iff (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                                                                                                                                  get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                                                                                                                                  get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0 );
+    cp_mstatus_vs_off_csr               : cross misa_v_active, mstatus_vs_inactive,     vsetvli_instruction iff (get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
+                                                                                                                 get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
+                                                                                                                 get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") != 0 );
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_misa_v
@@ -304,7 +298,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
 
     vtype_all_lmul_supported : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
         `ifdef LMULf8_SUPPORTED
-        bins eigth  = {5};
+        bins eighth  = {5};
         `endif
         `ifdef LMULf4_SUPPORTED
         bins fourth = {6};
