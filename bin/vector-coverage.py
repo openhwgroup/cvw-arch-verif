@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+##################################
+# vector-coverage.py
+#
+# James Kaden Cassidy jacassidy@hmc.edu July 10 2025
+# Georgia Tai gtai@hmc.edu
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+# Generate functional covergroups for RISC-V instructions
+##################################
 """
 build_and_run.py
 ----------------
