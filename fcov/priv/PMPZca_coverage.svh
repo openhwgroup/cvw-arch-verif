@@ -18,28 +18,6 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define RAMBASEADDR 32'h80000000
-`define LARGESTPROGRAM 32'h00010000
-`define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
-`define REGIONSTART `SAFEREGIONSTART
-
-`define G 4		// Set G as needed (0, 1, 2, etc.)
-//`define G_IS_0  // Uncomment this line iff G = 0
-
-`define k ((`G > 1) ? (`G - 1) : 0)		// k = max(0,G-1) no of trailing ones in napot region.
-`define g (2**(`k+3))	// Region size = 2^(G+2) for napot and tor => min size of 8 bytes.
-
-// Define PMP_16 or PMP_64
-`define PMP_16
-
-// NA4 or TOR region
-`define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
-
-// NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
-
-//------------------------------------------------------------
-
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 

@@ -18,31 +18,6 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------ Assuming it right for time being --------------
-
-`define RAMBASEADDR 32'h80000000
-`define LARGESTPROGRAM 32'h00010000
-`define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
-`define REGIONSTART `SAFEREGIONSTART
-
-`define G 0				// Set G as needed (0, 1, 2, etc.)
-`define G_IS_0			 // Uncomment this when G=0
-`define g (2**(`G+2))	// Region size = 2^(G+2)
-`define k ((`G > 1) ? (`G - 1) : 0)
-
-// Define PMP_16 or PMP_64
-`define PMP_16
-
-// --- These are values that can be found in PMPADDR ---
-
-// NA4 or TOR region
-`define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
-
-// NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
-
-//------------------------------------------------------------
-
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
@@ -816,16 +791,16 @@ covergroup PMPM_cg with function sample(
 	}
 
 	write_pmp_csr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110001_00000_010_?????_1110011}; // Try to write value of x0 in pmpaddr1
-		wildcard bins write_pmpcfg   = {32'b001110100001_00000_010_?????_1110011}; // Try to write value of x0 in pmpcfg1
+		wildcard bins write_pmpaddr  = {32'b001110110001_00000_001_?????_1110011}; // Try to write value of x0 in pmpaddr1
+		wildcard bins write_pmpcfg   = {32'b001110100001_00000_001_?????_1110011}; // Try to write value of x0 in pmpcfg1
 	}
 
 	write_lower_pmpaddr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110000_?????_010_?????_1110011}; // Try to write pmpaddr0
+		wildcard bins write_pmpaddr  = {32'b001110110000_?????_001_?????_1110011}; // Try to write pmpaddr0
 	}
 
 	write_lower_pmpcfg: coverpoint ins.prev.insn {
-		wildcard bins write_pmpcfg   = {32'b001110100000_?????_010_?????_1110011}; // Try to write pmpcfg0
+		wildcard bins write_pmpcfg   = {32'b001110100000_?????_001_?????_1110011}; // Try to write pmpcfg0
 	}
 
 //-------------------------------------------------------
@@ -2076,5 +2051,4 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
-	$display("PMPADDR = %h",`STANDARD_REGION);
 endfunction

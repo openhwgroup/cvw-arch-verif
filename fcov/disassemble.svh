@@ -96,9 +96,9 @@ function string disassemble (logic [31:0] instrRaw);
   automatic string  ta    = get_vtype_ta_name(instr[27]);
   automatic string  ma    = get_vtype_ma_name(instr[26]);
 
-
   casez (instr)
     // Base Instructions
+
     ADD:     $sformat(decoded, "add %s, %s, %s", rd, rs1, rs2);
     SUB:     $sformat(decoded, "sub %s, %s, %s", rd, rs1, rs2);
     AND:     $sformat(decoded, "and %s, %s, %s", rd, rs1, rs2);
@@ -535,7 +535,13 @@ function string disassemble (logic [31:0] instrRaw);
     SHA512SUM1: $sformat(decoded, "sha512sum1 %s, %s", rd, rs1);
   `endif
     // Zca Extension
-    C_ADDI4SPN: if(immCIWType != '0) $sformat(decoded, "c.addi4spn %s, sp, %0d", rs2p, immCIWType);
+    C_ADDI4SPN: begin
+        if (immCIWType != '0) begin
+            $sformat(decoded, "c.addi4spn %s, sp, %0d", rs2p, immCIWType);
+        end else begin
+            C_ILLEGAL: $sformat(decoded, "c.illegal");
+        end
+    end
     C_LW:                             $sformat(decoded, "c.lw %s, %0d(%s)", rs2p, immCLSType, rs1p);
     C_SW:                             $sformat(decoded, "c.sw %s, %0d(%s)", rs2p, immCLSType, rs1p);
     C_NOP: if(rdBits == '0 & immCIType == '0) $sformat(decoded, "c.nop");
@@ -561,6 +567,7 @@ function string disassemble (logic [31:0] instrRaw);
     C_JALR: if(rdBits != '0 & crs2Bits == '0) $sformat(decoded, "c.jalr %s", rd);
     C_ADD:  if(rdBits != '0 & crs2Bits != '0) $sformat(decoded, "c.add %s, %s", rd, crs2);
     C_SWSP: $sformat(decoded, "c.swsp %s, %0d", crs2, immCSSType);
+
   `ifdef XLEN32
     C_JAL:  $sformat(decoded, "c.jal %0d", immCJType);
   `else // XLEN64
@@ -1207,6 +1214,8 @@ function string disassemble (logic [31:0] instrRaw);
 
     default: decoded = "illegal";
   endcase
+
+
 
   // Return possibly truncated instruction and decoded assembly
   if (compressedInstruction)

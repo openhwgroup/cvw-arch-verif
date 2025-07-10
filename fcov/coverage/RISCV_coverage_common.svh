@@ -32,6 +32,31 @@
 `define SAMPLE_PREV 1
 `define NUM_RVVI_DATA 5
 
+// -----------------------------------------------------------------------------
+// Physical Memory Protection (PMP) Specific Macros
+// -----------------------------------------------------------------------------
+
+`define SAFE_REGION_START   (`RAM_BASE_ADDR + `LARGEST_PROGRAM)
+`define REGIONSTART        `SAFE_REGION_START
+
+// Calculate region size g in bytes.
+`define g ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)) )
+
+// Calculate k = G - 1 trailing ones in NAPOT encoding.
+`define k  ((`G > 1) ? (`G - 1) : 0)
+
+// Address encodings
+
+// TOR or NA4 region: directly right-shifted
+`define NON_STANDARD_REGION  (`REGIONSTART >> 2)              // TOR/NA4 format: yyyyy...
+
+// NAPOT region: add trailing 1s per `k` to form mask
+`define STANDARD_REGION      ((`REGIONSTART >> 2) | ((2 ** `k) - 1)) // NAPOT format: yyyyy...0111
+
+// -----------------------------------------------------------------------------
+//                         XLEN FLEN VLEN Macros
+// -----------------------------------------------------------------------------
+
 // XLEN/FLEN as usable numbers
 `ifdef XLEN32
   `define XLEN 32
