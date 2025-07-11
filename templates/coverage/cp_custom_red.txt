@@ -97,7 +97,7 @@
         bins one = {1};
     }
 
-    v0_eq_minus1 : coverpoint signed'(ins.current.v0_val[0]) {
+    v0_element0_masked : coverpoint (ins.current.v0_val[0]) {
         bins one = {1};
     }
 
@@ -105,7 +105,7 @@
         bins target = {1'b1};
     }
 
-    cp_custom_element0Masked : cross std_vec, vl_one, v0_eq_minus1, vd_ne_vs1;
+    cp_custom_element0Masked : cross std_vec, vl_one, v0_element0_masked, vd_ne_vs1;
 
 
     vd_v0: coverpoint ins.current.insn[11:7] {

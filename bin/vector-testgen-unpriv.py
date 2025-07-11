@@ -394,9 +394,10 @@ def make_custom_vext_overlapping_vd_vs2(instruction, sew, vext):
   lmul = int(vext[1])                                   # "2" of "f2"
   vd = randint(0, math.floor((vreg_count-1)/lmul)) * lmul   # ensure that vd is on group with the given lmul
   vs2 = vd + (lmul - 1)                                 # force vs2 to overlap with the top of vd
+  vs1 = randomizeOngroupVectorRegister(instruction, vs2, vd, lmul=lmul)
 
   description = f"cp_custom_vext{lmul}_overlapping_vd_vs2"
-  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, sew = sew, suite="base", lmul = lmul)
+  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, sew = sew, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
   incrementBasetestCount()
@@ -406,9 +407,13 @@ def make_custom_vdOverlapTopVs1_vd_vs1(instruction, sew, lmul):
   emul = 2 * lmul
   vd = randint(0, math.floor((vreg_count-1)/emul)) * emul   # ensure that vd is on group with the given lmul
   vs1 = vd + lmul                                           # force vs1 to overlap with the top of vd, for widening so the overlap is simply the top half
+  if instruction in vs2_widen_ins:
+    vs2 = randomizeOngroupVectorRegister(instruction, vs1, vd, lmul=emul)
+  else:
+    vs2 = randomizeOngroupVectorRegister(instruction, vs1, vd, lmul=lmul)
 
   description = f"cp_custom_vdOverlapTopVs1_vd_vs1_lmul{lmul}"
-  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs1 = vs1, sew = sew, suite="base", lmul = lmul)
+  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, sew = sew, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
   incrementBasetestCount()
@@ -418,9 +423,10 @@ def make_custom_vdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
   emul = 2 * lmul
   vd = randint(0, math.floor((vreg_count-1)/emul)) * emul   # ensure that vd is on group with the given lmul
   vs2 = vd + lmul                                           # force vs2 to overlap with the top of vd, for widening so the overlap is simply the top half
+  vs1 = randomizeOngroupVectorRegister(instruction, vs2, vd, lmul=lmul)
 
   description = f"cp_custom_vdOverlapTopVs2_vd_vs2_lmul{lmul}"
-  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, sew = sew, suite="base", lmul = lmul)
+  instruction_data  = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, sew = sew, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
   incrementBasetestCount()

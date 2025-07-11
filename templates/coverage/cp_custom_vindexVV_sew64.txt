@@ -10,7 +10,7 @@
         bins true = {1'b1};
     }
 
-    vtype_sew_elemt_zero_vs1_all_ones_sew64 : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")[1:0],  get_vr_element_zero(ins.hart, ins.issue, ins.current.vs2_val)} {
+    vtype_sew_elemt_zero_vs1_all_ones_sew64 : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")[1:0],  get_vr_element_zero(ins.hart, ins.issue, ins.current.vs1_val)} {
         wildcard bins sew64     = {66'b11_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111};
     }
 
@@ -18,15 +18,15 @@
 
     //////////////////////////////////////////////////////////////////////////////////
 
-    vl_one : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vl") {
+    vl_one : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vl") {
         bins one = {1};
     }
 
-    vtype_lmul_2: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+    vtype_lmul_2: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vl", "vlmul") {
         bins two = {1};
     }
 
-    vtype_sew_elemt_zero_vs1_2_sew64 : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")[1:0],  get_vr_element_zero(ins.hart, ins.issue, ins.current.vs2_val)} {
+    vtype_sew_elemt_zero_vs1_2_sew64 : coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vsew")[1:0],  get_vr_element_zero(ins.hart, ins.issue, ins.current.vs1_val)} {
         wildcard bins sew64     = {66'b11_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000010};
     }
 
