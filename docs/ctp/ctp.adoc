@@ -204,8 +204,8 @@ Coverage files with multiple extensions in the name apply when all the extension
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
 |ZicsrF|x||x|x
-|ZicsrUF||x||x|x
-|ZicsrUV||x||x|x
+|ZicsrUF|||x|x
+|ZicsrUV|||o|x
 |ExceptionsM||x|x|x
 |ExceptionsS|||x|x
 |ExceptionsU||x|x|x
@@ -392,7 +392,7 @@ It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.
+Every bin in every coverpoint is associated with a specific test. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
 
 [NOTE]
 ====
@@ -491,7 +491,7 @@ Notes:
 |min     |`10000000000000000000000000000000`|`1000000000000000000000000000000000000000000000000000000000000000`
 |minp1   |`10000000000000000000000000000001`|`1000000000000000000000000000000000000000000000000000000000000001`
 |max     |`01111111111111111111111111111111`|`0111111111111111111111111111111111111111111111111111111111111111`
-|maxm1   |`01111111111111111111111111111110`|`0111111111111111111111111111111111111111111111111111111111111111`
+|maxm1   |`01111111111111111111111111111110`|`0111111111111111111111111111111111111111111111111111111111111110`
 |ones    |`11111111111111111111111111111111`|`1111111111111111111111111111111111111111111111111111111111111111`
 |onesm1  |`11111111111111111111111111111110`|`1111111111111111111111111111111111111111111111111111111111111110`
 |walkeodd|`10101010101010101010101010101010`|`1010101010101010101010101010101010101010101010101010101010101010`

@@ -1,8 +1,8 @@
-Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rd,cp_fs1,cp_fs2,cp_fd,cp_fs1_corners,cp_fs2_corners,cmp_fd_fs1,cmp_fd_fs2,cp_frm,cp_csr_fflags,cp_csr_frm,cr_fs1_fs2_corners,cr_fs1_fs2_corners,cp_fpr_hazard,cp_gpr_hazard
-fleq.s,FC,x,x,x,,x,x,x,,x,x,,,,v,,x,x,r,w
-fli.s,FLI,x,x,x,fli,,,,x,,,,,,,,,,w,
-fltq.s,FC,x,x,x,,x,x,x,,x,x,,,,v,,x,x,r,w
-fmaxm.s,FR,x,x,x,,,x,x,x,x,x,x,x,,v,,x,x,rw,
-fminm.s,FR,x,x,x,,,x,x,x,x,x,x,x,,v,,x,x,rw,
-fround.s,FI,x,x,x,,,x,,x,x,,x,,2,v,x,,,rw,
-froundnx.s,FI,x,x,x,,,x,,x,x,,x,,2,vn,x,,,rw,
+Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rd,cp_fs1,cp_fs2,cp_fd,cp_fs1_corners,cp_fs2_corners,cmp_fd_fs1,cmp_fd_fs2,cp_frm,cp_csr_fflags,cp_csr_frm,cr_fs1_fs2_corners,cp_fpr_hazard,cp_gpr_hazard
+fleq.s,FC,x,x,x,,x,x,x,,x,x,,,,v,,x,r,w
+fli.s,FLI,x,x,x,fli,,,,x,,,,,,,,,w,
+fltq.s,FC,x,x,x,,x,x,x,,x,x,,,,v,,x,r,w
+fmaxm.s,FR,x,x,x,,,x,x,x,x,x,x,x,,v,,x,rw,
+fminm.s,FR,x,x,x,,,x,x,x,x,x,x,x,,v,,x,rw,
+fround.s,FI,x,x,x,,,x,,x,x,,x,,2,v,x,,rw,
+froundnx.s,FI,x,x,x,,,x,,x,x,,x,,2,vn,x,,rw,
