@@ -200,13 +200,12 @@ Coverage files with multiple extensions in the name apply when all the extension
 |Zicond|||x|x
 |Zifencei|o|x|x|x
 5+^|Privileged
-|PrivM||x|x|x
-|PrivS|||x|x
-|PrivU||x|x|x
 |ZicsrM||x|x|x
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
 |ZicsrF|x||x|x
+|ZicsrUF|||x|x
+|ZicsrUV|||o|x
 |ExceptionsM||x|x|x
 |ExceptionsS|||x|x
 |ExceptionsU||x|x|x
@@ -279,7 +278,6 @@ Coverage files with multiple extensions in the name apply when all the extension
 |===
 
 ***Need to add Zicbom and Zicboz to unpriv table & tests
-***Zihintpause is in Zicsr*, probably should be its own
 *** Zicclsm
 *** Zihpm tested with Zicntr
 ***Zihintntl not listed
@@ -394,7 +392,7 @@ It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly.
+Every bin in every coverpoint is associated with a specific test. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
 
 [NOTE]
 ====
@@ -423,8 +421,6 @@ The coverpoints in <<t-unprivileged-coverpoints>> are used in most of the unpriv
 |cp_imm_corners|16|Corner values for 12-bit immediates (see <<t-immediate-corner-definitions>>).
 |cr_rs1_imm_corners|16*20|Cross-product of rs1 and 12-bit immediate corners (see <<t-immediate-corner-definitions>>).
 |cr_rs1_rs2_corners|16*16|Cross-product of rs1 and rs2 corners, used for instructions with two source registers.
-|cmp_rd_rs1_eqval|32|The result value in the rd register is equal to the value in the rs1 register.
-|cmp_rd_rs2_eqval|32|The result value in the rd register is equal to the value in the rs2 register.
 |cmp_rs1_rs2|32|The rs1 and rs2 registers have the same register number.
 |cmp_rd_rs1|32|The rd register has the same register number as the rs1 register.
 |cmp_rd_rs2|32|The rd register has the same register number as the rs2 register.
@@ -478,11 +474,11 @@ Notes:
 
 * Cross-products exercise all combinations of two or more coverpoints. They can have a large number of bins.
 
-* The cmp_*_eqval coverpoints are automatically hit by the cr_rs1_rs2_corners tests and do not require additional tests.
-
 * Each of these coverpoints can optionally have a modifer appended.  For example, cp_rs1_nx0 is a modified version of cp_rs1, covering all 31 rs1 register numbers excluding x0.  It is used for load/store/jalr instructions that can't rely on address 0 specified by x0 being legal. Modifiers are defined in the extensions that they apply to.
 
 * The cmp_* and cp_*_hazard coverpoints occupy the fuzzy land at the edge of certification and verification.  They are included because they are easy.
+
+* The riscvISACOV test plan had cmp_rd_{rs1/rs2}_eqval coverpoints that compare if rd and one of the sources have the same value.  These are generally hit by the cr_rs1_rs2_corners tests, so they don't add interesting additional coverage and were dropped.  riscvISACOV also had cp_{rs1/rs2/rd}_toggle tests that checked if each bit changed from 1 to 0 and vice versa.  This is trivially exercised by providing all 0s followed by all 1s followed by al 0s again, so they were dropped.
 
 [[t-integer-corner-definitions]]
 .Integer Corner Definitions
@@ -495,7 +491,7 @@ Notes:
 |min     |`10000000000000000000000000000000`|`1000000000000000000000000000000000000000000000000000000000000000`
 |minp1   |`10000000000000000000000000000001`|`1000000000000000000000000000000000000000000000000000000000000001`
 |max     |`01111111111111111111111111111111`|`0111111111111111111111111111111111111111111111111111111111111111`
-|maxm1   |`01111111111111111111111111111110`|`0111111111111111111111111111111111111111111111111111111111111111`
+|maxm1   |`01111111111111111111111111111110`|`0111111111111111111111111111111111111111111111111111111111111110`
 |ones    |`11111111111111111111111111111111`|`1111111111111111111111111111111111111111111111111111111111111111`
 |onesm1  |`11111111111111111111111111111110`|`1111111111111111111111111111111111111111111111111111111111111110`
 |walkeodd|`10101010101010101010101010101010`|`1010101010101010101010101010101010101010101010101010101010101010`
@@ -606,6 +602,7 @@ include::../../testplans/I.csv[]
 |cp_gpr_hazard_w|3|WAW, WAR and no hazard for instructions that only write a register
 |cp_gpr_hazard_rw|4|RAW, WAW, WAR and no hazard for instructions that read and write registers
 |cp_align_{byte/hword/word}|8/4/2|Alignment of naturally-aligned load/store operand within doubleword in memory
+|cp_custom_fence|3|Test that fence, fence rw,rw, and fence.tso all execute without trapping.
 |===
 
 <<t-I-normative-statements>> summarizes the normative statements in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>.
@@ -1490,6 +1487,15 @@ include::../../testplans/Zknh.csv[]
 include::../../testplans/Zicond.csv[]
 ,===
 
+=== Zihintpause Pause Hint
+
+[[t-Zihintpause-coverpoints]]
+.Zihintpause Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zihintpause.csv[]
+,===
 
 === Zicsr Control/Status Register Instructions
 
@@ -1854,13 +1860,9 @@ environment.|
 
 === Privileged Instructions
 
-==== PrivM
-
-==== PrivS
-
-==== PrivU
-
 === Zicsr
+
+*** includes mret/sret
 
 ==== ZicsrM
 
@@ -2018,3 +2020,160 @@ As of June 2025, all unprivileged and privileged RVA23S64 features have tests hi
 * PMP tests in progress
 * Virtual memory: Sv39 and Sv48 100% coverage, Sv48 debugging one coverpoint
 * Hypervisor not started
+
+[appendix]
+== Examples
+
+This appendix gives examples of coverpoints and tests consistent with the test plan.  These examples are not the only way to satisfy the testplan.
+
+=== Unprivileged example: `add`
+
+Coverage is in I_coverage.svh:
+
+[[f-add-covergroup]]
+.`add` Covergroup
+----
+covergroup I_add_cg with function sample(ins_t ins);
+    option.per_instance = 0;
+    cp_asm_count : coverpoint ins.ins_str == "add"  iff (ins.trap == 0 )  {
+        //Number of times instruction is executed
+        bins count[]  = {1};
+    }
+    cp_rs1 : coverpoint ins.get_gpr_reg(ins.current.rs1)  iff (ins.trap == 0 )  {
+        //RS1 register assignment
+    }
+    cp_rs2 : coverpoint ins.get_gpr_reg(ins.current.rs2)  iff (ins.trap == 0 )  {
+        //RS2 register assignment
+    }
+    cp_rd : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.trap == 0 )  {
+        //RD register assignment
+    }
+    cp_rs1_corners : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
+        `ifdef XLEN32
+            bins zero  =    {0};
+            bins one  =     {32'b00000000000000000000000000000001};
+            bins two  =     {32'b00000000000000000000000000000010};
+            bins min  =     {32'b10000000000000000000000000000000};
+            bins minp1  =   {32'b10000000000000000000000000000001};
+            bins max  =     {32'b01111111111111111111111111111111};
+            bins maxm1  =   {32'b01111111111111111111111111111110};
+            bins ones  =    {32'b11111111111111111111111111111111};
+            bins onesm1  =  {32'b11111111111111111111111111111110};
+            bins walkeodd = {32'b10101010101010101010101010101010};
+            bins walkeven = {32'b01010101010101010101010101010101};
+            wildcard bins random = {32'b01???????????????????????????010};
+        `else
+            bins zero  = {0};
+            bins one      = {64'b0000000000000000000000000000000000000000000000000000000000000001};
+            bins two      = {64'b0000000000000000000000000000000000000000000000000000000000000010};
+            bins min      = {64'b1000000000000000000000000000000000000000000000000000000000000000};
+            bins minp1    = {64'b1000000000000000000000000000000000000000000000000000000000000001};
+            bins Wmax     = {64'b0000000000000000000000000000000011111111111111111111111111111111};
+            bins Wmaxm1   = {64'b0000000000000000000000000000000011111111111111111111111111111110};
+            bins Wmaxp1   = {64'b0000000000000000000000000000000100000000000000000000000000000000};
+            bins Wmaxp2   = {64'b0000000000000000000000000000000100000000000000000000000000000001};
+            bins max      = {64'b0111111111111111111111111111111111111111111111111111111111111111};
+            bins maxm1    = {64'b0111111111111111111111111111111111111111111111111111111111111110};
+            bins ones     = {64'b1111111111111111111111111111111111111111111111111111111111111111};
+            bins onesm1   = {64'b1111111111111111111111111111111111111111111111111111111111111110};
+            bins walkeodd = {64'b1010101010101010101010101010101010101010101010101010101010101010};
+            bins walkeven = {64'b0101010101010101010101010101010101010101010101010101010101010101};
+            wildcard bins random = {64'b01???????????????????????????????????????????????????????????010};
+        `endif
+    }
+    cp_rs2_corners : coverpoint unsigned'(ins.current.rs2_val)  iff (ins.trap == 0 )  {
+        `ifdef XLEN32
+            bins zero  =    {0};
+ ...
+        `else
+            bins zero  = {0};
+            ...
+        `endif
+    }
+    cr_rs1_rs2_corners : cross cp_rs1_corners,cp_rs2_corners  iff (ins.trap == 0 )  {
+        //Cross coverage of RS1 corners and RS2 corners
+    }
+    cmp_rs1_rs2 : coverpoint ins.get_gpr_reg(ins.current.rs1)  iff (ins.current.rs1 == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs1 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs1 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs2 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cmp_rd_rs1_rs2 : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.current.rd == ins.current.rs1 & ins.current.rd == ins.current.rs2 & ins.trap == 0 )  {
+        //Compare assignments of all registers
+    }
+    cp_gpr_hazard_rw : coverpoint check_gpr_hazards(ins.hart, ins.issue)  iff (ins.trap == 0 )  {
+        //GPR Hazard
+        bins hazards[]  = {NO_HAZARD, RAW_HAZARD, WAW_HAZARD, WAR_HAZARD};
+    }
+endgroup
+----
+
+Corresponding RV32 tests are in tests/rv32/I/I-add.S.  Observe how the directed tests align with the coverpoints and bins.  Register numbers and values are randomized unless they are swept by the coverpoint. The RVTEST_SIGUPD macro compares the result against an expected signature produced by a reference model. When register 0 is used, it is loaded with a random value, but hardwired to 0, so the reference model will show that it behaves as 0.
+
+[[f-add-tests]]
+.`add` Tests
+----
+# Testcase cp_rs1 (Test source rs1 = x0)
+li x0, 0xb4e96718 # initialize rs1
+li x24, 0xeaa512b3 # initialize rs2
+add x25, x0, x24 # perform operation
+RVTEST_SIGUPD(x3, x25)
+
+# Testcase cp_rs1 (Test source rs1 = x1)
+li x1, 0x81c4ef2a # initialize rs1
+li x6, 0x917cfa69 # initialize rs2
+add x7, x1, x6 # perform operation
+RVTEST_SIGUPD(x3, x7)
+
+...
+
+# Testcase cp_rs1 (Test source rs1 = x31)
+mv x21, x31 # switch signature pointer register to avoid conflict with test
+li x31, 0x1508dd4e # initialize rs1
+li x14, 0x830d07b0 # initialize rs2
+add x11, x31, x14 # perform operation
+RVTEST_SIGUPD(x21, x11)
+
+
+# Testcase cp_rd (Test destination rd = x0)
+li x19, 0x1d01c852 # initialize rs1
+li x9, 0x1bfbf146 # initialize rs2
+add x0, x19, x9 # perform operation
+RVTEST_SIGUPD(x20, x0)
+
+# Testcase cp_rd (Test destination rd = x1)
+li x26, 0x1e3aafcf # initialize rs1
+li x19, 0x986da37b # initialize rs2
+add x1, x26, x19 # perform operation
+RVTEST_SIGUPD(x20, x1)
+
+...
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x0)
+li x15, 0x00000000 # initialize rs1
+li x5, 0x00000000 # initialize rs2
+add x11, x15, x5 # perform operation
+RVTEST_SIGUPD(x10, x11)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x1)
+li x1, 0x00000000 # initialize rs1
+li x31, 0x00000001 # initialize rs2
+add x20, x1, x31 # perform operation
+RVTEST_SIGUPD(x10, x20)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x2)
+li x27, 0x00000000 # initialize rs1
+li x3, 0x00000002 # initialize rs2
+add x11, x27, x3 # perform operation
+RVTEST_SIGUPD(x10, x11)
+
+# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x80000000)
+li x8, 0x00000000 # initialize rs1
+li x5, 0x80000000 # initialize rs2
+add x16, x8, x5 # perform operation
+RVTEST_SIGUPD(x10, x16)
+----

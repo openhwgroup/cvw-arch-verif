@@ -30,11 +30,6 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
     privinstrs: coverpoint ins.current.insn  {
         bins ecall  = {32'h00000073};
         bins ebreak = {32'h00100073};
-        // fences are not really privileged instructions, but are tested here for lack of a more convenient place
-        bins fence =  {32'h0ff0000f}; // fence iorw, iorw
-        bins fence_rw_rw = {32'h0330000f}; // fence rw, rw
-        bins fence_tso_rw_rw = {32'h8330000f}; // fence.tso
-        bins pause = {32'h0100000F}; // pause, for Zihintpause
     }
     mret: coverpoint ins.current.insn  {
         bins mret   = {32'h30200073};
@@ -43,21 +38,7 @@ covergroup ZicsrU_uprivinst_cg with function sample(ins_t ins);
         bins sret   = {32'h10200073};
     }
 
-    walking_ones: coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) {
-        bins b_1[] = { [0:`XLEN-1] };
-    }
-    csrname : coverpoint ins.current.insn[31:20] {
-        bins fflags = {12'h001};
-        bins frm    = {12'h002};
-        bins fcsr   = {12'h003};
-    }
-    csrop: coverpoint ins.current.insn[14:12] iff (ins.current.insn[6:0] == 7'b1110011) {
-        bins csrrs = {3'b010};
-        bins csrrc = {3'b011};
-    }
-
     // main coverpoints
-    cp_ucsrwalk:   cross csrname, csrop, priv_mode_u, walking_ones;
     cp_uprivinst:  cross privinstrs, priv_mode_u;
     cp_mret:       cross mret, priv_mode_u; // should trap
     cp_sret:       cross sret, priv_mode_u; // should trap
