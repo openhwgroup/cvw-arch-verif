@@ -264,13 +264,6 @@ formbits:
     // ebreak
     ebreak       # take a trap, and the trap handler returns
 
-    // fences.  These aren't really privileged instructions, but don't have a better place to test
-    fence
-    fence rw, rw
-    fence.tso
-    // Zihintpause
-    pause
-
 /////////////////////////////////
 // cp_mret
 /////////////////////////////////
