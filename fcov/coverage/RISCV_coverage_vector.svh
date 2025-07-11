@@ -249,13 +249,23 @@ endfunction
 // todo:
 // todo:
 // todo:
-function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
+
+typedef enum {
+    zero,
+    random_in_range,
+    None
+} corner_vs2_ls_values_t;
+
+function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
 
   logic all_values_within_range = 1'b1;
-  logic one_value_zero          = 1'b0;
 
   `XLEN_BITS vsew               = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
   int vlmax                     = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
+
+  if (val == 0) begin
+    return zero;
+  end
 
   //------------------------------------------
   // Walk across VAL in chunks of size SEW
@@ -268,8 +278,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
       for (int idx = 1; idx <= `VLEN / 8; ++idx) begin
         logic [7:0] elem = val[idx*8-1 -: 8];
 
-        if (elem == 0)                          one_value_zero          = 1'b1;
-        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
       end
     end
     //--------------------------------------------------------------
@@ -279,8 +288,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
       for (int idx = 1; idx <= `VLEN / 16; ++idx) begin
         logic [15:0] elem = val[idx*16-1 -: 16];
 
-        if (elem == 0)                          one_value_zero          = 1'b1;
-        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
       end
     end
     //--------------------------------------------------------------
@@ -290,8 +298,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
       for (int idx = 1; idx <= `VLEN / 32; ++idx) begin
         logic [31:0] elem = val[idx*32-1 -: 32];
 
-        if (elem == 0)                          one_value_zero          = 1'b1;
-        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
       end
     end
     //--------------------------------------------------------------
@@ -301,8 +308,7 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
       for (int idx = 1; idx <= `VLEN / 64; ++idx) begin
         logic [63:0] elem = val[idx*64-1 -: 64];
 
-        if (elem == 0)                          one_value_zero          = 1'b1;
-        if (elem > vlmax*2 | elem < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
       end
     end
     //--------------------------------------------------------------
@@ -312,7 +318,11 @@ function logic vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
     end
   endcase
 
-  return all_values_within_range & one_value_zero;
+  if (all_values_within_range) begin
+    return random_in_range;
+  end
+
+  return None;
 endfunction
 
 function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);

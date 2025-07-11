@@ -30,6 +30,7 @@ RVTEST_SIGBASE(SIG_BASE, signature_base)
 
 #define SEWMIN 8
 #define ELEN 64
+#define MAXINDEXEEW 64
 
 #if SEWMIN == 8
     #if ELEN == 64

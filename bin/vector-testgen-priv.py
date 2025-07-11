@@ -91,7 +91,7 @@ def writeLine(argument: str, comment = ""):
 
 def make_vill(instruction):
     description = f"cp_vill"
-    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
+    instruction_data = randomizeVectorInstructionData(instruction, "SEWMIN", getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
                                                       vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
 
     writePrivTestPrep(description, instruction)
@@ -99,7 +99,7 @@ def make_vill(instruction):
     writePrivTestLine(instruction, instruction_data)
 
 
-def make_vstart(instruction, maxlmul = 8):
+def make_vstart(instruction, sew, maxlmul = 8):
     vstartvals = ["one", "vlmaxm1", "vlmaxd2", "random"]
     for vstartval in vstartvals:
         lmul = 2 ** randint(1, int(math.log2(maxlmul))) # pick random integer LMUL to ensure that coverpoints are hit
@@ -108,7 +108,7 @@ def make_vstart(instruction, maxlmul = 8):
         no_overlap = [['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0']] if maskval is not None else None
 
         description = f"cp_vstart (vstart = {vstartval})"
-        instruction_data = randomizeVectorInstructionData(instruction, getLengthSuiteTestCount(), suite = "length", lmul = lmul,
+        instruction_data = randomizeVectorInstructionData(instruction, "SEWMIN", getLengthSuiteTestCount(), suite = "length", lmul = lmul,
                                                           vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
                                                           vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random",
                                                           additional_no_overlap=no_overlap)
@@ -121,7 +121,7 @@ def make_vstart_gt_vl(instruction):
     randvl = randint(1, maxVLEN)
     randvstart = randint(1, maxVLEN)
     description = f"cp_vstart_gt_vl"
-    instruction_data = randomizeVectorInstructionData(instruction, getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
+    instruction_data = randomizeVectorInstructionData(instruction, "SEWMIN", getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
                                                       vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
 
     writePrivTestPrep(description, instruction, lmul = 4, vl = "vlmax", vstart = True)
@@ -203,17 +203,23 @@ def writePrivTestLine(instruction, instruction_data, vl=1, lmul=1, maskval=None)
     testline = testline[:-2] # remove the ", " at the end of the test
 
     if vector_register_data['vd']['reg_type'] == "mask" or vector_register_data['vd']['reg_type'] == "scalar":
-        single_vector_register_store = True
+        sig_whole_register_store = True
+        sig_lmul = 1
+    elif instruction in whole_register_move:
+        sig_whole_register_store = True
+        sig_lmul= getLengthLmul(instruction) # will return <nf> for whole register moves
     else:
-        single_vector_register_store = False
+        sig_whole_register_store = False
+        sig_lmul = lmul
+
 
     vd = vector_register_data ['vd'] ['reg']
     rd = scalar_register_data ['rd'] ['reg']
 
     if (maskval is not None) or (vl is not None):
-        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, vl=vl, single_vector_register_store = single_vector_register_store, trap = True)
+        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, vl=vl, sig_lmul = sig_lmul, sig_whole_register_store = sig_whole_register_store, priv = True)
     else:
-        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, single_vector_register_store = single_vector_register_store, trap = True)
+        writeVecTest(vd, "SEWMIN", testline, test=instruction, rd=rd, sig_lmul = sig_lmul, sig_whole_register_store = sig_whole_register_store, priv = True)
 
 
 

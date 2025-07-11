@@ -160,6 +160,47 @@ def counterenwalkdouble(pathname, csr1, csr2, regs, hregs, mode):
             print("#endif")
         sys.stdout = sys.__stdout__
 
+
+def cp_vsetvl_i_rd_nx0_rs1_x0(pathname):
+    with open(pathname, 'w') as outfile:
+        sys.stdout = outfile
+        sews = ["8", "16", "32", "64"]
+        lmuls = ["1", "2", "4", "8", "f2", "f4", "f8"]
+
+        print("// Tests for cp_vsetvl_i_rd_nx0_rs1_x0")
+        for sew in sews:
+            for lmul in lmuls:
+                print("\t// SEW = " + sew + ", LMUL = " + lmul)
+                print("\tvsetvli  x8, x0, e" + sew + ", m" + lmul + ", tu, mu")
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+
+        for i in range(32):
+            if i not in [4, 12, 20, 28]: # LMUL = 3'b100 is reserved
+                ih = hex(i)
+                print(f"\t// vtype[7:0] = 0_0_{format(i >> 3, '03b')}_{format(i & 0b111, '03b')}")
+                print("\tli       t2, " + str(ih))
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+    outfile.close
+
+def cp_vsetivli_avl_corners(pathname):
+    with open(pathname, 'w') as outfile:
+        sys.stdout = outfile
+        sews = ["8", "16", "32", "64"]
+
+        print("// Tests for cp_vsetivli_avl_corners")
+        for sew in sews:
+            for i in range(32):
+                print("\t// SEW = " + sew + " and LMUL = 1")
+                print("\tvsetivli x8, " + str(i) + ", e" + sew + ", m1, tu, mu")
+                print("\tcsrr     x1, vl")
+                print("\tRVTEST_SIGUPD(x3, x1)")
+                print()
+    outfile.close
+
 # setup
 seed(0) # make tests reproducible
 
@@ -241,3 +282,9 @@ counterenwalk(pathname, "scounteren", cntrs, cntrsh, "S")
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/Zicntr-SWalkU.h"
 counterenwalk(pathname, "scounteren", cntrs, cntrsh, "U")
+
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetvl-Tests.h"
+cp_vsetvl_i_rd_nx0_rs1_x0(pathname)
+
+pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetivli-Tests.h"
+cp_vsetivli_avl_corners(pathname)
