@@ -25,45 +25,55 @@ import math
 # the value being a list of covergroups for that instruction
 
 def readTestplans():
-    coverplanDir = f'{ARCH_VERIF}/testplans'
     testplans = dict()
-    for file in os.listdir(coverplanDir):
-        if file.endswith(".csv"):
-            arch = re.search("(.*).csv", file).group(1)
-            #print(os.path.join(coverplanDir, file)+ " " + arch)
-            with open(os.path.join(coverplanDir, file)) as csvfile:
-                reader = csv.DictReader(csvfile)
-                tp = dict()
-                for row in reader:
-                    #print(f"row = {row}")
-                    if ("Instruction" not in row):
-                        print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
-                        exit(1)
-                    instr = row["Instruction"]
-                    cps = []
-                    del row["Instruction"]
-                    for key, value in row.items():
-#                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
-                        if (type(value) == str and value != ''):
-                            if(key == "Type"):
-                                cps.append("sample_" + value)
-                            else:
-                                if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
-                                    key = key + "_" + value
-                                cps.append(key)
-                    tp[instr] = cps
-            testplans[arch] = tp
-            if (arch =="I"): # duplicate I testplan for E
-                testplans["E"] = tp
-            if (arch == "Vx"):
-                for effew in ["8", "16", "32", "64"]:
-                    testplans["Vx" + effew] = tp
-                del testplans["Vx"]
-            if (arch == "Vls"):
-                for effew in ["8", "16", "32", "64"]:
-                    testplans["Vls" + effew] = tp
-                del testplans["Vls"]
-    return testplans
+    archSources = dict()
+    coverplanDirs = [(f'{ARCH_VERIF}/testplans', 'unpriv'), (f'{ARCH_VERIF}/testplans/priv', 'priv')]
+    for coverplanDir, source in coverplanDirs:
+        if not os.path.exists(coverplanDir):
+            continue  # Skip missing directories
+        for file in os.listdir(coverplanDir):
+            if file.endswith(".csv"):
+                arch = re.search("(.*).csv", file).group(1)
+                #print(os.path.join(coverplanDir, file)+ " " + arch)
+                with open(os.path.join(coverplanDir, file)) as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    tp = dict()
+                    for row in reader:
+                        #print(f"row = {row}")
+                        if ("Instruction" not in row):
+                            print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
+                            exit(1)
+                        instr = row["Instruction"]
+                        cps = []
+                        del row["Instruction"]
+                        for key, value in row.items():
+    #                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
+                            if (type(value) == str and value != ''):
+                                if(key == "Type"):
+                                    cps.append("sample_" + value)
+                                else:
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                        key = key + "_" + value
+                                    cps.append(key)
+                        tp[instr] = cps
+                testplans[arch] = tp
+                archSources[arch] = source
+                if (arch =="I"): # duplicate I testplan for E
+                    testplans["E"] = tp
+                    archSources["E"] = source
+                if (arch == "Vx"):
+                    for effew in ["8", "16", "32", "64"]:
+                        testplans["Vx" + effew] = tp
+                        archSources["Vx" + effew] = source
+                    del testplans["Vx"]
+                    del archSources["Vx"]
+                if (arch == "Vls"):
+                    for effew in ["8", "16", "32", "64"]:
+                        testplans["Vls" + effew] = tp
+                        archSources["Vls" + effew] = source
+                    del testplans["Vls"]
+                    del archSources["Vls"]
+    return testplans, archSources
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
 
@@ -190,17 +200,21 @@ def getEffew(arch):
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
 # all instructions in each testplan
 
-def writeCovergroups(testPlans, covergroupTemplates):
+def writeCovergroups(testPlans, covergroupTemplates, archSources):
     covergroupDir = ARCH_VERIF+'/fcov/'
     with open(os.path.join(covergroupDir,"coverage/RISCV_instruction_sample.svh"), "w") as fsample:
         fsample.write(customizeTemplate(covergroupTemplates, "instruction_sample_header", "NA", "NA"))
         for arch, tp in testPlans.items():
-            os.makedirs(f"{covergroupDir}/unpriv", exist_ok=True)
+            covergroupSubDir = archSources.get(arch, 'unpriv')
+            covergroupOutDir = os.path.join(covergroupDir, covergroupSubDir)
+            os.makedirs(covergroupOutDir, exist_ok=True)
+
             file = arch + "_coverage.svh"
             initfile = arch + "_coverage_init.svh"
             print("***** Writing " + file)
-            with open(os.path.join(covergroupDir,"unpriv",file), "w") as f:
-                finit = open(os.path.join(covergroupDir,"unpriv",initfile), "w")
+
+            with open(os.path.join(covergroupOutDir,file), "w") as f:
+                finit = open(os.path.join(covergroupOutDir,initfile), "w")
                 #print(covergroupTemplates)
                 if arch.startswith("Vx") or arch.startswith("Vls"):
                     effew = getEffew(arch)
@@ -285,6 +299,6 @@ def writeCovergroups(testPlans, covergroupTemplates):
 if __name__ == '__main__':
     ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
     missingTemplates = list() # keep list of missing templates to only print once
-    testPlans = readTestplans()
+    testPlans, archSources = readTestplans()
     covergroupTemplates = readCovergroupTemplates()
-    writeCovergroups(testPlans, covergroupTemplates)
+    writeCovergroups(testPlans, covergroupTemplates, archSources)

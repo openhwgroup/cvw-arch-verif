@@ -1,0 +1,2 @@
+Instruction,Type,RV32,RV64,EFFEW8,EFFEW16,EFFEW32,EFFEW64,cp_vill,cp_vstart,cp_vstart_gt_vl
+vadd.vv,VVVM,x,x,x,x,x,x,,,
