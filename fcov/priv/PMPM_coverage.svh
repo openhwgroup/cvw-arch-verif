@@ -18,31 +18,6 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------ Assuming it right for time being --------------
-
-`define RAMBASEADDR 32'h80000000
-`define LARGESTPROGRAM 32'h00010000
-`define SAFEREGIONSTART (`RAMBASEADDR + `LARGESTPROGRAM)
-`define REGIONSTART `SAFEREGIONSTART
-
-`define G 1			// Set G as needed (0, 1, 2, etc.)
-//`define G_IS_0			 // Uncomment this when G=0
-`define g (2**(`G+2))	// Region size = 2^(G+2)
-`define k ((`G > 1) ? (`G - 1) : 0)
-
-// Define PMP_16 or PMP_64
-`define PMP_16
-
-// --- These are values that can be found in PMPADDR ---
-
-// NA4 or TOR region
-`define NON_STANDARD_REGION	(`REGIONSTART >> 2)	// yyyy...yyyy
-
-// NAPOT region having one trailing 0 and k = (G - 1) trailing 1s
-`define STANDARD_REGION	(`REGIONSTART >> 2) | (2**`k - 1) // yyyy...0111
-
-//------------------------------------------------------------
-
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
@@ -422,23 +397,23 @@ covergroup PMPM_cg with function sample(
 			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
 		}
 
-		pmpcfg0_A_mode_OFF_write: coverpoint {pmpcfg[0], ins.prev.insn} {
+		pmpcfg0_A_mode_OFF_write: coverpoint {ins.prev.csr[12'h3A0], ins.prev.insn} {
   			wildcard bins OFF = {8'b00000???, 32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpcfg[0] with OFF mode
 		}
 
-		pmpcfg0_A_mode_NAPOT_write: coverpoint {pmpcfg[0], ins.prev.insn} {
+		pmpcfg0_A_mode_NAPOT_write: coverpoint {ins.prev.csr[12'h3A0], ins.prev.insn} {
   			wildcard bins OFF = {8'b00011???, 32'b001110110000_?????_001_?????_1110011}; // A write is being performed to pmpcfg[0] with NAPOT mode
 		}
 
-		pmpcfg0_A_mode_OFF_read: coverpoint {pmpcfg[0], ins.current.insn} {
+		pmpcfg0_A_mode_OFF_read: coverpoint {ins.current.csr[12'h3A0], ins.current.insn} {
   			wildcard bins OFF = {8'b00000???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with OFF mode
 		}
 
-		pmpcfg0_A_mode_NAPOT_read: coverpoint {pmpcfg[0], ins.current.insn} {
+		pmpcfg0_A_mode_NAPOT_read: coverpoint {ins.current.csr[12'h3A0], ins.current.insn} {
   			wildcard bins OFF = {8'b00011???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with NAPOT mode
 		}
 
-		pmpcfg0_A_mode_TOR_read: coverpoint {pmpcfg[0], ins.current.insn} {
+		pmpcfg0_A_mode_TOR_read: coverpoint {ins.current.csr[12'h3A0], ins.current.insn} {
   			wildcard bins OFF = {8'b00001???, 32'b001110110000_00000_010_?????_1110011}; // A read is being performed to pmpcfg[0] with TOR mode
 		}
 	`endif
