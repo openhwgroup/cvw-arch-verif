@@ -1339,75 +1339,6 @@ def make_rs2_corners(test, xlen):
       desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_corners(test, xlen, corners):
-  if test in c_shiftitype:
-    for v in corners:
-      # rs1 = all 1s, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
-      writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
-  elif test in catype:   # Using rs1val as temp variable to pass rd value
-    for v in corners:
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      if test in ["c.or","c.addw","c.xor"]:
-        rd_temp = 0
-        rs2_temp = v
-      elif test in ["c.and"]:
-        rd_temp = -1
-        rs2_temp = v
-      elif test in ["c.mul"]:
-        rd_temp = 1
-        rs2_temp = v
-      elif test in ["c.sub","c.subw"]:
-        rd_temp =  v>>1
-        rs2_temp = (-v)>>1
-      writeCovVector(desc, rs1, rs2, rd, rd_temp, rs2_temp, 0, rdval, test, xlen)
-  elif test in crtype:
-    for v in corners:
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      rs2val = -(rdval - v)
-      writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
-  elif (test == "c.addiw" or test == "c.addi"):
-    for v in corners:
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      immval = int(signedImm6(immval))
-      rdval = v - immval
-      rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
-  elif (test == "divw" or test == "divuw" or test=="mulw"):
-    for v in corners:
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
-  elif (test == "c.lui"):
-    for v in corners:
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
-  else:
-    for v in corners:
-      # rs1 = 0, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
-      # rs1, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
-      # rs1 = all 1s, rs2 = v, others are random
-      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
-
-def make_rd_corners_lui(test, xlen, corners):
-  for v in corners:
-    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
-    writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
-
 def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
     print ("hazard tests for compressed instructions will require a major refactor, holding off for now")
@@ -1958,43 +1889,10 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rs1_corners(test, xlen)
     elif (coverpoint == "cp_rs2_corners"):
       make_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_rd_corners_slli"):
-      if (xlen == 32):
-        make_rd_corners(test, xlen, c_slli_32_corners)
-      else:
-        make_rd_corners(test, xlen, c_slli_64_corners)
-    elif (coverpoint == "cp_rd_corners_srli"):
-      if (xlen == 32):
-        make_rd_corners(test, xlen, c_srli_32_corners)
-      else:
-        make_rd_corners(test, xlen, c_srli_64_corners)
-    elif (coverpoint == "cp_rd_corners_srai"):
-      if (xlen == 32):
-        make_rd_corners(test, xlen, c_srai_32_corners)
-      else:
-        make_rd_corners(test, xlen, c_srai_64_corners)
-    elif (coverpoint == "cp_rd_corners"):
-      make_rd_corners(test, xlen, corners)
-    elif (coverpoint == "cp_rd_corners_clui"):
-      make_rd_corners(test, xlen, corners_6bit)
-    elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
-      make_rd_corners(test, xlen, corners_32bit)
-    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
-      make_rd_corners(test, xlen, corners_16bit)           # Make rd corners for lh and lhu for both RV32I & RV64I
-    elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
-      make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
-    elif (coverpoint == "cp_rd_corners_6bit"):
-      make_rd_corners(test, xlen, corners_6bit)
-    elif (coverpoint == "cp_rd_corners_32bit"):
-      make_rd_corners(test, xlen, corners_32bit)
-    elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bit)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       pass # already covered by cr_rs1_rs2_corners
     elif (coverpoint == "cmp_rd_rs2_eqval"):
       pass # already covered by cr_rs1_rs2_corners
-    elif (coverpoint == "cp_rd_sign"):
-      pass # already covered by rd_corners
     elif (coverpoint == "cr_rs1_rs2_corners"):
       make_cr_rs1_rs2_corners(test, xlen)
     elif (coverpoint == "cp_imm_corners"):
@@ -2036,8 +1934,6 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
-    elif (coverpoint == "cp_rd_corners_sraiw"):
-      make_rd_corners(test,xlen,corners_sraiw)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
@@ -2615,7 +2511,6 @@ if __name__ == '__main__':
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
         corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
         if (xlen == 32):
           corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         else:
@@ -2626,12 +2521,6 @@ if __name__ == '__main__':
                               0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
                               0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                               0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
-
-          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                          0b0000000000000000000000000000000000000000000000000000000000000001,
-                          0b1111111111111111111111111111111111111111111111111111111111111111,
-                          0b0000000000000000000000000000000001111111111111111111111111111111,
-                          0b1111111111111111111111111111111110000000000000000000000000000000]
 
         # global NaNBox_tests
         NaNBox_tests = False
