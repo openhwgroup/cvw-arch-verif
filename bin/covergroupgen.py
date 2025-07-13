@@ -14,6 +14,8 @@ import re
 import sys
 import math
 
+import parse_corners
+
 ##################################
 # Functions
 ##################################
@@ -108,6 +110,11 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
         template = template.replace("TWOEFFEW", str(2 * int(effew)))
         template = template.replace("EFFEW", str(int(effew)))
         template = template.replace("EFFVSEW", str(int(math.log2(int(effew)))-3))
+    if "CORNERS:integer_corners" in template:
+        rv32Corners = parse_corners.get_integer_corners(32, True)
+        rv64Corners = parse_corners.get_integer_corners(64, True)
+        corners = parse_corners.format_coverpoint_corners(rv32Corners, rv64Corners)
+        template = template.replace("CORNERS:integer_corners", corners)
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64

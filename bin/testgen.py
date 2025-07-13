@@ -20,6 +20,8 @@ import filecmp
 from datetime import datetime
 from random import randint, seed, getrandbits
 
+import parse_corners
+
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
 
@@ -1322,22 +1324,22 @@ def make_rs1_rs2(test, xlen, rng):
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs1_corners(test, xlen):
-  for v in corners:
+  for corner_name, corner_val in corners.items():
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
+    desc = f"cp_rs1_corners (Test source rs1 value = {corner_name} ({hex(corner_val)}))"
     if ((test in cbptype) or (test in citype)):
-      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, v, test, xlen)
+      writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, corner_val, test, xlen)
     else:
-      writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
+      writeCovVector(desc, rs1, rs2, rd, corner_val, rs2val, immval, rdval, test, xlen)
 
 def make_rs2_corners(test, xlen):
-    for v in corners:
+    for corner_name, corner_val in corners.items():
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       if test in ["c.swsp", "c.sdsp"]:
         while (rs2 == 2):
           [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
-      writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+      desc = f"cp_rs2_corners (Test source rs2 value = {corner_name} ({hex(corner_val)}))"
+      writeCovVector(desc, rs1, rs2, rd, rs1val, corner_val, immval, rdval, test, xlen)
 
 def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
   if insMap[findInstype('instructions', test, insMap)].get('compressed', 0) != 0:
@@ -1361,16 +1363,16 @@ def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, src, rs3a=rs3a, rs3b=rs3b, haz_type=haz, xlen=xlen)
 
 def make_cr_rs1_rs2_corners(test, xlen):
-  for v1 in corners:
-    for v2 in corners:
+  for corner_name_1, corner_val_1 in corners.items():
+    for corner_name_2, corner_val_2 in corners.items():
       # select distinct rs1 and rs2
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       while rs1 == rs2:
         [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
+      desc = f"cr_rs1_rs2_corners (Test source rs1 = {corner_name_1} ({hex(corner_val_1)}) rs2 = {corner_name_2} ({hex(corner_val_2)}))"
       if (test == "c.and"):
-        print(f"Running make_cr_rs1_rs2_corners for c.and with rs1 = {rs1} = {v1} rs2 = {rs2} = {v2} rd = {rd} = {rdval}")
-      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
+        print(f"Running make_cr_rs1_rs2_corners for c.and with rs1 = {rs1} = {corner_val_1} rs2 = {rs2} = {corner_val_2} rd = {rd} = {rdval}")
+      writeCovVector(desc, rs1, rs2, rd, corner_val_1, corner_val_2, immval, rdval, test, xlen)
 
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
@@ -1616,13 +1618,13 @@ def make_cp_imm_corners(test, xlen, corners_imm):
 
 def make_cr_rs1_imm_corners(test, xlen, corners_imm):
   desc = "cr_rs1_imm_corners"
-  for v1 in corners:
+  for corner_name_1, corner_val_1 in corners.items():
     for v2 in corners_imm:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       if ((test in cbptype) or (test in citype)):
-        writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v2, v1, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v2, corner_val_1, test, xlen)
       else:
-        writeCovVector(desc, rs1, rs2, rd, v1, rs2val, v2, rdval, test, xlen)
+        writeCovVector(desc, rs1, rs2, rd, corner_val_1, rs2val, v2, rdval, test, xlen)
 
 
 def make_imm_shift(test, xlen):
@@ -2510,17 +2512,7 @@ if __name__ == '__main__':
           flen = 32
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        if (xlen == 32):
-          corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        else:
-          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
-                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
+        corners = parse_corners.get_integer_corners(xlen)
 
         # global NaNBox_tests
         NaNBox_tests = False
