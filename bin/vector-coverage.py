@@ -32,10 +32,8 @@ if not WALLY:
 BUILD_MAKEFILE = Path(f"{ARCH_VERIF}/Makefile")
 RUN_MAKEFILE   = Path(f"{WALLY}/tests/riscof/Makefile")
 
-TARGETS = ["Vx8", "Vx16", "Vx32", "Vx64"]
-# Uncomment if you want to include the VLs variants
-# TARGETS += ["Vls8", "Vls16", "Vls32", "Vls64"]
-
+TARGETS = [#"Vx8",  "Vx16",  "Vx32",  "Vx64",
+           "Vls8", "Vls16", "Vls32", "Vls64"]
 
 ###############################################################################
 # Helper utilities
@@ -70,7 +68,10 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
         sys.exit("No targets specified.")
 
     # global clean before loop
-    run_make(RUN_MAKEFILE, "clean", jobs_flag)
+    run_make(BUILD_MAKEFILE,    "clean", jobs_flag)
+    run_make(RUN_MAKEFILE,      "clean-cvw-arch", jobs_flag)
+    run_make(RUN_MAKEFILE,      "clean-riscof-else-ucdb32", jobs_flag)
+    run_make(RUN_MAKEFILE,      "clean-riscof-else-ucdb64", jobs_flag)
 
     for t in targets:
         # 1. BUILD
@@ -79,11 +80,11 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
 
         # 2. RUN 32-bit → clean
         run_make(RUN_MAKEFILE, "cvw-arch-no-report32", jobs_flag)
-        run_make(RUN_MAKEFILE, "clean-cvw-arch-else-ucdb32", jobs_flag)
+        run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
 
         # 3. RUN 64-bit → clean
         run_make(RUN_MAKEFILE, "cvw-arch-no-report64", jobs_flag)
-        run_make(RUN_MAKEFILE, "clean-cvw-arch-else-ucdb64", jobs_flag)
+        run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb64", jobs_flag)
 
     # 4. COVERAGE
     run_make(RUN_MAKEFILE, "coverreport32", jobs_flag)
