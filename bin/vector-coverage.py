@@ -32,10 +32,8 @@ if not WALLY:
 BUILD_MAKEFILE = Path(f"{ARCH_VERIF}/Makefile")
 RUN_MAKEFILE   = Path(f"{WALLY}/tests/riscof/Makefile")
 
-TARGETS = ["Vx8", "Vx16", "Vx32", "Vx64"]
-# Uncomment if you want to include the VLs variants
-# TARGETS += ["Vls8", "Vls16", "Vls32", "Vls64"]
-
+TARGETS = ["Vx8",  "Vx16",  "Vx32",  "Vx64",
+           "Vls8", "Vls16", "Vls32", "Vls64"]
 
 ###############################################################################
 # Helper utilities

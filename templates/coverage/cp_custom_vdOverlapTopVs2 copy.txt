@@ -1,0 +1,3 @@
+
+    cp_custom_vdOverlapTopVs2_vd_vs1_lmul2 : cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_reg_aligned_lmul_4, vs1_vd_no_overlap_lmul2;
+    cp_custom_vdOverlapTopVs2_vd_vs1_lmul4 : cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_reg_aligned_lmul_8, vs1_vd_no_overlap_lmul4;
