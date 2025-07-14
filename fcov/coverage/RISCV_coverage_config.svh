@@ -44,6 +44,18 @@
 `ifdef VX64_COVERAGE
   `include "Vx64_coverage.svh"
 `endif
+`ifdef VLS8_COVERAGE
+  `include "Vls8_coverage.svh"
+`endif
+`ifdef VLS16_COVERAGE
+  `include "Vls16_coverage.svh"
+`endif
+`ifdef VLS32_COVERAGE
+  `include "Vls32_coverage.svh"
+`endif
+`ifdef VLS64_COVERAGE
+  `include "Vls64_coverage.svh"
+`endif
 `ifdef ZBA_COVERAGE
   `include "Zba_coverage.svh"
 `endif
@@ -160,15 +172,23 @@
 `endif
 `ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
+  `include "PMPU_coverage.svh"
+  `include "PMPS_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
   `include "PMPZalrsc_coverage.svh"
+  `include "PMPZca_coverage.svh"
+  `include "PMPZicbo_coverage.svh"
 `endif
 `ifdef RV32PMP_COVERAGE
   `include "PMPM_coverage.svh"
+  `include "PMPU_coverage.svh"
+  `include "PMPS_coverage.svh"
   `include "PMPF_coverage.svh"
   `include "PMPZaamo_coverage.svh"
   `include "PMPZalrsc_coverage.svh"
+  `include "PMPZca_coverage.svh"
+  `include "PMPZicbo_coverage.svh"
 `endif
 `ifdef RV64CBO_VM_COVERAGE
   `include "RV64CBO_VM_coverage.svh"
