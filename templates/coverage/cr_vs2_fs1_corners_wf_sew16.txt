@@ -1,0 +1,3 @@
+    cr_vs2_fs1_corners_wf_sew16 : cross cp_vs2_corners_f_sew32,cp_fs1_corners_v_sew16  iff (ins.trap == 0 )  {
+        //Cross coverage of VS2 corners and FS1 corners
+    }
