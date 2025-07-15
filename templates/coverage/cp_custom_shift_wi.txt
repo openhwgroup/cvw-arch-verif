@@ -1,4 +1,4 @@
-    // Custom coverpoints for Vector zext and sext operations (f4)
+    // Custom coverpoints for Vector shift and clip instructions with wi operands
 
     // ensures vd updates
     //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
@@ -11,16 +11,16 @@
         bins true = {1'b1};
     }
 
-    vtype_lmul_4: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
-        bins two = {2};
+    vtype_lmul_1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
+        bins one = {0};
     }
 
-    vs2_vd_overlap_lmul4: coverpoint (ins.current.insn[24:22] == ins.current.insn[11:9]) {
+    vs2_vd_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
         bins overlapping = {1'b1};
     }
 
-    vs2_mod4_3: coverpoint ins.current.insn[21:20] {
-        bins odd = {2'b11};
+    vd_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
+        wildcard bins divisible_by_2 = {5'b????0};
     }
 
-    cp_custom_vext4_overlapping_vd_vs2:    cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vs2_mod4_3;
+    cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1: cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_reg_aligned_lmul_2;

@@ -23,59 +23,6 @@ from random import randint, seed, getrandbits
 from vector_testgen_common import *
 import vector_testgen_common as common
 
-# obtained and modified from covergroupgen.py
-def readTestplans():
-    coverplanDir = f'{ARCH_VERIF}/testplans/priv'
-    testplans = dict()
-    for file in os.listdir(coverplanDir):
-        if file.endswith(".csv"):
-            arch = re.search("(.*).csv", file).group(1)
-            if (arch == "ExceptionsV"):
-                with open(os.path.join(coverplanDir, file)) as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    tp = dict()
-                    for row in reader:
-                        #print(f"row = {row}")
-                        if ("Instruction" not in row):
-                            print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
-                            exit(1)
-                        instr = row["Instruction"]
-                        cps = []
-                        del row["Instruction"]
-                        for key, value in row.items():
-                            if (type(value) == str and value != ''):
-                                if(key == "Type"):
-                                    cps.append("sample_" + value)
-                                else:
-                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
-                                        key = key + "_" + value
-                                    cps.append(key)
-                        tp[instr] = cps
-                testplans[arch] = tp
-    return testplans
-
-
-def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
-    for instr in k:
-        cps = tp[instr]
-        match32 = ("RV32" in cps) ^ (not hasRV32)
-        match64 = ("RV64" in cps) ^ (not hasRV64)
-        vectorwiden = (arch.startswith("Vx")) and (instr.startswith("vw") or (".w" in instr))
-        if (match32 and match64):
-            for cp in cps:
-                if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
-                    if ("lmul_sew" in cp):
-                        pass # these coverpoints do not need version appended
-                    elif ("lmul" in cp):
-                        effew = arch[2:]  # e.g. "8" from "Vx8"
-                        cp = cp + "_sew" + effew
-                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
-            if (vectorwiden):
-                f.write(customizeTemplate(covergroupTemplates, "endgroup_vector_widen", arch, instr))
-            else:
-                f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
-
-
 def writeLine(argument: str, comment = ""):
     tab_over_distance = 50
 
@@ -241,7 +188,7 @@ if __name__ == '__main__':
     # setup
     seed(0) # make tests reproducible
 
-    testplans = readTestplans()
+    testplans = readTestplans(priv=True)
     extensions = list(testplans.keys())
 
     for extension in extensions:
