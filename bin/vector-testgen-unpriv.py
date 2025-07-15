@@ -138,7 +138,7 @@ def make_vs3_vs2(instruction, sew, rng, lmul = 1):
 def make_rs1_v(instruction, sew, rng, lmul = 1):
 
   for r in rng:
-    description       = f"cp_rs1 (Test rs1 = " + str(r) + ")"
+    description       = f"cp_rs1 (Test rs1 = x" + str(r) + ")"
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs1 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
@@ -147,7 +147,7 @@ def make_rs1_v(instruction, sew, rng, lmul = 1):
 def make_rs2_v(instruction, sew, rng, lmul = 1):
 
   for r in rng:
-    description       = f"cp_rs2 (Test rs2 = " + str(r) + ")"
+    description       = f"cp_rs2 (Test rs2 = x" + str(r) + ")"
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs2 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
@@ -172,6 +172,15 @@ def make_rs1_rs2_v(instruction, sew, rng, lmul = 1):
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
     incrementBasetestCount()
 
+def make_fs1_v(instruction, sew, rng, lmul = 1):
+
+  for f in rng:
+    description       = f"cp_fs1 (Test fs1 = f" + str(f) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, fs1 = f)
+
+    writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
+    incrementBasetestCount()
+
 def make_imm_v(instruction, sew):
 
   if (test in imm_31):
@@ -192,8 +201,18 @@ def make_imm_v(instruction, sew):
 def make_rdv(instruction, sew, rng):
 
   for r in rng:
-    description       = "cp_rd (Test rd = " + str(r) + ")"
+    description       = "cp_rd (Test rd = x" + str(r) + ")"
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), rd = r)
+
+    writeTest(description, instruction, instruction_data, sew=sew)
+    incrementBasetestCount()
+    vsAddressCount()
+
+def make_fdv(instruction, sew, rng):
+
+  for f in rng:
+    description       = "cp_fd (Test fd = f" + str(f) + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), fd = f)
 
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
@@ -378,6 +397,8 @@ def makeTest(coverpoints, test, sew=None):
     #seed(hash(test + coverpoint))
     ############################# base suite #############################
     if   coverpoint == "cp_asm_count"                 : pass
+    elif coverpoint == "cp_fd"                        : make_fdv(test, sew, range(freg_count))
+    elif coverpoint == "cp_fs1"                       : make_fs1_v(test, sew, range(freg_count))
     elif coverpoint == "cp_rd"                        : make_rdv(test, sew, range(xreg_count))
     elif coverpoint == "cp_rs1"                       : make_rs1_v(test, sew, range(xreg_count))
     elif coverpoint == "cp_rs1_nx0"                   : make_rs1_v(test, sew, range(1, xreg_count), getBaseLmul(test, sew))
@@ -630,8 +651,6 @@ if __name__ == '__main__':
         storecmd = "sd"
         wordsize = 8
 
-      setFlen(32)
-
       rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
       if (xlen == 32):
         rcornersv = rcornersv + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
@@ -686,18 +705,18 @@ if __name__ == '__main__':
 
         # add assembly lines to enable fp where needed
         if test in vfloattypes:
-          float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+          float_en = "\n# set mstatus.FS to 10 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
           f.write(float_en)
 
-        sew_match = re.search(r'/Vx(\d+)$', pathname)
-        if sew_match is None:
-          sew_match = re.search(r'/Vls(\d+)$', pathname)
+        for pattern in [r'/Vx(\d+)$', r'/Vls(\d+)$', r'/Vf(\d+)$']:
+          sew_match = re.search(pattern, pathname)
           if sew_match:
-            sew = int(sew_match.group(1))
-          else:
-            sew = 8
+              sew = int(sew_match.group(1))
+              break
         else:
-          sew = int(sew_match.group(1))
+          sew = 8
+
+        setFlen(32)
 
         legalvlmuls = getLegalVlmul(maxELEN, minSEW_MIN, sew)
 
