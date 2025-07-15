@@ -35,10 +35,6 @@
         bins overlapping = {1'b1};
     }
 
-    vs1_reg_unaligned_lmul_2: coverpoint ins.current.insn[19:15] {
-        wildcard bins odd = {5'b????1};
-    }
-
     vs2_vd_no_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
         bins overlapping = {1'b0};
     }

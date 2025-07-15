@@ -190,9 +190,9 @@ vmorn.mm,VVV,x,x,x,x,x,x,x,x,,x,,x,,,,x,x,x,x,eew1,eew1,mm,,,,,,,,x,x,x,maskwrit
 vmxnor.mm,VVV,x,x,x,x,x,x,x,x,,x,,x,,,,x,x,x,x,eew1,eew1,mm,,,,,,,,x,x,x,maskwrite_unmasked
 vcpop.m,XVM,x,x,x,x,x,x,x,,x,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,gprwrite
 vfirst.m,XVM,x,x,x,x,x,x,x,,x,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,gprwrite
-vmsbf.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_masked
-vmsif.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_masked
-vmsof.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_masked
+vmsbf.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_unmasked
+vmsif.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_unmasked
+vmsof.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,maskwrite_unmasked
 viota.m,VVM,x,x,x,x,x,x,x,x,,x,,,,,,,,,,eew1,,,,,,,,,x,x,x,x,
 vid.v,VM,x,x,x,x,x,x,x,x,,,,,,,,,,,,,,,,,,,,,x,x,x,x,
 vmv.x.s,XV,x,x,x,x,x,x,x,,x,x,,,,,,,,,,x,,,,,,,,,,x,x,x,vmv_x_s
