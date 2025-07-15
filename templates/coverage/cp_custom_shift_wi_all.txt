@@ -35,22 +35,30 @@
         bins overlapping = {1'b1};
     }
 
+    vs2_all_reg_aligned_lmul_2: coverpoint ins.current.insn[24:20] {
+        wildcard ignore_bins odd = {5'b????1};
+    }
+
+    vs2_all_reg_aligned_lmul_4: coverpoint ins.current.insn[24:20] {
+        wildcard ignore_bins end_1 = {5'b???01};
+        wildcard ignore_bins end_2 = {5'b???10};
+        wildcard ignore_bins end_3 = {5'b???11};
+    }
+
+    vs2_all_reg_aligned_lmul_8: coverpoint ins.current.insn[24:20] {
+        wildcard ignore_bins end_1 = {5'b??001};
+        wildcard ignore_bins end_2 = {5'b??010};
+        wildcard ignore_bins end_3 = {5'b??011};
+        wildcard ignore_bins end_4 = {5'b??101};
+        wildcard ignore_bins end_5 = {5'b??110};
+        wildcard ignore_bins end_6 = {5'b??111};
+        wildcard ignore_bins end_7 = {5'b??100};
+    }
+
     vd_eq_vs2 : coverpoint ins.current.insn[24:20] == ins.current.insn[11:7] {
         bins true = {1'b1};
     }
 
-    vs2_reg_aligned_lmul_2: coverpoint ins.current.insn[24:20] {
-        wildcard bins divisible_by_2 = {5'b????0};
-    }
-
-    vs2_reg_aligned_lmul_4: coverpoint ins.current.insn[24:20] {
-        wildcard bins divisible_by_4 = {5'b???00};
-    }
-
-    vs2_reg_aligned_lmul_8: coverpoint ins.current.insn[24:20] {
-        wildcard bins divisible_by_8 = {5'b??000};
-    }
-
-    cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1: cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_eq_vs2, vs2_reg_aligned_lmul_2;
-    cp_custom_vdOverlapBtmVs2_vd_vs2_lmul2: cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_eq_vs2, vs2_reg_aligned_lmul_4;
-    cp_custom_vdOverlapBtmVs2_vd_vs2_lmul4: cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_eq_vs2, vs2_reg_aligned_lmul_8;
+    cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul1: cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_eq_vs2, vs2_all_reg_aligned_lmul_2;
+    cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul2: cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_eq_vs2, vs2_all_reg_aligned_lmul_4;
+    cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4: cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_eq_vs2, vs2_all_reg_aligned_lmul_8;
