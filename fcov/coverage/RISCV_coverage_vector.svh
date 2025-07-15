@@ -278,7 +278,8 @@ function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN
       for (int idx = 1; idx <= `VLEN / 8; ++idx) begin
         logic [7:0] elem = val[idx*8-1 -: 8];
 
-        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
       end
     end
     //--------------------------------------------------------------
@@ -288,7 +289,10 @@ function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN
       for (int idx = 1; idx <= `VLEN / 16; ++idx) begin
         logic [15:0] elem = val[idx*16-1 -: 16];
 
-        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        `ifndef COVER_E
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
+        `endif
       end
     end
     //--------------------------------------------------------------
@@ -298,7 +302,10 @@ function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN
       for (int idx = 1; idx <= `VLEN / 32; ++idx) begin
         logic [31:0] elem = val[idx*32-1 -: 32];
 
-        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        `ifdef XLEN64
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
+        `endif
       end
     end
     //--------------------------------------------------------------
@@ -308,7 +315,7 @@ function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN
       for (int idx = 1; idx <= `VLEN / 64; ++idx) begin
         logic [63:0] elem = val[idx*64-1 -: 64];
 
-        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0;
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
       end
     end
     //--------------------------------------------------------------
@@ -329,7 +336,9 @@ function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
     case (vsew)
+    `ifdef SEW8_SUPPORTED
     2'b00:   return {56'b0, val[7:0]};
+    `endif
     `ifdef SEW16_SUPPORTED
     2'b01:  return {48'b0, val[15:0]};
     `endif

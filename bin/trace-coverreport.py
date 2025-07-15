@@ -11,6 +11,7 @@
 import os
 import re
 import sys
+import subprocess
 from pathlib import Path
 
 def remove_duplicates_after_second_header(file_path):
@@ -42,6 +43,24 @@ def remove_duplicates_after_second_header(file_path):
                 outfile.write(line)  # Write the original line
                 unique_lines_before_header.add(stripped_line)  # Add line to the set
 
+def run_large_command(cmd):
+    # Define the file path
+    file_path = f"{reportdir}/cmd.sh"
+
+    # Write to the file
+    with open(file_path, "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write(f"{cmd}\n")
+
+    # Make it executable
+    os.chmod(file_path, 0o755)
+
+    # Run the file using Bash
+    subprocess.run(["bash", file_path])
+
+    # Delete the file
+    os.remove(file_path)
+
 ARCH_VERIF = Path(sys.argv[0]).resolve().parent.parent
 testdir = Path(sys.argv[1]).absolute()
 configName = testdir.name
@@ -56,7 +75,7 @@ if  ucdbjoin == "":
     print(f"ERROR: No UCDB files found in {testdir}. Exiting.")
     sys.exit(0)
 cmd = f"vcover merge {mergedUCDB} {ucdbjoin}"
-os.system(cmd)
+run_large_command(cmd)
 
 # Generate reports
 cmd = f"vcover report -details {mergedUCDB} -output {reportdir}/report_{configName}.txt"

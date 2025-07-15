@@ -41,6 +41,8 @@ tests/priv/vector
 fcov/coverage/RISCV_coverage_base_init.svh
 fcov/coverage/RISCV_coverage_base_sample.svh
 fcov/coverage/RISCV_instruction_sample.svh
+fcov/priv/ExceptionsV_coverage_init.svh
+fcov/priv/ExceptionsV_coverage.svh
 tests/priv/headers
 tests/priv/rv32
 tests/priv/rv64

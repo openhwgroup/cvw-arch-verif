@@ -336,19 +336,19 @@ endgroup
 function void interruptss_sample(int hart, int issue, ins_t ins);
     InterruptsS_cg.sample(ins);
 
-    $display("PC: %h Instr: %s\n  priv_mode=%b, mstatus.mie=%b mstatus.sie=%b mie=%h mideleg=%h mip=%h",
-            ins.current.pc_rdata, ins.current.disass,
-            ins.prev.mode, ins.current.csr[12'h300][3], ins.current.csr[12'h300][1],
-            ins.current.csr[12'h304][11:0], ins.current.csr[12'h303][11:0], ins.current.csr[12'h344][11:0]);
-    $display("  priv_mode_s: %b wfi = %b, mstatus_mie %b (prev %b) mstatus_sie %b mideleg %h mstatus_tw %b mie %h mip %h",
-                ins.prev.mode == 2'b01,
-                ins.current.insn == 32'b0001000_00101_00000_000_00000_1110011,
-                ins.current.csr[12'h300][3],
-                ins.prev.csr[12'h300][3],
-                ins.current.csr[12'h300][1],
-                ins.current.csr[12'h303][15:0],
-                ins.current.csr[12'h300][21],
-                ins.current.csr[12'h304][15:0],
-                ins.current.csr[12'h344][15:0]
-            );
+    // $display("PC: %h Instr: %s\n  priv_mode=%b, mstatus.mie=%b mstatus.sie=%b mie=%h mideleg=%h mip=%h",
+    //         ins.current.pc_rdata, ins.current.disass,
+    //         ins.prev.mode, ins.current.csr[12'h300][3], ins.current.csr[12'h300][1],
+    //         ins.current.csr[12'h304][11:0], ins.current.csr[12'h303][11:0], ins.current.csr[12'h344][11:0]);
+    // $display("  priv_mode_s: %b wfi = %b, mstatus_mie %b (prev %b) mstatus_sie %b mideleg %h mstatus_tw %b mie %h mip %h",
+    //             ins.prev.mode == 2'b01,
+    //             ins.current.insn == 32'b0001000_00101_00000_000_00000_1110011,
+    //             ins.current.csr[12'h300][3],
+    //             ins.prev.csr[12'h300][3],
+    //             ins.current.csr[12'h300][1],
+    //             ins.current.csr[12'h303][15:0],
+    //             ins.current.csr[12'h300][21],
+    //             ins.current.csr[12'h304][15:0],
+    //             ins.current.csr[12'h344][15:0]
+    //         );
 endfunction
