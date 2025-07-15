@@ -4,6 +4,7 @@
 // Set up function of vstart and vl for cp_vstart_gt_vl_setup in ExceptionsV
 // Goal: generate vl and vstart where VLMAX > vstart > vl > 0
 ///////////////////////////////////////////
+
 j    end_cp_vstart_gt_vl_setup       # jump past the function when not called
 
 cp_vstart_gt_vl_setup:
