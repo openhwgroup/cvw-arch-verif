@@ -35,10 +35,6 @@
         bins overlapping = {1'b1};
     }
 
-    vs2_reg_unaligned_lmul_2: coverpoint ins.current.insn[24:20] {
-        wildcard bins odd = {5'b????1};
-    }
-
     vs1_vd_no_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
         bins overlapping = {1'b0};
     }
@@ -51,16 +47,24 @@
         bins overlapping = {1'b0};
     }
 
-    vd_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
-        wildcard bins divisible_by_2 = {5'b????0};
+    vd_all_reg_aligned_lmul_2: coverpoint ins.current.insn[11:7] {
+        wildcard ignore_bins odd = {5'b????1};
     }
 
-    vd_reg_aligned_lmul_4: coverpoint ins.current.insn[11:7] {
-        wildcard bins divisible_by_4 = {5'b???00};
+    vd_all_reg_aligned_lmul_4: coverpoint ins.current.insn[11:7] {
+        wildcard ignore_bins end_1 = {5'b???01};
+        wildcard ignore_bins end_2 = {5'b???10};
+        wildcard ignore_bins end_3 = {5'b???11};
     }
 
-    vd_reg_aligned_lmul_8: coverpoint ins.current.insn[11:7] {
-        wildcard bins divisible_by_8 = {5'b??000};
+    vd_all_reg_aligned_lmul_8: coverpoint ins.current.insn[11:7] {
+        wildcard ignore_bins end_1 = {5'b??001};
+        wildcard ignore_bins end_2 = {5'b??010};
+        wildcard ignore_bins end_3 = {5'b??011};
+        wildcard ignore_bins end_4 = {5'b??101};
+        wildcard ignore_bins end_5 = {5'b??110};
+        wildcard ignore_bins end_6 = {5'b??111};
+        wildcard ignore_bins end_7 = {5'b??100};
     }
 
     vs2_reg_unaligned_lmul_2: coverpoint ins.current.insn[24:20] {
@@ -75,6 +79,6 @@
         bins odd = {3'b110};
     }
 
-    cp_custom_vdOverlapTopVs2_vd_vs2_lmul1 : cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_reg_aligned_lmul_2, vs1_vd_no_overlap_lmul1, vs2_reg_unaligned_lmul_2;
-    cp_custom_vdOverlapTopVs2_vd_vs2_lmul2 : cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_reg_aligned_lmul_4, vs1_vd_no_overlap_lmul2, vs2_mod4_2;
-    cp_custom_vdOverlapTopVs2_vd_vs2_lmul4 : cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_reg_aligned_lmul_8, vs1_vd_no_overlap_lmul4, vs2_mod8_4;
+    cp_custom_allVdOverlapTopVs2_vd_vs2_lmul1 : cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_all_reg_aligned_lmul_2, vs1_vd_no_overlap_lmul1, vs2_reg_unaligned_lmul_2;
+    cp_custom_allVdOverlapTopVs2_vd_vs2_lmul2 : cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_all_reg_aligned_lmul_4, vs1_vd_no_overlap_lmul2, vs2_mod4_2;
+    cp_custom_allVdOverlapTopVs2_vd_vs2_lmul4 : cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_all_reg_aligned_lmul_8, vs1_vd_no_overlap_lmul4, vs2_mod8_4;
