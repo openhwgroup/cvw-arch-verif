@@ -23,14 +23,14 @@ from random import randint, seed, getrandbits
 from vector_testgen_common import *
 import vector_testgen_common as common
 
-unsupported_tests = [
-  "vnclip.wi",
-  "vnclipu.wi",
-  "vnsra.wi",
-  "vnsrl.wi",
-  "vslideup.vi",
-  "vslidedown.vi",
-  "vrgather.vi",
+unsupported_tests = [ # conflicting signatures between sail and spike, open PRs listed bellow
+  "vnclip.wi",      # Sail issue 1071
+  "vnclipu.wi",     # Sail issue 1071
+  "vnsra.wi",       # Sail issue 1071
+  "vnsrl.wi",       # Sail issue 1071
+  "vslideup.vi",    # Sail issue 1071
+  "vslidedown.vi",  # Sail issue 1071
+  "vrgather.vi",    # Sail issue 1071
 ]
 
 def writeLine(argument: str, comment = ""):
