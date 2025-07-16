@@ -1,0 +1,22 @@
+{
+    "pythonVersion": "3.12",
+    // These files do not type check yet.
+    "exclude": [
+        // Default excludes. See https://github.com/microsoft/pyright/issues/10159
+        "**/node_modules",
+        "**/__pycache__",
+        "**/.*",
+        "cvw_arch_verif/combinetests.py",
+        "cvw_arch_verif/coverreport.py",
+        "cvw_arch_verif/csrtests.py",
+        "cvw_arch_verif/illegalinstrtests.py",
+        "cvw_arch_verif/makeselfchecking.py",
+        "cvw_arch_verif/sail-parse.py",
+        "cvw_arch_verif/testgen.py",
+        "cvw_arch_verif/trace-coverreport.py",
+        "cvw_arch_verif/vector-coverage.py",
+        "cvw_arch_verif/vector_testgen_common.py",
+        "cvw_arch_verif/vector-testgen-priv.py",
+        "cvw_arch_verif/vector-testgen-unpriv.py",
+    ],
+}

@@ -25,6 +25,8 @@ repos:
         args: ["--assume-in-merge"]
         exclude: \.adoc$ # sections titles Level 6 "=======" get flagged otherwise
       - id: check-json
+        # This is actually JSONC.
+        exclude: "pyrightconfig.json"
       - id: check-toml
       - id: check-yaml
 
