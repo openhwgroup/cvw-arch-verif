@@ -11,8 +11,8 @@
 import os
 import csv
 import re
-import sys
 import math
+from typing import TextIO
 
 ##################################
 # Functions
@@ -24,27 +24,27 @@ import math
 # the second level key being the instruction mnemonic (e.g. add)
 # the value being a list of covergroups for that instruction
 
-def readTestplans():
-    testplans = dict()
-    archSources = dict()
-    coverplanDirs = [(f'{ARCH_VERIF}/testplans', 'unpriv'), (f'{ARCH_VERIF}/testplans/priv', 'priv')]
+def readTestplans(arch_verif: str) -> tuple[dict[str, dict[str, list[str]]], dict[str, str]]:
+    testplans: dict[str, dict[str, list[str]]] = {}
+    archSources: dict[str, str] = {}
+    coverplanDirs = [(f'{arch_verif}/testplans', 'unpriv'), (f'{arch_verif}/testplans/priv', 'priv')]
     for coverplanDir, source in coverplanDirs:
         if not os.path.exists(coverplanDir):
             continue  # Skip missing directories
         for file in os.listdir(coverplanDir):
             if file.endswith(".csv"):
-                arch = re.search("(.*).csv", file).group(1)
+                arch = file.removesuffix(".csv")
                 #print(os.path.join(coverplanDir, file)+ " " + arch)
                 with open(os.path.join(coverplanDir, file)) as csvfile:
                     reader = csv.DictReader(csvfile)
-                    tp = dict()
+                    tp: dict[str, list[str]] = {}
                     for row in reader:
                         #print(f"row = {row}")
                         if ("Instruction" not in row):
                             print("Error reading testplan "+ file+".  Did you remember to shrink the .csv files after expanding?")
                             exit(1)
                         instr = row["Instruction"]
-                        cps = []
+                        cps: list[str] = []
                         del row["Instruction"]
                         for key, value in row.items():
     #                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
@@ -77,12 +77,12 @@ def readTestplans():
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
 
-def readCovergroupTemplates():
-    templateDir = f'{ARCH_VERIF}/templates/coverage'
-    covergroupTemplates = dict()
+def readCovergroupTemplates(arch_verif: str) -> dict[str, str]:
+    templateDir = f'{arch_verif}/templates/coverage'
+    covergroupTemplates: dict[str, str] = {}
     for file in os.listdir(templateDir):
         if file.endswith(".txt"):
-            cg = re.search("(.*).txt", file).group(1)
+            cg = file.removesuffix(".txt")
             with open(os.path.join(templateDir, file)) as f:
                 covergroupTemplates[cg] = f.read()
     return covergroupTemplates
@@ -90,13 +90,13 @@ def readCovergroupTemplates():
 # customizeTemplate replaces the placeholders in the covergroup template with the actual values
 # and picks from RV32/RV64 as necessary
 
-def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
+def customizeTemplate(covergroupTemplates: dict[str, str], missingTemplates: set[str], name: str, arch: str, instr: str, effew: str = "") -> str:
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
         if (not (name in missingTemplates)):
             print(f"No template found for '{name}'.  Check if there are spaces before or after coverpoint name.")
-            missingTemplates.append(name)
+            missingTemplates.add(name)
         return ""
     instr_nodot = instr.replace(".", "_")
     template = template.replace("INSTRNODOT", instr_nodot)
@@ -111,14 +111,14 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     return template
 
 # Check if any instruction in this extension is not available in the specified RV32 or RV64
-def anyExclusion(rv, instrs, tp):
+def anyExclusion(rv: str, instrs: list[str], tp: dict[str, list[str]]) -> bool:
     for instr in instrs:
         cps = tp[instr]
         if (not(rv in cps)):
             return True
     return False
 
-def anyEFFEWExclusion(effew, instrs, tp):
+def anyEFFEWExclusion(effew: str, instrs: list[str], tp: dict[str, list[str]]) -> bool:
     for instr in instrs:
         cps = tp[instr]
         if (not(effew in cps)):
@@ -130,20 +130,20 @@ sew_dependent_cps = ["cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_
 
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
 # Thereby group instructions according to which XLEN they are in
-def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
+def writeInstrs(f: TextIO, finit: TextIO, k: list[str], covergroupTemplates: dict[str, str], missingTemplates: set[str], tp: dict[str, list[str]], arch: str, hasRV32: bool, hasRV64: bool):
     for instr in k:
         cps = tp[instr]
-        match32 = ("RV32" in cps) ^ (not hasRV32)
-        match64 = ("RV64" in cps) ^ (not hasRV64)
+        match32 = ("RV32" in cps) == hasRV32
+        match64 = ("RV64" in cps) == hasRV64
         vectorwiden = (arch.startswith("Vx") or arch.startswith("Vls")) and (instr.startswith("vw") or (".w" in instr))
         if (match32 and match64):
             if (vectorwiden):
                 effew = getEffew(arch)
-                f.write(customizeTemplate(covergroupTemplates, "instruction_vector_widen", arch, instr, effew=effew))
-                finit.write(customizeTemplate(covergroupTemplates, "init_vector_widen", arch, instr, effew=effew))
+                f.write(customizeTemplate(covergroupTemplates, missingTemplates, "instruction_vector_widen", arch, instr, effew=effew))
+                finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "init_vector_widen", arch, instr, effew=effew))
             else:
-                f.write(customizeTemplate(covergroupTemplates, "instruction", arch, instr))
-                finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
+                f.write(customizeTemplate(covergroupTemplates, missingTemplates, "instruction", arch, instr))
+                finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "init", arch, instr))
             for cp in cps:
                 if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
                     if any(substring in cp for substring in sew_dependent_cps):
@@ -157,15 +157,15 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
                             num = int(match.group(1))
                             if (int(effew) <= num): # only_sew8 should only be included if sew = 8
                                 cp = re.sub(r"_sew_lte_\d+", "", cp)
-                                f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                                f.write(customizeTemplate(covergroupTemplates, missingTemplates, cp, arch, instr))
                     else:
-                        f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                        f.write(customizeTemplate(covergroupTemplates, missingTemplates, cp, arch, instr))
             if (vectorwiden):
-                f.write(customizeTemplate(covergroupTemplates, "endgroup_vector_widen", arch, instr))
+                f.write(customizeTemplate(covergroupTemplates, missingTemplates, "endgroup_vector_widen", arch, instr))
             else:
-                f.write(customizeTemplate(covergroupTemplates, "endgroup", arch, instr))
+                f.write(customizeTemplate(covergroupTemplates, missingTemplates, "endgroup", arch, instr))
 
-def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
+def writeCovergroupSampleFunctions(f: TextIO, k: list[str], covergroupTemplates: dict[str, str], missingTemplates: set[str], tp: dict[str, list[str]], arch: str, hasRV32: bool, hasRV64: bool):
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
@@ -174,13 +174,13 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
             if arch.startswith("Vx") or arch.startswith("Vls"):
                 if instr.startswith("vw") or (".w" in instr):
                     effew = getEffew(arch)
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector_widen", arch, instr, effew=effew))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_vector_widen", arch, instr, effew=effew))
                 else:
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector", arch, instr))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_vector", arch, instr))
             elif arch != "E": # E currently breaks coverage
-                f.write(customizeTemplate(covergroupTemplates, "covergroup_sample", arch, instr))
+                f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample", arch, instr))
 
-def writeInstructionSampleFunction(f, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
+def writeInstructionSampleFunction(f: TextIO, k: list[str], covergroupTemplates: dict[str, str], missingTemplates: set[str], tp: dict[str, list[str]], arch: str, hasRV32: bool, hasRV64: bool):
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
@@ -188,9 +188,9 @@ def writeInstructionSampleFunction(f, k, covergroupTemplates, tp, arch, hasRV32,
         if (match32 and match64):
             for cp in cps:
                 if (cp in cps and cp.startswith("sample_")):
-                    f.write(customizeTemplate(covergroupTemplates, cp, arch, instr))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, cp, arch, instr))
 
-def getEffew(arch):
+def getEffew(arch: str):
     match = re.search(r'(\d+)$', arch)
     if match:
         effew = match.group(1)
@@ -202,10 +202,11 @@ def getEffew(arch):
 # writeCovergroups iterates over the testplans and covergroup templates to generate the covergroups for
 # all instructions in each testplan
 
-def writeCovergroups(testPlans, covergroupTemplates, archSources):
-    covergroupDir = ARCH_VERIF+'/fcov/'
+def writeCovergroups(testPlans: dict[str, dict[str, list[str]]], covergroupTemplates: dict[str, str], archSources: dict[str, str], arch_verif: str):
+    missingTemplates: set[str] = set()
+    covergroupDir = arch_verif+'/fcov/'
     with open(os.path.join(covergroupDir,"coverage/RISCV_instruction_sample.svh"), "w") as fsample:
-        fsample.write(customizeTemplate(covergroupTemplates, "instruction_sample_header", "NA", "NA"))
+        fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "instruction_sample_header", "NA", "NA"))
         for arch, tp in testPlans.items():
             covergroupSubDir = archSources.get(arch, 'unpriv')
             covergroupOutDir = os.path.join(covergroupDir, covergroupSubDir)
@@ -218,63 +219,64 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
             with open(os.path.join(covergroupOutDir,file), "w") as f:
                 finit = open(os.path.join(covergroupOutDir,initfile), "w")
                 #print(covergroupTemplates)
+                effew = ""
                 if arch.startswith("Vx") or arch.startswith("Vls"):
                     effew = getEffew(arch)
-                    f.write(customizeTemplate(covergroupTemplates,"header_vector", arch, "", effew=effew))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates,"header_vector", arch, "", effew=effew))
                 else:
-                    f.write(customizeTemplate(covergroupTemplates,"header", arch, ""))
-                finit.write(customizeTemplate(covergroupTemplates,"initheader", arch, ""))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates,"header", arch, ""))
+                finit.write(customizeTemplate(covergroupTemplates, missingTemplates,"initheader", arch, ""))
 
                 k = list(tp.keys())
                 k.sort()
                 if arch.startswith("Vx") or arch.startswith("Vls"):
                     k = [instr for instr in k if f"EFFEW{effew}" in tp[instr]]
 
-                writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
+                writeInstrs(f, finit, k, covergroupTemplates, missingTemplates, tp, arch, True, True)
                 if (anyExclusion("RV64", k, tp)):
-                    f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
-                    finit.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA1"))
-                    writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, False)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
-                    finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA1"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV32", arch, "NA1"))
+                    finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV32", arch, "NA1"))
+                    writeInstrs(f, finit, k, covergroupTemplates, missingTemplates, tp, arch, True, False)
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA1"))
+                    finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA1"))
                 if (anyExclusion("RV32", k, tp)):
-                    f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
-                    finit.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA2"))
-                    writeInstrs(f, finit, k, covergroupTemplates, tp, arch, False, True)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
-                    finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV64", arch, "NA2"))
+                    finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV64", arch, "NA2"))
+                    writeInstrs(f, finit, k, covergroupTemplates, missingTemplates, tp, arch, False, True)
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA2"))
+                    finit.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA2"))
 
                 # Covergroup sample functions: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
                 if arch.startswith("Vx") or arch.startswith("Zv") or arch.startswith("Vls"):
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header_vector", arch, "NA3", effew=effew))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_header_vector", arch, "NA3", effew=effew))
                 else:
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header", arch, "NA3"))
-                writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, True, True)
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_header", arch, "NA3"))
+                writeCovergroupSampleFunctions(f, k, covergroupTemplates, missingTemplates, tp, arch, True, True)
                 if (anyExclusion("RV64", k, tp)):
-                    f.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
-                    writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, True, False)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV32", arch, "NA4"))
+                    writeCovergroupSampleFunctions(f, k, covergroupTemplates, missingTemplates, tp, arch, True, False)
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA4"))
                 if (anyExclusion("RV32", k, tp)):
-                    f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
-                    writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
-                    f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV64", arch, "NA5"))
+                    writeCovergroupSampleFunctions(f, k, covergroupTemplates, missingTemplates, tp, arch, False, True)
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA5"))
                 if arch.startswith("Vx") or arch.startswith("Zv") or arch.startswith("Vls"):
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end_vector", arch, "NA3"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_end_vector", arch, "NA3"))
                 else:
-                    f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))
+                    f.write(customizeTemplate(covergroupTemplates, missingTemplates, "covergroup_sample_end", arch, "NA3"))
 
                 # Instruction sample function: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
-                writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, True, True)
+                writeInstructionSampleFunction(fsample, k, covergroupTemplates, missingTemplates, tp, arch, True, True)
                 if (anyExclusion("RV64", k, tp)):
-                    fsample.write(customizeTemplate(covergroupTemplates, "RV32", arch, "NA4"))
-                    writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, True, False)
-                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA4"))
+                    fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV32", arch, "NA4"))
+                    writeInstructionSampleFunction(fsample, k, covergroupTemplates, missingTemplates, tp, arch, True, False)
+                    fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA4"))
                 if (anyExclusion("RV32", k, tp)):
-                    fsample.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
-                    writeInstructionSampleFunction(fsample, k, covergroupTemplates, tp, arch, False, True)
-                    fsample.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
+                    fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "RV64", arch, "NA5"))
+                    writeInstructionSampleFunction(fsample, k, covergroupTemplates, missingTemplates, tp, arch, False, True)
+                    fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "end", arch, "NA5"))
 
-        fsample.write(customizeTemplate(covergroupTemplates, "instruction_sample_end", "NA", "NA"))
+        fsample.write(customizeTemplate(covergroupTemplates, missingTemplates, "instruction_sample_end", "NA", "NA"))
 
     # Create include files listing all the coverage groups to use in RISCV_coverage_base
     keys = list(testPlans.keys())
@@ -286,11 +288,11 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
     file = f"{covergroupDir}/coverage/RISCV_coverage_base_init.svh"
     with open(os.path.join(file), "w") as f:
         for arch in keys:
-            f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
+            f.write(customizeTemplate(covergroupTemplates, missingTemplates, "coverageinit", arch, ""))
     file = f"{covergroupDir}/coverage/RISCV_coverage_base_sample.svh"
     with open(os.path.join(file), "w") as f:
         for arch in keys:
-            f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
+            f.write(customizeTemplate(covergroupTemplates, missingTemplates, "coveragesample", arch, ""))
 
 
 
@@ -299,8 +301,10 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
 ##################################
 
 def main():
-    ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-    missingTemplates = list() # keep list of missing templates to only print once
-    testPlans, archSources = readTestplans()
-    covergroupTemplates = readCovergroupTemplates()
-    writeCovergroups(testPlans, covergroupTemplates, archSources)
+    arch_verif = os.getenv("CVW_ARCH_VERIF")
+    if arch_verif is None:
+        raise SystemExit("CVW_ARCH_VERIF not set")
+
+    testPlans, archSources = readTestplans(arch_verif)
+    covergroupTemplates = readCovergroupTemplates(arch_verif)
+    writeCovergroups(testPlans, covergroupTemplates, archSources, arch_verif)
