@@ -20,6 +20,7 @@ import filecmp
 from datetime import datetime
 from random import randint, seed, getrandbits
 
+
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
 
