@@ -484,6 +484,43 @@ def make_custom_vdOverlapBtmVs2_vd_vs2(instruction, sew, lmul):
   incrementBasetestCount()
   vsAddressCount()
 
+def make_custom_allVdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
+  emul = 2 * lmul
+  for v in range(0, vreg_count):
+    if (v % emul == 0):
+      vd  = v             # ensure that vd is on group with the given lmul
+      vs2 = vd + lmul     # force vs2 to overlap with the top of vd, for widening so the overlap is simply the top half
+      vs1 = randomizeOngroupVectorRegister(instruction, vs2, vd, lmul=lmul)
+
+      description = f"cp_custom_allVdOverlapTopVs2_vd_vs2_lmul{lmul} (Test vd = {v}, vs2 = {vs2})"
+      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
+
+      writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
+      incrementBasetestCount()
+      vsAddressCount()
+    else:
+      pass
+
+def make_custom_allVdOverlapTopVs1_vd_vs1(instruction, sew, lmul):
+  emul = 2 * lmul
+  for v in range(0, vreg_count):
+    if (v % emul == 0):
+      vd  = v             # ensure that vd is on group with the given lmul
+      vs1 = vd + lmul     # force vs2 to overlap with the top of vd, for widening so the overlap is simply the top half
+      if (instruction in wwvins):
+        vs2 = randomizeOngroupVectorRegister(instruction, vs1, vd, lmul=emul)
+      else:
+        vs2 = randomizeOngroupVectorRegister(instruction, vs1, vd, lmul=lmul)
+
+      description = f"cp_custom_allVdOverlapTopVs1_vd_vs1_lmul{lmul} (Test vd = {v}, vs1 = {vs1})"
+      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
+
+      writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
+      incrementBasetestCount()
+      vsAddressCount()
+    else:
+      pass
+
 def make_custom_vreductionw_vd_vs1_emul_16(instruction, sew):
   description = f"cp_custom_vreductionw_vd_vs1_emul_16"
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), suite="base", lmul = 8) # requires lmul = 8
@@ -744,7 +781,13 @@ def makeTest(coverpoints, test, sew=None):
     elif (coverpoint in ["cp_custom_vdOverlapTopVs2_vd_vs2_lmul1", "cp_custom_vdOverlapTopVs2_vd_vs2_lmul2", "cp_custom_vdOverlapTopVs2_vd_vs2_lmul4"]):
       lmul = int(coverpoint[-1])
       make_custom_vdOverlapTopVs2_vd_vs2(test, sew, lmul)
-    elif coverpoint == "cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1":
+    elif (coverpoint in ["cp_custom_allVdOverlapTopVs1_vd_vs1_lmul1", "cp_custom_allVdOverlapTopVs1_vd_vs1_lmul2", "cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4"]):
+      lmul = int(coverpoint[-1])
+      make_custom_allVdOverlapTopVs1_vd_vs1(test, sew, lmul)
+    elif (coverpoint in ["cp_custom_allVdOverlapTopVs2_vd_vs2_lmul1", "cp_custom_allVdOverlapTopVs2_vd_vs2_lmul2", "cp_custom_allVdOverlapTopVs2_vd_vs2_lmul4"]):
+      lmul = int(coverpoint[-1])
+      make_custom_allVdOverlapTopVs2_vd_vs2(test, sew, lmul)
+    elif (coverpoint in ["cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1", "cp_custom_vdOverlapBtmVs2_vd_vs2_lmul2", "cp_custom_vdOverlapBtmVs2_vd_vs2_lmul4"]):
       lmul = int(coverpoint[-1])
       make_custom_vdOverlapBtmVs2_vd_vs2(test, sew, lmul)
     elif coverpoint == "cp_custom_vreductionw_vd_vs1_emul_16"         : make_custom_vreductionw_vd_vs1_emul_16(test, sew)
