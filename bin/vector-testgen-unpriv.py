@@ -790,9 +790,33 @@ def coverpointInclusions(coverpoints):
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul1")
       applicable_coverpoints.append("cp_custom_vdOverlapTopVs1_vd_vs1_lmul1")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs1_vd_vs1_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul4")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs1_vd_vs1_lmul4")
+    elif coverpoint == "cp_custom_wvv_all":
+      applicable_coverpoints.remove(coverpoint)
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul4")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul1")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul2")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4")
+    elif coverpoint == "cp_custom_wwv_all":
+      applicable_coverpoints.remove(coverpoint)
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul1")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul2")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4")
+    elif coverpoint == "cp_custom_wvx_all":
+      applicable_coverpoints.remove(coverpoint)
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_allVdOverlapTopVs2_vd_vs2_lmul4")
     elif coverpoint == "cp_custom_wvx":
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapTopVs2_vd_vs2_lmul4")
     elif coverpoint == "cp_custom_wwv":
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapTopVs1_vd_vs1_lmul1")
@@ -816,14 +840,25 @@ def coverpointInclusions(coverpoints):
     elif coverpoint == "cp_custom_shift_wv":
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul4")
       applicable_coverpoints.append("cp_custom_vshiftn_upperbits_vs1_ones")
     elif coverpoint == "cp_custom_shift_wx":
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul4")
       applicable_coverpoints.append("cp_custom_vshiftn_upperbits_rs1_ones")
     elif coverpoint == "cp_custom_shift_wi":
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_vdOverlapBtmVs2_vd_vs2_lmul4")
+    elif coverpoint == "cp_custom_shift_wi_all":
+      applicable_coverpoints.remove(coverpoint)
+      applicable_coverpoints.append("cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul1")
+      applicable_coverpoints.append("cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul2")
+      applicable_coverpoints.append("cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4")
     elif coverpoint in ["cp_custom_red", "cp_custom_wred"]:
       applicable_coverpoints.remove(coverpoint)
       applicable_coverpoints.append("cp_custom_element0Masked")

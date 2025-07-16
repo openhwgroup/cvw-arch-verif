@@ -389,20 +389,25 @@ covergroup PMPM_cg with function sample(
 		wildcard bins NAPOT14 = {45'b11????????????????????????????_100000000000000};
 	}
 //-------------------------------------------------------
-	//pattern write inside pmpaddr[0]
 	`ifndef G_IS_0
-		pmpaddr0_for_cp_grain: coverpoint(ins.current.rs1_val) {
-			bins all_zero = {0};
-			bins all_one  = {{(`XLEN){1'b1}}};
-			bins checkerboard = {{((`XLEN)/2){2'b10}} }; //checkerboard pattern
-		}
-
-		pmpcfg0_A_mode_OFF: coverpoint pmpcfg[0] {
+		pmpcfg0_A_mode_was_OFF: coverpoint {ins.prev.csr[12'h3A0]} {
   			wildcard bins OFF = {8'b00000???};
 		}
 
-		pmpcfg0_A_mode_NAPOT: coverpoint pmpcfg[0] {
-  			wildcard bins NAPOT = {8'b00011???};
+		pmpcfg0_A_mode_was_NAPOT: coverpoint {ins.prev.csr[12'h3A0]} {
+  			wildcard bins OFF = {8'b00011???};
+		}
+
+		pmpcfg0_A_mode_is_OFF: coverpoint {ins.current.csr[12'h3A0]} {
+  			wildcard bins OFF = {8'b00000???};
+		}
+
+		pmpcfg0_A_mode_is_NAPOT: coverpoint {ins.current.csr[12'h3A0]} {
+  			wildcard bins OFF = {8'b00011???};
+		}
+
+		pmpcfg0_A_mode_is_TOR: coverpoint {ins.current.csr[12'h3A0]} {
+  			wildcard bins OFF = {8'b00001???};
 		}
 	`endif
 
@@ -1279,15 +1284,28 @@ covergroup PMPM_cg with function sample(
 	cp_none_sw: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
 	cp_none_jalr: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
 
-	//crossess for cp_grain
-	//Changing pmpcfg.A and reading back pmpaddr0 will be a part of the test.
+	// For cp_grain, writing and reading from pmpaddr0 and pmpcfg0 is a part of the test, even though it is
+	// too dificult to check with the coverpoint. Below is the snippet of the code
 
-	/*                     ****Needs fixing***
+	/*li t0, 8'b00011111
+	li t1, 8'b00000111
+	csrw pmpcfg0, t0 #pmpcfg0.A = NAPOT
+	li t0, {0/1s/checkerboard}
+	csrw pmpaddr0, t0 # pmpaddr0 = value under test
+	csrr t2, pmpaddr0
+	SIGUPD(t2) # read back pmpaddr0, which should have G-1 trailing 1s
+	csrw pmpcfg0, t1 # pmpcfg0.A = OFF
+	csrr t2, pmpaddr0
+	SIGUPD(t2) # read back pmpaddr0, which should have G trailing 0s*/
 	`ifndef G_IS_0
-		cp_grain_OFF : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_OFF;
-		cp_grain_NAPOT : cross priv_mode_m, pmpaddr0_for_cp_grain, csrrw_to_pmpaddr0, pmpcfg0_A_mode_NAPOT;
+		cp_grain_OFF_to_OFF : cross priv_mode_m, pmpcfg0_A_mode_was_OFF, pmpcfg0_A_mode_is_OFF ;
+		cp_grain_OFF_to_NAPOT : cross priv_mode_m, pmpcfg0_A_mode_was_OFF, pmpcfg0_A_mode_is_NAPOT ;
+		cp_grain_OFF_to_TOR : cross priv_mode_m, pmpcfg0_A_mode_was_OFF, pmpcfg0_A_mode_is_TOR ;
+		cp_grain_NAPOT_to_OFF : cross priv_mode_m, pmpcfg0_A_mode_was_NAPOT, pmpcfg0_A_mode_is_OFF ;
+		cp_grain_NAPOT_to_NAPOT : cross priv_mode_m, pmpcfg0_A_mode_was_NAPOT, pmpcfg0_A_mode_is_NAPOT ;
+		cp_grain_NAPOT_to_TOR : cross priv_mode_m, pmpcfg0_A_mode_was_NAPOT, pmpcfg0_A_mode_is_TOR ;
 	`endif
-	*/
+
 	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.

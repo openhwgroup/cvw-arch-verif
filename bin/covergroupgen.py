@@ -131,6 +131,9 @@ def anyEFFEWExclusion(effew, instrs, tp):
             return True
     return False
 
+sew_dependent_cps = ["cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
+                     "cp_custom_vindex", "cr_vs2_vs1_corners_f", "cp_fs1_corners_v", "cr_vs2_fs1_corners", "cr_vl_lmul"]
+
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
 # Thereby group instructions according to which XLEN they are in
 def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
@@ -149,7 +152,7 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
                 finit.write(customizeTemplate(covergroupTemplates, "init", arch, instr))
             for cp in cps:
                 if(not (cp.startswith("sample_") or cp == "RV32" or cp == "RV64" or cp.startswith("EFFEW"))): # skip these initial columns
-                    if ("cr_vl_lmul" in cp) or (("cp_custom_shift" in cp) and (cp != "cp_custom_shift_wi")) or ("cp_custom_vindex" in cp):
+                    if any(substring in cp for substring in sew_dependent_cps):
                         effew = getEffew(arch)
                         cp = cp + "_sew" + effew
 

@@ -425,10 +425,46 @@
         bins overlapping = {1'b1};
     }
 
+    vs1_vd_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs1_vd_overlap_lmul2: coverpoint (ins.current.insn[19:17] == ins.current.insn[11:9]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs2_vd_overlap_lmul2: coverpoint (ins.current.insn[24:22] == ins.current.insn[11:9]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs1_vd_overlap_lmul4: coverpoint (ins.current.insn[19:18] == ins.current.insn[11:10]) {
+        bins overlapping = {1'b1};
+    }
+
+    vs2_vd_overlap_lmul4: coverpoint (ins.current.insn[24:23] == ins.current.insn[11:10]) {
+        bins overlapping = {1'b1};
+    }
+
     vs1_vd_no_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
         bins overlapping = {1'b0};
     }
 
-    vs1_vd_overlap_lmul1: coverpoint (ins.current.insn[19:16] == ins.current.insn[11:8]) {
-        bins overlapping = {1'b1};
+    vs2_vd_no_overlap_lmul1: coverpoint (ins.current.insn[24:21] == ins.current.insn[11:8]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs1_vd_no_overlap_lmul2: coverpoint (ins.current.insn[19:17] == ins.current.insn[11:9]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs2_vd_no_overlap_lmul2: coverpoint (ins.current.insn[24:22] == ins.current.insn[11:9]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs1_vd_no_overlap_lmul4: coverpoint (ins.current.insn[19:18] == ins.current.insn[11:10]) {
+        bins overlapping = {1'b0};
+    }
+
+    vs2_vd_no_overlap_lmul4: coverpoint (ins.current.insn[24:23] == ins.current.insn[11:10]) {
+        bins overlapping = {1'b0};
     }
