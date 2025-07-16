@@ -203,7 +203,7 @@ Coverage files with multiple extensions in the name apply when all the extension
 |ZicsrM||x|x|x
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
-|ZicsrF|x||x|x
+|ZicsrF|o||x|x
 |ZicsrUF|||x|x
 |ZicsrUV|||o|x
 |ExceptionsM||x|x|x
