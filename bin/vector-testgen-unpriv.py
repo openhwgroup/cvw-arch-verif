@@ -31,6 +31,8 @@ unsupported_tests = [ # conflicting signatures between sail and spike, open PRs 
   "vslideup.vi",    # Sail issue 1071
   "vslidedown.vi",  # Sail issue 1071
   "vrgather.vi",    # Sail issue 1071
+  "vwredsum.vs",    # Sail issue 1135
+  "vwredsumu.vs"    # Sail issue 1135
 ]
 
 def writeLine(argument: str, comment = ""):

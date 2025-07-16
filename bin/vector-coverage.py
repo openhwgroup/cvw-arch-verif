@@ -7,9 +7,16 @@
 ##################################
 """
 Drive two Makefiles through build / run / clean / coverage while
-processing one CSV row at a time. While one target is active, the
-*other* CSV is reduced to its header and one dummy row (real row),
-which avoids errors and speeds up processing.
+processing one CSV row at a time.
+
+New ‑‑from‑line / ‑‑from‑instr CLI switches let you resume work after an
+interruption:
+
+  • --from-line  N     → start with data‑row N (1 = first row after header)
+  • --from-instr NAME  → start with the first row whose text contains NAME
+                        (case‑sensitive substring search)
+
+Exactly one of the two may be supplied.
 """
 
 from pathlib import Path
@@ -75,7 +82,7 @@ def build_run_cycle(t: str, jobs_flag: str | None) -> None:
 @contextmanager
 def one_row_at_a_time(csv_path: Path):
     """
-    Yields header and data rows one-by-one, restoring original file on exit.
+    Yields (header, data_rows) and restores the original file on exit.
     """
     backup = csv_path.with_suffix(csv_path.suffix + ".bak")
     shutil.copy2(csv_path, backup)
@@ -92,7 +99,7 @@ def one_row_at_a_time(csv_path: Path):
 def one_dummy_row(csv_path: Path):
     """
     Temporarily shrink *csv_path* to its header + first row only, restoring on exit.
-    Used to keep the inactive CSV valid with a single real row.
+    Keeps the inactive CSV valid with a single real row.
     """
     backup = csv_path.with_suffix(csv_path.suffix + ".full")
     shutil.copy2(csv_path, backup)
@@ -109,14 +116,17 @@ def one_dummy_row(csv_path: Path):
 ###############################################################################
 # Main driver
 ###############################################################################
-def main(selected: list[str], jobs_flag: str | None) -> None:
+def main(selected: list[str],
+         jobs_flag: str | None,
+         start_line: int | None,
+         start_instr: str | None) -> None:
     csv_for_target = {"Vx": VX_CSV, "Vls": VLS_CSV}
     targets = selected or TARGETS
 
     # Stopwatch
     t0 = time.perf_counter()
 
-    # global clean before loop
+    # Clean everything up front
     run_make(BUILD_MAKEFILE, "clean", jobs_flag)
     run_make(RUN_MAKEFILE, "clean-cvw-arch", jobs_flag)
     run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
@@ -137,8 +147,23 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
 
         with other_ctx:
             with one_row_at_a_time(active_csv) as (header, rows):
+                # Decide where to start
+                if start_line is not None:
+                    if not (1 <= start_line <= len(rows)):
+                        print(f"⚠️  Row {start_line} out of range for {t}; skipping target.")
+                        continue
+                    start_idx = start_line - 1  # convert to 0‑based
+                elif start_instr is not None:
+                    try:
+                        start_idx = next(i for i, r in enumerate(rows) if start_instr in r)
+                    except StopIteration:
+                        print(f"⚠️  Instruction '{start_instr}' not found in {t}; skipping target.")
+                        continue
+                else:
+                    start_idx = 0
+
                 total = len(rows)
-                for idx, row in enumerate(rows, 1):
+                for idx, row in enumerate(rows[start_idx:], start_idx + 1):
                     active_csv.write_text(header + "\n" + row + "\n")
                     print(f"\n📋 [{t}] Row {idx}/{total}: {row.strip()}")
                     try:
@@ -167,12 +192,23 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
 ###############################################################################
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Vector build/run driver")
+
     parser.add_argument("targets", nargs="*", help="Subset of targets (default Vx Vls)")
+
+    # make -j / --jobs passthrough
     parser.add_argument("-j", "--jobs", nargs="?", const="", metavar="N",
                         help="Pass ‑j/‑jN/--jobs/--jobs=N to make")
+
+    # resume controls (mutually exclusive)
+    resume = parser.add_mutually_exclusive_group()
+    resume.add_argument("--from-line", type=int, metavar="N",
+                        help="Start with data‑row N (1‑based, header ignored)")
+    resume.add_argument("--from-instr", metavar="TEXT",
+                        help="Start with first row whose text contains TEXT")
+
     args = parser.parse_args()
 
-    # Normalize jobs flag
+    # Normalize jobs flag for make
     jobs_flag = None
     if args.jobs is not None:
         jobs_flag = "-j" if args.jobs == "" else (
@@ -180,7 +216,7 @@ if __name__ == "__main__":
         )
 
     try:
-        main(args.targets, jobs_flag)
+        main(args.targets, jobs_flag, args.from_line, args.from_instr)
     except KeyboardInterrupt:
         print("\nInterrupted by user – CSVs restored.")
         sys.exit(130)
