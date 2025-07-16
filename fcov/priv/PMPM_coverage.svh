@@ -797,16 +797,16 @@ covergroup PMPM_cg with function sample(
 	}
 
 	write_pmp_csr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110001_00000_010_?????_1110011}; // Try to write value of x0 in pmpaddr1
-		wildcard bins write_pmpcfg   = {32'b001110100001_00000_010_?????_1110011}; // Try to write value of x0 in pmpcfg1
+		wildcard bins write_pmpaddr  = {32'b001110110001_00000_001_?????_1110011}; // Try to write value of x0 in pmpaddr1
+		wildcard bins write_pmpcfg   = {32'b001110100001_00000_001_?????_1110011}; // Try to write value of x0 in pmpcfg1
 	}
 
 	write_lower_pmpaddr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110000_?????_010_?????_1110011}; // Try to write pmpaddr0
+		wildcard bins write_pmpaddr  = {32'b001110110000_?????_001_?????_1110011}; // Try to write pmpaddr0
 	}
 
 	write_lower_pmpcfg: coverpoint ins.prev.insn {
-		wildcard bins write_pmpcfg   = {32'b001110100000_?????_010_?????_1110011}; // Try to write pmpcfg0
+		wildcard bins write_pmpcfg   = {32'b001110100000_?????_001_?????_1110011}; // Try to write pmpcfg0
 	}
 
 //-------------------------------------------------------
@@ -1268,8 +1268,10 @@ covergroup PMPM_cg with function sample(
 		cp_pmpcfg_zero: cross priv_mode_m, cp_zero_rs1, csrrw, legal_pmpcfg_entries_odd ;
 	`endif
 
-	cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
-	cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+	`ifdef PMP_64
+		cp_pmp64_write: cross priv_mode_m, write_instr_sw, pmp64;
+		cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
+	`endif
 
 	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, read_instr_lw ;
 	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, write_instr_sw ;
@@ -2056,5 +2058,4 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
-	$display("PMPADDR = %h",`STANDARD_REGION);
 endfunction

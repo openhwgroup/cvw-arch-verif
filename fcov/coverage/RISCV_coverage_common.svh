@@ -32,6 +32,31 @@
 `define SAMPLE_PREV 1
 `define NUM_RVVI_DATA 5
 
+// -----------------------------------------------------------------------------
+// Physical Memory Protection (PMP) Specific Macros
+// -----------------------------------------------------------------------------
+
+`define SAFE_REGION_START   (`RAM_BASE_ADDR + `LARGEST_PROGRAM)
+`define REGIONSTART        `SAFE_REGION_START
+
+// Calculate region size g in bytes.
+`define g ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)) )
+
+// Calculate k = G - 1 trailing ones in NAPOT encoding.
+`define k  ((`G > 1) ? (`G - 1) : 0)
+
+// Address encodings
+
+// TOR or NA4 region: directly right-shifted
+`define NON_STANDARD_REGION  (`REGIONSTART >> 2)              // TOR/NA4 format: yyyyy...
+
+// NAPOT region: add trailing 1s per `k` to form mask
+`define STANDARD_REGION      ((`REGIONSTART >> 2) | ((2 ** `k) - 1)) // NAPOT format: yyyyy...0111
+
+// -----------------------------------------------------------------------------
+//                         XLEN FLEN VLEN Macros
+// -----------------------------------------------------------------------------
+
 // XLEN/FLEN as usable numbers
 `ifdef XLEN32
   `define XLEN 32
@@ -100,6 +125,7 @@
   `endif
 `endif
 
+
 // supported SEWs based on what coverages are enabled
 `ifdef VX64_COVERAGE
   `define SEW64_SUPPORTED
@@ -127,6 +153,21 @@
       `define ELEN8
     `endif
   `endif
+`endif
+
+// Get load store coverage
+
+`ifdef VX64_COVERAGE
+  `define VLS64_COVERAGE
+`endif
+`ifdef VX32_COVERAGE
+  `define VLS32_COVERAGE
+`endif
+`ifdef VX16_COVERAGE
+  `define VLS16_COVERAGE
+`endif
+`ifdef VX8_COVERAGE
+  `define VLS8_COVERAGE
 `endif
 
 // corner cases
@@ -497,8 +538,8 @@ function bit get_vm(string s);
     "v0"   : return 1'b0;
     ""     : return 1'b1;
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Masking string %s is not recognized", s);
+      $fatal(1);
     end
   endcase
 endfunction

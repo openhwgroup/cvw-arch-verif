@@ -9,7 +9,7 @@
         bins pos2             = {16'h4000};
         bins neg2             = {16'hC000};
         bins posminnorm       = {16'h0400};
-        bins mnegminnorm      = {16'h8400};
+        bins negminnorm       = {16'h8400};
         bins posmaxnorm       = {16'h7BFF};
         bins negmaxnorm       = {16'hFBFF};
         bins posmax_subnorm   = {16'h03FF};

@@ -1,0 +1,4 @@
+    cp_vs2_corners_ls : coverpoint vs2_ls_corners_check(ins.hart, ins.issue, ins.current.vs2_val) {
+        bins zero   = {zero};
+        bins random = {random_in_range};
+    }

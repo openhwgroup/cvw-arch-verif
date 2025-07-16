@@ -34,8 +34,8 @@ function int get_vtype_vlmax(int hart, int issue, int prev);
         3'b110: begin end
         3'b111: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
-            $finish(-1);
+            $error("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax lmul is undefined (%0s)", vlmul);
+            $fatal(1);
         end
     endcase
 
@@ -45,8 +45,8 @@ function int get_vtype_vlmax(int hart, int issue, int prev);
         3'b010: begin end
         3'b011: begin end
         default: begin
-            $display("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
-            $finish(-1);
+            $error("ERROR: SystemVerilog Functional Coverage: get_vtype_vlmax sew is undefined (%0s)", vsew);
+            $fatal(1);
         end
     endcase
 
@@ -141,8 +141,8 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     "f8":    eew = sew / 8;
     "m":     eew = 8;       // vl = 8 and eew = 1 for mask (logical) instructions
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported SEW multiplier: %s", sew_multiplier);
+      $fatal(1);
     end
   endcase
 
@@ -158,8 +158,8 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
     64:  return vs_corners_check_eew_64(val);
     `endif
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
+      $fatal(1);
     end
   endcase
 endfunction
@@ -244,11 +244,101 @@ endfunction
 `endif
 
 
+// todo: CHECK TO MAKE SURE BOOLEAN STATEMENTS WORK
+// todo: ESPECIALLY REGARDING SIGNS
+// todo:
+// todo:
+// todo:
+
+typedef enum {
+    zero,
+    random_in_range,
+    None
+} corner_vs2_ls_values_t;
+
+function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
+
+  logic all_values_within_range = 1'b1;
+
+  `XLEN_BITS vsew               = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
+  int vlmax                     = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
+
+  if (val == 0) begin
+    return zero;
+  end
+
+  //------------------------------------------
+  // Walk across VAL in chunks of size SEW
+  //------------------------------------------
+  case (vsew)
+    //--------------------------------------------------------------
+    //  8-bit elements
+    //--------------------------------------------------------------
+    0: begin : SEW8
+      for (int idx = 1; idx <= `VLEN / 8; ++idx) begin
+        logic [7:0] elem = val[idx*8-1 -: 8];
+
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
+      end
+    end
+    //--------------------------------------------------------------
+    // 16-bit elements
+    //--------------------------------------------------------------
+    1: begin : SEW16
+      for (int idx = 1; idx <= `VLEN / 16; ++idx) begin
+        logic [15:0] elem = val[idx*16-1 -: 16];
+
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        `ifndef COVER_E
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
+        `endif
+      end
+    end
+    //--------------------------------------------------------------
+    // 32-bit elements
+    //--------------------------------------------------------------
+    2: begin : SEW32
+      for (int idx = 1; idx <= `VLEN / 32; ++idx) begin
+        logic [31:0] elem = val[idx*32-1 -: 32];
+
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+        `ifdef XLEN64
+        if (signed'(elem) < 0)                                    all_values_within_range = 1'b0; // if element is negative and length is less than XLEN then fail coverage as it will be zero extended instead of treated as signed
+        `endif
+      end
+    end
+    //--------------------------------------------------------------
+    // 64-bit elements
+    //--------------------------------------------------------------
+    3: begin : SEW64
+      for (int idx = 1; idx <= `VLEN / 64; ++idx) begin
+        logic [63:0] elem = val[idx*64-1 -: 64];
+
+        if (signed'(elem) > vlmax*2 | signed'(elem) < -vlmax*2)   all_values_within_range = 1'b0; // if out of range fail coverage
+      end
+    end
+    //--------------------------------------------------------------
+    default : begin
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported VSEW: %s", vsew);
+      $fatal(1);
+    end
+  endcase
+
+  if (all_values_within_range) begin
+    return random_in_range;
+  end
+
+  return None;
+endfunction
+
 function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
 
     case (vsew)
+    `ifdef SEW8_SUPPORTED
     2'b00:   return {56'b0, val[7:0]};
+    `endif
     `ifdef SEW16_SUPPORTED
     2'b01:  return {48'b0, val[15:0]};
     `endif
@@ -259,8 +349,8 @@ function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
     2'b11:  return val[63:0];
     `endif
     default: begin
-      $display("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", vsew);
-      $finish(-1);
+      $error("ERROR: SystemVerilog Functional Coverage: Unsupported SEW: %s", vsew);
+      $fatal(1);
     end
   endcase
 
@@ -311,6 +401,33 @@ function vl_t vl_check(int hart, int issue);
     default: begin
       if (legal) return vl_legal;
       else       return vl_illegal;
+    end
+  endcase
+endfunction
+
+
+typedef enum {
+  vstart_one,
+  vstart_vlmaxm1,
+  vstart_vlmaxd2,
+  vstart_legal,
+  vstart_illegal
+} vstart_t;
+
+function vstart_t vstart_check(int hart, int issue);
+  `XLEN_BITS vstart = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vstart", "vstart");
+  int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
+  bit legal;
+  if (vstart < vlmax) legal = 1'b1; // check legal condition
+  else                legal = 1'b0;
+
+  case(vstart)
+    1:           return vstart_one;
+    vlmax-1:     return vstart_vlmaxm1;
+    vlmax/2:     return vstart_vlmaxd2;
+    default: begin
+      if (legal) return vstart_legal;
+      else       return vstart_illegal;
     end
   endcase
 endfunction

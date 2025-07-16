@@ -136,11 +136,12 @@ module testbench;
         // doesn't work for number larger than 32 bits
         case(key)
           // Standard signals
+          "ORDER":          num = $sscanf(val, "%d", order);
           "INSN":           num = $sscanf(val, "%h", insn);
           "TRAP":           num = $sscanf(val, "%b", trap);
           "DEBUG_MODE":     num = $sscanf(val, "%b", debug_mode);
           "PC":             num = $sscanf(val, "%h", pc_rdata);
-          "MODE":           num = $sscanf(val, "%b", mode);
+          "MODE":           num = $sscanf(val, "%d", mode);
           // Interrupts
           "M_EXT_INTR":     num = $sscanf(val, "%b", m_ext_intr);
           "S_EXT_INTR":     num = $sscanf(val, "%b", s_ext_intr);
@@ -195,7 +196,6 @@ module testbench;
           end
         endcase
       end
-      order++;
       valid = 1;
     end else begin
       $display("Skipping empty line");
