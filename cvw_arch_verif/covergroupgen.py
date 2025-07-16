@@ -298,7 +298,7 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
 # Main Python Script
 ##################################
 
-if __name__ == '__main__':
+def main():
     ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
     missingTemplates = list() # keep list of missing templates to only print once
     testPlans, archSources = readTestplans()
