@@ -1002,126 +1002,128 @@ if __name__ == '__main__':
 
       for test in applicable_instructions:
       # print("Generating test for ", test, " with entries: ", coverpoints[test])
-        if test not in unsupported_tests:
-          newInstruction()
 
-          if (test in imm_31):
-            immcornersv = [0, 1, 2, 15, 16, 30, 31]
-          else:
-            immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
+        newInstruction()
 
-          basename = "WALLY-COV-" + extension + "-" + test
-          fname = pathname + "/" + basename + ".S"
-          tempfname = pathname + "/" + basename + "_temp.S"
+        if (test in imm_31):
+          immcornersv = [0, 1, 2, 15, 16, 30, 31]
+        else:
+          immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
 
-          # print custom header part
-          f = open(tempfname, "w")
-          line = "///////////////////////////////////////////\n"
-          f.write(line)
-          line="// "+fname+ "\n// " + author + "\n"
-          f.write(line)
-          # Don't print creation date because this forces rebuild of files that are otherwise identical
-          #line ="// Created " + str(datetime.now()) + "\n"
-          #f.write(line)
+        basename = "WALLY-COV-" + extension + "-" + test
+        fname = pathname + "/" + basename + ".S"
+        tempfname = pathname + "/" + basename + "_temp.S"
 
-          # insert generic header
-          insertTemplate(test, 0, "testgen_header_vector.S")
+        # print custom header part
+        f = open(tempfname, "w")
+        line = "///////////////////////////////////////////\n"
+        f.write(line)
+        line="// "+fname+ "\n// " + author + "\n"
+        f.write(line)
+        # Don't print creation date because this forces rebuild of files that are otherwise identical
+        #line ="// Created " + str(datetime.now()) + "\n"
+        #f.write(line)
 
-          # add assembly lines to enable fp where needed
-          if test in vfloattypes:
-            float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
-            f.write(float_en)
+        # insert generic header
+        insertTemplate(test, 0, "testgen_header_vector.S")
 
-          sew_match = re.search(r'/Vx(\d+)$', pathname)
-          if sew_match is None:
-            sew_match = re.search(r'/Vls(\d+)$', pathname)
-            if sew_match:
-              sew = int(sew_match.group(1))
-            else:
-              sew = 8
-          else:
+        # add assembly lines to enable fp where needed
+        if test in vfloattypes:
+          float_en = "\n# set mstatus.FS to 01 to enable fp\nli t0,0x4000\ncsrs mstatus, t0\n\n"
+          f.write(float_en)
+
+        sew_match = re.search(r'/Vx(\d+)$', pathname)
+        if sew_match is None:
+          sew_match = re.search(r'/Vls(\d+)$', pathname)
+          if sew_match:
             sew = int(sew_match.group(1))
+          else:
+            sew = 8
+        else:
+          sew = int(sew_match.group(1))
 
-          legalvlmuls = getLegalVlmul(maxELEN, minSEW_MIN, sew)
+        legalvlmuls = getLegalVlmul(maxELEN, minSEW_MIN, sew)
 
-          # Set up vl = 1 for base suite
-          f.write(f"\n")
-          f.write(f"// Initial set vl = 1\n")
-          f.write(f"li x2, 1\n")
-          f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
+        # Set up vl = 1 for base suite
+        f.write(f"\n")
+        f.write(f"// Initial set vl = 1\n")
+        f.write(f"li x2, 1\n")
+        f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
 
-          # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
-          if (test in vd_widen_ins) or (test in vs2_widen_ins):
-            if (sew == 8):
-              f.write("#if ELEN > 8\n")
-            elif (sew == 16):
-              f.write("#if ELEN > 16\n")
-            elif (sew == 32):
-              f.write("#if ELEN > 32\n")
-            elif (sew == 64):
-              f.write("#if ELEN > 64\n")
+        # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
+        if (test in vd_widen_ins) or (test in vs2_widen_ins):
+          if (sew == 8):
+            f.write("#if ELEN > 8\n")
+          elif (sew == 16):
+            f.write("#if ELEN > 16\n")
+          elif (sew == 32):
+            f.write("#if ELEN > 32\n")
+          elif (sew == 64):
+            f.write("#if ELEN > 64\n")
 
-          coverpoints = list(testplans[extension][test])
-          applicable_coverpoints = coverpointInclusions(coverpoints)
+        coverpoints = list(testplans[extension][test])
+        applicable_coverpoints = coverpointInclusions(coverpoints)
+
+        if test not in unsupported_tests:
           makeTest(applicable_coverpoints, test, sew=sew)
 
-          if (test in vd_widen_ins) or (test in vs2_widen_ins):
-            f.write("#endif\n")
-          insertTemplate(test, 0, "testgen_footer_vector1.S")
+        if (test in vd_widen_ins) or (test in vs2_widen_ins):
+          f.write("#endif\n")
+        insertTemplate(test, 0, "testgen_footer_vector1.S")
 
-          if test in vector_loads:
-            genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-            genRandomVector(test, sew, vs="vd")
-            if test in indexed_loads:
-              genRandomVector(test, getInstructionEEW(test), vs="vs2")
-            genRandomVectorLS()
-          if test in vector_stores:
-            genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-            genRandomVector(test, sew, vs="vs3")
-            if test in indexed_stores:
-              genRandomVector(test, getInstructionEEW(test), vs="vs2")
-            genRandomVectorLS()
-          if test not in vector_ls_ins:
-            # generate vector data (random and corners)
-            if   test in vd_widen_ins                         : genRandomVector(test, sew, vs="vd", emul = 2)
-            elif (test not in xvtype and test not in xvmtype) : genRandomVector(test, sew, vs="vd")
-            if (test in wvsins): # needs to be first since in vd_widen_ins
-              genRandomVector(test, sew, vs="vs2")
-              genRandomVector(test, sew, vs="vs1", emul=2)
-              genVsCorners(test, sew, "2")
-              genVsCorners(test, sew, "1")
-            elif (test in narrowins) or (test in vd_widen_ins):
-              genRandomVector(test, sew, vs="vs2", emul=2)
-              if (test in vs1ins):
-                genRandomVector(test, sew, vs="vs1")
-              genVsCorners(test, sew, "1")
-              genVsCorners(test, sew, "2")
+        if test in vector_loads:
+          genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
+          genRandomVector(test, sew, vs="vd")
+          if test in indexed_loads:
+            genRandomVector(test, getInstructionEEW(test), vs="vs2")
+          genRandomVectorLS()
+        if test in vector_stores:
+          genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
+          genRandomVector(test, sew, vs="vs3")
+          if test in indexed_stores:
+            genRandomVector(test, getInstructionEEW(test), vs="vs2")
+          genRandomVectorLS()
+        if test not in vector_ls_ins:
+          # generate vector data (random and corners)
+          if   test in vd_widen_ins                         : genRandomVector(test, sew, vs="vd", emul = 2)
+          elif (test not in xvtype and test not in xvmtype) : genRandomVector(test, sew, vs="vd")
+          if (test in wvsins): # needs to be first since in vd_widen_ins
+            genRandomVector(test, sew, vs="vs2")
+            genRandomVector(test, sew, vs="vs1", emul=2)
+            genVsCorners(test, sew, "2")
+            genVsCorners(test, sew, "1")
+          elif (test in narrowins) or (test in vd_widen_ins):
+            genRandomVector(test, sew, vs="vs2", emul=2)
+            if (test in vs1ins):
+              genRandomVector(test, sew, vs="vs1")
+            genVsCorners(test, sew, "1")
+            genVsCorners(test, sew, "2")
+          else:
+            genRandomVector(test, sew, vs="vs2")
+            if (test in vs1ins):
+              genRandomVector(test, sew, vs="vs1")
+            if (test in vextins):
+              genVsCorners(test, sew, test[-2:])
+            elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
+              genVsCorners(test, sew, "eew1")
             else:
-              genRandomVector(test, sew, vs="vs2")
-              if (test in vs1ins):
-                genRandomVector(test, sew, vs="vs1")
-              if (test in vextins):
-                genVsCorners(test, sew, test[-2:])
-              elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
-                genVsCorners(test, sew, "eew1")
-              else:
-                genVsCorners(test, sew, "1")
+              genVsCorners(test, sew, "1")
 
-          genVMaskCorners()
+        genVMaskCorners()
 
 
-          # print footer
-          signatureWords = getSigSpace(xlen, flen) #figure out how many words are needed for signature
-          insertTemplate(test, signatureWords, "testgen_footer_vector2.S")
+        # print footer
+        signatureWords = getSigSpace(xlen, flen) #figure out how many words are needed for signature
+        insertTemplate(test, signatureWords, "testgen_footer_vector2.S")
 
-          # Finish
-          f.close()
-          # if new file is different from old file, replace old file with new file
-          if os.path.exists(fname):
-            if filecmp.cmp(fname, tempfname): # files are the same
-              os.system(f"rm {tempfname}") # remove temp file
-            else:
-              os.system(f"mv {tempfname} {fname}")
-              print("Updated " + fname)
+        # Finish
+        f.close()
+        # if new file is different from old file, replace old file with new file
+        if os.path.exists(fname):
+          if filecmp.cmp(fname, tempfname): # files are the same
+            os.system(f"rm {tempfname}") # remove temp file
           else:
             os.system(f"mv {tempfname} {fname}")
+            print("Updated " + fname)
+        else:
+          os.system(f"mv {tempfname} {fname}")
