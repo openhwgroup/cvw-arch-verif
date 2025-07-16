@@ -1021,30 +1021,30 @@ if __name__ == '__main__':
 
       for test in applicable_instructions:
       # print("Generating test for ", test, " with entries: ", coverpoints[test])
-        if test not in unsupported_tests:
-          newInstruction()
 
-          if (test in imm_31):
-            immcornersv = [0, 1, 2, 15, 16, 30, 31]
-          else:
-            immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
+        newInstruction()
 
-          basename = "WALLY-COV-" + extension + "-" + test
-          fname = pathname + "/" + basename + ".S"
-          tempfname = pathname + "/" + basename + "_temp.S"
+        if (test in imm_31):
+          immcornersv = [0, 1, 2, 15, 16, 30, 31]
+        else:
+          immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
 
-          # print custom header part
-          f = open(tempfname, "w")
-          line = "///////////////////////////////////////////\n"
-          f.write(line)
-          line="// "+fname+ "\n// " + author + "\n"
-          f.write(line)
-          # Don't print creation date because this forces rebuild of files that are otherwise identical
-          #line ="// Created " + str(datetime.now()) + "\n"
-          #f.write(line)
+        basename = "WALLY-COV-" + extension + "-" + test
+        fname = pathname + "/" + basename + ".S"
+        tempfname = pathname + "/" + basename + "_temp.S"
 
-          # insert generic header
-          insertTemplate(test, 0, "testgen_header_vector.S")
+        # print custom header part
+        f = open(tempfname, "w")
+        line = "///////////////////////////////////////////\n"
+        f.write(line)
+        line="// "+fname+ "\n// " + author + "\n"
+        f.write(line)
+        # Don't print creation date because this forces rebuild of files that are otherwise identical
+        #line ="// Created " + str(datetime.now()) + "\n"
+        #f.write(line)
+
+        # insert generic header
+        insertTemplate(test, 0, "testgen_header_vector.S")
 
         # add assembly lines to enable fp where needed
         if test in vfloattypes:
@@ -1082,7 +1082,8 @@ if __name__ == '__main__':
 
         coverpoints = list(testplans[extension][test])
         applicable_coverpoints = coverpointInclusions(coverpoints)
-        makeTest(applicable_coverpoints, test, sew=sew)
+        if test not in unsupported_tests:
+          makeTest(applicable_coverpoints, test, sew=sew)
 
         if (test in vd_widen_ins) or (test in vs2_widen_ins):
           f.write("#endif\n")
