@@ -17,9 +17,9 @@ build / run / clean / coverage cycle, with optional parallel-jobs flag.
 from pathlib import Path
 import subprocess
 import sys
-import argparse
 import os
-
+from typing import Annotated, Optional
+import typer
 
 ###############################################################################
 # Configuration
@@ -60,11 +60,39 @@ def run_make(makefile: Path, target: str, jobs_flag: str | None) -> None:
 
 
 ###############################################################################
-# Main driver
+# CLI entry point
 ###############################################################################
-def main(selected: list[str], jobs_flag: str | None) -> None:
-    targets = selected or TARGETS
-    if not targets:
+
+app = typer.Typer(
+    name="vector-coverage",
+    help="Build + run + coverage driver for two Makefiles.",
+)
+
+@app.command()
+def main(
+    jobs: Annotated[
+        Optional[int],
+        typer.Option(
+            "-j", "--jobs",
+            help="Build parallelism. 0 means unlimited jobs."
+        ),
+    ] = None,
+    targets: Annotated[
+        Optional[list[str]],
+        typer.Argument(help="Optional subset of targets to process (default uses hard-coded TARGETS list)"),
+    ] = None,
+):
+    jobs_flag = None
+    if jobs is not None:
+        if jobs == 0:
+            jobs_flag = "-j"
+        else:
+            jobs_flag = f"-j{jobs}"
+
+    if targets is None:
+        targets = TARGETS
+
+    if len(targets) == 0:
         sys.exit("No targets specified.")
 
     # global clean before loop
@@ -90,44 +118,3 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
     run_make(RUN_MAKEFILE, "coverreport32", jobs_flag)
     run_make(RUN_MAKEFILE, "coverreport64", jobs_flag)
     print("\n✅ All targets finished successfully.")
-
-
-###############################################################################
-# CLI entry point
-###############################################################################
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Build + run + coverage driver for two Makefiles."
-    )
-    parser.add_argument(
-        "targets",
-        nargs="*",
-        help="Optional subset of targets to process (default uses hard-coded TARGETS list)",
-    )
-    parser.add_argument(
-        "-j", "--jobs",
-        nargs="?",            # accept 0 or 1 argument
-        const="",             # `--jobs` with no number → empty string (unlimited)
-        metavar="N",
-        help=(
-            "Pass -j / -jN / --jobs / --jobs=N to make for parallel builds. "
-            "No number means unlimited jobs."
-        ),
-    )
-    args = parser.parse_args()
-
-    # Normalize jobs flag for make:
-    #   ''           → '-j'             (unlimited)
-    #   '8'          → '-j8'
-    #   '-j8'        → '-j8'
-    #   '--jobs=16'  → '--jobs=16'
-    jobs_flag = None
-    if args.jobs is not None:
-        if args.jobs == "":
-            jobs_flag = "-j"
-        elif args.jobs.startswith(("-j", "--jobs")):
-            jobs_flag = args.jobs
-        else:
-            jobs_flag = f"-j{args.jobs}"
-
-    main(args.targets, jobs_flag)

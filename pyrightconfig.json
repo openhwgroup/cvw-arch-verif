@@ -14,7 +14,6 @@
         "cvw_arch_verif/sail-parse.py",
         "cvw_arch_verif/testgen.py",
         "cvw_arch_verif/trace-coverreport.py",
-        "cvw_arch_verif/vector-coverage.py",
         "cvw_arch_verif/vector_testgen_common.py",
         "cvw_arch_verif/vector-testgen-priv.py",
         "cvw_arch_verif/vector-testgen-unpriv.py",

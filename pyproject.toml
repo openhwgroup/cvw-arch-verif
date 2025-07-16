@@ -5,10 +5,14 @@ description = "RISC-V Tests"
 readme = "README.md"
 authors = []
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  # For CLI argument parsing (better alternative to argparse).
+  "typer >= 0.16.0",
+]
 
 [project.scripts]
 covergroupgen = "cvw_arch_verif.covergroupgen:main"
+vector_coverage = "cvw_arch_verif.vector_coverage:app"
 
 [build-system]
 requires = ["hatchling"]
