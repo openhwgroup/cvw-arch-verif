@@ -1,39 +1,54 @@
 #!/usr/bin/env python3
 ##################################
 # vector-coverage.py
-#
-# James Kaden Cassidy jacassidy@hmc.edu July 10 2025
-# Georgia Tai gtai@hmc.edu
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-#
-# Generate functional covergroups for RISC-V instructions
+#   James Kaden Cassidy <jacassidy@hmc.edu>
+#   Georgia Tai          <gtai@hmc.edu>
+#   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ##################################
 """
-build_and_run.py
-----------------
-Drive two separate Makefiles (“build” and “run”) through the full
-build / run / clean / coverage cycle, with optional parallel-jobs flag.
+Drive two Makefiles through build / run / clean / coverage while
+processing one CSV row at a time.
+
+New ‑‑from‑line / ‑‑from‑instr CLI switches let you resume work after an
+interruption:
+
+  • --from-line  N     → start with data‑row N (1 = first row after header)
+  • --from-instr NAME  → start with the first row whose text contains NAME
+                        (case‑sensitive substring search)
+
+Exactly one of the two may be supplied.
 """
+
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import argparse
 import os
-
+import time
+from contextlib import contextmanager, nullcontext
 
 ###############################################################################
 # Configuration
 ###############################################################################
+SCRIPT_DIR = Path(__file__).resolve().parent
+
 WALLY = os.environ.get("WALLY")
-ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+ARCH_VERIF = SCRIPT_DIR.parent
 if not WALLY:
     sys.exit("ERROR: WALLY environment variable not set")
 
-BUILD_MAKEFILE = Path(f"{ARCH_VERIF}/Makefile")
-RUN_MAKEFILE   = Path(f"{WALLY}/tests/riscof/Makefile")
+BUILD_MAKEFILE = ARCH_VERIF / "Makefile"
+RUN_MAKEFILE   = Path(WALLY) / "tests/riscof/Makefile"
 
-TARGETS = ["Vx8",  "Vx16",  "Vx32",  "Vx64",
-           "Vls8", "Vls16", "Vls32", "Vls64"]
+TARGETS = ["Vx", "Vls"]
+
+###############################################################################
+# FILE LOCATIONS
+###############################################################################
+CSV_DIR    = ARCH_VERIF / "testplans"
+VX_CSV     = CSV_DIR / "Vx.csv"
+VLS_CSV    = CSV_DIR / "Vls.csv"
 
 ###############################################################################
 # Helper utilities
@@ -45,89 +60,163 @@ def run_make(makefile: Path, target: str, jobs_flag: str | None) -> None:
 
     cmd = ["make", "-f", str(makefile)]
     if jobs_flag:
-        cmd.append(jobs_flag)      # e.g. "-j", "-j8", "--jobs=16"
+        cmd.append(jobs_flag)
     cmd.append(target)
 
     print(f"\n$ {' '.join(cmd)}")
-    result = subprocess.run(
-        cmd,
-        cwd=makefile.parent,
-        text=True,
-        check=False,
-    )
+    result = subprocess.run(cmd, cwd=makefile.parent, text=True)
     if result.returncode != 0:
-        sys.exit(f"\n❌ make target '{target}' failed (exit {result.returncode})")
+        raise RuntimeError(f"make target '{target}' failed (exit {result.returncode})")
 
+def build_run_cycle(t: str, jobs_flag: str | None) -> None:
+    """One complete BUILD → RUN32 → RUN64 → CLEAN cycle for a single target."""
+    run_make(BUILD_MAKEFILE, "clean", jobs_flag)
+    run_make(BUILD_MAKEFILE, t, jobs_flag)
+
+    run_make(RUN_MAKEFILE, "cvw-arch-no-report32", jobs_flag)
+    run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
+
+    run_make(RUN_MAKEFILE, "cvw-arch-no-report64", jobs_flag)
+    run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb64", jobs_flag)
+
+@contextmanager
+def one_row_at_a_time(csv_path: Path):
+    """
+    Yields (header, data_rows) and restores the original file on exit.
+    """
+    backup = csv_path.with_suffix(csv_path.suffix + ".bak")
+    shutil.copy2(csv_path, backup)
+    try:
+        rows = csv_path.read_text().splitlines()
+        if not rows:
+            raise RuntimeError(f"{csv_path} is empty")
+        header, *data = rows
+        yield header, data
+    finally:
+        shutil.move(backup, csv_path)  # restore original file
+
+@contextmanager
+def one_dummy_row(csv_path: Path):
+    """
+    Temporarily shrink *csv_path* to its header + first row only, restoring on exit.
+    Keeps the inactive CSV valid with a single real row.
+    """
+    backup = csv_path.with_suffix(csv_path.suffix + ".full")
+    shutil.copy2(csv_path, backup)
+    try:
+        rows = csv_path.read_text().splitlines()
+        if len(rows) < 2:
+            raise RuntimeError(f"{csv_path} must have at least one data row")
+        header, first_data_row = rows[0], rows[1]
+        csv_path.write_text(header + "\n" + first_data_row + "\n")
+        yield
+    finally:
+        shutil.move(backup, csv_path)
 
 ###############################################################################
 # Main driver
 ###############################################################################
-def main(selected: list[str], jobs_flag: str | None) -> None:
+def main(selected: list[str],
+         jobs_flag: str | None,
+         start_line: int | None,
+         start_instr: str | None) -> None:
+    csv_for_target = {"Vx": VX_CSV, "Vls": VLS_CSV}
     targets = selected or TARGETS
-    if not targets:
-        sys.exit("No targets specified.")
 
-    # global clean before loop
-    run_make(BUILD_MAKEFILE,    "clean", jobs_flag)
-    run_make(RUN_MAKEFILE,      "clean-cvw-arch", jobs_flag)
-    run_make(RUN_MAKEFILE,      "clean-riscof-else-ucdb32", jobs_flag)
-    run_make(RUN_MAKEFILE,      "clean-riscof-else-ucdb64", jobs_flag)
+    # Stopwatch
+    t0 = time.perf_counter()
+
+    # Clean everything up front
+    run_make(BUILD_MAKEFILE, "clean", jobs_flag)
+    run_make(RUN_MAKEFILE, "clean-cvw-arch", jobs_flag)
+    run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
+    run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb64", jobs_flag)
 
     for t in targets:
-        # 1. BUILD
-        run_make(BUILD_MAKEFILE, "clean", jobs_flag)
-        run_make(BUILD_MAKEFILE, f"riscv-arch-{t}", jobs_flag)
+        active_csv = csv_for_target[t]
+        if not active_csv.is_file():
+            sys.exit(f"CSV for target {t} not found: {active_csv}")
 
-        # 2. RUN 32-bit → clean
-        run_make(RUN_MAKEFILE, "cvw-arch-no-report32", jobs_flag)
-        run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
+        # Determine the “other” CSV
+        other_targets = [ot for ot in TARGETS if ot != t]
+        other_ctx = (
+            one_dummy_row(csv_for_target[other_targets[0]])
+            if other_targets else
+            nullcontext()
+        )
 
-        # 3. RUN 64-bit → clean
-        run_make(RUN_MAKEFILE, "cvw-arch-no-report64", jobs_flag)
-        run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb64", jobs_flag)
+        with other_ctx:
+            with one_row_at_a_time(active_csv) as (header, rows):
+                # Decide where to start
+                if start_line is not None:
+                    if not (1 <= start_line <= len(rows)):
+                        print(f"⚠️  Row {start_line} out of range for {t}; skipping target.")
+                        continue
+                    start_idx = start_line - 1  # convert to 0‑based
+                elif start_instr is not None:
+                    try:
+                        start_idx = next(i for i, r in enumerate(rows) if start_instr in r)
+                    except StopIteration:
+                        print(f"⚠️  Instruction '{start_instr}' not found in {t}; skipping target.")
+                        continue
+                else:
+                    start_idx = 0
 
-    # 4. COVERAGE
+                total = len(rows)
+                for idx, row in enumerate(rows[start_idx:], start_idx + 1):
+                    active_csv.write_text(header + "\n" + row + "\n")
+                    print(f"\n📋 [{t}] Row {idx}/{total}: {row.strip()}")
+                    try:
+                        build_run_cycle(t, jobs_flag)
+                    except Exception as e:
+                        print(f"❌ Build failed on row {idx}/{total}: {e}")
+                        raise
+
+                    # Elapsed time stamp
+                    elapsed = time.perf_counter() - t0
+                    hh, mm = divmod(int(elapsed // 60), 60)
+                    ss = int(elapsed % 60)
+                    print(f"⏱️  Elapsed: {hh:02d}:{mm:02d}:{ss:02d}")
+
+    # Final coverage
     run_make(RUN_MAKEFILE, "coverreport32", jobs_flag)
     run_make(RUN_MAKEFILE, "coverreport64", jobs_flag)
-    print("\n✅ All targets finished successfully.")
 
+    total_elapsed = time.perf_counter() - t0
+    hh, mm = divmod(int(total_elapsed // 60), 60)
+    ss = int(total_elapsed % 60)
+    print(f"\n✅ Finished. Total time: {hh:02d}:{mm:02d}:{ss:02d}")
 
 ###############################################################################
 # CLI entry point
 ###############################################################################
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Build + run + coverage driver for two Makefiles."
-    )
-    parser.add_argument(
-        "targets",
-        nargs="*",
-        help="Optional subset of targets to process (default uses hard-coded TARGETS list)",
-    )
-    parser.add_argument(
-        "-j", "--jobs",
-        nargs="?",            # accept 0 or 1 argument
-        const="",             # `--jobs` with no number → empty string (unlimited)
-        metavar="N",
-        help=(
-            "Pass -j / -jN / --jobs / --jobs=N to make for parallel builds. "
-            "No number means unlimited jobs."
-        ),
-    )
+    parser = argparse.ArgumentParser(description="Vector build/run driver")
+
+    parser.add_argument("targets", nargs="*", help="Subset of targets (default Vx Vls)")
+
+    # make -j / --jobs passthrough
+    parser.add_argument("-j", "--jobs", nargs="?", const="", metavar="N",
+                        help="Pass ‑j/‑jN/--jobs/--jobs=N to make")
+
+    # resume controls (mutually exclusive)
+    resume = parser.add_mutually_exclusive_group()
+    resume.add_argument("--from-line", type=int, metavar="N",
+                        help="Start with data‑row N (1‑based, header ignored)")
+    resume.add_argument("--from-instr", metavar="TEXT",
+                        help="Start with first row whose text contains TEXT")
+
     args = parser.parse_args()
 
-    # Normalize jobs flag for make:
-    #   ''           → '-j'             (unlimited)
-    #   '8'          → '-j8'
-    #   '-j8'        → '-j8'
-    #   '--jobs=16'  → '--jobs=16'
+    # Normalize jobs flag for make
     jobs_flag = None
     if args.jobs is not None:
-        if args.jobs == "":
-            jobs_flag = "-j"
-        elif args.jobs.startswith(("-j", "--jobs")):
-            jobs_flag = args.jobs
-        else:
-            jobs_flag = f"-j{args.jobs}"
+        jobs_flag = "-j" if args.jobs == "" else (
+            args.jobs if args.jobs.startswith(("-j", "--jobs")) else f"-j{args.jobs}"
+        )
 
-    main(args.targets, jobs_flag)
+    try:
+        main(args.targets, jobs_flag, args.from_line, args.from_instr)
+    except KeyboardInterrupt:
+        print("\nInterrupted by user – CSVs restored.")
+        sys.exit(130)
