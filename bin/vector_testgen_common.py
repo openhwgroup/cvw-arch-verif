@@ -376,12 +376,12 @@ vvvmr_f_type = ["vfmacc.vv", "vfnmacc.vv", "vfmsac.vv", "vfnmsac.vv", "vfmadd.vv
 vfvmtype     = ["vfmacc.vf", "vfnmacc.vf", "vfmsac.vf", "vfnmsac.vf", "vfmadd.vf", "vfnmadd.vf", "vfmsub.vf", "vfnmsub.vf", "vfwmacc.vf", "vfwnmacc.vf", "vfwmsac.vf", "vfwnmsac.vf"]
 vvm_f_type   = ["vfsqrt.v", "vfrsqrt7.v", "vfrec7.v",
                 "vfcvt.xu.f.v", "vfwcvt.xu.f.v", "vfncvt.xu.f.w", "vfcvt.x.f.v", "vfwcvt.x.f.v", "vfncvt.x.f.w", "vfcvt.rtz.xu.f.v", "vfwcvt.rtz.xu.f.v", "vfncvt.rtz.xu.f.w",
-                "vfcvt.f.xu.v", "vfwcvt.f.xu.v", "vfncvt.f.wu.w", "vfcvt.f.x.v", "vfwcvt.f.x.v", "vfncvt.f.xu.w", "vfcvt.f.x.v", "vfwcvt.f.x.v", "vfncvt.f.x.w",
+                "vfcvt.rtz.x.f.v", "vfwcvt.rtz.x.f.v", "vfncvt.rtz.x.f.w", "vfcvt.f.xu.v", "vfwcvt.f.xu.v", "vfncvt.f.xu.w", "vfcvt.f.x.v", "vfwcvt.f.x.v", "vfncvt.f.x.w",
                 "vfwcvt.f.f.v", "vfncvt.f.f.w", "vfncvt.rod.f.f.w", "vfclass.v"]
 vftype       = ["vfmv.v.f", "vfmv.s.f"]
 fvtype       = ["vfmv.f.s"]
 
-vfloattypes = vvvm_f_type + vvfmtype + vvvmr_f_type + vfvmtype + vvm_f_type + vftype + fvtype
+vfloattypes = vvvm_f_type + vvfmtype + vvvmr_f_type + vfvmtype + vvm_f_type + vftype + fvtype + vvfvtype
 
 ##################################    vector integer instruction     ##################################
 
@@ -442,7 +442,8 @@ viins  = ["vadd.vi", "vrsub.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsr
 wvins = ["vnsrl.wv", "vnsra.wv", "vnclip.wv", "vnclipu.wv"]
 wxins = ["vnsrl.wx", "vnsra.wx", "vnclip.wx", "vnclipu.wx"]
 wiins = ["vnsrl.wi", "vnsra.wi", "vnclip.wi", "vnclipu.wi"]
-narrowins = wvins + wxins + wiins
+fcvt_w_ins = ["vfncvt.xu.f.w", "vfncvt.x.f.w", "vfncvt.rtz.xu.f.w", "vfncvt.rtz.x.f.w", "vfncvt.f.xu.w", "vfncvt.f.x.w", "vfncvt.f.f.w", "vfncvt.rod.f.f.w"]
+narrowins = wvins + wxins + wiins + fcvt_w_ins
 # widening
 fwvvins = ["vfwadd.vv", "vfwsub.vv", "vfwmul.vv", "vfwmacc.vv", "vfwnmacc.vv", "vfwmsac.vv", "vfwnmsac.vv"]
 fwvfins = ["vfwadd.vf", "vfwsub.vf", "vfwmul.vf", "vfwmacc.vf", "vfwnmacc.vf", "vfwmsac.vf", "vfwnmsac.vf"]
@@ -452,6 +453,7 @@ wvvins  = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu
 wvxins  = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 wwvins  = ["vwadd.wv", "vwaddu.wv", "vwsub.wv", "vwsubu.wv"] + fwwvins
 wwxins  = ["vwadd.wx", "vwaddu.wx", "vwsub.wx", "vwsubu.wx"]
+fwcvt_ins  = ["vfwcvt.xu.f.v", "vfwcvt.x.f.v", "vfwcvt.rtz.xu.f.v", "vfwcvt.rtz.x.f.v", "vfwcvt.f.xu.v", "vfwcvt.f.x.v", "vfwcvt.f.f.v"]
 vs2_widen_ins = narrowins + wwvins + wwxins + fwwfins
 # masking
 vvmins = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm"]
@@ -500,7 +502,7 @@ ls_not_maskable = [
   ]
 
 vmvins          = vvrtype + vxtype + vitype + xvtype + vftype + fvtype + vvvxtype + vcompressins
-vd_widen_ins    = wvvins + wvxins + wwvins + wwxins + wvsins + fwvfins + fwwfins
+vd_widen_ins    = wvvins + wvxins + wwvins + wwxins + wvsins + fwvfins + fwwfins + fwcvt_ins
 not_maskable    = vm_nomask_ins + mmins + vmvins + ls_not_maskable
 
 # "vl1re8.v", "vl1re16.v", "vl1re32.v", "vl1re64.v"
@@ -1052,6 +1054,8 @@ def insertTemplate(test, signatureWords, name):
       ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
       ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
       if 'V' in ext_parts_no_I:
+        if (test in vfloattypes):
+          ext_parts_no_I = ['F'] + ext_parts_no_I
         ext_parts_no_I = ['M'] + ext_parts_no_I
       ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
       # Construct the regex part
@@ -1069,10 +1073,9 @@ def insertTemplate(test, signatureWords, name):
 def writeSIGUPD(rd):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1    # Increment counter on each call
-    l = f"RVTEST_SIGUPD(x{sigReg}, x{rd})\n"
-    return l
+    writeLine(f"RVTEST_SIGUPD(x{sigReg}, x{rd})", f"# store x{rd} in signature")
 
-def writeSIGUPD_F(rd):
+def writeSIGUPD_F(fd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
     sigupd_count += 1    # Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
@@ -1080,9 +1083,8 @@ def writeSIGUPD_F(rd):
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    l = f"csrr x{tempReg}, fcsr\n"                              # Get fcsr into a temp register
-    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
-    return l
+    writeLine(f"csrr x{tempReg}, fcsr", f"# save fcsr into x{tempReg} for signature")                                 # Get fcsr into a temp register
+    writeLine(f"RVTEST_SIGUPD_F(x{sigReg}, f{fd}, x{tempReg})", f"# store f{fd} and x{tempReg} (fcsr) in signature")  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
 
 def writeSIGUPD_V(vd, sew, avl=1, sig_lmul = None, load_testline = None, sig_whole_register_store = False):
     global sigupd_count        # Allow modification of global variable
@@ -1316,7 +1318,9 @@ def getSigSpace(xlen, flen):
       signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
-def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, sig_lmul = None, sig_whole_register_store = False, load_testline = None, priv = False):
+def writeVecTest(vd, sew, testline, *scalar_registers_used, test=None, rd=None, fd=None, vl=1, sig_lmul = None, sig_whole_register_store = False, load_testline = None, priv = False):
+    scalar_registers_used = list(scalar_registers_used)
+
     writeLine(testline)
     if (priv):
       writeLine(f"nop",                                           f"# nop after possible trap")
@@ -1325,12 +1329,22 @@ def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, sig_lmul = None, s
     if load_testline is not None:
       writeLine(load_testline, "# load value stored in memory to check against signature")
 
+    if (test in vfloattypes) and (test not in fvtype):
+      fcsrsaveReg = 2
+      while fcsrsaveReg in scalar_registers_used:
+        fcsrsaveReg = randint(1,31)
+      scalar_registers_used.append(fcsrsaveReg)
+      writeLine(f"csrr x{fcsrsaveReg}, fcsr", f"# save fcsr into x{fcsrsaveReg} for signature")
+      writeSIGUPD(fcsrsaveReg)
+
     if (test in vd_widen_ins) or (test in wvsins):
       writeSIGUPD_V(vd, 2*sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)  # EEW of vd = 2 * SEW for widening
     elif (test in maskins):
       writeSIGUPD_V(vd, 8, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)      # EEW of vd = 1 for mask
     elif (test in xvtype):
       writeSIGUPD(rd)
+    elif (test in fvtype):
+      writeSIGUPD_F(fd)
     else:
       writeSIGUPD_V(vd, sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)
 
@@ -1496,7 +1510,7 @@ def getInstructionArguments(instruction):
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
-              vfrm=None, vfloattype=None, vxsat=None, vta=0, vma=0):
+              vfrm=None, vxsat=None, vta=0, vma=0):
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
@@ -1505,6 +1519,8 @@ def writeTest(description, instruction, instruction_data,
     rd              = scalar_register_data['rd'] ['reg']
     rs1             = scalar_register_data['rs1']['reg']
     rs2             = scalar_register_data['rs2']['reg']
+
+    fd              = floating_point_register_data['fd']['reg']
 
     scalar_registers_used = [rd, rs1, rs2]
 
@@ -1528,6 +1544,9 @@ def writeTest(description, instruction, instruction_data,
 
     writeLine("# Testcase " + str(description))
 
+    if instruction in vfloattypes:
+      writeLine("fsflagsi 0b00000", "# clear all fflags")
+
     # If mask value specified, load to v0
     if maskval is not None:
       prepMaskV(maskval, sew, tempReg, lmul)
@@ -1536,8 +1555,8 @@ def writeTest(description, instruction, instruction_data,
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
-    if vfloattype is not None:
-      scalar_registers_used = loadFloatRoundingMode(vfloattype, *scalar_registers_used)
+    if vfrm is not None:
+      scalar_registers_used = loadFloatRoundingMode(vfrm, *scalar_registers_used)
     elif vxsat is not None:
       scalar_registers_used = loadVxsatMode(*scalar_registers_used)
     elif vxrm is not None:
@@ -1619,9 +1638,9 @@ def writeTest(description, instruction, instruction_data,
       signature_target_sew = sew
 
     if (maskval is not None) or (vl is not None):
-      writeVecTest(signature_target_vd, signature_target_sew, testline, test=instruction, rd=rd, vl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store=sig_whole_register_store)
+      writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, vl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store=sig_whole_register_store)
     else:
-      writeVecTest(signature_target_vd, signature_target_sew, testline, test=instruction, rd=rd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
+      writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
 
     if (getLMULIfdef(lmul) != ""):
       writeLine("#endif")
@@ -1783,6 +1802,7 @@ def getInstructionRegisterOverlapConstraints (instruction, sew, lmul):
   elif instruction in narrowins       : no_overlap = [['vd',    'vs2_top'], ['vs2',       'vs1']]
   elif instruction in wvsins          : no_overlap = [['vs2',       'vs1']                      ] # no "_bottom" in vd because its a reduction instruction
   elif instruction in wwvins          : no_overlap = [['vd_bottom', 'vs1'], ['vs1',       'vs2']]
+  elif instruction in fwcvt_ins       : no_overlap = [['vd_bottom', 'vs2']                      ]
   elif instruction in v_mins          : no_overlap = [['v0', 'vs2'], ['v0', 'vs1'], ['v0', 'vd']]
   elif instruction in mv_mins         : no_overlap = [['vd','vs2'],['v0','vs2'],['vd','vs1'],['v0','vs1']]
   elif instruction in vcompressins    : no_overlap = [['vd', 'vs2', 'vs1']                      ]

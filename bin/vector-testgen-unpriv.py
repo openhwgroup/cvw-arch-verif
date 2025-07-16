@@ -1026,86 +1026,86 @@ if __name__ == '__main__':
 
         setFlen(32)
 
-          legalvlmuls = getLegalVlmul(maxELEN, minSEW_MIN, sew)
+        legalvlmuls = getLegalVlmul(maxELEN, minSEW_MIN, sew)
 
-          # Set up vl = 1 for base suite
-          f.write(f"\n")
-          f.write(f"// Initial set vl = 1\n")
-          f.write(f"li x2, 1\n")
-          f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
+        # Set up vl = 1 for base suite
+        f.write(f"\n")
+        f.write(f"// Initial set vl = 1\n")
+        f.write(f"li x2, 1\n")
+        f.write(f"vsetvli x0, x2, e{sew}, m1, tu, mu\n")
 
-          # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
-          if (test in vd_widen_ins) or (test in vs2_widen_ins):
-            if (sew == 8):
-              f.write("#if ELEN > 8\n")
-            elif (sew == 16):
-              f.write("#if ELEN > 16\n")
-            elif (sew == 32):
-              f.write("#if ELEN > 32\n")
-            elif (sew == 64):
-              f.write("#if ELEN > 64\n")
+        # include ifdefs for widening/narrowing instr, which doesn't exist in the ELEN suite
+        if (test in vd_widen_ins) or (test in vs2_widen_ins):
+          if (sew == 8):
+            f.write("#if ELEN > 8\n")
+          elif (sew == 16):
+            f.write("#if ELEN > 16\n")
+          elif (sew == 32):
+            f.write("#if ELEN > 32\n")
+          elif (sew == 64):
+            f.write("#if ELEN > 64\n")
 
-          coverpoints = list(testplans[extension][test])
-          applicable_coverpoints = coverpointInclusions(coverpoints)
-          makeTest(applicable_coverpoints, test, sew=sew)
+        coverpoints = list(testplans[extension][test])
+        applicable_coverpoints = coverpointInclusions(coverpoints)
+        makeTest(applicable_coverpoints, test, sew=sew)
 
-          if (test in vd_widen_ins) or (test in vs2_widen_ins):
-            f.write("#endif\n")
-          insertTemplate(test, 0, "testgen_footer_vector1.S")
+        if (test in vd_widen_ins) or (test in vs2_widen_ins):
+          f.write("#endif\n")
+        insertTemplate(test, 0, "testgen_footer_vector1.S")
 
-          if test in vector_loads:
-            genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-            genRandomVector(test, sew, vs="vd")
-            if test in indexed_loads:
-              genRandomVector(test, getInstructionEEW(test), vs="vs2")
-            genRandomVectorLS()
-          if test in vector_stores:
-            genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-            genRandomVector(test, sew, vs="vs3")
-            if test in indexed_stores:
-              genRandomVector(test, getInstructionEEW(test), vs="vs2")
-            genRandomVectorLS()
-          if test not in vector_ls_ins:
-            # generate vector data (random and corners)
-            if   test in vd_widen_ins                         : genRandomVector(test, sew, vs="vd", emul = 2)
-            elif (test not in xvtype and test not in xvmtype) : genRandomVector(test, sew, vs="vd")
-            if (test in wvsins): # needs to be first since in vd_widen_ins
-              genRandomVector(test, sew, vs="vs2")
-              genRandomVector(test, sew, vs="vs1", emul=2)
-              genVsCorners(test, sew, "2")
-              genVsCorners(test, sew, "1")
-            elif (test in narrowins) or (test in vd_widen_ins):
-              genRandomVector(test, sew, vs="vs2", emul=2)
-              if (test in vs1ins):
-                genRandomVector(test, sew, vs="vs1")
-              genVsCorners(test, sew, "1")
-              genVsCorners(test, sew, "2")
+        if test in vector_loads:
+          genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
+          genRandomVector(test, sew, vs="vd")
+          if test in indexed_loads:
+            genRandomVector(test, getInstructionEEW(test), vs="vs2")
+          genRandomVectorLS()
+        if test in vector_stores:
+          genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
+          genRandomVector(test, sew, vs="vs3")
+          if test in indexed_stores:
+            genRandomVector(test, getInstructionEEW(test), vs="vs2")
+          genRandomVectorLS()
+        if test not in vector_ls_ins:
+          # generate vector data (random and corners)
+          if   test in vd_widen_ins                         : genRandomVector(test, sew, vs="vd", emul = 2)
+          elif (test not in xvtype and test not in xvmtype) : genRandomVector(test, sew, vs="vd")
+          if (test in wvsins): # needs to be first since in vd_widen_ins
+            genRandomVector(test, sew, vs="vs2")
+            genRandomVector(test, sew, vs="vs1", emul=2)
+            genVsCorners(test, sew, "2")
+            genVsCorners(test, sew, "1")
+          elif (test in narrowins) or (test in vs2_widen_ins):
+            genRandomVector(test, sew, vs="vs2", emul=2)
+            if (test in vs1ins):
+              genRandomVector(test, sew, vs="vs1")
+            genVsCorners(test, sew, "1")
+            genVsCorners(test, sew, "2")
+          else:
+            genRandomVector(test, sew, vs="vs2")
+            if (test in vs1ins):
+              genRandomVector(test, sew, vs="vs1")
+            if (test in vextins):
+              genVsCorners(test, sew, test[-2:])
+            elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
+              genVsCorners(test, sew, "eew1")
             else:
-              genRandomVector(test, sew, vs="vs2")
-              if (test in vs1ins):
-                genRandomVector(test, sew, vs="vs1")
-              if (test in vextins):
-                genVsCorners(test, sew, test[-2:])
-              elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
-                genVsCorners(test, sew, "eew1")
-              else:
-                genVsCorners(test, sew, "1")
+              genVsCorners(test, sew, "1")
 
-          genVMaskCorners()
+        genVMaskCorners()
 
 
-          # print footer
-          signatureWords = getSigSpace(xlen, flen) #figure out how many words are needed for signature
-          insertTemplate(test, signatureWords, "testgen_footer_vector2.S")
+        # print footer
+        signatureWords = getSigSpace(xlen, flen) #figure out how many words are needed for signature
+        insertTemplate(test, signatureWords, "testgen_footer_vector2.S")
 
-          # Finish
-          f.close()
-          # if new file is different from old file, replace old file with new file
-          if os.path.exists(fname):
-            if filecmp.cmp(fname, tempfname): # files are the same
-              os.system(f"rm {tempfname}") # remove temp file
-            else:
-              os.system(f"mv {tempfname} {fname}")
-              print("Updated " + fname)
+        # Finish
+        f.close()
+        # if new file is different from old file, replace old file with new file
+        if os.path.exists(fname):
+          if filecmp.cmp(fname, tempfname): # files are the same
+            os.system(f"rm {tempfname}") # remove temp file
           else:
             os.system(f"mv {tempfname} {fname}")
+            print("Updated " + fname)
+        else:
+          os.system(f"mv {tempfname} {fname}")
