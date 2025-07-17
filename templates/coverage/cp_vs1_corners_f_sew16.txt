@@ -1,4 +1,4 @@
-    cp_vs1_corners_f_sew16 : coverpoint get_vr_element_zero(int hart, int issue, ins.current.vs1_val)[15:0]  iff (ins.trap == 0 )  {
+    cp_vs1_corners_f_sew16 : coverpoint get_vr_element_zero(ins.hart, ins.issue, ins.current.vs1_val)[15:0]  iff (ins.trap == 0 )  {
         // (Half Precision)
         bins pos0               = {16'h0000};
         bins neg0               = {16'h8000};

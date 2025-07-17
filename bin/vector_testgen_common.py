@@ -64,92 +64,74 @@ mtrap_sig_count         = 64 # signature space for priviliged, default to 64
 # Corners
 ##################################
 
-fcorners                =            [0x00000000, # 0
-                            0x80000000, # -0
-                            0x3f800000, # 1.0
-                            0xbf800000, # -1.0
-                            0x3fc00000, # 1.5
-                            0xbfc00000, # -1.5
-                            0x40000000,  # 2.0
-                            0xc0000000,  # -2.0
-                            0x00800000,  # smallest positive normalized
-                            0x80800000,  # smallest negative normalized
-                            0x7f7fffff,  # most positive
-                            0xff7fffff,  # most negative
-                            0x007fffff,  # largest positive subnorm
-                            0x807fffff,  # largest negative subnorm
-                            0x00400000,  # positive subnorm with leading 1
-                            0x80400000,  # negative subnorm with leading 1
-                            0x00000001,  # smallest positive subnorm
-                            0x80000001,  # smallest negative subnorm
-                            0x7f800000,  # positive infinity
-                            0xff800000,  # negative infinity
-                            0x7fc00000,  # canonical quiet NaN
-                            0x7fffffff,  # noncanonical quiet NaN
-                            0xffffffff,  # noncanonical quiet NaN with sign bit set
-                            0x7f800001,  # signaling NaN with lsb set
-                            0x7fbfffff,  # signaling NaN with all mantissa bits set
-                            0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
-                            0x7ef8654f,  # random positive 1.65087e+38
-                            0x813d9ab0]  # random negative -3.48248e-38
+fcorners = {"pos0":              0x00000000, # 0
+            "neg0":              0x80000000, # -0
+            "pos1":              0x3f800000, # 1.0
+            "neg1":              0xbf800000, # -1.0
+            "posminnorm":        0x00800000, # smallest positive normalized
+            "negminnorm":        0x80800000, # smallest negative normalized
+            "posmaxnorm":        0x7f7fffff, # most positive
+            "negmaxnorm":        0xff7fffff, # most negative
+            "posinfinity":       0x7f800000, # positive infinity
+            "neginfinity":       0xff800000, # negative infinity
+            "pos0p5":            0x3f000000, # 0.5
+            "pos1p5":            0x3fc00000, # 1.5
+            "pos2":              0x40000000, # 2.0
+            "pos4":              0x40800000, # 4.0
+            "pi":                0x40490FDB, # pi
+            "twoToEmax":         0x7f000000, # 2^emax
+            "onePulp":           0x3f800001, # 1 + ulp
+            "largestsubnorm":    0x007fffff, # largest positive subnorm
+            "subnormleadingone": 0x00400000, # positive subnorm with leading 1
+            "canonicalQNaN":     0x7fc00000, # canonical quiet NaN
+            "noncanonicalQNaN":  0x7fffffff, # noncanonical quiet NaN
+            "sNaN_payload1":     0x7f800001} # signaling NaN with lsb set
 
-fcornersD               = [0x0000000000000000, # 0.0
-            0x8000000000000000,  # -0.0
-            0x3FF0000000000000,  # 1.0
-            0xBFF0000000000000,  # -1.0
-            0x3FF8000000000000,  # 1.5
-            0xBFF8000000000000,  #-1.5
-            0x4000000000000000,  # 2.0
-            0xc000000000000000,  # -2.0
-            0x0010000000000000,  # smallest positive normalized
-            0x8010000000000000,  # smallest negative normalized
-            0x7FEFFFFFFFFFFFFF,  # most positive normalized
-            0xFFEFFFFFFFFFFFFF,  # most negative normalized
-            0x000FFFFFFFFFFFFF,  # largest positive subnorm
-            0x800FFFFFFFFFFFFF,  # largest negative subnorm
-            0x0008000000000000,  # mid positive subnorm
-            0x8008000000000000,  # mid negative subnorm
-            0x0000000000000001,  # smallest positive subnorm
-            0x8000000000000001,  # smallest negative subnorm
-            0x7FF0000000000000,  # positive infinity
-            0xFFF0000000000000,  # negative infinity
-            0x7FF8000000000000,  # canonical quiet NaN
-            0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
-            0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
-            0x7FF0000000000001,  # signaling NaN with lsb set
-            0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
-            0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
-            0x5A392534A57711AD, # 4.25535e126 random positive
-            0xA6E895993737426C] # -2.97516e-121 random negative
+fcornersD  = {"pos0":              0x0000000000000000, # 0
+              "neg0":              0x8000000000000000, # -0
+              "pos1":              0x3FF0000000000000, # 1.0
+              "neg1":              0xBFF0000000000000, # -1.0
+              "posminnorm":        0x0010000000000000, # smallest positive normalized
+              "negminnorm":        0x8010000000000000, # smallest negative normalized
+              "posmaxnorm":        0x7FEFFFFFFFFFFFFF, # most positive
+              "negmaxnorm":        0xFFEFFFFFFFFFFFFF, # most negative
+              "posinfinity":       0x7FF0000000000000, # positive infinity
+              "neginfinity":       0xFFF0000000000000, # negative infinity
+              "pos0p5":            0x3FE0000000000000, # 0.5
+              "pos1p5":            0x3FF8000000000000, # 1.5
+              "pos2":              0x4000000000000000, # 2.0
+              "pos4":              0x4010000000000000, # 4.0
+              "pi":                0X400921FB54442D18, # pi
+              "twoToEmax":         0x7FE0000000000000, # 2^emax
+              "onePulp":           0x3FF0000000000001, # 1 + ulp
+              "largestsubnorm":    0x000FFFFFFFFFFFFF, # largest positive subnorm
+              "subnormleadingone": 0x0008000000000000, # positive subnorm with leading 1
+              "canonicalQNaN":     0x7FF8000000000000, # canonical quiet NaN
+              "noncanonicalQNaN":  0x7FFFFFFFFFFFFFFF, # noncanonical quiet NaN
+              "sNaN_payload1":     0x7FF0000000000001} # signaling NaN with lsb set
 
-fcornersH               = [0x0000, # 0.0
-            0x8000, # -0.0
-            0x3C00, # 1.0
-            0xBC00, # -1.0
-            0x3E00, # 1.5
-            0xBE00, # -1.5
-            0x4000, # 2.0
-            0xC000, # -2.0
-            0x0400, # smallest normalized
-            0x8400, # smallest negative normalized
-            0x7BFF, # most positive normalized
-            0xFBFF, #  most negative normalized
-            0x03FF, # largest positive subnorm
-            0x83FF,  # largest negative subnorm
-            0x0200,  # positive subnorm with leading 1
-            0x8200,  # negative subnorm with leading 1
-            0x0001, # smallest positive subnorm
-            0x8001,  # smallest negative subnorm
-            0x7C00,  # positive infinity
-            0xFC00,  # negative infinity
-            0x7E00,  # canonical quiet NaN
-            0x7FFF,  # noncanonical quiet NaN
-            0xFE00,  # noncanonical quiet NaN with sign bit set
-            0x7C01, # signaling NaN with lsb set
-            0x7DFF,  # signaling NaN with all mantissa bits set
-            0xFC01,  # signaling NaN with lsb and sign bits set
-            0x58B4,  # 150.5 random positive
-            0xC93A]  # -10.4531 random negative
+fcornersH  = {"pos0":              0x0000, # 0
+              "neg0":              0x8000, # -0
+              "pos1":              0x3C00, # 1.0
+              "neg1":              0xBC00, # -1.0
+              "posminnorm":        0x0400, # smallest positive normalized
+              "negminnorm":        0x8400, # smallest negative normalized
+              "posmaxnorm":        0x7BFF, # most positive
+              "negmaxnorm":        0xFBFF, # most negative
+              "posinfinity":       0x7C00, # positive infinity
+              "neginfinity":       0xFC00, # negative infinity
+              "pos0p5":            0x3800, # 0.5
+              "pos1p5":            0x3E00, # 1.5
+              "pos2":              0x4000, # 2.0
+              "pos4":              0x4400, # 4.0
+              "pi":                0x4248, # pi
+              "twoToEmax":         0x7800, # 2^emax
+              "onePulp":           0x3C01, # 1 + ulp
+              "largestsubnorm":    0x03FF, # largest positive subnorm
+              "subnormleadingone": 0x0200, # positive subnorm with leading 1
+              "canonicalQNaN":     0x7E00, # canonical quiet NaN
+              "noncanonicalQNaN":  0x7FFF, # noncanonical quiet NaN
+              "sNaN_payload1":     0x7D01} # signaling NaN with lsb set
 
 # fcornersQ = [] # TODO: Fill out quad precision F corners
 
@@ -164,6 +146,13 @@ vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
 vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
 vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
 v_corners_ls   = ["vs_corner_zero_emul8", "vs_corner_random_within_2vlmax"]
+
+vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negminnorm",
+                   "vs_corner_f_posmaxnorm", "vs_corner_f_negmaxnorm", "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5",
+                   "vs_corner_f_pos1p5", "vs_corner_f_pos2", "vs_corner_f_pos4", "vs_corner_f_pi", "vs_corner_f_twoToEmax", "vs_corner_f_onePulp",
+                   "vs_corner_f_largestsubnorm", "vs_corner_f_subnormleadingone", "vs_corner_f_canonicalQNaN", "vs_corner_f_noncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
+vfcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorfpcorners]
+vfcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorfpcorners]
 
 ##################################
 # Functions to be implemented by importer
@@ -1029,6 +1018,39 @@ def genVsCorners(test, sew, emul):
         else:
           writeLine(f"    .word {w}")
 
+def genVsCornersFP(test, sew, emul):
+  def convert(val, bitwidth):
+    if (sew == 64) or (eew == 64):
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
+              in range((bitwidth + (eew - 1)) // eew)]
+    else:
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFF:08x}" for i
+              in range((bitwidth + (eew-1)) // eew)]
+
+  if sew == 64:
+    vs_corners_f = fcornersD
+  elif sew == 16:
+    vs_corners_f = fcornersH
+  else:
+    vs_corners_f = fcorners
+
+  eew = sew * int(emul)
+  ending = "emul" + emul
+
+  writeLine("\n")
+  writeLine("///////////////////////////////////////////")
+  writeLine(f"// vector corners data (floating point)")
+  writeLine("///////////////////////////////////////////\n")
+  writeLine(f"    .align 3")
+  for corner in vs_corners_f:
+      val = vs_corners_f[corner]
+      writeLine(f"vs_corner_f_{corner}_{ending}:")
+      val &= (1 << eew) - 1
+      for w in convert(val, eew):
+        if (sew == 64) or (eew == 64):
+          writeLine(f"    .dword {w}")
+        else:
+          writeLine(f"    .word {w}")
 
 ##################################
 # Common functions
@@ -1046,7 +1068,7 @@ def insertTemplate(test, signatureWords, name):
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
 
-    if (test == "ExceptionsVx"):
+    if (test == "ExceptionsV"):
       ISAEXT = "RV32IMV_Zicsr, RV64IMV_Zicsr"
       test_case_line = "//check ISA:=regex(.*I.*M.*V.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True"
     else:

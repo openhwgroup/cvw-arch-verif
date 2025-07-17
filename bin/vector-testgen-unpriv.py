@@ -255,6 +255,22 @@ def make_rs1_corners_v(instruction, sew, rcornersv):
     writeTest(description, instruction, instruction_data, sew=sew)
     incrementBasetestCount()
 
+def make_fs1_corners_v(instruction, sew):
+  if sew == 64:
+    fcornersv = fcornersD
+  elif sew == 16:
+    fcornersv = fcornersH
+  else:
+    fcornersv = fcorners
+
+  for fcorner in fcornersv:
+    fcorner_val       = fcornersv[fcorner]
+    description       = f"cp_fs1_corners (Test source fs1 value = " + fcorner + ")"
+    instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), fs1_val = fcorner_val)
+
+    writeTest(description, instruction, instruction_data, sew=sew)
+    incrementBasetestCount()
+
 def make_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners, vl=1):
   for v1 in vs1corners:
     for v2 in vs2corners:
@@ -268,6 +284,22 @@ def make_vs2_rs1_corners(instruction, sew, vs2corners):
     for v2 in vs2corners:
       description = "cr_vs2_rs1_corners"
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
+
+      writeTest(description, instruction, instruction_data, sew=sew)
+
+def make_vs2_fs1_corners(instruction, sew, vs2corners):
+  if sew == 64:
+    fcornersv = fcornersD
+  elif sew == 16:
+    fcornersv = fcornersH
+  else:
+    fcornersv = fcorners
+
+  for f1 in fcornersv:
+    for v2 in vs2corners:
+      f1_val = fcornersv[f1]
+      description = "cr_vs2_rs1_corners"
+      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, fs1_val = f1_val)
 
       writeTest(description, instruction, instruction_data, sew=sew)
 
@@ -589,6 +621,7 @@ def makeTest(coverpoints, test, sew=None):
     elif coverpoint == "cp_rs2_corners_ls_e32"        : make_rs2_corners_v(test, sew, rcorners_ls_e32, lmul = getBaseLmul(test, sew))
     elif coverpoint == "cp_rs2_corners_ls_e64"        : make_rs2_corners_v(test, sew, rcorners_ls_e64, lmul = getBaseLmul(test, sew))
     elif coverpoint == "cp_rs1_corners"               : make_rs1_corners_v(test, sew, rcornersv)
+    elif coverpoint == "cp_fs1_corners_v"             : make_fs1_corners_v(test, sew)
     elif coverpoint == "cmp_rs1_rs2"                  : make_rs1_rs2_v(test, sew, range(xreg_count))
     elif coverpoint == "cp_imm_5bit"                  : make_imm_v(test, sew)
     elif coverpoint == "cp_imm_5bit_u"                : make_imm_v(test, sew)
@@ -652,15 +685,24 @@ def makeTest(coverpoints, test, sew=None):
     elif coverpoint == "cp_vs2_corners_emulf8"        : make_vs2_corners(test, sew, vcornersemulf8)
     elif coverpoint == "cp_vs2_corners_eew1"          : make_vs2_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
     elif coverpoint == "cp_vs2_corners_ls"            : make_vs2_corners(test, sew, v_corners_ls, lmul=getBaseLmul(test, sew))
+    elif coverpoint == "cp_vs2_corners_f"             : make_vs2_corners(test, sew, vfcornersemul1)
+    elif coverpoint == "cp_vs2_corners_f_emul2"       : make_vs2_corners(test, sew, vfcornersemul2)
     elif coverpoint == "cp_vs1_corners"               : make_vs1_corners(test, sew, vcornersemul1)
     elif coverpoint == "cp_vs1_corners_emul2"         : make_vs1_corners(test, sew, vcornersemul2)
     elif coverpoint == "cp_vs1_corners_eew1"          : make_vs1_corners(test, sew, vcornerseew1, vl=8)  # assume vl = 8 for mask logical instr
+    elif coverpoint == "cp_vs1_corners_f"             : make_vs1_corners(test, sew, vfcornersemul1)
+    elif coverpoint == "cp_vs1_corners_f_emul2"       : make_vs1_corners(test, sew, vfcornersemul2)
     elif coverpoint == "cr_vs2_vs1_corners"           : make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul1)
     elif coverpoint == "cr_vs2_vs1_corners_wv"        : make_vs2_vs1_corners(test, sew, vcornersemul2, vcornersemul1)
     elif coverpoint == "cr_vs2_vs1_corners_wred"      : make_vs2_vs1_corners(test, sew, vcornersemul1, vcornersemul2)
     elif coverpoint == "cr_vs2_vs1_corners_mm"        : make_vs2_vs1_corners(test, sew, vcornerseew1, vcornerseew1, vl=8)
+    elif coverpoint == "cr_vs2_vs1_corners_f"         : make_vs2_vs1_corners(test, sew, vfcornersemul1, vfcornersemul1)
+    elif coverpoint == "cr_vs2_vs1_corners_fwv"       : make_vs2_vs1_corners(test, sew, vfcornersemul2, vfcornersemul1)
+    elif coverpoint == "cr_vs2_vs1_corners_fwred"     : make_vs2_vs1_corners(test, sew, vfcornersemul1, vfcornersemul2)
     elif coverpoint == "cr_vs2_rs1_corners"           : make_vs2_rs1_corners(test, sew, vcornersemul1)
     elif coverpoint == "cr_vs2_rs1_corners_wx"        : make_vs2_rs1_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cr_vs2_fs1_corners"           : make_vs2_fs1_corners(test, sew, vfcornersemul1)
+    elif coverpoint == "cr_vs2_fs1_corners_wf"        : make_vs2_fs1_corners(test, sew, vfcornersemul2)
     elif coverpoint == "cr_vs2_imm_corners"           : make_vs2_imm_corners(test, sew, vcornersemul1)
     elif coverpoint == "cr_vs2_imm_corners_u"         : make_vs2_imm_corners(test, sew, vcornersemul1)
     elif coverpoint == "cr_vs2_imm_corners_wi"        : make_vs2_imm_corners(test, sew, vcornersemul2)
@@ -717,32 +759,6 @@ def makeTest(coverpoints, test, sew=None):
     elif coverpoint == "cr_vtype_agnostic_e16_emul1max" : make_vtype_agnostic(test, sew, eew = 16, maxemul=1)
     elif coverpoint == "cr_vtype_agnostic_e32_emul1max" : make_vtype_agnostic(test, sew, eew = 32, maxemul=1)
     elif coverpoint == "cr_vtype_agnostic_e64_emul1max" : make_vtype_agnostic(test, sew, eew = 64, maxemul=1)
-    elif (coverpoint in ["cp_csr_vtype_vta", "cp_csr_vtype_vma"]):
-      pass # helper coverpoints, crossed in cr_vtype_agnostic
-    elif (coverpoint in ["cp_csr_vtype_lmul_all_sew8", "cp_csr_vtype_lmul_all_sew16", "cp_csr_vtype_lmul_all_sew32", "cp_csr_vtype_lmul_all_sew64", "cp_csr_vl_corners",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew8", "cp_csr_vtype_lmul_all_lmul4max_sew16", "cp_csr_vtype_lmul_all_lmul4max_sew32", "cp_csr_vtype_lmul_all_lmul4max_sew64",
-                         "cp_csr_vtype_lmul_all_sew8_lmul_le_8", "cp_vtype_lmul_ge_1", "cp_csr_vtype_lmul_all_lmul4max_sew8_lmul_le_4", "cp_csr_vtype_lmul_all_sew32_lmul_le_8",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew32_lmul_le_4", "cp_csr_vtype_lmul_all_sew64_lmul_le_8", "cp_csr_vtype_lmul_all_sew16_lmul_le_8",
-                         "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4", "cp_csr_vtype_lmul_all_lmul4max_sew16_lmul_le_4", "cp_csr_vtype_lmul_all_sew8_eew8",
-                         "cp_csr_vtype_lmul_all_sew16_eew8", "cp_csr_vtype_lmul_all_sew32_eew8", "cp_csr_vtype_lmul_all_sew64_eew8", "cp_csr_vtype_lmul_all_sew8_lmul1max",
-                         "cp_csr_vtype_lmul_all_sew16_lmul1max", "cp_csr_vtype_lmul_all_sew32_lmul1max", "cp_csr_vtype_lmul_all_sew64_lmul1max", "cp_csr_vtype_lmul_all_sew8_lmul2max",
-                         "cp_csr_vtype_lmul_all_sew8_lmul_le_1", "cp_vtype_lmul_1", "cp_vtype_lmul_ge_1_le_4", "cp_vtype_lmul_ge_1_le_2", "cp_csr_vtype_lmul_all_sew8_lmul_le_2",
-                         "cp_csr_vtype_lmul_all_sew32_lmul_le_1", "cp_csr_vtype_lmul_all_sew64_lmul_le_2", "cp_csr_vtype_lmul_all_lmul4max_sew64_lmul_le_4", "cp_csr_vtype_lmul_all_sew16_lmul_le_2",
-                         "cp_csr_vtype_lmul_all_sew16_lmul_le_1", "cp_csr_vtype_lmul_all_sew32_lmul_le_2", "cp_csr_vtype_lmul_all_sew64_lmul_le_1", "cp_csr_vtype_lmul_all_le_8_e16",
-                         "cp_vtype_lmul_ge_1_e16", "cp_csr_vtype_lmul_all_le_8_e32", "cp_csr_vtype_lmul_all_le_8_e64", "cp_csr_vtype_lmul_all_le_8_e8", "cp_vtype_lmul_ge_1_e32",
-                         "cp_vtype_lmul_ge_1_e64", "cp_vtype_lmul_ge_1_e8", "cp_csr_vtype_lmul_all_le_8_lmul4max_e16", "cp_csr_vtype_lmul_all_le_8_lmul4max_e32", "cp_csr_vtype_lmul_all_le_8_lmul4max_e64",
-                         "cp_csr_vtype_lmul_all_le_8_lmul4max_e8", "cp_vtype_lmul_ge_1_lmul2max_e16", "cp_vtype_lmul_ge_1_lmul2max_e32", "cp_csr_vtype_lmul_all_le_8_lmul2max_e64",
-                         "cp_csr_vtype_lmul_all_le_8_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul2max_e16", "cp_csr_vtype_lmul_all_le_8_lmul2max_e32", "cp_vtype_lmul_ge_1_lmul2max_e64",
-                         "cp_vtype_lmul_ge_1_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul1max_e16", "cp_vtype_lmul_ge_1_lmul1max_e16", "cp_vtype_lmul_ge_1_lmul2max_e8", "cp_csr_vtype_lmul_all_le_8_lmul1max_e16",
-                         "cp_csr_vtype_lmul_all_le_8_lmul1max_e32", "cp_vtype_lmul_ge_1_lmul1max_e32", "cp_csr_vtype_lmul_all_le_8", "cp_csr_vtype_lmul_all_lmul4max_lmul_le_4",
-                         "cp_csr_vtype_lmul_all_le_8_e16_emul4max","cp_csr_vtype_lmul_all_le_8_e32_emul4max","cp_csr_vtype_lmul_all_le_8_e64_emul4max","cp_csr_vtype_lmul_all_le_8_e8_emul4max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul2max","cp_csr_vtype_lmul_all_le_8_e32_emul2max","cp_csr_vtype_lmul_all_le_8_e64_emul2max","cp_csr_vtype_lmul_all_le_8_e8_emul2max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul2max","cp_csr_vtype_lmul_all_le_8_e32_emul2max","cp_csr_vtype_lmul_all_le_8_e64_emul2max","cp_csr_vtype_lmul_all_le_8_e8_emul2max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul1max","cp_csr_vtype_lmul_all_le_8_e32_emul1max","cp_csr_vtype_lmul_all_le_8_e64_emul1max","cp_csr_vtype_lmul_all_le_8_e8_emul1max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul1max","cp_csr_vtype_lmul_all_le_8_e32_emul1max","cp_csr_vtype_lmul_all_le_8_e64_emul1max","cp_csr_vtype_lmul_all_le_8_e8_emul1max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul1max","cp_csr_vtype_lmul_all_le_8_e32_emul1max","cp_csr_vtype_lmul_all_le_8_e64_emul1max","cp_csr_vtype_lmul_all_le_8_e8_emul1max",
-                        "cp_csr_vtype_lmul_all_le_8_e16_emul1max","cp_csr_vtype_lmul_all_le_8_e32_emul1max","cp_csr_vtype_lmul_all_le_8_e64_emul1max","cp_csr_vtype_lmul_all_le_8_e8_emul1max",]):
-      pass # helper coverpoints, crossed in cr_vl_lmul
     ############################  cp_custom   ############################
     elif coverpoint == "cp_custom_vmask_write_lmulge1"                : make_custom_vmask_write_lmulge1(test, sew)
     elif coverpoint == "cp_custom_vmask_write_v0_masked"              : make_custom_vmask_write_v0_masked(test, sew)
@@ -948,7 +964,6 @@ if __name__ == '__main__':
   xlens = [32, 64]
   numrand = 3
   corners = []
-  fcorners = []
 
   # setup
   seed(0) # make tests reproducible
@@ -1108,14 +1123,22 @@ if __name__ == '__main__':
           if (test in wvsins): # needs to be first since in vd_widen_ins
             genRandomVector(test, sew, vs="vs2")
             genRandomVector(test, sew, vs="vs1", emul=2)
-            genVsCorners(test, sew, "2")
-            genVsCorners(test, sew, "1")
+            if (test in vfloattypes):
+              genVsCornersFP(test, sew, "1")
+              genVsCornersFP(test, sew, "2")
+            else:
+              genVsCorners(test, sew, "1")
+              genVsCorners(test, sew, "2")
           elif (test in narrowins) or (test in vs2_widen_ins):
             genRandomVector(test, sew, vs="vs2", emul=2)
             if (test in vs1ins):
               genRandomVector(test, sew, vs="vs1")
-            genVsCorners(test, sew, "1")
-            genVsCorners(test, sew, "2")
+            if (test in vfloattypes):
+              genVsCornersFP(test, sew, "1")
+              genVsCornersFP(test, sew, "2")
+            else:
+              genVsCorners(test, sew, "1")
+              genVsCorners(test, sew, "2")
           else:
             genRandomVector(test, sew, vs="vs2")
             if (test in vs1ins):
@@ -1124,6 +1147,8 @@ if __name__ == '__main__':
               genVsCorners(test, sew, test[-2:])
             elif (test in mmins) or (test in xvmtype) or (test in vmlogicalins):
               genVsCorners(test, sew, "eew1")
+            elif (test in vfloattypes):
+              genVsCornersFP(test, sew, "1")
             else:
               genVsCorners(test, sew, "1")
 

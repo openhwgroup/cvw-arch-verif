@@ -131,7 +131,7 @@ def anyEFFEWExclusion(effew, instrs, tp):
             return True
     return False
 
-sew_dependent_cps = ["cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
+sew_dependent_cps = ["cp_vs2_corners_f", "cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
                      "cp_custom_vindex", "cr_vs2_vs1_corners_f", "cp_fs1_corners_v", "cr_vs2_fs1_corners", "cr_vl_lmul"]
 
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
