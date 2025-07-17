@@ -1,2 +1,0 @@
-
-    cp_custom_vdEqV0Masked : cross std_vec, vd_v0, mask_enabled;
