@@ -64,74 +64,68 @@ mtrap_sig_count         = 64 # signature space for priviliged, default to 64
 # Corners
 ##################################
 
-fcorners = {"pos0":              0x00000000, # 0
-            "neg0":              0x80000000, # -0
-            "pos1":              0x3f800000, # 1.0
-            "neg1":              0xbf800000, # -1.0
-            "posminnorm":        0x00800000, # smallest positive normalized
-            "negminnorm":        0x80800000, # smallest negative normalized
-            "posmaxnorm":        0x7f7fffff, # most positive
-            "negmaxnorm":        0xff7fffff, # most negative
-            "posinfinity":       0x7f800000, # positive infinity
-            "neginfinity":       0xff800000, # negative infinity
-            "pos0p5":            0x3f000000, # 0.5
-            "pos1p5":            0x3fc00000, # 1.5
-            "pos2":              0x40000000, # 2.0
-            "pos4":              0x40800000, # 4.0
-            "pi":                0x40490FDB, # pi
-            "twoToEmax":         0x7f000000, # 2^emax
-            "onePulp":           0x3f800001, # 1 + ulp
-            "largestsubnorm":    0x007fffff, # largest positive subnorm
-            "subnormleadingone": 0x00400000, # positive subnorm with leading 1
-            "canonicalQNaN":     0x7fc00000, # canonical quiet NaN
-            "noncanonicalQNaN":  0x7fffffff, # noncanonical quiet NaN
-            "sNaN_payload1":     0x7f800001} # signaling NaN with lsb set
+fcorners = {"pos0":                 0x00000000, # 0
+            "neg0":                 0x80000000, # -0
+            "pos1":                 0x3f800000, # 1.0
+            "neg1":                 0xbf800000, # -1.0
+            "posminnorm":           0x00800000, # smallest positive normalized
+            "negmaxnorm":           0xff7fffff, # most negative
+            "posinfinity":          0x7f800000, # positive infinity
+            "neginfinity":          0xff800000, # negative infinity
+            "pos0p5":               0x3f000000, # 0.5
+            "pos1p5":               0x3fc00000, # 1.5
+            "neg2":                 0xC0000000, # 2.0
+            "pi":                   0x40490FDB, # pi
+            "twoToEmax":            0x7f000000, # 2^emax
+            "onePulp":              0x3f800001, # 1 + ulp
+            "largestsubnorm":       0x007fffff, # largest positive subnorm
+            "negSubnormLeadingOne": 0x00400000, # positive subnorm with leading 1
+            "min_subnorm":          0x00000001, # smallest positive subnorm
+            "canonicalQNaN":        0x7fc00000, # canonical quiet NaN
+            "negNoncanonicalQNaN":  0xffffffff, # noncanonical quiet NaN
+            "sNaN_payload1":        0x7f800001} # signaling NaN with lsb set
 
-fcornersD  = {"pos0":              0x0000000000000000, # 0
-              "neg0":              0x8000000000000000, # -0
-              "pos1":              0x3FF0000000000000, # 1.0
-              "neg1":              0xBFF0000000000000, # -1.0
-              "posminnorm":        0x0010000000000000, # smallest positive normalized
-              "negminnorm":        0x8010000000000000, # smallest negative normalized
-              "posmaxnorm":        0x7FEFFFFFFFFFFFFF, # most positive
-              "negmaxnorm":        0xFFEFFFFFFFFFFFFF, # most negative
-              "posinfinity":       0x7FF0000000000000, # positive infinity
-              "neginfinity":       0xFFF0000000000000, # negative infinity
-              "pos0p5":            0x3FE0000000000000, # 0.5
-              "pos1p5":            0x3FF8000000000000, # 1.5
-              "pos2":              0x4000000000000000, # 2.0
-              "pos4":              0x4010000000000000, # 4.0
-              "pi":                0X400921FB54442D18, # pi
-              "twoToEmax":         0x7FE0000000000000, # 2^emax
-              "onePulp":           0x3FF0000000000001, # 1 + ulp
-              "largestsubnorm":    0x000FFFFFFFFFFFFF, # largest positive subnorm
-              "subnormleadingone": 0x0008000000000000, # positive subnorm with leading 1
-              "canonicalQNaN":     0x7FF8000000000000, # canonical quiet NaN
-              "noncanonicalQNaN":  0x7FFFFFFFFFFFFFFF, # noncanonical quiet NaN
-              "sNaN_payload1":     0x7FF0000000000001} # signaling NaN with lsb set
+fcornersD  = {"pos0":                 0x0000000000000000, # 0
+              "neg0":                 0x8000000000000000, # -0
+              "pos1":                 0x3FF0000000000000, # 1.0
+              "neg1":                 0xBFF0000000000000, # -1.0
+              "posminnorm":           0x0010000000000000, # smallest positive normalized
+              "negmaxnorm":           0xFFEFFFFFFFFFFFFF, # most negative
+              "posinfinity":          0x7FF0000000000000, # positive infinity
+              "neginfinity":          0xFFF0000000000000, # negative infinity
+              "pos0p5":               0x3FE0000000000000, # 0.5
+              "pos1p5":               0x3FF8000000000000, # 1.5
+              "neg2":                 0xC000000000000000, # 2.0
+              "pi":                   0X400921FB54442D18, # pi
+              "twoToEmax":            0x7FE0000000000000, # 2^emax
+              "onePulp":              0x3FF0000000000001, # 1 + ulp
+              "largestsubnorm":       0x000FFFFFFFFFFFFF, # largest positive subnorm
+              "negSubnormLeadingOne": 0x0008000000000000, # positive subnorm with leading 1
+              "min_subnorm":          0x0000000000000001, # smallest positive subnorm
+              "canonicalQNaN":        0x7FF8000000000000, # canonical quiet NaN
+              "negNoncanonicalQNaN":  0xFFFFFFFFFFFFFFFF, # noncanonical quiet NaN
+              "sNaN_payload1":        0x7FF0000000000001} # signaling NaN with lsb set
 
-fcornersH  = {"pos0":              0x0000, # 0
-              "neg0":              0x8000, # -0
-              "pos1":              0x3C00, # 1.0
-              "neg1":              0xBC00, # -1.0
-              "posminnorm":        0x0400, # smallest positive normalized
-              "negminnorm":        0x8400, # smallest negative normalized
-              "posmaxnorm":        0x7BFF, # most positive
-              "negmaxnorm":        0xFBFF, # most negative
-              "posinfinity":       0x7C00, # positive infinity
-              "neginfinity":       0xFC00, # negative infinity
-              "pos0p5":            0x3800, # 0.5
-              "pos1p5":            0x3E00, # 1.5
-              "pos2":              0x4000, # 2.0
-              "pos4":              0x4400, # 4.0
-              "pi":                0x4248, # pi
-              "twoToEmax":         0x7800, # 2^emax
-              "onePulp":           0x3C01, # 1 + ulp
-              "largestsubnorm":    0x03FF, # largest positive subnorm
-              "subnormleadingone": 0x0200, # positive subnorm with leading 1
-              "canonicalQNaN":     0x7E00, # canonical quiet NaN
-              "noncanonicalQNaN":  0x7FFF, # noncanonical quiet NaN
-              "sNaN_payload1":     0x7D01} # signaling NaN with lsb set
+fcornersH  = {"pos0":                 0x0000, # 0
+              "neg0":                 0x8000, # -0
+              "pos1":                 0x3C00, # 1.0
+              "neg1":                 0xBC00, # -1.0
+              "posminnorm":           0x0400, # smallest positive normalized
+              "negmaxnorm":           0xFBFF, # most negative
+              "posinfinity":          0x7C00, # positive infinity
+              "neginfinity":          0xFC00, # negative infinity
+              "pos0p5":               0x3800, # 0.5
+              "pos1p5":               0x3E00, # 1.5
+              "neg2":                 0xC000, # 2.0
+              "pi":                   0x4248, # pi
+              "twoToEmax":            0x7800, # 2^emax
+              "onePulp":              0x3C01, # 1 + ulp
+              "largestsubnorm":       0x03FF, # largest positive subnorm
+              "negSubnormLeadingOne": 0x0200, # positive subnorm with leading 1
+              "min_subnorm":          0x0001, # smallest positive subnorm
+              "canonicalQNaN":        0x7E00, # canonical quiet NaN
+              "negNoncanonicalQNaN":  0xFFFF, # noncanonical quiet NaN
+              "sNaN_payload1":        0x7D01} # signaling NaN with lsb set
 
 # fcornersQ = [] # TODO: Fill out quad precision F corners
 
@@ -147,10 +141,10 @@ vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
 vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
 v_corners_ls   = ["vs_corner_zero_emul8", "vs_corner_random_within_2vlmax"]
 
-vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negminnorm",
-                   "vs_corner_f_posmaxnorm", "vs_corner_f_negmaxnorm", "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5",
-                   "vs_corner_f_pos1p5", "vs_corner_f_pos2", "vs_corner_f_pos4", "vs_corner_f_pi", "vs_corner_f_twoToEmax", "vs_corner_f_onePulp",
-                   "vs_corner_f_largestsubnorm", "vs_corner_f_subnormleadingone", "vs_corner_f_canonicalQNaN", "vs_corner_f_noncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
+vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negmaxnorm",
+                   "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5", "vs_corner_f_pos1p5", "vs_corner_f_neg2", "vs_corner_f_pi",
+                   "vs_corner_f_twoToEmax", "vs_corner_f_onePulp", "vs_corner_f_largestsubnorm", "vs_corner_f_negSubnormLeadingOne", "vs_corner_f_min_subnorm",
+                   "vs_corner_f_canonicalQNaN", "vs_corner_f_negNoncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
 vfcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorfpcorners]
 vfcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorfpcorners]
 
