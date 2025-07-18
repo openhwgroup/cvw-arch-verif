@@ -120,7 +120,7 @@ main:
     // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 00
     auipc   t0, 0
     addi    t0, t0, 8       # 8 mod 4 = 0, so lower two bits become 00
-    jalr    t1, t0, 4       #offset 8 mod = 0, so lower two bits become 00
+    jalr    t1, t0, 4       #offset 4 mod = 0, so lower two bits become 00
     .word   0x00010013
 
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 01
