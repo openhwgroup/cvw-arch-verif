@@ -1,6 +1,3 @@
-"vlen, elen defined outside",,,,,,,,,,,,0 and randomize within a range (2*vlmax elements on each side of base address),,,,,"1,2,0,-2,-1",,,,
-,,,,Which suit belongs to,,,,instr executed at least once,,,,,,,,,,,check all lmul supported for the current EEW,,
-,,,,,,,,,,,,,,,,,,,,,
 Instruction,Type,RV32,RV64,EFFEW8,EFFEW16,EFFEW32,EFFEW64,cp_asm_count,cp_vd,cp_vs3,cp_vs2,cp_vs2_corners,cmp_vd_vs2,cmp_vs3_vs2,cp_rs1,cp_rs2,cp_rs2_corners,cp_masking_corners,cr_vl_lmul,cr_vtype_agnostic,cp_vl_0
 vle8.v,VXM,x,x,x,x,x,x,x,x,,,,,,nx0,,,x,e8,e8,x
 vle16.v,VXM,x,x,x,x,x,x,x,x,,,,,,nx0,,,x,e16,e16,x
