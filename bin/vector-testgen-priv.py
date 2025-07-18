@@ -17,7 +17,28 @@ import os
 from random import randint, seed
 
 import vector_testgen_common as common
-from vector_testgen_common import *
+from vector_testgen_common import (
+    ARCH_VERIF,
+    flen,
+    genVMaskCorners,
+    getBaseSuiteTestCount,
+    getInstructionArguments,
+    getLengthLmul,
+    getLengthSuiteTestCount,
+    getSigSpace,
+    insertTemplate,
+    loadScalarReg,
+    maxVLEN,
+    myhash,
+    prepVstart,
+    randomizeMask,
+    randomizeVectorInstructionData,
+    readTestplans,
+    setExtension,
+    setXlen,
+    whole_register_move,
+    writeVecTest,
+)
 
 
 def writeLine(argument: str, comment = ""):

@@ -19,7 +19,74 @@ import re
 from random import randint, seed
 
 import vector_testgen_common as common
-from vector_testgen_common import *
+from vector_testgen_common import (
+  ARCH_VERIF,
+  fcorners,
+  fcornersD,
+  fcornersH,
+  flen,
+  freg_count,
+  genRandomVector,
+  genRandomVectorLS,
+  genVMaskCorners,
+  genVsCorners,
+  genVsCornersFP,
+  getBaseLmul,
+  getBaseSuiteTestCount,
+  getInstructionEEW,
+  getLegalVlmul,
+  getLengthLmul,
+  getLengthSuiteTestCount,
+  getSigSpace,
+  imm_31,
+  incrementBasetestCount,
+  incrementLengthtestCount,
+  indexed_loads,
+  indexed_stores,
+  insertTemplate,
+  maxELEN,
+  minSEW_MIN,
+  mmins,
+  myhash,
+  narrowins,
+  newInstruction,
+  randomizeMask,
+  randomizeOngroupVectorRegister,
+  randomizeVectorInstructionData,
+  readTestplans,
+  setExtension,
+  setFlen,
+  setXlen,
+  v_corners_ls,
+  vcornerseew1,
+  vcornersemul1,
+  vcornersemul2,
+  vcornersemul4,
+  vcornersemul8,
+  vcornersemulf2,
+  vcornersemulf4,
+  vcornersemulf8,
+  vd_widen_ins,
+  vector_loads,
+  vector_ls_ins,
+  vector_stores,
+  vextins,
+  vfcornersemul1,
+  vfcornersemul2,
+  vfloattypes,
+  vmlogicalins,
+  vreg_count,
+  vs1ins,
+  vs2_widen_ins,
+  vsAddressCount,
+  vxrmList,
+  writeTest,
+  wvsins,
+  wwvins,
+  xreg_count,
+  xvmtype,
+  xvtype,
+)
 
 unsupported_tests = [ # conflicting signatures between sail and spike, open PRs listed bellow
   "vnclip.wi",      # Sail issue 1071
@@ -990,7 +1057,7 @@ def getExtensions():
   for (dirpath, dirnames, filenames) in os.walk(path):
     for filename in filenames:
       m = re.search("(.*)_coverage.svh", filename)
-      if (m != None):
+      if (m is not None):
         ext = m.group(1)
         if 'V' in ext or 'v' in ext:
           extensions.append(ext)

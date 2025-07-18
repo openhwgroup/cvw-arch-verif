@@ -28,4 +28,5 @@ ignore = [
   "B007",           # loop control variable not used
   "B9",             # overly opinionated rules
   "RUF005",         # iterable unpacking in list
+  "E701",           # multiple statements on one line
 ]

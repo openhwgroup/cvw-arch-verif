@@ -901,7 +901,6 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
       else:
         num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
-        load_aligned = False
         writeLine(f"{vs}_random_{suite}_{t:03d}:")
         for i in range(num_words):
             randomElem = getrandbits(32)
@@ -1518,7 +1517,7 @@ def getInstructionArguments(instruction):
   elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
   elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
   else:
-    print("Error: %s type not implemented yet" % instruction)
+    print(f"Error: {instruction} type not implemented yet")
 
   return instruction_arguments
 
@@ -1564,7 +1563,7 @@ def writeTest(description, instruction, instruction_data,
     # If mask value specified, load to v0
     if maskval is not None:
       prepMaskV(maskval, sew, tempReg, lmul)
-    elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype, vvfvtype]):
+    elif any(instruction in instype for instype in [vvivtype, vvvvtype, vvxvtype, vvfvtype]):
       writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
@@ -1725,7 +1724,7 @@ def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
     writeLine(f"li x{tempReg2}, {vl}",                                            "# Load desired vl value") # put desired vl into an integer register
     writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
 
-  if (vstart == True):   # if vstart specified
+  if (vstart):   # if vstart specified
     writeLine(f"li x{tempReg2}, {vstart}",                                        "# Load desired vstart value")
     writeLine(f"csrw vstart, x{tempReg2}")
 
@@ -2159,7 +2158,7 @@ def readTestplans(priv=False):
                         cps = []
                         del row["Instruction"]
                         for key, value in row.items():
-                            if (type(value) == str and value != ''):
+                            if (type(value) is str and value != ''):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
