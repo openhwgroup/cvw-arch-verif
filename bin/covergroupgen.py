@@ -8,11 +8,11 @@
 # Generate functional covergroups for RISC-V instructions
 ##################################
 
-import os
 import csv
+import math
+import os
 import re
 import sys
-import math
 
 ##################################
 # Functions
@@ -48,7 +48,7 @@ def readTestplans():
                         del row["Instruction"]
                         for key, value in row.items():
     #                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
-                            if (type(value) == str and value != ''):
+                            if (type(value) is str and value != ''):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
@@ -94,7 +94,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
-        if (not (name in missingTemplates)):
+        if (name not in missingTemplates):
             print(f"No template found for '{name}'.  Check if there are spaces before or after coverpoint name.")
             missingTemplates.append(name)
         return ""
@@ -114,14 +114,14 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
 def anyExclusion(rv, instrs, tp):
     for instr in instrs:
         cps = tp[instr]
-        if (not(rv in cps)):
+        if (rv not in cps):
             return True
     return False
 
 def anyEFFEWExclusion(effew, instrs, tp):
     for instr in instrs:
         cps = tp[instr]
-        if (not(effew in cps)):
+        if (effew not in cps):
             return True
     return False
 
@@ -195,7 +195,7 @@ def getEffew(arch):
     if match:
         effew = match.group(1)
     else:
-        raise ValueError(f"Arch does not contain an expected integer: '"+ arch+ "'")
+        raise ValueError(f"Arch does not contain an expected integer: '{arch}'")
 
     return effew
 

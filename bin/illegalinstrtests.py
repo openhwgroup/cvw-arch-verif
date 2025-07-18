@@ -9,21 +9,22 @@
 # Some fields are deterministic, others are swept over a range, and the rest are randomized
 ##################################
 
-import random
-from random import randint
-from random import seed
-import os, sys
-from os import environ
+import os
+import sys
+from random import randint, seed
 
-def gen(comment, template, len = 32, exclusion = []):
+
+def gen(comment, template, length = 32, exclusion = None):
+    if exclusion is None:
+        exclusion = []
     ebits = template.count('E')
     print("\n// "+comment + " with 2^"+str(ebits)+" exhaustive bits\n// Template: "+template)
     # Find out how many exhaustive bits are needed
-    instr = ['0']*len
+    instr = ['0']*length
     for j in range(0, 2**ebits):
         # Create string with exhaustive, random, and fixed bits
         e = ebits-1
-        for i in range(len):
+        for i in range(length):
 #            print("i = "+str(i)+", template[i] = "+template[i])
             if (template[i] == 'R'):
                 instr[i] = str(randint(0, 1))
@@ -40,16 +41,16 @@ def gen(comment, template, len = 32, exclusion = []):
         anymatch = 0
         for exclude in exclusion:
             match = 1
-            for i in range(len):
+            for i in range(length):
                 if (exclude[i] != 'X' and exclude[i] != instrstr[i]):
                     match = 0
             anymatch = anymatch or match
-        if (len == 32):
+        if (length == 32):
             keyword = "word"
-        elif (len == 16):
+        elif (length == 16):
             keyword = "hword"
         else:
-            keyword = "len should be 16 or 32"
+            keyword = "length should be 16 or 32"
         if not anymatch: # print the instruction if it isn't on exclusion list
             print("     ."+keyword+" 0b"+instrstr)
         else:
@@ -124,7 +125,7 @@ gen("cp_reserved_fma",  "RRRRRRRRRRRRRRRRREEERRRRR100EE11") # various reserved_r
 gen("cp_reserved_fence_fm_tso", "EEEE00000000RRRRR000RRRRR0001111") # reserved fm and ts0 for fence instruction
 gen("cp_reserved_fence_rs1",    "00001111111100001000RRRRE0001111") # reserved rs1 for fence instruction
 gen("cp_reserved_fence_rd",     "000011111111RRRRE000000010001111") # reserved rd for fence instruction
-outfile.close
+outfile.close()
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstrCompressed-Tests.h"
 outfile = open(pathname, 'w')
@@ -166,4 +167,4 @@ print("\t.hword 0b1010000000000010 # test one c.fsdsp")
 
 print("\t.hword 0b1000000000000010 # almost a c.jr but rs1 = 0 so should be illegal")
 print("#\t.hword 0b1001000000000010 # almost a c.jalr but rs1 = 0 so this is an ebreak instead, which is tested elsewhere")
-outfile.close
+outfile.close()
