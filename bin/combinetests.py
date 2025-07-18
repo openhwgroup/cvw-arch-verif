@@ -8,16 +8,16 @@
 # Combine all of the tests for an extension into an ALL file to run without starting Questa so many times
 ##################################
 
+import filecmp
 import os
 import re
 import sys
-import filecmp
 
 MAXFILESIZE = 5000000
 
 def insertTemplate(out, template):
-	with open(templatedir+"/testgen/"+template) as f:
-		out.write(f.read())
+    with open(templatedir+"/testgen/"+template) as f:
+        out.write(f.read())
 
 def insertTests(out, file):
     out.write("\n\n// ******************\n")
@@ -61,7 +61,11 @@ def combineDir(testdir):
             if (not fileopen):
                 fname = f"{testdir}/WALLY-COV-ALL-{batch}.S"
                 tempfname = f"{testdir}/WALLY-COV-ALL-{batch}_temp.S"
-                out = open(tempfname, "w") or die(f"Cannot write file {tempfname}")
+                try:
+                    out = open(tempfname, "w")
+                except OSError:
+                    print(f"Error: Cannot write file {tempfname}")
+                    sys.exit(1)
                 insertTemplate(out, "testgen_header.S")
                 fileopen = True
                 #print(f" opened {tempfname}")

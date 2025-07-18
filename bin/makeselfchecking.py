@@ -8,10 +8,11 @@
 # Modify signature-based tests to be self-checking by inserting expected results
 ##################################
 
+import filecmp
 import os
 import re
 import sys
-import filecmp
+
 
 def insertTemplate(out, template):
     with open(templatedir+"/"+template) as f:
@@ -19,7 +20,8 @@ def insertTemplate(out, template):
 
 def nonconflictingReg(reg):
     tempreg = int(reg) + 1
-    if (tempreg > 15): tempreg = 8
+    if (tempreg > 15):
+        tempreg = 8
     return tempreg
 
 # If this is a signature line, replace it with a self-checking line
@@ -70,6 +72,7 @@ def makeSelfchecking(sig, source, dest, rv64):
                     if (line.startswith("begin_signature:")):  # write the signature
                         print("Found begin_signature")
                         secondhalf = False
+                        firstsig = ""
                         for line in sigfile:
                             if (rv64): # print 64-bit signatures by combining two 32-bits signature liens
                                 if (secondhalf):
