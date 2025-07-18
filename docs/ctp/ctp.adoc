@@ -205,7 +205,7 @@ Coverage files with multiple extensions in the name apply when all the extension
 |ZicsrM||x|x|x
 |ZicsrS|||x|x
 |ZicsrU||x|x|x
-|ZicsrF|x||x|x
+|ZicsrF|o||x|x
 |ZicsrUF|||x|x
 |ZicsrUV|||o|x
 |ExceptionsM||x|x|x
@@ -1663,12 +1663,12 @@ Running long vectors is computationally expensive, so only a subset of vectors t
 |cmp_vd_vs1_vs2|32|vd and vs1 and vs2 are same register ID
 |cp_rs1_corners|9|0, 1, 2, -1, -2, most negative, most negative+1, most positive, most positive-1
 |cp_rs2_corners|5|0, 1, 2, -1, -2 (for strided vector load/store)
-|cp_fs1_corners_v|22|±0, ±1, ±smallest normal, ±largest normal, ±inf, 0.5, 1.5, 2, 4, pi, 2^emax, 1+ulp, largest subnormal, subnormal with leading 1 in fraction, canonical quite NaN, noncanonical quiet NaN, signaling NaN with payload of 1
-|cp_vs2_corners|9 or 22|see cp_rs1_corners or cp_fs1_corners_v
-|cp_vs1_corners|9 or 22|see cp_rs1_corners
-|cr_vs2_vs1_corners|9^2 or 22^2|Cross-product of corners of vs2 and vs1
+|cp_fs1_corners_v|20|±0, ±1, smallest normal, -largest normal, ±inf, 0.5, 1.5, -2, pi, 2^emax, 1+ulp, largest subnormal, subnormal with leading 1 in fraction, canonical quite NaN, -noncanonical quiet NaN, signaling NaN with payload of 1
+|cp_vs2_corners|9 or 20|see cp_rs1_corners or cp_fs1_corners_v
+|cp_vs1_corners|9 or 20|see cp_rs1_corners
+|cr_vs2_vs1_corners|9^2 or 20^2|Cross-product of corners of vs2 and vs1
 |cr_vs2_rs1_corners|9*9|Cross-product of corners of vs2 and rs1
-|cr_vs2_fs1_corners|22*22|Cross-product of corners of vs2 and fs1
+|cr_vs2_fs1_corners|20*20|Cross-product of corners of vs2 and fs1
 |cr_vs2_imm_corners|9*9|Cross-product of corners of vs2 and imm={0, 1, 2, 14, 15, -1, -2, -15,-16}
 |cr_vxrm_vs2_vs1_corners|9*9*4|Cross-product of corners of vs2 and vs1 with vector rounding mode={rod, rdn, rne, rnu}
 |cr_vxrm_vs2_rs1_corners|9*9*4|See cr_vxrm_vs2_vs1_corners

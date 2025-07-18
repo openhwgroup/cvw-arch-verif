@@ -8,11 +8,11 @@
 # Generate functional covergroups for RISC-V instructions
 ##################################
 
-import os
 import csv
+import math
+import os
 import re
 import sys
-import math
 
 ##################################
 # Functions
@@ -48,7 +48,7 @@ def readTestplans():
                         del row["Instruction"]
                         for key, value in row.items():
     #                        print(f"Instr = {instr} key = {key}, value = {value} file = {file}")
-                            if (type(value) == str and value != ''):
+                            if (type(value) is str and value != ''):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
@@ -73,6 +73,12 @@ def readTestplans():
                         archSources["Vls" + effew] = source
                     del testplans["Vls"]
                     del archSources["Vls"]
+                if (arch == "Vf"):
+                    for effew in ["16", "32", "64"]: # SEW of 8 is not supported for vector floating point
+                        testplans["Vf" + effew] = tp
+                        archSources["Vf" + effew] = source
+                    del testplans["Vf"]
+                    del archSources["Vf"]
     return testplans, archSources
 
 # readCovergroupTemplates reads the covergroup templates from the templates directory
@@ -94,7 +100,7 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
     if (name in covergroupTemplates):
         template = covergroupTemplates[name]
     else:
-        if (not (name in missingTemplates)):
+        if (name not in missingTemplates):
             print(f"No template found for '{name}'.  Check if there are spaces before or after coverpoint name.")
             missingTemplates.append(name)
         return ""
@@ -114,18 +120,18 @@ def customizeTemplate(covergroupTemplates, name, arch, instr, effew=""):
 def anyExclusion(rv, instrs, tp):
     for instr in instrs:
         cps = tp[instr]
-        if (not(rv in cps)):
+        if (rv not in cps):
             return True
     return False
 
 def anyEFFEWExclusion(effew, instrs, tp):
     for instr in instrs:
         cps = tp[instr]
-        if (not(effew in cps)):
+        if (effew not in cps):
             return True
     return False
 
-sew_dependent_cps = ["cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
+sew_dependent_cps = ["cp_vs2_corners_f", "cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
                      "cp_custom_vindex", "cr_vs2_vs1_corners_f", "cp_fs1_corners_v", "cr_vs2_fs1_corners", "cr_vl_lmul"]
 
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
@@ -135,7 +141,7 @@ def writeInstrs(f, finit, k, covergroupTemplates, tp, arch, hasRV32, hasRV64):
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
-        vectorwiden = (arch.startswith("Vx") or arch.startswith("Vls")) and (instr.startswith("vw") or (".w" in instr))
+        vectorwiden = (arch.startswith("Vx") or arch.startswith("Vls") or arch.startswith("Vf")) and (instr.startswith("vw") or instr.startswith("vfw") or (".w" in instr))
         if (match32 and match64):
             if (vectorwiden):
                 effew = getEffew(arch)
@@ -171,8 +177,8 @@ def writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, hasRV32,
         match32 = ("RV32" in cps) ^ (not hasRV32)
         match64 = ("RV64" in cps) ^ (not hasRV64)
         if (match32 and match64):
-            if arch.startswith("Vx") or arch.startswith("Vls"):
-                if instr.startswith("vw") or (".w" in instr):
+            if arch.startswith("Vx") or arch.startswith("Vls") or arch.startswith("Vf"):
+                if instr.startswith("vw") or instr.startswith("vfw") or (".w" in instr):
                     effew = getEffew(arch)
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_vector_widen", arch, instr, effew=effew))
                 else:
@@ -195,7 +201,7 @@ def getEffew(arch):
     if match:
         effew = match.group(1)
     else:
-        raise ValueError(f"Arch does not contain an expected integer: '"+ arch+ "'")
+        raise ValueError(f"Arch does not contain an expected integer: '{arch}'")
 
     return effew
 
@@ -215,10 +221,12 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
             initfile = arch + "_coverage_init.svh"
             print("***** Writing " + file)
 
+            vector = arch.startswith("Vx") or arch.startswith("Zv") or arch.startswith("Vls") or arch.startswith("Vf")
+
             with open(os.path.join(covergroupOutDir,file), "w") as f:
                 finit = open(os.path.join(covergroupOutDir,initfile), "w")
                 #print(covergroupTemplates)
-                if arch.startswith("Vx") or arch.startswith("Vls"):
+                if (vector):
                     effew = getEffew(arch)
                     f.write(customizeTemplate(covergroupTemplates,"header_vector", arch, "", effew=effew))
                 else:
@@ -227,7 +235,7 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
 
                 k = list(tp.keys())
                 k.sort()
-                if arch.startswith("Vx") or arch.startswith("Vls"):
+                if (vector):
                     k = [instr for instr in k if f"EFFEW{effew}" in tp[instr]]
 
                 writeInstrs(f, finit, k, covergroupTemplates, tp, arch, True, True)
@@ -245,7 +253,7 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
                     finit.write(customizeTemplate(covergroupTemplates, "end", arch, "NA2"))
 
                 # Covergroup sample functions: also separate out generic and ones specific to RV32/RV64 with `ifdefs`
-                if arch.startswith("Vx") or arch.startswith("Zv") or arch.startswith("Vls"):
+                if (vector):
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header_vector", arch, "NA3", effew=effew))
                 else:
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_header", arch, "NA3"))
@@ -258,7 +266,7 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
                     f.write(customizeTemplate(covergroupTemplates, "RV64", arch, "NA5"))
                     writeCovergroupSampleFunctions(f, k, covergroupTemplates, tp, arch, False, True)
                     f.write(customizeTemplate(covergroupTemplates, "end", arch, "NA5"))
-                if arch.startswith("Vx") or arch.startswith("Zv") or arch.startswith("Vls"):
+                if (vector):
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end_vector", arch, "NA3"))
                 else:
                     f.write(customizeTemplate(covergroupTemplates, "covergroup_sample_end", arch, "NA3"))

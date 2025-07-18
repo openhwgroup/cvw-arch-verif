@@ -10,14 +10,12 @@
 ##################################
 # libraries
 ##################################
-import os
-import sys
 import csv
-import re
 import math
-import filecmp
-from datetime import datetime
-from random import randint, seed, getrandbits
+import os
+import re
+import sys
+from random import getrandbits, randint
 
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -64,92 +62,68 @@ mtrap_sig_count         = 64 # signature space for priviliged, default to 64
 # Corners
 ##################################
 
-fcorners                =            [0x00000000, # 0
-                            0x80000000, # -0
-                            0x3f800000, # 1.0
-                            0xbf800000, # -1.0
-                            0x3fc00000, # 1.5
-                            0xbfc00000, # -1.5
-                            0x40000000,  # 2.0
-                            0xc0000000,  # -2.0
-                            0x00800000,  # smallest positive normalized
-                            0x80800000,  # smallest negative normalized
-                            0x7f7fffff,  # most positive
-                            0xff7fffff,  # most negative
-                            0x007fffff,  # largest positive subnorm
-                            0x807fffff,  # largest negative subnorm
-                            0x00400000,  # positive subnorm with leading 1
-                            0x80400000,  # negative subnorm with leading 1
-                            0x00000001,  # smallest positive subnorm
-                            0x80000001,  # smallest negative subnorm
-                            0x7f800000,  # positive infinity
-                            0xff800000,  # negative infinity
-                            0x7fc00000,  # canonical quiet NaN
-                            0x7fffffff,  # noncanonical quiet NaN
-                            0xffffffff,  # noncanonical quiet NaN with sign bit set
-                            0x7f800001,  # signaling NaN with lsb set
-                            0x7fbfffff,  # signaling NaN with all mantissa bits set
-                            0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
-                            0x7ef8654f,  # random positive 1.65087e+38
-                            0x813d9ab0]  # random negative -3.48248e-38
+fcorners = {"pos0":                 0x00000000, # 0
+            "neg0":                 0x80000000, # -0
+            "pos1":                 0x3f800000, # 1.0
+            "neg1":                 0xbf800000, # -1.0
+            "posminnorm":           0x00800000, # smallest positive normalized
+            "negmaxnorm":           0xff7fffff, # most negative
+            "posinfinity":          0x7f800000, # positive infinity
+            "neginfinity":          0xff800000, # negative infinity
+            "pos0p5":               0x3f000000, # 0.5
+            "pos1p5":               0x3fc00000, # 1.5
+            "neg2":                 0xC0000000, # 2.0
+            "pi":                   0x40490FDB, # pi
+            "twoToEmax":            0x7f000000, # 2^emax
+            "onePulp":              0x3f800001, # 1 + ulp
+            "largestsubnorm":       0x007fffff, # largest positive subnorm
+            "negSubnormLeadingOne": 0x00400000, # positive subnorm with leading 1
+            "min_subnorm":          0x00000001, # smallest positive subnorm
+            "canonicalQNaN":        0x7fc00000, # canonical quiet NaN
+            "negNoncanonicalQNaN":  0xffffffff, # noncanonical quiet NaN
+            "sNaN_payload1":        0x7f800001} # signaling NaN with lsb set
 
-fcornersD               = [0x0000000000000000, # 0.0
-            0x8000000000000000,  # -0.0
-            0x3FF0000000000000,  # 1.0
-            0xBFF0000000000000,  # -1.0
-            0x3FF8000000000000,  # 1.5
-            0xBFF8000000000000,  #-1.5
-            0x4000000000000000,  # 2.0
-            0xc000000000000000,  # -2.0
-            0x0010000000000000,  # smallest positive normalized
-            0x8010000000000000,  # smallest negative normalized
-            0x7FEFFFFFFFFFFFFF,  # most positive normalized
-            0xFFEFFFFFFFFFFFFF,  # most negative normalized
-            0x000FFFFFFFFFFFFF,  # largest positive subnorm
-            0x800FFFFFFFFFFFFF,  # largest negative subnorm
-            0x0008000000000000,  # mid positive subnorm
-            0x8008000000000000,  # mid negative subnorm
-            0x0000000000000001,  # smallest positive subnorm
-            0x8000000000000001,  # smallest negative subnorm
-            0x7FF0000000000000,  # positive infinity
-            0xFFF0000000000000,  # negative infinity
-            0x7FF8000000000000,  # canonical quiet NaN
-            0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
-            0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
-            0x7FF0000000000001,  # signaling NaN with lsb set
-            0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
-            0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
-            0x5A392534A57711AD, # 4.25535e126 random positive
-            0xA6E895993737426C] # -2.97516e-121 random negative
+fcornersD  = {"pos0":                 0x0000000000000000, # 0
+              "neg0":                 0x8000000000000000, # -0
+              "pos1":                 0x3FF0000000000000, # 1.0
+              "neg1":                 0xBFF0000000000000, # -1.0
+              "posminnorm":           0x0010000000000000, # smallest positive normalized
+              "negmaxnorm":           0xFFEFFFFFFFFFFFFF, # most negative
+              "posinfinity":          0x7FF0000000000000, # positive infinity
+              "neginfinity":          0xFFF0000000000000, # negative infinity
+              "pos0p5":               0x3FE0000000000000, # 0.5
+              "pos1p5":               0x3FF8000000000000, # 1.5
+              "neg2":                 0xC000000000000000, # 2.0
+              "pi":                   0X400921FB54442D18, # pi
+              "twoToEmax":            0x7FE0000000000000, # 2^emax
+              "onePulp":              0x3FF0000000000001, # 1 + ulp
+              "largestsubnorm":       0x000FFFFFFFFFFFFF, # largest positive subnorm
+              "negSubnormLeadingOne": 0x0008000000000000, # positive subnorm with leading 1
+              "min_subnorm":          0x0000000000000001, # smallest positive subnorm
+              "canonicalQNaN":        0x7FF8000000000000, # canonical quiet NaN
+              "negNoncanonicalQNaN":  0xFFFFFFFFFFFFFFFF, # noncanonical quiet NaN
+              "sNaN_payload1":        0x7FF0000000000001} # signaling NaN with lsb set
 
-fcornersH               = [0x0000, # 0.0
-            0x8000, # -0.0
-            0x3C00, # 1.0
-            0xBC00, # -1.0
-            0x3E00, # 1.5
-            0xBE00, # -1.5
-            0x4000, # 2.0
-            0xC000, # -2.0
-            0x0400, # smallest normalized
-            0x8400, # smallest negative normalized
-            0x7BFF, # most positive normalized
-            0xFBFF, #  most negative normalized
-            0x03FF, # largest positive subnorm
-            0x83FF,  # largest negative subnorm
-            0x0200,  # positive subnorm with leading 1
-            0x8200,  # negative subnorm with leading 1
-            0x0001, # smallest positive subnorm
-            0x8001,  # smallest negative subnorm
-            0x7C00,  # positive infinity
-            0xFC00,  # negative infinity
-            0x7E00,  # canonical quiet NaN
-            0x7FFF,  # noncanonical quiet NaN
-            0xFE00,  # noncanonical quiet NaN with sign bit set
-            0x7C01, # signaling NaN with lsb set
-            0x7DFF,  # signaling NaN with all mantissa bits set
-            0xFC01,  # signaling NaN with lsb and sign bits set
-            0x58B4,  # 150.5 random positive
-            0xC93A]  # -10.4531 random negative
+fcornersH  = {"pos0":                 0x0000, # 0
+              "neg0":                 0x8000, # -0
+              "pos1":                 0x3C00, # 1.0
+              "neg1":                 0xBC00, # -1.0
+              "posminnorm":           0x0400, # smallest positive normalized
+              "negmaxnorm":           0xFBFF, # most negative
+              "posinfinity":          0x7C00, # positive infinity
+              "neginfinity":          0xFC00, # negative infinity
+              "pos0p5":               0x3800, # 0.5
+              "pos1p5":               0x3E00, # 1.5
+              "neg2":                 0xC000, # 2.0
+              "pi":                   0x4248, # pi
+              "twoToEmax":            0x7800, # 2^emax
+              "onePulp":              0x3C01, # 1 + ulp
+              "largestsubnorm":       0x03FF, # largest positive subnorm
+              "negSubnormLeadingOne": 0x8200, # positive subnorm with leading 1
+              "min_subnorm":          0x0001, # smallest positive subnorm
+              "canonicalQNaN":        0x7E00, # canonical quiet NaN
+              "negNoncanonicalQNaN":  0xFFFF, # noncanonical quiet NaN
+              "sNaN_payload1":        0x7D01} # signaling NaN with lsb set
 
 # fcornersQ = [] # TODO: Fill out quad precision F corners
 
@@ -164,6 +138,13 @@ vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
 vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
 vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
 v_corners_ls   = ["vs_corner_zero_emul8", "vs_corner_random_within_2vlmax"]
+
+vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negmaxnorm",
+                   "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5", "vs_corner_f_pos1p5", "vs_corner_f_neg2", "vs_corner_f_pi",
+                   "vs_corner_f_twoToEmax", "vs_corner_f_onePulp", "vs_corner_f_largestsubnorm", "vs_corner_f_negSubnormLeadingOne", "vs_corner_f_min_subnorm",
+                   "vs_corner_f_canonicalQNaN", "vs_corner_f_negNoncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
+vfcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorfpcorners]
+vfcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorfpcorners]
 
 ##################################
 # Functions to be implemented by importer
@@ -241,13 +222,7 @@ vxrmList = {"rod": "0x6",
 # Types
 ##################################
 
-vvvmtype  = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vwadd.wv", "vwsub.wv", "vwaddu.wv", "vwsubu.wv",
-             "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vnsra.wv", "vnsrl.wv",
-             "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv",
-             "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv",
-             "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv", "vnclip.wv", "vnclipu.wv",
-             "vredsum.vs", "vwredsum.vs", "vwredsumu.vs", "vredmax.vs", "vredmaxu.vs", "vredmin.vs", "vredminu.vs", "vredand.vs", "vredor.vs", "vredxor.vs",
-             "vrgather.vv", "vrgatherei16.vv"]
+##################################   vector load/store instruction   ##################################
 
 type_vxm = [
     # Unit-stride loads
@@ -365,6 +340,40 @@ type_vsx = [
     "vsm.v"
 ]
 
+################################## vector floating point instruction ##################################
+
+vvvm_f_type  = ["vfadd.vv", "vfwadd.vv", "vfwadd.wv", "vfsub.vv", "vfwsub.vv", "vfwsub.wv",
+                "vfmul.vv", "vfwmul.vv", "vfdiv.vv",
+                "vfmin.vv", "vfmax.vv", "vfsgnj.vv", "vfsgnjn.vv", "vfsgnjx.vv",
+                "vfredosum.vs", "vfwredosum.vs", "vfredusum.vs", "vfwredusum.vs", "vfredmax.vs", "vfredmin.vs",
+                "vmfeq.vv", "vmfne.vv", "vmflt.vv", "vmfle.vv"]
+vvfmtype     = ["vfadd.vf", "vfwadd.vf", "vfwadd.wf", "vfsub.vf", "vfwsub.vf", "vfwsub.wf", "vfrsub.vf",
+                "vfmul.vf", "vfwmul.vf", "vfdiv.vf", "vfrdiv.vf",
+                "vfmin.vf", "vfmax.vf", "vfsgnj.vf", "vfsgnjn.vf", "vfsgnjx.vf",
+                "vmfeq.vf", "vmfne.vf", "vmflt.vf", "vmfle.vf", "vmfgt.vf", "vmfge.vf",
+                "vfslide1up.vf", "vfslide1down.vf"]
+vvfvtype     = ["vfmerge.vfm"]
+vvvmr_f_type = ["vfmacc.vv", "vfnmacc.vv", "vfmsac.vv", "vfnmsac.vv", "vfmadd.vv", "vfnmadd.vv", "vfmsub.vv", "vfnmsub.vv", "vfwmacc.vv", "vfwnmacc.vv", "vfwmsac.vv", "vfwnmsac.vv"]
+vfvmtype     = ["vfmacc.vf", "vfnmacc.vf", "vfmsac.vf", "vfnmsac.vf", "vfmadd.vf", "vfnmadd.vf", "vfmsub.vf", "vfnmsub.vf", "vfwmacc.vf", "vfwnmacc.vf", "vfwmsac.vf", "vfwnmsac.vf"]
+vvm_f_type   = ["vfsqrt.v", "vfrsqrt7.v", "vfrec7.v",
+                "vfcvt.xu.f.v", "vfwcvt.xu.f.v", "vfncvt.xu.f.w", "vfcvt.x.f.v", "vfwcvt.x.f.v", "vfncvt.x.f.w", "vfcvt.rtz.xu.f.v", "vfwcvt.rtz.xu.f.v", "vfncvt.rtz.xu.f.w",
+                "vfcvt.rtz.x.f.v", "vfwcvt.rtz.x.f.v", "vfncvt.rtz.x.f.w", "vfcvt.f.xu.v", "vfwcvt.f.xu.v", "vfncvt.f.xu.w", "vfcvt.f.x.v", "vfwcvt.f.x.v", "vfncvt.f.x.w",
+                "vfwcvt.f.f.v", "vfncvt.f.f.w", "vfncvt.rod.f.f.w", "vfclass.v"]
+vftype       = ["vfmv.v.f", "vfmv.s.f"]
+fvtype       = ["vfmv.f.s"]
+
+vfloattypes = vvvm_f_type + vvfmtype + vvvmr_f_type + vfvmtype + vvm_f_type + vftype + fvtype + vvfvtype
+
+##################################    vector integer instruction     ##################################
+
+vvvmtype  = ["vadd.vv", "vwadd.vv", "vwaddu.vv", "vsub.vv", "vwsub.vv", "vwsubu.vv", "vwadd.wv", "vwsub.wv", "vwaddu.wv", "vwsubu.wv",
+             "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vnsra.wv", "vnsrl.wv",
+             "vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv",
+             "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv",
+             "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv", "vnclip.wv", "vnclipu.wv",
+             "vredsum.vs", "vwredsum.vs", "vwredsumu.vs", "vredmax.vs", "vredmaxu.vs", "vredmin.vs", "vredminu.vs", "vredand.vs", "vredor.vs", "vredxor.vs",
+             "vrgather.vv", "vrgatherei16.vv"] + vvvm_f_type
+
 vvxmtype  = ["vadd.vx", "vwadd.vx", "vwaddu.vx", "vsub.vx", "vwsub.vx", "vwsubu.vx", "vrsub.vx", "vwadd.wx", "vwsub.wx", "vwaddu.wx", "vwsubu.wx",
              "vmadc.vx", "vmsbc.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vnsra.wx", "vnsrl.wx",
              "vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx",
@@ -380,8 +389,8 @@ vvimtype  = ["vadd.vi", "vrsub.vi", "vmadc.vi",
 
 xvmtype   = ["vcpop.m", "vfirst.m"]
 
-vvvmrtype = ["vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
-vvmtype   = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
+vvvmrtype = ["vmacc.vv", "vnmsac.vv", "vmadd.vv", "vnmsub.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"] + vvvmr_f_type
+vvmtype   = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m", "vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"] + vvm_f_type
 vxvmtype  = ["vmacc.vx", "vnmsac.vx", "vmadd.vx", "vnmsub.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
 vvrtype   = ["vmv.v.v"]
 vxtype    = ["vmv.s.x", "vmv.v.x"]
@@ -394,33 +403,46 @@ vvvvtype  = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm", "vmadc.vvm", "vmsbc.vvm"]
 vvxvtype  = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm", "vmadc.vxm", "vmsbc.vxm"]
 vvvtype   = ["vmadc.vv", "vmsbc.vv", "vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm", "vcompress.vm"]
 imm_31 = ["vnclip.wi", "vnclipu.wi", "vnsra.wi","vnsrl.wi", "vrgather.vi", "vslidedown.vi", "vslideup.vi", "vsll.vi", "vsra.vi", "vsrl.vi","vssra.vi", "vssrl.vi"]
-vectortypes = vvvtype + vmtype + xvtype + vitype + vxtype + vvrtype + vvmtype + xvmtype + vvimtype + vvxmtype + vvvmtype + vvivtype + vvvvtype + vvxvtype + vxvmtype + vvvxtype + vvvmrtype
 
 vs1ins = vvvmtype + vvrtype + vvvvtype + vvvtype + vvvmrtype
-vfloattypes = ["vfadd.vv"]
+
+##################################     vector instruction groups     ##################################
 
 # vector instruction groups by EEW (prefix + suffix)
 # normal
-vvins = ["vadd.vv", "vsub.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv",
-         "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv", "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv"]
-vxins = ["vadd.vx", "vsub.vx", "vrsub.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx", "vmulhsu.vx",
-         "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx", "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vssrl.vx", "vssra.vx"]
-viins = ["vadd.vi", "vrsub.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi"]
+fvvins = ["vfadd.vv", "vfsub.vv", "vfmul.vv", "vfdiv.vv", "vfmin.vv", "vfmax.vv", "vfmacc.vv", "vfnmacc.vv", "vfmsac.vv", "vfnmsac.vv", "vfmadd.vv", "vfnmadd.vv", "vfmsub.vv", "vfnmsub.vv",
+          "vfsgnj.vv", "vfsgnjn.vv", "vfsgnjx.vv"]
+fvfins = ["vfadd.vf", "vfsub.vf", "vfrsub.vf", "vfmul.vf", "vfdiv.vf", "vfrdiv.vf", "vfmin.vf", "vfmax.vf", "vfmacc.vf", "vfnmacc.vf", "vfmsac.vf", "vfnmsac.vf", "vfmadd.vf", "vfnmadd.vf",
+          "vfmsub.vf", "vfnmsub.vf", "vfsgnj.vf", "vfsgnjn.vf", "vfsgnjx.vf"]
+vvins  = ["vadd.vv", "vsub.vv", "vand.vv", "vor.vv", "vxor.vv", "vsll.vv", "vsrl.vv", "vsra.vv", "vmin.vv", "vminu.vv", "vmax.vv", "vmaxu.vv", "vmul.vv", "vmulh.vv", "vmulhu.vv", "vmulhsu.vv",
+          "vdiv.vv", "vdivu.vv", "vrem.vv", "vremu.vv", "vsadd.vv", "vsaddu.vv", "vssub.vv", "vssubu.vv", "vaadd.vv", "vaaddu.vv", "vasub.vv", "vasubu.vv", "vsmul.vv", "vssrl.vv", "vssra.vv"] + fvvins
+vxins  = ["vadd.vx", "vsub.vx", "vrsub.vx", "vand.vx", "vor.vx", "vxor.vx", "vsll.vx", "vsrl.vx", "vsra.vx", "vmin.vx", "vminu.vx", "vmax.vx", "vmaxu.vx", "vmul.vx", "vmulh.vx", "vmulhu.vx", "vmulhsu.vx",
+          "vdiv.vx", "vdivu.vx", "vrem.vx", "vremu.vx", "vsadd.vx", "vsaddu.vx", "vssub.vx", "vssubu.vx", "vaadd.vx", "vaaddu.vx", "vasub.vx", "vasubu.vx", "vsmul.vx", "vssrl.vx", "vssra.vx"]
+viins  = ["vadd.vi", "vrsub.vi", "vand.vi", "vor.vi", "vxor.vi", "vsll.vi", "vsrl.vi", "vsra.vi", "vsadd.vi", "vsaddu.vi", "vssrl.vi", "vssra.vi"]
 # narrowing
 wvins = ["vnsrl.wv", "vnsra.wv", "vnclip.wv", "vnclipu.wv"]
 wxins = ["vnsrl.wx", "vnsra.wx", "vnclip.wx", "vnclipu.wx"]
 wiins = ["vnsrl.wi", "vnsra.wi", "vnclip.wi", "vnclipu.wi"]
-narrowins = wvins + wxins + wiins
+fcvt_w_ins = ["vfncvt.xu.f.w", "vfncvt.x.f.w", "vfncvt.rtz.xu.f.w", "vfncvt.rtz.x.f.w", "vfncvt.f.xu.w", "vfncvt.f.x.w", "vfncvt.f.f.w", "vfncvt.rod.f.f.w"]
+narrowins = wvins + wxins + wiins + fcvt_w_ins
 # widening
-wvvins = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"]
-wvxins = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
-wwvins = ["vwadd.wv", "vwaddu.wv", "vwsub.wv", "vwsubu.wv"]
-wwxins = ["vwadd.wx", "vwaddu.wx", "vwsub.wx", "vwsubu.wx"]
-vs2_widen_ins = narrowins + wwvins + wwxins
+fwvvins = ["vfwadd.vv", "vfwsub.vv", "vfwmul.vv", "vfwmacc.vv", "vfwnmacc.vv", "vfwmsac.vv", "vfwnmsac.vv"]
+fwvfins = ["vfwadd.vf", "vfwsub.vf", "vfwmul.vf", "vfwmacc.vf", "vfwnmacc.vf", "vfwmsac.vf", "vfwnmsac.vf"]
+fwwvins = ["vfwadd.wv", "vfwsub.wv"]
+fwwfins = ["vfwadd.wf", "vfwsub.wf"]
+wvvins  = ["vwadd.vv", "vwaddu.vv", "vwsub.vv", "vwsubu.vv", "vwmul.vv", "vwmulu.vv", "vwmulsu.vv", "vwmacc.vv", "vwmaccu.vv", "vwmaccsu.vv"] + fwvvins
+wvxins  = ["vwadd.vx", "vwaddu.vx", "vwsub.vx", "vwsubu.vx", "vwmul.vx", "vwmulu.vx", "vwmulsu.vx", "vwmacc.vx", "vwmaccu.vx", "vwmaccsu.vx", "vwmaccus.vx"]
+wwvins  = ["vwadd.wv", "vwaddu.wv", "vwsub.wv", "vwsubu.wv"] + fwwvins
+wwxins  = ["vwadd.wx", "vwaddu.wx", "vwsub.wx", "vwsubu.wx"]
+fwcvt_ins  = ["vfwcvt.xu.f.v", "vfwcvt.x.f.v", "vfwcvt.rtz.xu.f.v", "vfwcvt.rtz.x.f.v", "vfwcvt.f.xu.v", "vfwcvt.f.x.v", "vfwcvt.f.f.v"]
+vs2_widen_ins = narrowins + wwvins + wwxins + fwwfins
 # masking
 vvmins = ["vadc.vvm", "vsbc.vvm", "vmerge.vvm"]
 vxmins = ["vadc.vxm", "vsbc.vxm", "vmerge.vxm"]
 vimins = ["vadc.vim", "vmerge.vim"]
+fvfmins = ["vfmerge.vfm"]
+fmvvins = ["vmfeq.vv", "vmfne.vv", "vmflt.vv", "vmfle.vv"] # can be masked
+fmvfins = ["vmfeq.vf", "vmfne.vf", "vmflt.vf", "vmfle.vf", "vmfgt.vf", "vmfge.vf"] # can be masked
 vm_nomask_ins = ["vmadc.vv", "vmsbc.vv", "vmadc.vx", "vmsbc.vx", "vmadc.vi"]
 mvvins = ["vmseq.vv", "vmsne.vv", "vmslt.vv", "vmsltu.vv", "vmsle.vv", "vmsleu.vv"]
 mvxins = ["vmseq.vx", "vmsne.vx", "vmslt.vx", "vmsltu.vx", "vmsle.vx", "vmsleu.vx", "vmsgt.vx", "vmsgtu.vx"]
@@ -429,24 +451,27 @@ mvvmins = ["vmadc.vvm", "vmsbc.vvm"]
 mvxmins = ["vmadc.vxm", "vmsbc.vxm"]
 mvimins = ["vmadc.vim"]
 mmins = ["vmand.mm", "vmnand.mm", "vmandn.mm", "vmxor.mm", "vmor.mm", "vmnor.mm", "vmorn.mm", "vmxnor.mm"]
-maskins = vm_nomask_ins + mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins
-
-v_mins = vvmins + vxmins + vimins
+maskins = vm_nomask_ins + mvvins + mvxins + mviins + mvvmins + mvxmins + mvimins + fmvvins + fmvfins
+v_mins = vvmins + vxmins + vimins + fvfmins
 mv_ins = vm_nomask_ins + mvvins + mvxins + mviins
 mv_mins = mvvmins + mvxmins + mvimins
 # extending
 vextins = ["vzext.vf2", "vzext.vf4", "vzext.vf8", "vsext.vf2", "vsext.vf4", "vsext.vf8"]
 # widening reduction
-wvsins = ["vwredsum.vs", "vwredsumu.vs"]
+fwvsins = ["vfwredosum.vs", "vfwredusum.vs"]
+wvsins  = ["vwredsum.vs", "vwredsumu.vs"] + fwvsins
 # slide/gather/compress
-vslideupins = ["vslideup.vx", "vslideup.vi", "vslide1up.vx"]
-vslidedownins = ["vslidedown.vx", "vslidedown.vi", "vslide1down.vx"]
+vfslideupins   = ["vfslide1up.vf"]
+vslideupins    = ["vslideup.vx", "vslideup.vi", "vslide1up.vx"] + vfslideupins
+vfslidedownins = ["vfslide1down.vf"]
+vslidedownins  = ["vslidedown.vx", "vslidedown.vi", "vslide1down.vx"] + vfslidedownins
 vrgatherins = ["vrgather.vv", "vrgather.vx", "vrgather.vi", "vrgatherei16.vv"]
 vcompressins = ["vcompress.vm"]
 vupgatherins = vslideupins + vrgatherins
 # mask logical
 vmlogicalins = ["vmsbf.m", "viota.m", "vmsif.m", "vmsof.m"]
-vredins = ["vredsum.vs", "vwredsumu.vs", "vwredsum.vs", "vredmaxu.vs", "vredmax.vs", "vredminu.vs", "vredmin.vs", "vredand.vs", "vredor.vs", "vredxor.vs"]
+vfredins = ["vfredosum.vs", "vfwredosum.vs", "vfredusum.vs", "vfwredusum.vs", "vfredmax.vs", "vfredmin.vs"]
+vredins  = ["vredsum.vs", "vwredsumu.vs", "vwredsum.vs", "vredmaxu.vs", "vredmax.vs", "vredminu.vs", "vredmin.vs", "vredand.vs", "vredor.vs", "vredxor.vs"] + vfredins
 
 ls_not_maskable = [
   "vl1re8.v",  "vl2re8.v",  "vl4re8.v",  "vl8re8.v",
@@ -457,8 +482,8 @@ ls_not_maskable = [
   "vsm.v",     "vlm.v"
   ]
 
-vmvins          = vvrtype + vxtype + vitype + xvtype + vvvxtype + vcompressins
-vd_widen_ins    = wvvins + wvxins + wwvins + wwxins + wvsins
+vmvins          = vvrtype + vxtype + vitype + xvtype + vftype + fvtype + vvvxtype + vcompressins
+vd_widen_ins    = wvvins + wvxins + wwvins + wwxins + wvsins + fwvfins + fwwfins + fwcvt_ins
 not_maskable    = vm_nomask_ins + mmins + vmvins + ls_not_maskable
 
 # "vl1re8.v", "vl1re16.v", "vl1re32.v", "vl1re64.v"
@@ -860,7 +885,7 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
   writeLine(f"// {test}_{vs}_data for {vs}")
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   writeLine("// Corner Vectors")
 
   eew = sew * emul
@@ -876,7 +901,6 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
       else:
         num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
-        load_aligned = False
         writeLine(f"{vs}_random_{suite}_{t:03d}:")
         for i in range(num_words):
             randomElem = getrandbits(32)
@@ -887,19 +911,19 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
 def genRandomVectorLS():
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
-  writeLine(f"// vector_ls_random_base data")
+  writeLine("// vector_ls_random_base data")
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
-  writeLine(f"    .align 4")
+  writeLine("    .align 4")
   writeLine("// Corner Vectors")
 
   num_words_either_side = int(maxELEN / 64) * 2 * 2 * maxVLEN # 2 times max vlen elements on either side of pointer (sewMAX = 64)
 
-  writeLine(f"vector_ls_random_base_header:")
+  writeLine("vector_ls_random_base_header:")
   for i in range(num_words_either_side):
       randomElem = getrandbits(32)
       writeLine(f"    .word 0x{randomElem:08x}")
-  writeLine(f"vector_ls_random_base:")
+  writeLine("vector_ls_random_base:")
   for i in range(num_words_either_side):
       randomElem = getrandbits(32)
       writeLine(f"    .word 0x{randomElem:08x}")
@@ -910,7 +934,7 @@ def genVMaskCorners():
   num_words = math.ceil(maxVLEN / 32)
 
   # generating random masks for length suite
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   for name in range(3):
     writeLine(f"random_mask_{name}:")
     val = getrandbits(maxVLEN)
@@ -929,7 +953,7 @@ def genVMaskCorners():
       if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask corner
         regenerate = True
 
-  writeLine(f"cp_mask_random:")
+  writeLine("cp_mask_random:")
   for i in range(num_words):
       word = (random_mask >> (32 * i)) & 0xFFFFFFFF
       writeLine(f"    .word 0x{word:08x}")
@@ -974,7 +998,7 @@ def genVsCorners(test, sew, emul):
   while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
   v_register_corners["random"] = r
 
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   for corner in v_register_corners:
       val = v_register_corners[corner]
       val &= (1 << eew) - 1
@@ -985,6 +1009,39 @@ def genVsCorners(test, sew, emul):
         else:
           writeLine(f"    .word {w}")
 
+def genVsCornersFP(test, sew, emul):
+  def convert(val, bitwidth):
+    if (sew == 64) or (eew == 64):
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
+              in range((bitwidth + (eew - 1)) // eew)]
+    else:
+      return [f"0x{(val >> (eew * i)) & 0xFFFFFFFF:08x}" for i
+              in range((bitwidth + (eew-1)) // eew)]
+
+  if sew == 64:
+    vs_corners_f = fcornersD
+  elif sew == 16:
+    vs_corners_f = fcornersH
+  else:
+    vs_corners_f = fcorners
+
+  eew = sew * int(emul)
+  ending = "emul" + emul
+
+  writeLine("\n")
+  writeLine("///////////////////////////////////////////")
+  writeLine("// vector corners data (floating point)")
+  writeLine("///////////////////////////////////////////\n")
+  writeLine("    .align 3")
+  for corner in vs_corners_f:
+      val = vs_corners_f[corner]
+      writeLine(f"vs_corner_f_{corner}_{ending}:")
+      val &= (1 << eew) - 1
+      for w in convert(val, eew):
+        if (sew == 64) or (eew == 64):
+          writeLine(f"    .dword {w}")
+        else:
+          writeLine(f"    .word {w}")
 
 ##################################
 # Common functions
@@ -1002,7 +1059,7 @@ def insertTemplate(test, signatureWords, name):
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
 
-    if (test == "ExceptionsVx"):
+    if (test == "ExceptionsV"):
       ISAEXT = "RV32IMV_Zicsr, RV64IMV_Zicsr"
       test_case_line = "//check ISA:=regex(.*I.*M.*V.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True"
     else:
@@ -1010,6 +1067,8 @@ def insertTemplate(test, signatureWords, name):
       ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
       ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
       if 'V' in ext_parts_no_I:
+        if (test in vfloattypes):
+          ext_parts_no_I = ['F'] + ext_parts_no_I
         ext_parts_no_I = ['M'] + ext_parts_no_I
       ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
       # Construct the regex part
@@ -1027,10 +1086,9 @@ def insertTemplate(test, signatureWords, name):
 def writeSIGUPD(rd):
     global sigupd_count  # Allow modification of global variable
     sigupd_count += 1    # Increment counter on each call
-    l = f"RVTEST_SIGUPD(x{sigReg}, x{rd})\n"
-    return l
+    writeLine(f"RVTEST_SIGUPD(x{sigReg}, x{rd})", f"# store x{rd} in signature")
 
-def writeSIGUPD_F(rd):
+def writeSIGUPD_F(fd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
     sigupd_count += 1    # Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
@@ -1038,9 +1096,8 @@ def writeSIGUPD_F(rd):
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
-    l = f"csrr x{tempReg}, fcsr\n"                              # Get fcsr into a temp register
-    l = l + f"RVTEST_SIGUPD_F(x{sigReg}, f{rd}, x{tempReg})\n"  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
-    return l
+    writeLine(f"csrr x{tempReg}, fcsr", f"# save fcsr into x{tempReg} for signature")                                 # Get fcsr into a temp register
+    writeLine(f"RVTEST_SIGUPD_F(x{sigReg}, f{fd}, x{tempReg})", f"# store f{fd} and x{tempReg} (fcsr) in signature")  # x{rd} as fstatus Xreg from macro definition as dummy store (might be needed in another instruction)
 
 def writeSIGUPD_V(vd, sew, avl=1, sig_lmul = None, load_testline = None, sig_whole_register_store = False):
     global sigupd_count        # Allow modification of global variable
@@ -1074,25 +1131,6 @@ def vsAddressCount(suite="base"):
 ##################################
 # Common functions
 ##################################
-
-# TODO: will be used and tested for vector FP
-def loadVFloatReg(reg, val, sew):
-  if sew == 16:
-    precision = 16
-    loadop = "flh"
-    storeop = "sh"
-  elif sew == 32:
-    precision = 32
-    loadop = "flw"
-    storeop = "sw"
-  elif sew == 64:
-    precision = 64
-    loadop = "fld"
-    storeop = "sd"
-  writeLine("la x2, scratch")
-  writeLine(f"li x3, {formatstrFP.format(val)}", f"# load x3 with value {formatstrFP.format(val)}")
-  writeLine(f"{storeop} x3, 0(x2)", f"# store {formatstrFP.format(val)} in memory")
-  writeLine(f"{loadop} v{reg}, 0(x2)", f"# load {formatstrFP.format(val)} from memory into v{reg}")
 
 def loadVecReg(instruction, register_argument_name: str, vector_register_data, sew, lmul, *scalar_registers_used):
     scalar_registers_used = list(scalar_registers_used)
@@ -1128,7 +1166,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       if register % lmul != 0:
         load_unique_vtype = True
       else:
-        load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
+        load_unique_vtype = ((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar")) \
           or (register_emul > 1 and register_data['reg_type'] == "scalar")
 
     if load_unique_vtype:
@@ -1161,7 +1199,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     else:
       writeLine(f"la x{tempReg}, {register_val_pointer}",  "# Load address of desired value")
       if register_val_pointer == "vs_corner_zero_emul8":
-        writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               f"# zero register")
+        writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               "# zero register")
       else:
         writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
@@ -1194,23 +1232,67 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
       element_positive = 2 ** (eew-1) - 1
 
-      writeLine(f"csrr x{vtypeReg}, vtype",                                     f"# save vtype register for after load")
-      writeLine(f"csrr x{avlReg}, vl",                                          f"# save vl register for after load")
-      writeLine(f"vsetvl x{vlmaxReg}, x0, x{vtypeReg}",                         f"# set vl to vlmax")
-      writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   f"# save vlmax * 2")
-      writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", f"# setting sew to vs2 eew")
+      writeLine(f"csrr x{vtypeReg}, vtype",                                     "# save vtype register for after load")
+      writeLine(f"csrr x{avlReg}, vl",                                          "# save vl register for after load")
+      writeLine(f"vsetvl x{vlmaxReg}, x0, x{vtypeReg}",                         "# set vl to vlmax")
+      writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   "# save vlmax * 2")
+      writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", "# setting sew to vs2 eew")
       if eew < xlen: # make sure the number is positive since it will be 0 extended to XLEN
         element_positiv_reg = 15
         while element_positiv_reg in scalar_registers_used:
           element_positiv_reg = randint(1,31)
         scalar_registers_used.append(element_positiv_reg)
-        writeLine(f"li x{element_positiv_reg}, {element_positive}",             f"#  make sure the number is positive since it will be 0 extended to XLEN")
-        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  f"#  ")
-      writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               f"# ensure all values are within (-2*vlmax, 2*vlmax)")
-      writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             f"# sew-aligning elements")
-      writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           f"# restore vl and vtype setting")
+        writeLine(f"li x{element_positiv_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
+        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  "#  ")
+      writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               "# ensure all values are within (-2*vlmax, 2*vlmax)")
+      writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             "# sew-aligning elements")
+      writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           "# restore vl and vtype setting")
 
     return scalar_registers_used
+
+def loadFloatReg(sew, register_argument_name: str, floating_point_register_data, *scalar_registers_used):
+  scalar_registers_used = list(scalar_registers_used)
+
+  register_data     = floating_point_register_data[register_argument_name]
+  register          = register_data['reg']
+  register_value    = register_data['val']
+
+  scratchReg = 2
+  while scratchReg in scalar_registers_used:
+    scratchReg = randint(1,31)
+  scalar_registers_used.append(scratchReg)
+
+  memoryReg = 4
+  while memoryReg in scalar_registers_used:
+    memoryReg = randint(1,31)
+  scalar_registers_used.append(memoryReg)
+
+  if sew == 16:
+    precision = 16
+    loadop = "flh"
+    storeop = "sw"
+  elif sew == 32:
+    precision = 32
+    loadop = "flw"
+    storeop = "sw"
+  elif sew == 64:
+    precision = 64
+    loadop = "fld"
+    storeop = "sd"
+
+  writeLine(f"LA(x{scratchReg}, scratch)")
+  if (precision > xlen): # precision = 64, xlen = 32
+    writeLine(f"LI(x{memoryReg}, 0x{formatstrFP.format(register_value)[10:18]})",  f"# load x{memoryReg} with 32 MSBs {formatstrFP.format(register_value)}")
+    writeLine(f"{storeop} x{memoryReg}, 0(x{scratchReg})",                         f"# store x{memoryReg} (0x{formatstrFP.format(register_value)[10:18]}) in memory")
+    writeLine(f"LI(x{memoryReg}, 0x{formatstrFP.format(register_value)[2:10]})",   f"# load x{memoryReg} with 32 LSBs of {formatstrFP.format(register_value)}")
+    writeLine(f"{storeop} x{memoryReg}, 4(x{scratchReg})",                         f"# store x{memoryReg} (0x{formatstrFP.format(register_value)[2:10]}) in memory 4 bytes after x{scratchReg}")
+    writeLine(f"{loadop} f{register}, 0(x{scratchReg})",                           f"# load {formatstrFP.format(register_value)} from memory into f{register}")
+  else:
+    writeLine(f"LI(x{memoryReg}, {formatstrFP.format(register_value)})",           f"# load x{memoryReg} with value {formatstrFP.format(register_value)}")
+    writeLine(f"{storeop} x{memoryReg}, 0(x{scratchReg})",                         f"# store {formatstrFP.format(register_value)} in memory")
+    writeLine(f"{loadop} f{register}, 0(x{scratchReg})",                           f"# load {formatstrFP.format(register_value)} from memory into f{register}")
+
+  return scalar_registers_used
 
 def loadScalarReg(register_argument_name: str, scalar_register_data):
   register_data     = scalar_register_data[register_argument_name]
@@ -1249,14 +1331,24 @@ def getSigSpace(xlen, flen):
       signatureWords = sigupd_count + sigupd_countF # all Sigupd, no need to adjust since Xlen is equal to or larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
   return signatureWords
 
-def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, sig_lmul = None, sig_whole_register_store = False, load_testline = None, priv = False):
+def writeVecTest(vd, sew, testline, *scalar_registers_used, test=None, rd=None, fd=None, vl=1, sig_lmul = None, sig_whole_register_store = False, load_testline = None, priv = False):
+    scalar_registers_used = list(scalar_registers_used)
+
     writeLine(testline)
     if (priv):
-      writeLine(f"nop",                                           f"# nop after possible trap")
+      writeLine("nop",                                           "# nop after possible trap")
       writeLine(f"vsetivli x0, 1, SEWSIZE, m{sig_lmul}, tu, mu",  f"# re-initialize vl = 1, LMUL = {sig_lmul}, SEW = SEWMIN for signature")
 
     if load_testline is not None:
       writeLine(load_testline, "# load value stored in memory to check against signature")
+
+    if (test in vfloattypes) and (test not in fvtype):
+      fcsrsaveReg = 2
+      while fcsrsaveReg in scalar_registers_used:
+        fcsrsaveReg = randint(1,31)
+      scalar_registers_used.append(fcsrsaveReg)
+      writeLine(f"csrr x{fcsrsaveReg}, fcsr", f"# save fcsr into x{fcsrsaveReg} for signature")
+      writeSIGUPD(fcsrsaveReg)
 
     if (test in vd_widen_ins) or (test in wvsins):
       writeSIGUPD_V(vd, 2*sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)  # EEW of vd = 2 * SEW for widening
@@ -1264,6 +1356,8 @@ def writeVecTest(vd, sew, testline, test=None, rd=None, vl=1, sig_lmul = None, s
       writeSIGUPD_V(vd, 8, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)      # EEW of vd = 1 for mask
     elif (test in xvtype):
       writeSIGUPD(rd)
+    elif (test in fvtype):
+      writeSIGUPD_F(fd)
     else:
       writeSIGUPD_V(vd, sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)
 
@@ -1349,45 +1443,45 @@ def getInstructionEEW(instruction):
 def prepMaskV(maskval, sew, tempReg, lmul):
   lmulflag = getLmulFlag(lmul)
   if (maskval == "zeroes"):
-    writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
+    writeLine("vmv.v.i v0, 0",                               "# Set mask value to 0")
   elif (maskval == "ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX) ? 1 : 0")
   elif (maskval == "vlmaxm1_ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"addi x{tempReg}, x{tempReg}, -1",             f"# x{tempReg} = VLMAX - 1")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX-1) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX-1) ? 1 : 0")
   elif (maskval == "vlmaxd2p1_ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"srli x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2")
     writeLine(f"addi x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2 + 1")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX/2+1) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX/2+1) ? 1 : 0")
   else: # random mask
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
     writeLine(f"la x{tempReg}, {maskval}")
-    writeLine(f"vlm.v v0, (x{tempReg})",                      f"# Load mask value into v0")
+    writeLine(f"vlm.v v0, (x{tempReg})",                      "# Load mask value into v0")
 
 def prepVstart(vstartval, lmul = 1):
   if   (vstartval == "one"):
-    writeLine(f"li x8, 1",                                    f"# Load x8 = 1 for vstart")
+    writeLine("li x8, 1",                                    "# Load x8 = 1 for vstart")
   elif (vstartval == "vlmaxm1"):
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
-    writeLine(f"addi x8, x8, -1",                             f"# x8 = VLMAX - 1")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
+    writeLine("addi x8, x8, -1",                             "# x8 = VLMAX - 1")
   elif (vstartval == "vlmaxd2"):
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
-    writeLine(f"srli x8, x8, 1",                              f"# x8 = VLMAX / 2")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
+    writeLine("srli x8, x8, 1",                              "# x8 = VLMAX / 2")
   else: # random vstart
     randvstart = randint(3, maxVLEN)  # TODO: check logic for this
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
     writeLine(f"la t3, {randvstart}")
-    writeLine(f"remu t3, t3, x8",                             f"# Ensure that vl < VLMAX")
-  writeLine(f"csrw vstart, x8",                               f"# Write desired vstart value to the CSR")
+    writeLine("remu t3, t3, x8",                             "# Ensure that vl < VLMAX")
+  writeLine("csrw vstart, x8",                               "# Write desired vstart value to the CSR")
 
 def getInstructionArguments(instruction):
   instruction_arguments = []
@@ -1396,16 +1490,21 @@ def getInstructionArguments(instruction):
   elif instruction in vvvtype     : instruction_arguments = ['vd', 'vs2', 'vs1'      ]
   elif instruction in vvvmrtype   : instruction_arguments = ['vd', 'vs1', 'vs2', 'vm']
   elif instruction in vvxmtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'vm']
+  elif instruction in vvfmtype    : instruction_arguments = ['vd', 'vs2', 'fs1', 'vm']
   elif instruction in vxvmtype    : instruction_arguments = ['vd', 'rs1', 'vs2', 'vm']
+  elif instruction in vfvmtype    : instruction_arguments = ['vd', 'fs1', 'vs2', 'vm']
   elif instruction in vvimtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'vm']
   elif instruction in vvivtype    : instruction_arguments = ['vd', 'vs2', 'imm', 'v0']
   elif instruction in vvvvtype    : instruction_arguments = ['vd', 'vs2', 'vs1', 'v0']
   elif instruction in vvxvtype    : instruction_arguments = ['vd', 'vs2', 'rs1', 'v0']
+  elif instruction in vvfvtype    : instruction_arguments = ['vd', 'vs2', 'fs1', 'v0']
   elif instruction in xvmtype     : instruction_arguments = ['rd', 'vs2',        'vm']
-  elif instruction in xvtype      : instruction_arguments = ['rd', 'vs2',            ]
+  elif instruction in xvtype      : instruction_arguments = ['rd', 'vs2'             ]
+  elif instruction in fvtype      : instruction_arguments = ['fd', 'vs2'             ]
   elif instruction in vvmtype     : instruction_arguments = ['vd', 'vs2',        'vm']
   elif instruction in vmtype      : instruction_arguments = ['vd',               'vm']
   elif instruction in vxtype      : instruction_arguments = ['vd', 'rs1',            ]
+  elif instruction in vftype      : instruction_arguments = ['vd', 'fs1'             ]
   elif instruction in vvrtype     : instruction_arguments = ['vd', 'vs1',        'vm']
   elif instruction in vvvxtype    : instruction_arguments = ['vd', 'vs2',        'vm']
   elif instruction in vitype      : instruction_arguments = ['vd', 'imm',        'vm']
@@ -1418,13 +1517,13 @@ def getInstructionArguments(instruction):
   elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
   elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
   else:
-    print("Error: %s type not implemented yet" % instruction)
+    print(f"Error: {instruction} type not implemented yet")
 
   return instruction_arguments
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
-              vfrm=None, vfloattype=None, vxsat=None, vta=0, vma=0):
+              vfrm=None, vxsat=None, vta=0, vma=0):
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
@@ -1433,6 +1532,8 @@ def writeTest(description, instruction, instruction_data,
     rd              = scalar_register_data['rd'] ['reg']
     rs1             = scalar_register_data['rs1']['reg']
     rs2             = scalar_register_data['rs2']['reg']
+
+    fd              = floating_point_register_data['fd']['reg']
 
     scalar_registers_used = [rd, rs1, rs2]
 
@@ -1456,16 +1557,19 @@ def writeTest(description, instruction, instruction_data,
 
     writeLine("# Testcase " + str(description))
 
+    if instruction in vfloattypes:
+      writeLine("fsflagsi 0b00000", "# clear all fflags")
+
     # If mask value specified, load to v0
     if maskval is not None:
       prepMaskV(maskval, sew, tempReg, lmul)
-    elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype]):
+    elif any(instruction in instype for instype in [vvivtype, vvvvtype, vvxvtype, vvfvtype]):
       writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
-    if vfloattype is not None:
-      scalar_registers_used = loadFloatRoundingMode(vfloattype, *scalar_registers_used)
+    if vfrm is not None:
+      scalar_registers_used = loadFloatRoundingMode(vfrm, *scalar_registers_used)
     elif vxsat is not None:
       scalar_registers_used = loadVxsatMode(*scalar_registers_used)
     elif vxrm is not None:
@@ -1496,7 +1600,7 @@ def writeTest(description, instruction, instruction_data,
           loadScalarReg(argument, scalar_register_data)
           testline = testline + f"x{scalar_register_data[argument]['reg']}"
       elif argument[0] == 'f':
-        # TODO : implement load value for floating point
+        scalar_registers_used = loadFloatReg(sew, argument, floating_point_register_data, *scalar_registers_used)
         testline = testline + f"f{floating_point_register_data[argument]['reg']}"
       else:
         raise TypeError(f"Instruction Argument type not supported: '{argument}'")
@@ -1547,9 +1651,9 @@ def writeTest(description, instruction, instruction_data,
       signature_target_sew = sew
 
     if (maskval is not None) or (vl is not None):
-      writeVecTest(signature_target_vd, signature_target_sew, testline, test=instruction, rd=rd, vl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store=sig_whole_register_store)
+      writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, vl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store=sig_whole_register_store)
     else:
-      writeVecTest(signature_target_vd, signature_target_sew, testline, test=instruction, rd=rd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
+      writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
 
     if (getLMULIfdef(lmul) != ""):
       writeLine("#endif")
@@ -1609,19 +1713,19 @@ def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
 
   if vl == "random":
     randomVl = getrandbits(32)
-    writeLine(f"li x{tempReg2}, {randomVl}",                                      f"# Load value for random vl preparation")
+    writeLine(f"li x{tempReg2}, {randomVl}",                                      "# Load value for random vl preparation")
     writeLine(f"vsetvli x{vlmaxReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# x{vlmaxReg} = VLMAX")
-    writeLine(f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}",                      f"# ensure that vl < VLMAX")
-    writeLine(f"ori x{tempReg2}, x{tempReg2}, 0x2",                               f"# set bit 1 to 1, ensuring 2 <= vl < VLMAX")
+    writeLine(f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}",                      "# ensure that vl < VLMAX")
+    writeLine(f"ori x{tempReg2}, x{tempReg2}, 0x2",                               "# set bit 1 to 1, ensuring 2 <= vl < VLMAX")
     writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
   elif vl == "vlmax":
     writeLine(f"vsetvli x{tempReg2}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# Set vl = VLMAX, where x{vlmaxReg} = VLMAX")
   else:
-    writeLine(f"li x{tempReg2}, {vl}",                                            f"# Load desired vl value") # put desired vl into an integer register
+    writeLine(f"li x{tempReg2}, {vl}",                                            "# Load desired vl value") # put desired vl into an integer register
     writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
 
-  if (vstart == True):   # if vstart specified
-    writeLine(f"li x{tempReg2}, {vstart}",                                        f"# Load desired vstart value")
+  if (vstart):   # if vstart specified
+    writeLine(f"li x{tempReg2}, {vstart}",                                        "# Load desired vstart value")
     writeLine(f"csrw vstart, x{tempReg2}")
 
   return scalar_registers_used
@@ -1643,7 +1747,9 @@ def randomizeRegister(instruction, eew, register_argument_name: str, reg_count: 
       register = emul * randint(0, int(reg_count/emul) - (segments)) # only register numbers of multiples of LMUL(EMUL) are allowed, segments must not go past reg 31
     else: # normal instructions
       if register_type == "r":
-        register = randint(1, reg_count-1) # 0 to maxreg, inclusive
+        register = randint(1, reg_count-1) # 1 to maxreg, inclusive
+      else: # "f" registers
+        register = randint(0, reg_count-1) # 0 to maxreg, inclusive
 
   register_data['reg'] = register
 
@@ -1656,6 +1762,9 @@ def randomizeRegister(instruction, eew, register_argument_name: str, reg_count: 
     if register_data['val_pointer'] is None:
       if instruction in vector_ls_ins and register_argument_name == "rs1": # needs to point to an address
           register_data['val_pointer'] = "vector_ls_random_base"
+  elif   register_type == "f":
+    if register_data['val'] is None:
+      register_data['val'] = randint(0, (2**flen)-1)
 
   return register_data
 
@@ -1698,11 +1807,15 @@ def getInstructionRegisterOverlapConstraints (instruction, sew, lmul):
   elif instruction in vupgatherins    : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
   elif instruction in vmlogicalins    : no_overlap = [['vd',        'vs2']                      ]
   elif instruction in wvxins          : no_overlap = [['vd_bottom', 'vs2']                      ]
-  elif instruction in mv_ins          : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']]
+  elif instruction in fwvfins         : no_overlap = [['vd_bottom', 'vs2']                      ]
+  elif instruction in mv_ins          : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']] # mv_ins can never be masked
+  elif instruction in fmvvins         : no_overlap = [['vd',        'vs2'], ['vd',        'vs1']] # fmvvins can be masked
+  elif instruction in fmvfins         : no_overlap = [['vd',        'vs2']                      ] # fmvfins can be masked
   elif instruction in vextins         : no_overlap = [['vd_bottom', 'vs2']                      ]
   elif instruction in narrowins       : no_overlap = [['vd',    'vs2_top'], ['vs2',       'vs1']]
   elif instruction in wvsins          : no_overlap = [['vs2',       'vs1']                      ] # no "_bottom" in vd because its a reduction instruction
   elif instruction in wwvins          : no_overlap = [['vd_bottom', 'vs1'], ['vs1',       'vs2']]
+  elif instruction in fwcvt_ins       : no_overlap = [['vd_bottom', 'vs2']                      ]
   elif instruction in v_mins          : no_overlap = [['v0', 'vs2'], ['v0', 'vs1'], ['v0', 'vd']]
   elif instruction in mv_mins         : no_overlap = [['vd','vs2'],['v0','vs2'],['vd','vs1'],['v0','vs1']]
   elif instruction in vcompressins    : no_overlap = [['vd', 'vs2', 'vs1']                      ]
@@ -1766,8 +1879,8 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
   }
 
   floating_point_register_preset_data = {
-    'fd'  : {'reg' : None, 'val_pointer' : None},
-    'fs1' : {'reg' : None, 'val_pointer' : None}
+    'fd'  : {'reg' : None, 'val' : None, 'val_pointer' : None},
+    'fs1' : {'reg' : None, 'val' : None, 'val_pointer' : None}
   }
 
   vector_register_preset_data         = {
@@ -2045,7 +2158,7 @@ def readTestplans(priv=False):
                         cps = []
                         del row["Instruction"]
                         for key, value in row.items():
-                            if (type(value) == str and value != ''):
+                            if (type(value) is str and value != ''):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:

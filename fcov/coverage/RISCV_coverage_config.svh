@@ -56,6 +56,15 @@
 `ifdef VLS64_COVERAGE
   `include "Vls64_coverage.svh"
 `endif
+`ifdef VF16_COVERAGE
+  `include "Vf16_coverage.svh"
+`endif
+`ifdef VF32_COVERAGE
+  `include "Vf32_coverage.svh"
+`endif
+`ifdef VF64_COVERAGE
+  `include "Vf64_coverage.svh"
+`endif
 `ifdef ZBA_COVERAGE
   `include "Zba_coverage.svh"
 `endif

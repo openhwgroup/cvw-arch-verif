@@ -10,9 +10,10 @@
 
 import os
 import re
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 
 def remove_duplicates_after_second_header(file_path):
     unique_lines_before_header = set()  # Set to store unique lines before the second header
@@ -20,7 +21,7 @@ def remove_duplicates_after_second_header(file_path):
     header_line = "Covergroup                                             Metric       Goal       Bins    Status"
 
     # Read the file and process lines
-    with open(file_path, 'r') as infile:
+    with open(file_path) as infile:
         lines = infile.readlines()
 
     with open(file_path, 'w') as outfile:
