@@ -119,7 +119,7 @@ fcornersH  = {"pos0":                 0x0000, # 0
               "twoToEmax":            0x7800, # 2^emax
               "onePulp":              0x3C01, # 1 + ulp
               "largestsubnorm":       0x03FF, # largest positive subnorm
-              "negSubnormLeadingOne": 0x0200, # positive subnorm with leading 1
+              "negSubnormLeadingOne": 0x8200, # positive subnorm with leading 1
               "min_subnorm":          0x0001, # smallest positive subnorm
               "canonicalQNaN":        0x7E00, # canonical quiet NaN
               "negNoncanonicalQNaN":  0xFFFF, # noncanonical quiet NaN

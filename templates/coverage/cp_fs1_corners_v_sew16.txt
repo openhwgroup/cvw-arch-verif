@@ -15,7 +15,7 @@
         bins twoToEmax              = {16'h7800};
         bins onePulp                = {16'h3c01};
         bins largestsubnorm         = {16'h03FF};
-        bins negSubnormLeadingOne   = {16'h0200};
+        bins negSubnormLeadingOne   = {16'h8200};
         bins min_subnorm            = {16'h0001};
         bins canonicalQNaN          = {16'h7E00};                // Quiet NaN with only MSB of fraction set
         bins negNoncanonicalQNaN    = {[16'hFE01:16'hFFFF]};     // Quiet NaNs excluding canonical
