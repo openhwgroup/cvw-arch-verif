@@ -167,7 +167,7 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor_all_region0: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {0};
 	}
-	// Access at the start of the region +4
+	// Access at the start of the region
 	cp_cfg_A_tor_all_region1: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART)};
 	}
