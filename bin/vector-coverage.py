@@ -6,10 +6,16 @@
 #   SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ##################################
 """
-Drive two Makefiles through build / run / clean / coverage while
-processing one CSV row at a time. While one target is active, the
-*other* CSV is reduced to its header and one dummy row (real row),
-which avoids errors and speeds up processing.
+Drive two Makefiles through the full build / run / clean / coverage cycle,
+processing CSV data in batches (default 30 rows at a time).
+
+Resume options:
+
+  • --from-line  N     → start with data-row N (1 = first row after header)
+  • --from-instr TEXT  → start with first row whose text contains TEXT
+                         (case-sensitive substring search)
+
+Exactly one of the two may be supplied.
 """
 
 import argparse
@@ -18,13 +24,14 @@ import shutil
 import subprocess
 import sys
 import time
-from contextlib import contextmanager, nullcontext
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 
 ###############################################################################
 # Configuration
 ###############################################################################
 SCRIPT_DIR = Path(__file__).resolve().parent
+BATCH_SIZE = 30  # number of rows processed per batch
 
 WALLY = os.environ.get("WALLY")
 ARCH_VERIF = SCRIPT_DIR.parent
@@ -34,14 +41,21 @@ if not WALLY:
 BUILD_MAKEFILE = ARCH_VERIF / "Makefile"
 RUN_MAKEFILE   = Path(WALLY) / "tests/riscof/Makefile"
 
-TARGETS = ["Vx", "Vls"]
+# ---------------------------------------------------------------------------
+# Targets and their CSVs
+# ---------------------------------------------------------------------------
+TARGETS = ["Vx", "Vls", "Vf"]
 
-###############################################################################
-# FILE LOCATIONS
-###############################################################################
-CSV_DIR    = ARCH_VERIF / "testplans"
-VX_CSV     = CSV_DIR / "Vx.csv"
-VLS_CSV    = CSV_DIR / "Vls.csv"
+CSV_DIR = ARCH_VERIF / "testplans"
+VX_CSV  = CSV_DIR / "Vx.csv"
+VLS_CSV = CSV_DIR / "Vls.csv"
+VF_CSV  = CSV_DIR / "Vf.csv"
+
+CSV_FOR_TARGET = {
+    "Vx":  VX_CSV,
+    "Vls": VLS_CSV,
+    "Vf":  VF_CSV,
+}
 
 ###############################################################################
 # Helper utilities
@@ -75,7 +89,7 @@ def build_run_cycle(t: str, jobs_flag: str | None) -> None:
 @contextmanager
 def one_row_at_a_time(csv_path: Path):
     """
-    Yields header and data rows one-by-one, restoring original file on exit.
+    Yields (header, data_rows) and restores the original file on exit.
     """
     backup = csv_path.with_suffix(csv_path.suffix + ".bak")
     shutil.copy2(csv_path, backup)
@@ -92,7 +106,7 @@ def one_row_at_a_time(csv_path: Path):
 def one_dummy_row(csv_path: Path):
     """
     Temporarily shrink *csv_path* to its header + first row only, restoring on exit.
-    Used to keep the inactive CSV valid with a single real row.
+    Keeps the inactive CSV valid with a single real row.
     """
     backup = csv_path.with_suffix(csv_path.suffix + ".full")
     shutil.copy2(csv_path, backup)
@@ -109,45 +123,72 @@ def one_dummy_row(csv_path: Path):
 ###############################################################################
 # Main driver
 ###############################################################################
-def main(selected: list[str], jobs_flag: str | None) -> None:
-    csv_for_target = {"Vx": VX_CSV, "Vls": VLS_CSV}
+def main(selected: list[str],
+         jobs_flag: str | None,
+         start_line: int | None,
+         start_instr: str | None) -> None:
+
     targets = selected or TARGETS
+    unknown = [t for t in targets if t not in CSV_FOR_TARGET]
+    if unknown:
+        sys.exit(f"Unknown target(s): {', '.join(unknown)}")
 
     # Stopwatch
     t0 = time.perf_counter()
 
-    # global clean before loop
+    # Global clean
     run_make(BUILD_MAKEFILE, "clean", jobs_flag)
     run_make(RUN_MAKEFILE, "clean-cvw-arch", jobs_flag)
     run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb32", jobs_flag)
     run_make(RUN_MAKEFILE, "clean-riscof-else-ucdb64", jobs_flag)
 
     for t in targets:
-        active_csv = csv_for_target[t]
+        active_csv = CSV_FOR_TARGET[t]
         if not active_csv.is_file():
             sys.exit(f"CSV for target {t} not found: {active_csv}")
 
-        # Determine the “other” CSV
-        other_targets = [ot for ot in TARGETS if ot != t]
-        other_ctx = (
-            one_dummy_row(csv_for_target[other_targets[0]])
-            if other_targets else
-            nullcontext()
-        )
+        inactive_targets = [ot for ot in TARGETS if ot != t]
 
-        with other_ctx:
+        # Put all inactive CSVs into dummy-row mode
+        with ExitStack() as stack:
+            for ot in inactive_targets:
+                stack.enter_context(one_dummy_row(CSV_FOR_TARGET[ot]))
+
             with one_row_at_a_time(active_csv) as (header, rows):
+                # Determine start index
+                if start_line is not None:
+                    if not (1 <= start_line <= len(rows)):
+                        print(f"⚠️  Row {start_line} out of range for {t}; skipping target.")
+                        continue
+                    start_idx = start_line - 1
+                elif start_instr is not None:
+                    try:
+                        start_idx = next(i for i, r in enumerate(rows) if start_instr in r)
+                    except StopIteration:
+                        print(f"⚠️  Instruction '{start_instr}' not found in {t}; skipping target.")
+                        continue
+                else:
+                    start_idx = 0
+
                 total = len(rows)
-                for idx, row in enumerate(rows, 1):
-                    active_csv.write_text(header + "\n" + row + "\n")
-                    print(f"\n📋 [{t}] Row {idx}/{total}: {row.strip()}")
+                # Batch processing
+                for batch_start in range(start_idx, total, BATCH_SIZE):
+                    batch_rows = rows[batch_start : batch_start + BATCH_SIZE]
+                    first_idx  = batch_start + 1
+                    last_idx   = batch_start + len(batch_rows)
+
+                    active_csv.write_text(header + "\n" + "\n".join(batch_rows) + "\n")
+
+                    banner = f"Row {first_idx}" if first_idx == last_idx else f"Rows {first_idx}-{last_idx}"
+                    print(f"\n📋 [{t}] {banner}/{total}")
+
                     try:
                         build_run_cycle(t, jobs_flag)
                     except Exception as e:
-                        print(f"❌ Build failed on row {idx}/{total}: {e}")
+                        print(f"❌ Build failed while processing {banner}: {e}")
                         raise
 
-                    # Elapsed time stamp
+                    # Elapsed-time display
                     elapsed = time.perf_counter() - t0
                     hh, mm = divmod(int(elapsed // 60), 60)
                     ss = int(elapsed % 60)
@@ -167,9 +208,20 @@ def main(selected: list[str], jobs_flag: str | None) -> None:
 ###############################################################################
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Vector build/run driver")
-    parser.add_argument("targets", nargs="*", help="Subset of targets (default Vx Vls)")
+
+    parser.add_argument("targets", nargs="*", help="Subset of targets (default Vx Vls Vf)")
+
+    # make -j / --jobs passthrough
     parser.add_argument("-j", "--jobs", nargs="?", const="", metavar="N",
                         help="Pass -j/-jN/--jobs/--jobs=N to make")
+
+    # resume controls
+    resume = parser.add_mutually_exclusive_group()
+    resume.add_argument("--from-line", type=int, metavar="N",
+                        help="Start with data-row N (1-based, header ignored)")
+    resume.add_argument("--from-instr", metavar="TEXT",
+                        help="Start with first row whose text contains TEXT")
+
     args = parser.parse_args()
 
     # Normalize jobs flag
@@ -180,7 +232,7 @@ if __name__ == "__main__":
         )
 
     try:
-        main(args.targets, jobs_flag)
+        main(args.targets, jobs_flag, args.from_line, args.from_instr)
     except KeyboardInterrupt:
         print("\nInterrupted by user - CSVs restored.")
         sys.exit(130)
