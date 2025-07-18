@@ -12,14 +12,14 @@ processing one CSV row at a time. While one target is active, the
 which avoids errors and speeds up processing.
 """
 
-from pathlib import Path
+import argparse
+import os
 import shutil
 import subprocess
 import sys
-import argparse
-import os
 import time
 from contextlib import contextmanager, nullcontext
+from pathlib import Path
 
 ###############################################################################
 # Configuration
