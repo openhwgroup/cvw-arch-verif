@@ -3,54 +3,87 @@
 // ExceptionsM.S
 //
 // Written: Roman De Santos rdesantos@hmc.edu 6 February 2025
+// Edited and ACT integration: Marina Bellido mbellido@hmc.edu 10 July 2025
 //
 // Purpose: Functional coverage test for Exceptions in M mode
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ///////////////////////////////////////////
 
-#include "WALLY-init-lib.h"
+#define SKIP_MTVAL  # flags to skip mtval and mepc checks since we an Instruction Access Fault (IAF) test
+#define IAF # Instruction Access Fault: logic to adjust mepc to return to ra for instruction access fault
+
+#include "model_test.h"
+#include "arch_test.h"
+RVTEST_ISA("RV32I_Zicsr, RV64I_Zicsr")
+# Test code region
+.section .text.init
+.globl rvtest_entry_point
+rvtest_entry_point:
+RVMODEL_BOOT
+RVTEST_CODE_BEGIN
+
+#ifdef TEST_CASE_1
+    RVTEST_CASE(1,"//check ISA:=regex(.*I.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True",ExceptionsM)
+    RVTEST_SIGBASE( x3,signature_base)
+
+	.attribute unaligned_access, 0
+	.attribute stack_align, 16
+  	.align	2
+  	.option norvc
 
 main:
 
     # set mstatus.FS to 01 to enable fp
-    li t0,0x4000
+    LI(t0, 0x4000)
     csrs mstatus, t0
+    nop
+
+    RVTEST_GOTO_MMODE   # set up everything in M-mode
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_branch
     /////////////////////////////////
 
-    li t1,1        #load a test value
-    .align 2       #align the next instruction to a 4 byte boundary
+    csrr a0, mstatus
+    nop
+
+    LI(t1, 1)        # load a test value
+    .align 2       # align the next instruction to a 4 byte boundary
 
     //test all six types of taken branches to a misaligned address
 
     beq x0, x0, .+6  #use .+6 to change PC counter to 6 bytes ahead.
-
     //ensure a processor that has the compressed extension will execute a c.nop instruction preventing an illegal instruction exception
     //If a processor does not have the compressed extension, there will be a misaligned access exception
     .word 0x00010013 #c.nop when 2 byte accessed, addi x0, x2, 0 when 4 byte accessed
+
 
     //follow the template above for all the branches
     bne x0, t1, .+6
     .word 0x00010013
 
+
     //blt test
     blt x0, t1, .+6
     .word 0x00010013
+
 
     //bge test
     bge t1, x0, .+6
     .word 0x00010013
 
+
     //bltu test
     bltu x0, t1, .+6
     .word 0x00010013
 
+
     //bgeu test
     bgeu x0, x0, .+6
     .word 0x00010013
+
+
 
     /////////////////////////////////
     //cp_instr_adr_misaligned_branch_nottaken
@@ -87,19 +120,19 @@ main:
     // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 00
     auipc   t0, 0
     addi    t0, t0, 8       # 8 mod 4 = 0, so lower two bits become 00
-    jalr    t1, t0, 8       #offset 8 mod = 0, so lower two bits become 00
+    jalr    t1, t0, 4       #offset 8 mod = 0, so lower two bits become 00
     .word   0x00010013
 
     // test offset[1:0] = 00, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t0, 0
     addi    t0, t0, 5       # t0 now has lower two bits 01
     jalr    t1, t0, 8       # lower bits of offset 00
-    nop
+
     .word   0x00010013
 
     // test offset[1:0] = 00, odd multiple of 2, rs1[1:0] = 10
     auipc   t1, 0
-    addi    t1, t1, 6       # 6 mod 4 = 2, so lower two bits become 10
+    addi    t1, t1, 6     # 6 mod 4 = 2, so lower two bits become 10
     jalr    t1, t1, 8
     .word   0x00010013
 
@@ -107,7 +140,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 7       # lower two bits become 11
     jalr    t1, t1, 8       # lower bits of offset 00
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 00
@@ -118,9 +150,8 @@ main:
 
     // test offset[1:0] = 01, odd multiple of 2+1, rs1[1:0] = 01
     auipc   t1, 0
-    addi    t1, t1, 5      # lower two bits become 11
+    addi    t1, t1, 9      # lower two bits become 01
     jalr    t1, t1, 5
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 01, odd multiple of 2, rs1[1:0] = 10
@@ -133,7 +164,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 7      # lower two bits are 11
     jalr    t1, t1, 5
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 00
@@ -146,7 +176,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 5       # rs1[1:0] = 01
     jalr    t1, t1, 6
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 10, odd multiple of 2, rs1[1:0] = 10
@@ -159,7 +188,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 7      # rs1[1:0] = 11
     jalr    t1, t1, 6
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 11, odd multiple of 2, rs1[1:0] = 00
@@ -172,7 +200,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 5      # rs1[1:0] = 01
     jalr    t1, t1, 7
-    nop
     .word   0x00010013
 
     // test offset[1:0] = 11, odd multiple of 2, rs1[1:0] = 10
@@ -185,7 +212,6 @@ main:
     auipc   t1, 0
     addi    t1, t1, 7       # rs1[1:0] = 11
     jalr    t1, t1, 7
-    nop
     .word   0x00010013
 
 
@@ -193,9 +219,11 @@ main:
     //cp_instr_access_fault
     /////////////////////////////////
 
-    li    t1, ACCESS_FAULT_ADDRESS       // Load the fault address into t0
+    LI(t1, ACCESS_FAULT_ADDRESS)       // Load the fault address into t0
     jalr  ra, t1, 0                      // Jump to the fault address (return address must be in t2)
     nop
+
+
     /////////////////////////////////
     //cp_illegal_instruction
     /////////////////////////////////
@@ -204,7 +232,10 @@ main:
 
     // Attempt to execute illegal instructions
     .word 0x00000000
+    nop
     .word 0xFFFFFFFF
+    nop
+
 
     /////////////////////////////////
     //cp_illegal_instruction_seed
@@ -212,9 +243,14 @@ main:
 
     //throws illegal instruction in machine mode
     csrrs  t1, seed, x0
+    nop
     csrrc  t2, seed, x0
+    nop
     csrrsi t3, seed, 0
+    nop
     csrrci t4, seed, 0
+    nop
+
 
     /////////////////////////////////
     //cp_illegal_instruction_csr
@@ -223,11 +259,17 @@ main:
     // Attempt to read from CSR 0x000, which is an invalid CSR address
     lui t2, 1
     csrrw t1, 0, t2 //check if needed
+    nop
     csrrs t1, 0, t2
+    nop
     csrrc t1, 0, t2
+    nop
     csrrwi t1, 0, 1 //check if needed
+    nop
     csrrsi t1, 0, 1
+    nop
     csrrci t1, 0, 1
+    nop
 
 
     /////////////////////////////////
@@ -235,17 +277,18 @@ main:
     /////////////////////////////////
 
     ebreak
+    nop
 
     /////////////////////////////////
     //cp_load_address_misaligned
     /////////////////////////////////
 
     # Get a pointer to scratch data
-    la      t4, scratch
+    LA(t4, scratch)
 
     # Initialize loop counter (offset) from 0 to 7
-    li      t0, 0         # t0 = loop index (offset)
-    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+    LI(t0, 0)         # t0 = loop index (offset)
+    LI(t5, 8)         # loop limit (we will test offsets 0 through 7)
 
 load_loop:
     # Compute effective address = base (t4) + current offset (t0)
@@ -257,16 +300,23 @@ load_loop:
     # will trigger a load misaligned exception, caught by trap_handler.
 
     lh      t2, 0(t1)     # load halfword (16 bits)
+    nop
     lhu     t2, 0(t1)     # load halfword unsigned
+    nop
     lw      t2, 0(t1)     # load word (32 bits)
+    nop
     lb      t2, 0(t1)     # load byte (signed)
+    nop
     lbu     t2, 0(t1)     # load byte (unsigned)
+    nop
 
    # Attempt to load doubleword for RV64
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lwu     t2, 0(t1)     # load word (unsigned)
+            nop
             ld      t2, 0(t1)     # load doubleword (64 bits)
+            nop
         #endif
     #endif
 
@@ -274,29 +324,37 @@ load_loop:
     addi    t0, t0, 1
     blt     t0, t5, load_loop
 
+
     /////////////////////////////////
     //cp_load_access_fault
     /////////////////////////////////
 
     //load the illegal address into a register
-    li    t0, ACCESS_FAULT_ADDRESS
+    LI(t0, ACCESS_FAULT_ADDRESS)
 
     // Attempt to load byte (signed)
     lb t1, 0(t0)
+    nop
     // Attempt to load byte (unsigned)
     lbu t2, 0(t0)
+    nop
     // Attempt to load halfword (signed)
     lh t3, 0(t0)
+    nop
     // Attempt to load halfword (unsigned)
     lhu t4, 0(t0)
+    nop
     // Attempt to load word (signed)
     lw t5, 0(t0)
+    nop
 
     // Attempt to load doubleword for RV64
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lwu  t6, 0(t0)   # Load word (unsigned)
+            nop
             ld   t6, 0(t0)   # Load doubleword
+            nop
         #endif
     #endif
 
@@ -305,28 +363,32 @@ load_loop:
     /////////////////////////////////
 
     # Get a pointer to scratch data and deliberately misalign it by adding 1.
-    la      t4, scratch
+    LA(t4, scratch)
 
     # Initialize loop counter (offset) from 0 to 7.
-    li      t0, 0         # t0 = loop index (offset)
-    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+    LI(t0, 0)         # t0 = loop index (offset)
+    LI(t5, 8)         # loop limit (we will test offsets 0 through 7)
 
 store_loop:
     # Compute effective address = base (t4) + current offset (t0)
     add     t1, t4, t0    # t1 = effective address with 3 LSBs = t0
 
     # Prepare a test value to store.
-    li      t2, 0xDECAFCAB
+    LI(t2, 0xDECAFCAB)
 
     # Attempt store instructions at the misaligned effective address.
     sb      t2, 0(t1)     # store byte (8 bits)
+    nop
     sh      t2, 0(t1)     # store halfword (16 bits)
+    nop
     sw      t2, 0(t1)     # store word (32 bits)
+    nop
 
     # Attempt to store doubleword on RV64.
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             sd      t2, 0(t1)     # store doubleword (64 bits)
+            nop
         #endif
     #endif
 
@@ -339,25 +401,29 @@ store_loop:
     /////////////////////////////////
 
     # Load the illegal address into a register
-    la t0, ACCESS_FAULT_ADDRESS
+    LA(t0, ACCESS_FAULT_ADDRESS)
 
     # Attempt to store byte
-    li t1, 0xAB
+    LI(t1, 0xAB)
     sb t1, 0(t0)
+    nop
 
     # Attempt to store halfword
-    li t2, 0xBEAD
+    LI(t2, 0xBEAD)
     sh t2, 0(t0)
+    nop
 
     # Attempt to store word
-    li t3, 0xADDEDCAB
+    LI(t3, 0xADDEDCAB)
     sw t3, 0(t0)
+    nop
 
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             // Attempt to store doubleword
-            li t4, 0xDEADBEEFDEADBEEF
+            LI(t4, 0xDEADBEEFDEADBEEF)
             sd t4, 0(t0)
+            nop
         #endif
     #endif
 
@@ -366,8 +432,8 @@ store_loop:
     /////////////////////////////////
 
     //switch from machine mode to machine mode
-    li a0, 3
-    ecall
+    RVTEST_GOTO_MMODE
+
 
     /////////////////////////////////
     //cp_misaligned_priority
@@ -376,11 +442,11 @@ store_loop:
     //Test misaligned priority for load instructions
 
   # Get a pointer to an access fault address
-    la      t4, ACCESS_FAULT_ADDRESS
+    LA(t4, ACCESS_FAULT_ADDRESS)
 
     # Initialize loop counter (offset) from 0 to 7
-    li      t0, 0         # t0 = loop index (offset)
-    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+    LI(t0, 0)         # t0 = loop index (offset)
+    LI(t5, 8)         # loop limit (we will test offsets 0 through 7)
 
 load_loop_priority:
     # Compute effective address = base (t4) + current offset (t0)
@@ -392,16 +458,23 @@ load_loop_priority:
     # will trigger a load misaligned exception, caught by trap_handler.
 
     lh      t2, 0(t1)     # load halfword (16 bits)
+    nop
     lhu     t2, 0(t1)     # load halfword unsigned
+    nop
     lw      t2, 0(t1)     # load word (32 bits)
+    nop
     lb      t2, 0(t1)     # load byte (signed)
+    nop
     lbu     t2, 0(t1)     # load byte (unsigned)
+    nop
 
    # Attempt to load doubleword for RV64
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             lwu     t2, 0(t1)     # load word (unsigned)
+            nop
             ld      t2, 0(t1)     # load doubleword (64 bits)
+            nop
         #endif
     #endif
 
@@ -410,35 +483,39 @@ load_loop_priority:
     blt     t0, t5, load_loop_priority
 
     # Initialize loop counter (offset) from 0 to 7
-    li      t0, 0         # t0 = loop index (offset)
-    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+    LI(t0, 0)         # t0 = loop index (offset)
+    LI(t5, 8)         # loop limit (we will test offsets 0 through 7)
 
 
     //Test misaligned priority for store instructions
 
         # Get a pointer to scratch data and deliberately misalign it by adding 1.
-    la      t4, ACCESS_FAULT_ADDRESS
+    LA(t4, ACCESS_FAULT_ADDRESS)
 
     # Initialize loop counter (offset) from 0 to 7.
-    li      t0, 0         # t0 = loop index (offset)
-    li      t5, 8         # loop limit (we will test offsets 0 through 7)
+    LI(t0, 0)         # t0 = loop index (offset)
+    LI(t5, 8)         # loop limit (we will test offsets 0 through 7)
 
 store_loop_priority:
     # Compute effective address = base (t4) + current offset (t0)
     add     t1, t4, t0    # t1 = effective address with 3 LSBs = t0
 
     # Prepare a test value to store.
-    li      t2, 0xDECAFCAB
+    LI(t2, 0xDECAFCAB)
 
     # Attempt store instructions at the misaligned effective address.
     sb      t2, 0(t1)     # store byte (8 bits)
+    nop
     sh      t2, 0(t1)     # store halfword (16 bits)
+    nop
     sw      t2, 0(t1)     # store word (32 bits)
+    nop
 
     # Attempt to store doubleword on RV64.
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             sd      t2, 0(t1)     # store doubleword (64 bits)
+            nop
         #endif
     #endif
 
@@ -452,24 +529,88 @@ store_loop_priority:
 
     # Save the original mstatus in t0.
     csrr    t0, mstatus
+    nop
 
     # Prepare the mask for the MIE bit (bit 3).
-    li      t1, 0x8         # 0x8 == (1 << 3)
+    LI(t1, 0x8)         # 0x8 == (1 << 3)
 
     # Clear the MIE bit in mstatus so that on exception entry MPIE becomes 0.
     csrrc   x0, mstatus, t1
+    nop
 
-    li     a0, 3
-    ecall                     # Execute ecall with MIE = 0; trap entry will set MPIE = 0.
+    LI(a0, 3)
+    ecall             # Execute ecall with MIE = 0; trap entry will set MPIE = 0.
+    nop
 
     # Set the MIE bit in mstatus so that on exception entry MPIE becomes 1.
     csrrs   x0, mstatus, t1
+    nop
 
-    li     a0, 3
+    LI(a0, 3)
     ecall                     # Execute ecall with MIE = 1; trap entry will set MPIE = 1.
+    nop
 
     # Restore the original mstatus.
     csrw    mstatus, t0
+    nop
 
-finished:
-    j done
+test_end:
+
+
+
+
+#endif
+
+ # ---------------------------------------------------------------------------------------------
+    # HALT
+
+RVTEST_CODE_END
+RVMODEL_HALT
+
+# Allocate scratch memory in .bss section
+.section .bss
+.align 4
+scratch:
+    .space 136  # Reserve 136 bytes of uninitialized memory
+
+
+RVTEST_DATA_BEGIN
+# Input data section.
+.data
+.align 4
+rvtest_data:
+.word 0xb0bacafe
+.word 0xb0bacafe
+RVTEST_DATA_END
+
+# Output data section.
+RVMODEL_DATA_BEGIN
+rvtest_sig_begin:
+sig_begin_canary:
+CANARY;
+signature_base:
+    .fill 20*(XLEN/32),4,0xdeadbeef
+
+#ifdef rvtest_mtrap_routine
+tsig_begin_canary:
+CANARY;
+mtrap_sigptr:
+.fill 600*(XLEN/32),4,0xb0bacafe
+
+#Prof Harris mentioned we should probably start with 10000
+tsig_end_canary:
+CANARY;
+
+#endif
+
+#ifdef rvtest_gpr_save
+gpr_save:
+  .fill 32*(XLEN/32), 4, 0xdeadbeef
+#endif
+
+
+
+sig_end_canary:
+CANARY;
+rvtest_sig_end:
+RVMODEL_DATA_END
