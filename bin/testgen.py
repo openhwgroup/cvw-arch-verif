@@ -12,13 +12,13 @@
 ##################################
 # libraries
 ##################################
-import os
-import sys
-import re
-import math
 import filecmp
-from datetime import datetime
-from random import randint, seed, getrandbits
+import math
+import os
+import re
+import sys
+from random import randint, seed
+
 
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
@@ -134,7 +134,8 @@ def unsignedImm5(imm):
   return str(imm)
 
 def ibtype_unsignedImm(xlen, imm):
-  if test == "roriw": xlen = 32
+  if test == "roriw":
+    xlen = 32
   imm = imm % xlen
   return str(imm)
 
@@ -443,14 +444,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
           if (flen > xlen): # flen = 6
             lines = lines + f"LI(x{temp1}, 0x{formatstrFP.format(rdval)[2:10]}) # load x{temp1} with 32 MSBs of {formatstrFP.format(rdval)}\n"
             lines = lines + f"LI(x{temp2}, 0x{formatstrFP.format(rdval)[10:18]}) # load x{temp2} with 32 LSBs {formatstrFP.format(rdval)}\n"
-            lines = lines + f"{storeop} x{temp1}, {str(int(ZextImm6(immval))*mul)}(sp) # store x{temp1} (0x{formatstrFP.format(rdval)[2:10]}) in memory\n"
-            lines = lines + f"addi sp, sp, 4 # move address up by 4\n"
-            lines = lines + f"{storeop} x{temp2}, {str(int(ZextImm6(immval))*mul)}(sp) # store x{temp2} (0x{formatstrFP.format(rdval)[10:18]}) after 4 bytes in memory\n"
-            lines = lines + f"addi sp, sp, -4 # move back to scratch\n"
+            lines = lines + f"{storeop} x{temp1}, {int(ZextImm6(immval))*mul}(sp) # store x{temp1} (0x{formatstrFP.format(rdval)[2:10]}) in memory\n"
+            lines = lines + "addi sp, sp, 4 # move address up by 4\n"
+            lines = lines + f"{storeop} x{temp2}, {int(ZextImm6(immval))*mul}(sp) # store x{temp2} (0x{formatstrFP.format(rdval)[10:18]}) after 4 bytes in memory\n"
+            lines = lines + "addi sp, sp, -4 # move back to scratch\n"
           else:
             lines = lines + f"LI(x{temp1}, {formatstrFP.format(rdval)}) # load x{temp1} with value {formatstrFP.format(rdval)}\n"
-            lines = lines + f"{storeop} x{temp1}, {str(int(ZextImm6(immval))*mul)}(sp) # store {formatstrFP.format(rdval)} in memory\n"
-          lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {str(int(ZextImm6(immval))*mul)}(sp) # perform operation\n")
+            lines = lines + f"{storeop} x{temp1}, {int(ZextImm6(immval))*mul}(sp) # store {formatstrFP.format(rdval)} in memory\n"
+          lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {int(ZextImm6(immval))*mul}(sp) # perform operation\n")
         else:
           lines = lines + "LI(x" + str(rd) + ", " + formatstr.format(rdval) + ") # initialize rs1\n"
     if (test == "c.addi16sp"):
@@ -548,7 +549,6 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
   elif (test in amotype):
     storeop = "sw" if (xlen == 32) else "sd"
     loadop = "lw" if (xlen == 32) else "ld"
-    align = 4 if test.endswith(".w") else 8
     lines = lines + f"LI(x{rs2}, {formatstr.format(rs1val)}) # load random value\n"
     lines = lines + f"LA(x{rs1}, scratch) # base address\n"
     lines = lines + f"{storeop} x{rs2}, 0(x{rs1}) # store in memory\n"
@@ -612,14 +612,14 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
           rs2val = (rs2val << 32) | (rs1val)
           lines = lines + f"LI(x{temp1}, 0x{formatstrFP.format(rs2val)[2:10]}) # load x{temp1} with 32 MSBs of {formatstrFP.format(rs2val)}\n"
           lines = lines + f"LI(x{temp2}, 0x{formatstrFP.format(rs2val)[10:18]}) # load x{temp2} with 32 LSBs {formatstrFP.format(rs2val)}\n"
-          lines = lines + f"{storeop} x{temp1}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # store x{temp1} (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
+          lines = lines + f"{storeop} x{temp1}, {int(unsignedImm5(immval))*mul}(x{rs1}) # store x{temp1} (0x{formatstrFP.format(rs2val)[2:10]}) in memory\n"
           lines = lines + f"addi x{rs1}, x{rs1}, 4 # move address up by 4\n"
-          lines = lines + f"{storeop} x{temp2}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # store x{temp2} (0x{formatstrFP.format(rs2val)[10:18]}) after 4 bytes in memory\n"
+          lines = lines + f"{storeop} x{temp2}, {int(unsignedImm5(immval))*mul}(x{rs1}) # store x{temp2} (0x{formatstrFP.format(rs2val)[10:18]}) after 4 bytes in memory\n"
           lines = lines + f"addi x{rs1}, x{rs1}, -4 # move back to scratch\n"
         else:
           lines = lines + f"LI(x{temp1}, {formatstrFP.format(rs2val)}) # load x{temp1} with value {formatstrFP.format(rs2val)}\n"
-          lines = lines + f"{storeop} x{temp1}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
-        lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {str(int(unsignedImm5(immval))*mul)}(x{rs1}) # perform operation\n")
+          lines = lines + f"{storeop} x{temp1}, {int(unsignedImm5(immval))*mul}(x{rs1}) # store {formatstrFP.format(rs2val)} in memory\n"
+        lines = writeTest(lines, rd, xlen, True, f"{test} f{rd}, {int(unsignedImm5(immval))*mul}(x{rs1}) # perform operation\n")
   elif (test in clhtype or test in clbtype):
     while (rs1 == rs2):
       rs2 = randomNonconflictingReg(test)
@@ -694,7 +694,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
       mul = 4
     elif (test == "c.sdsp" or test == "c.fsdsp"):
       mul = 8
-    type = "f" if (test in ["c.fswsp", "c.fsdsp"]) else "x"
+    instype = "f" if (test in ["c.fswsp", "c.fsdsp"]) else "x"
     if test == "c.fsdsp":
       lines = lines+  loadFloatReg(rs2, rs2val, xlen, flen)
     else:
@@ -706,7 +706,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     # Determine where to store
     lines = lines + "mv sp" + ", x" + str(sigReg) + " # move sigreg value into rs1\n"
     lines = lines + f"addi sp, sp, {-offset} # offset stack pointer from signature\n"
-    storeline = test + " " + type + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
+    storeline = test + " " + instype + str(rs2) +", " + str(offset) + "(sp)" + "# perform operation\n"
     lines = writeStoreTest(lines, test, rs2, xlen, storeline)
     lines = lines + f"addi sp, sp, {offset} # offset stack pointer from signature\n"
     if test in ["c.sd", "c.fsd","c.sdsp", "c.fsdsp"]:
@@ -792,7 +792,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     while (rs1 == 0):
       rs1 = randomNonconflictingReg(test)
     lines = lines + loadFloatReg(rs2, rs2val, xlen, flen)
-    lines = lines + f"mv x{rs1}, x{str(sigReg)}  #copy sigpointer to temporary register\n"
+    lines = lines + f"mv x{rs1}, x{sigReg}  #copy sigpointer to temporary register\n"
     if (immval == -2048): # Can't addi 2048 because it is out of range of 12 bit two's complement number
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
@@ -860,7 +860,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "LI(x" + str(rs2) + ", " + formatstr.format(rs2val) + ") # initialize rs2\n"
     lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", x" + str(rs2) + ", (x" + str(rs1) + ") # perform operation\n")
   else:
-    print("Error: %s type not implemented yet" % test)
+    print(f"Error: {test} type not implemented yet")
   f.write(lines)
 
 
@@ -935,7 +935,6 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
 
   instype = findInstype('instructions', testb, insMap)
   regconfig = insMap[instype].get('regconfig','xxx_')
-  implicitxreg = insMap[instype].get('implicitxreg', '____')
   global hazardLabel, sigReg, sigupd_count
   testa = 'add'
   lines = "\n# Testcase " + str(desc) + "\n"
@@ -1101,11 +1100,11 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
       lines = lines + "LI(x" + str(rs1b) + ", " + formatstr.format(immvala) + ") # initialize rs2\n"
     if (test in lrtype):
       lines = lines + "LI(x" + str(rs3b) + ", " + formatstr.format(immvala) + ") # initialize rs2\n"
-      lines = lines + f"sw x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # storing imm into scratch\n"
+      lines = lines + f"sw x{rs3b}, 0(x{rsblist[regconfig.find('a')]}) # storing imm into scratch\n"
     if (test in amotype):
       storeop = "sw" if (xlen == 32) else "sd"
       lines = lines + "LI(x" + str(rs3b) + ", " + formatstr.format(immvala) + ") # initialize rs2\n"
-      lines = lines + f"{storeop} x{rs3b}, 0(x{str(rsblist[regconfig.find('a')])}) # store in memory\n"
+      lines = lines + f"{storeop} x{rs3b}, 0(x{rsblist[regconfig.find('a')]}) # store in memory\n"
       lines = lines + "LI(x" + str(rs1b) + ", " + formatstr.format(immvala) + ") # initialize rs2\n"
     if (testa in floattypes and testa not in fTOrtype) or (testb in floattypes and testb not in fTOrtype): #clear flags for floating point operations before performing
       lines += "fsflagsi 0b00000 # clear all fflags\n"
@@ -1152,7 +1151,6 @@ def make_unique_hazard(test, regsA, haz_type='nohaz', regchoice=1):
   global sigReg
   [rs1b, rs2b, rs3b, rdb, rs1valb, rs2valb, rs3valb, immvalb, rdvalb] = randomize(test, rs3=True)
   regsB = [rdb, rs1b, rs2b, rs3b]
-  compression = insMap[findInstype('instructions', test, insMap)].get('compressed', 0)
   lines = ""
 
   match haz_type:
@@ -1230,8 +1228,10 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
       rs2val = randint(0, 2**xlen-1)
       immval = randint(0, 2**xlen-1)
       rdval = randint(0, 2**xlen-1)
-    if (rs3 is None): return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
-    else: return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
+    if (rs3 is None):
+      return [rs1, rs2, rd, rs1val, rs2val, immval, rdval]
+    else:
+      return [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval]
 
 def make_rd(test, xlen, rng):
   for r in rng:
@@ -1274,7 +1274,7 @@ def make_rs1(test, xlen, rng, fli=False):
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test, rs1=r, allunique=True)
     desc = "cp_rs1 (Test source rs1 = x" + str(r) + ")"
     if fli:
-      desc = f"cp_rs1_fli (Immediate = {flivals[r]} with rs1 encoding 5'b{format(r, f'05b')})"
+      desc = f"cp_rs1_fli (Immediate = {flivals[r]} with rs1 encoding 5'b{format(r, '05b')})"
     writeCovVector(desc, r, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
 def make_rs2(test, xlen, rng):
@@ -1414,9 +1414,12 @@ def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
     return
 
   match haz_class:
-    case 'r': haztypes = ["nohaz", "raw"]
-    case 'w': haztypes = ["nohaz", "waw", "war"]
-    case _: haztypes = ["nohaz", "raw", "waw", "war"]
+    case 'r':
+        haztypes = ["nohaz", "raw"]
+    case 'w':
+        haztypes = ["nohaz", "waw", "war"]
+    case _:
+        haztypes = ["nohaz", "raw", "waw", "war"]
 
   for haz in haztypes:
     for src in range(1, 4):
@@ -1833,9 +1836,9 @@ def make_sbox(test, xlen):
   for sbox in range(256):
     # repeat sbox value in each byte
     if (xlen == 32):
-      s = sbox | sbox << 8 | sbox << 16 | sbox << 24;
+      s = sbox | sbox << 8 | sbox << 16 | sbox << 24
     elif (xlen == 64):
-      s = sbox | sbox << 8 | sbox << 16 | sbox << 24 | sbox << 32 | sbox << 40 | sbox << 48 | sbox << 56;
+      s = sbox | sbox << 8 | sbox << 16 | sbox << 24 | sbox << 32 | sbox << 40 | sbox << 48 | sbox << 56
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     desc = f"cp_sbox = {sbox}"
     writeCovVector(desc, rs1, rs2, rd, s, s, immval, rdval, test, xlen)
@@ -2157,7 +2160,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
   ingroup = False
   for coverfile in coverfiles:
     coverfile = coverdefdir + "/" + coverfile + "_coverage.svh"
-    f = open(coverfile, "r")
+    f = open(coverfile)
     for line in f:
       if (re.search("covergroup .* with", line)):
         ingroup = True
@@ -2188,7 +2191,7 @@ def getExtensions():
   for (dirpath, dirnames, filenames) in os.walk(path):
     for filename in filenames:
       m = re.search("(.*)_coverage.svh", filename)
-      if (m != None):
+      if (m is not None):
         ext = m.group(1)
         if 'V' not in ext and 'v' not in ext:
           extensions.append(ext)
@@ -2312,7 +2315,6 @@ insMap = {
   #   once the instruction is expanded
   'rtype' : {'instructions' : rtype, 'regconfig' : 'xxx_'},
   'i1type' : {'instructions' : i1type, 'regconfig' : 'xx__'},
-  'irtype' : {'instructions' : irtype, 'regconfig' : 'xx__'},
   'loaditype' : {'instructions' : loaditype, 'regconfig' : 'xxi_', 'loadstore' : 'load'},
   'shiftiwtype' : {'instructions' : shiftiwtype, 'regconfig' : 'xxi_'},
   'shiftitype' : {'instructions' : shiftitype, 'regconfig' : 'xxi_'},
@@ -2577,7 +2579,7 @@ if __name__ == '__main__':
 
 # generate files for each test
   for xlen in xlens:
-    corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c; # 32-bit or 64-bit immediate corners for compressed shifts
+    corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c # 32-bit or 64-bit immediate corners for compressed shifts
     # for E_ext in [False, True]:
     for E_ext in [False]: # for testing only ***
       if (E_ext):
