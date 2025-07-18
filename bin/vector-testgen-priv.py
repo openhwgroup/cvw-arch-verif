@@ -11,17 +11,35 @@
 ##################################
 # libraries
 ##################################
-import os
-import csv
-import sys
-import re
-import math
 import filecmp
-from datetime import datetime
-from random import randint, seed, getrandbits
+import math
+import os
+from random import randint, seed
 
-from vector_testgen_common import *
 import vector_testgen_common as common
+from vector_testgen_common import (
+    ARCH_VERIF,
+    flen,
+    genVMaskCorners,
+    getBaseSuiteTestCount,
+    getInstructionArguments,
+    getLengthLmul,
+    getLengthSuiteTestCount,
+    getSigSpace,
+    insertTemplate,
+    loadScalarReg,
+    maxVLEN,
+    myhash,
+    prepVstart,
+    randomizeMask,
+    randomizeVectorInstructionData,
+    readTestplans,
+    setExtension,
+    setXlen,
+    whole_register_move,
+    writeVecTest,
+)
+
 
 def writeLine(argument: str, comment = ""):
     tab_over_distance = 50
@@ -37,12 +55,12 @@ def writeLine(argument: str, comment = ""):
 #####################################       test for each coverpoint      #####################################
 
 def make_vill(instruction):
-    description = f"cp_vill"
+    description = "cp_vill"
     instruction_data = randomizeVectorInstructionData(instruction, "SEWMIN", getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
                                                       vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
 
     writePrivTestPrep(description, instruction)
-    writeLine(f"vsetivli  x8, 1, e64, mf8, tu, mu",  f"# SEW = 64 and LMUL = 1/8, illegal config which sets vill = 1")
+    writeLine("vsetivli  x8, 1, e64, mf8, tu, mu",  "# SEW = 64 and LMUL = 1/8, illegal config which sets vill = 1")
     writePrivTestLine(instruction, instruction_data)
 
 
@@ -67,14 +85,14 @@ def make_vstart(instruction, sew, maxlmul = 8):
 def make_vstart_gt_vl(instruction):
     randvl = randint(1, maxVLEN)
     randvstart = randint(1, maxVLEN)
-    description = f"cp_vstart_gt_vl"
+    description = "cp_vstart_gt_vl"
     instruction_data = randomizeVectorInstructionData(instruction, "SEWMIN", getBaseSuiteTestCount(), vd = 8, vs2 = 16, vs1 = 24, rd = 5, rs2 = 6, rs1 = 7,
                                                       vd_val_pointer = "vector_random", vs2_val_pointer = "vector_random", vs1_val_pointer = "vector_random")
 
     writePrivTestPrep(description, instruction, lmul = 4, vl = "vlmax", vstart = True)
-    writeLine(f"li a0, {randvl}",            f"# load random number to a0, place holder for vl")
-    writeLine(f"li a0, {randvstart}",        f"# load random number to a1, place holder for vstart")
-    writeLine(f"jal cp_vstart_gt_vl_setup",  f"# jump to set up vstart and vl for the test")
+    writeLine(f"li a0, {randvl}",            "# load random number to a0, place holder for vl")
+    writeLine(f"li a0, {randvstart}",        "# load random number to a1, place holder for vstart")
+    writeLine("jal cp_vstart_gt_vl_setup",  "# jump to set up vstart and vl for the test")
     writePrivTestLine(instruction, instruction_data, vl = "vlmax", lmul = 4)
 
 #####################################           test generation           #####################################
@@ -104,20 +122,20 @@ def writePrivTestPrep(description, instruction, lmul = 1, vl = 1, vstart = False
     writeLine("\n# Testcase " + str(description))
 
     if (vstart):
-        writeLine(f"csrw vstart, 0",                        f"# initialize vstart  = 0 for preparing")
+        writeLine("csrw vstart, 0",                        "# initialize vstart  = 0 for preparing")
 
     if (vl == "vlmax"):
-      writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, tu, mu",  f"# initialize vl = VLMAX, LMUL = 1, SEW = SEWMIN")
+      writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, tu, mu",  "# initialize vl = VLMAX, LMUL = 1, SEW = SEWMIN")
     else:
       writeLine(f"vsetivli x8, {vl}, SEWSIZE, m{lmul}, tu, mu",  f"# initialize vl = {vl}, LMUL = 1, SEW = SEWMIN")
 
-    writeLine(f"la x2, random_mask_0",                      f"# load a random vector ") # TODO: change back to vector_random
+    writeLine("la x2, random_mask_0",                      "# load a random vector ") # TODO: change back to vector_random
     if ("vd" in instruction_arguments):
-        writeLine(f"VLESEWMIN v8, (x2)",                    f"# load to initialize vd (v8) ")
+        writeLine("VLESEWMIN v8, (x2)",                    "# load to initialize vd (v8) ")
     if ("vs2" in instruction_arguments):
-        writeLine(f"VLESEWMIN v16, (x2)",                   f"# load to initialize vs2 (v16)")
+        writeLine("VLESEWMIN v16, (x2)",                   "# load to initialize vs2 (v16)")
     if ("vs1" in instruction_arguments):
-        writeLine(f"VLESEWMIN v24, (x2)",                   f"# load to initialize vs1 (v24)")
+        writeLine("VLESEWMIN v24, (x2)",                   "# load to initialize vs1 (v24)")
 
 def writePrivTestLine(instruction, instruction_data, vl=1, lmul=1, maskval=None):
     instruction_arguments = getInstructionArguments(instruction)

@@ -10,14 +10,12 @@
 ##################################
 # libraries
 ##################################
-import os
-import sys
 import csv
-import re
 import math
-import filecmp
-from datetime import datetime
-from random import randint, seed, getrandbits
+import os
+import re
+import sys
+from random import getrandbits, randint
 
 # change these to suite your tests
 ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -887,7 +885,7 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
   writeLine(f"// {test}_{vs}_data for {vs}")
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   writeLine("// Corner Vectors")
 
   eew = sew * emul
@@ -903,7 +901,6 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
       else:
         num_words = math.ceil(maxVLEN / 32)
     for t in range(maxVtests):
-        load_aligned = False
         writeLine(f"{vs}_random_{suite}_{t:03d}:")
         for i in range(num_words):
             randomElem = getrandbits(32)
@@ -914,19 +911,19 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
 def genRandomVectorLS():
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
-  writeLine(f"// vector_ls_random_base data")
+  writeLine("// vector_ls_random_base data")
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
-  writeLine(f"    .align 4")
+  writeLine("    .align 4")
   writeLine("// Corner Vectors")
 
   num_words_either_side = int(maxELEN / 64) * 2 * 2 * maxVLEN # 2 times max vlen elements on either side of pointer (sewMAX = 64)
 
-  writeLine(f"vector_ls_random_base_header:")
+  writeLine("vector_ls_random_base_header:")
   for i in range(num_words_either_side):
       randomElem = getrandbits(32)
       writeLine(f"    .word 0x{randomElem:08x}")
-  writeLine(f"vector_ls_random_base:")
+  writeLine("vector_ls_random_base:")
   for i in range(num_words_either_side):
       randomElem = getrandbits(32)
       writeLine(f"    .word 0x{randomElem:08x}")
@@ -937,7 +934,7 @@ def genVMaskCorners():
   num_words = math.ceil(maxVLEN / 32)
 
   # generating random masks for length suite
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   for name in range(3):
     writeLine(f"random_mask_{name}:")
     val = getrandbits(maxVLEN)
@@ -956,7 +953,7 @@ def genVMaskCorners():
       if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask corner
         regenerate = True
 
-  writeLine(f"cp_mask_random:")
+  writeLine("cp_mask_random:")
   for i in range(num_words):
       word = (random_mask >> (32 * i)) & 0xFFFFFFFF
       writeLine(f"    .word 0x{word:08x}")
@@ -1001,7 +998,7 @@ def genVsCorners(test, sew, emul):
   while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
   v_register_corners["random"] = r
 
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   for corner in v_register_corners:
       val = v_register_corners[corner]
       val &= (1 << eew) - 1
@@ -1033,9 +1030,9 @@ def genVsCornersFP(test, sew, emul):
 
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
-  writeLine(f"// vector corners data (floating point)")
+  writeLine("// vector corners data (floating point)")
   writeLine("///////////////////////////////////////////\n")
-  writeLine(f"    .align 3")
+  writeLine("    .align 3")
   for corner in vs_corners_f:
       val = vs_corners_f[corner]
       writeLine(f"vs_corner_f_{corner}_{ending}:")
@@ -1169,7 +1166,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       if register % lmul != 0:
         load_unique_vtype = True
       else:
-        load_unique_vtype = (((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar"))) \
+        load_unique_vtype = ((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar")) \
           or (register_emul > 1 and register_data['reg_type'] == "scalar")
 
     if load_unique_vtype:
@@ -1202,7 +1199,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     else:
       writeLine(f"la x{tempReg}, {register_val_pointer}",  "# Load address of desired value")
       if register_val_pointer == "vs_corner_zero_emul8":
-        writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               f"# zero register")
+        writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               "# zero register")
       else:
         writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
@@ -1235,21 +1232,21 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
       element_positive = 2 ** (eew-1) - 1
 
-      writeLine(f"csrr x{vtypeReg}, vtype",                                     f"# save vtype register for after load")
-      writeLine(f"csrr x{avlReg}, vl",                                          f"# save vl register for after load")
-      writeLine(f"vsetvl x{vlmaxReg}, x0, x{vtypeReg}",                         f"# set vl to vlmax")
-      writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   f"# save vlmax * 2")
-      writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", f"# setting sew to vs2 eew")
+      writeLine(f"csrr x{vtypeReg}, vtype",                                     "# save vtype register for after load")
+      writeLine(f"csrr x{avlReg}, vl",                                          "# save vl register for after load")
+      writeLine(f"vsetvl x{vlmaxReg}, x0, x{vtypeReg}",                         "# set vl to vlmax")
+      writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   "# save vlmax * 2")
+      writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", "# setting sew to vs2 eew")
       if eew < xlen: # make sure the number is positive since it will be 0 extended to XLEN
         element_positiv_reg = 15
         while element_positiv_reg in scalar_registers_used:
           element_positiv_reg = randint(1,31)
         scalar_registers_used.append(element_positiv_reg)
-        writeLine(f"li x{element_positiv_reg}, {element_positive}",             f"#  make sure the number is positive since it will be 0 extended to XLEN")
-        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  f"#  ")
-      writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               f"# ensure all values are within (-2*vlmax, 2*vlmax)")
-      writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             f"# sew-aligning elements")
-      writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           f"# restore vl and vtype setting")
+        writeLine(f"li x{element_positiv_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
+        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  "#  ")
+      writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               "# ensure all values are within (-2*vlmax, 2*vlmax)")
+      writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             "# sew-aligning elements")
+      writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           "# restore vl and vtype setting")
 
     return scalar_registers_used
 
@@ -1339,7 +1336,7 @@ def writeVecTest(vd, sew, testline, *scalar_registers_used, test=None, rd=None, 
 
     writeLine(testline)
     if (priv):
-      writeLine(f"nop",                                           f"# nop after possible trap")
+      writeLine("nop",                                           "# nop after possible trap")
       writeLine(f"vsetivli x0, 1, SEWSIZE, m{sig_lmul}, tu, mu",  f"# re-initialize vl = 1, LMUL = {sig_lmul}, SEW = SEWMIN for signature")
 
     if load_testline is not None:
@@ -1446,45 +1443,45 @@ def getInstructionEEW(instruction):
 def prepMaskV(maskval, sew, tempReg, lmul):
   lmulflag = getLmulFlag(lmul)
   if (maskval == "zeroes"):
-    writeLine(f"vmv.v.i v0, 0",                               f"# Set mask value to 0")
+    writeLine("vmv.v.i v0, 0",                               "# Set mask value to 0")
   elif (maskval == "ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX) ? 1 : 0")
   elif (maskval == "vlmaxm1_ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"addi x{tempReg}, x{tempReg}, -1",             f"# x{tempReg} = VLMAX - 1")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX-1) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX-1) ? 1 : 0")
   elif (maskval == "vlmaxd2p1_ones"):
     writeLine(f"vsetvli x{tempReg}, x0, e{sew}, m{lmulflag}, ta, ma",  f"# x{tempReg} = VLMAX")
     writeLine(f"srli x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2")
     writeLine(f"addi x{tempReg}, x{tempReg}, 1",              f"# x{tempReg} = VLMAX / 2 + 1")
-    writeLine(f"vid.v v1",                                    f"# v1 = [0,1,2,...]")
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
-    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 f"# v0[i] = (i < VLMAX/2+1) ? 1 : 0")
+    writeLine("vid.v v1",                                    "# v1 = [0,1,2,...]")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
+    writeLine(f"vmslt.vx v0, v1, x{tempReg}",                 "# v0[i] = (i < VLMAX/2+1) ? 1 : 0")
   else: # random mask
-    writeLine(f"vmv.v.i v0, 0",                               f"# Reset mask value to 0")
+    writeLine("vmv.v.i v0, 0",                               "# Reset mask value to 0")
     writeLine(f"la x{tempReg}, {maskval}")
-    writeLine(f"vlm.v v0, (x{tempReg})",                      f"# Load mask value into v0")
+    writeLine(f"vlm.v v0, (x{tempReg})",                      "# Load mask value into v0")
 
 def prepVstart(vstartval, lmul = 1):
   if   (vstartval == "one"):
-    writeLine(f"li x8, 1",                                    f"# Load x8 = 1 for vstart")
+    writeLine("li x8, 1",                                    "# Load x8 = 1 for vstart")
   elif (vstartval == "vlmaxm1"):
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
-    writeLine(f"addi x8, x8, -1",                             f"# x8 = VLMAX - 1")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
+    writeLine("addi x8, x8, -1",                             "# x8 = VLMAX - 1")
   elif (vstartval == "vlmaxd2"):
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
-    writeLine(f"srli x8, x8, 1",                              f"# x8 = VLMAX / 2")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
+    writeLine("srli x8, x8, 1",                              "# x8 = VLMAX / 2")
   else: # random vstart
     randvstart = randint(3, maxVLEN)  # TODO: check logic for this
-    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    f"# x8 = VLMAX")
+    writeLine(f"vsetvli x8, x0, SEWSIZE, m{lmul}, ta, ma",    "# x8 = VLMAX")
     writeLine(f"la t3, {randvstart}")
-    writeLine(f"remu t3, t3, x8",                             f"# Ensure that vl < VLMAX")
-  writeLine(f"csrw vstart, x8",                               f"# Write desired vstart value to the CSR")
+    writeLine("remu t3, t3, x8",                             "# Ensure that vl < VLMAX")
+  writeLine("csrw vstart, x8",                               "# Write desired vstart value to the CSR")
 
 def getInstructionArguments(instruction):
   instruction_arguments = []
@@ -1520,7 +1517,7 @@ def getInstructionArguments(instruction):
   elif instruction in type_vxvm   : instruction_arguments = ['vd' ,'rs1', 'vs2', 'vm']
   elif instruction in type_vxxm   : instruction_arguments = ['vd' ,'rs1', 'rs2', 'vm']
   else:
-    print("Error: %s type not implemented yet" % instruction)
+    print(f"Error: {instruction} type not implemented yet")
 
   return instruction_arguments
 
@@ -1566,7 +1563,7 @@ def writeTest(description, instruction, instruction_data,
     # If mask value specified, load to v0
     if maskval is not None:
       prepMaskV(maskval, sew, tempReg, lmul)
-    elif any(instruction in type for type in [vvivtype, vvvvtype, vvxvtype, vvfvtype]):
+    elif any(instruction in instype for instype in [vvivtype, vvvvtype, vvxvtype, vvfvtype]):
       writeLine("vmv.v.i v0, 0", "# set v0 register to 0 in base suit where vm is fixed to 0")
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
@@ -1716,19 +1713,19 @@ def prepBaseV(sew, lmul, vl=1, vstart=0, ta=0, ma=0, *scalar_registers_used):
 
   if vl == "random":
     randomVl = getrandbits(32)
-    writeLine(f"li x{tempReg2}, {randomVl}",                                      f"# Load value for random vl preparation")
+    writeLine(f"li x{tempReg2}, {randomVl}",                                      "# Load value for random vl preparation")
     writeLine(f"vsetvli x{vlmaxReg}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# x{vlmaxReg} = VLMAX")
-    writeLine(f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}",                      f"# ensure that vl < VLMAX")
-    writeLine(f"ori x{tempReg2}, x{tempReg2}, 0x2",                               f"# set bit 1 to 1, ensuring 2 <= vl < VLMAX")
+    writeLine(f"remu x{tempReg2}, x{tempReg2}, x{vlmaxReg}",                      "# ensure that vl < VLMAX")
+    writeLine(f"ori x{tempReg2}, x{tempReg2}, 0x2",                               "# set bit 1 to 1, ensuring 2 <= vl < VLMAX")
     writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
   elif vl == "vlmax":
     writeLine(f"vsetvli x{tempReg2}, x0, e{sew}, m{lmulflag}{taflag}{maflag}",    f"# Set vl = VLMAX, where x{vlmaxReg} = VLMAX")
   else:
-    writeLine(f"li x{tempReg2}, {vl}",                                            f"# Load desired vl value") # put desired vl into an integer register
+    writeLine(f"li x{tempReg2}, {vl}",                                            "# Load desired vl value") # put desired vl into an integer register
     writeLine(f"vsetvli x0, x{tempReg2}, e{sew}, m{lmulflag}{taflag}{maflag}")
 
-  if (vstart == True):   # if vstart specified
-    writeLine(f"li x{tempReg2}, {vstart}",                                        f"# Load desired vstart value")
+  if (vstart):   # if vstart specified
+    writeLine(f"li x{tempReg2}, {vstart}",                                        "# Load desired vstart value")
     writeLine(f"csrw vstart, x{tempReg2}")
 
   return scalar_registers_used
@@ -2161,7 +2158,7 @@ def readTestplans(priv=False):
                         cps = []
                         del row["Instruction"]
                         for key, value in row.items():
-                            if (type(value) == str and value != ''):
+                            if (type(value) is str and value != ''):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
