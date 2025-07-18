@@ -13,5 +13,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v6
+
     - name: Ensure pre-commit checks pass
-      run: python3 -m pip install pre-commit && pre-commit run --all-files --show-diff-on-failure --color=always
+      run: uvx pre-commit run --all-files --show-diff-on-failure --color=always

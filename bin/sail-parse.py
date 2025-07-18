@@ -12,6 +12,7 @@
 import re
 import sys
 
+
 def sailLog2Trace(inputLogFile, outputTraceFile):
     # Regular expression to match instruction lines
     #                             [STEP]     [MODE]:    0xPC              (0xINSN)           DISASM
@@ -31,7 +32,7 @@ def sailLog2Trace(inputLogFile, outputTraceFile):
     # TODO: Add support for parsing traps, interrupts, and VM signals
 
     # Main parsing of log file
-    with open(inputLogFile, 'r') as f, open(outputTraceFile, "w") as outfile:
+    with open(inputLogFile) as f, open(outputTraceFile, "w") as outfile:
         lines = f.readlines()
         output_line = ""
         for i in range(len(lines)):

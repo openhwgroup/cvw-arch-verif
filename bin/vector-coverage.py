@@ -12,14 +12,14 @@ processing one CSV row at a time. While one target is active, the
 which avoids errors and speeds up processing.
 """
 
-from pathlib import Path
+import argparse
+import os
 import shutil
 import subprocess
 import sys
-import argparse
-import os
 import time
 from contextlib import contextmanager, nullcontext
+from pathlib import Path
 
 ###############################################################################
 # Configuration
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Vector build/run driver")
     parser.add_argument("targets", nargs="*", help="Subset of targets (default Vx Vls)")
     parser.add_argument("-j", "--jobs", nargs="?", const="", metavar="N",
-                        help="Pass ‑j/‑jN/--jobs/--jobs=N to make")
+                        help="Pass -j/-jN/--jobs/--jobs=N to make")
     args = parser.parse_args()
 
     # Normalize jobs flag
@@ -182,5 +182,5 @@ if __name__ == "__main__":
     try:
         main(args.targets, jobs_flag)
     except KeyboardInterrupt:
-        print("\nInterrupted by user – CSVs restored.")
+        print("\nInterrupted by user - CSVs restored.")
         sys.exit(130)
