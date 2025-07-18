@@ -69,7 +69,7 @@ covergroup PMPM_cg with function sample(
   		bins just_beyond  = {`REGIONSTART+`g};
 	}
 
-	addr_offset_cp_cfg_A_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+	address_offsets: coverpoint (ins.current.rs1_val + ins.current.imm) {
   		bins at_base      = {`REGIONSTART};
   		bins below_base   = {`REGIONSTART-4};
   		bins above_base   = {`REGIONSTART+4};
@@ -557,54 +557,15 @@ covergroup PMPM_cg with function sample(
 
 	//6 legal combinations for XRW
 
-	//incase of legal_RWX_L_TOR_1, pmpaddri-1 is REGIONSTART, hence the access addressess are adjusted accordingly. (pmpaddr-i = address-g)
-	legal_RWX_L_TOR_1: coverpoint {pmpcfg_x[1], pmpcfg_wr[1], pmpcfg_l[1], pmpcfg_a[1], pmp_hit[1],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp1
-		wildcard bins pmp0cfg_xwr001_addr1  = {7'b0011011,`REGIONSTART}; //address-g
-		wildcard bins pmp0cfg_xwr001_addr2  = {7'b0011011,`REGIONSTART-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr001_addr3  = {7'b0011011,`REGIONSTART+`g}; //address
-		wildcard bins pmp0cfg_xwr001_addr4  = {7'b0011011,`REGIONSTART+`g-4}; //address-4
+	// Configuration for pairs of pmpaddr ((11,10),(9,8),(7,6),(5,4),(3,2),(1,0)) for Default TOR.
+  	legal_RWX_L_TOR: coverpoint {pmpcfg_l[11:0], pmpcfg_a[23:0], pmpcfg_x[11:0], pmpcfg_wr[23:0], pmp_hit[11:0]} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 1
+		wildcard bins pmp1cfg_lxwr_1000  = {84'b1???????????_01??????????????????????_0???????????_00??????????????????????_?1??????????};
+		wildcard bins pmp1cfg_lxwr_1001  = {84'b??1?????????_????01??????????????????_??0?????????_????01??????????????????_???1????????};
+		wildcard bins pmp0cfg_lxwr_1011  = {84'b????1???????_????????01??????????????_????0???????_????????11??????????????_?????1??????};
+		wildcard bins pmp0cfg_lxwr_1100  = {84'b??????1?????_????????????01??????????_??????1?????_????????????00??????????_???????1????};
+		wildcard bins pmp0cfg_lxwr_1101  = {84'b????????1???_????????????????01??????_????????1???_????????????????01??????_?????????1??};
+		wildcard bins pmp0cfg_lxwr_1111  = {84'b??????????1?_????????????????????01??_??????????1?_????????????????????11??_???????????1};
 	}
-
-	//incase of legal_RWX_L_TOR_2, pmpaddri-1 is (`NON_STANDARD_REGION + `g)<<2
-	legal_RWX_L_TOR_2: coverpoint {pmpcfg_x[2], pmpcfg_wr[2], pmpcfg_l[2], pmpcfg_a[2], pmp_hit[2],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp2
-		wildcard bins pmp0cfg_xwr011_addr1  = {7'b0111011,(`NON_STANDARD_REGION + `g)<<2}; //address-g
-		wildcard bins pmp0cfg_xwr011_addr2  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr011_addr3  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_xwr011_addr4  = {7'b0111011,((`NON_STANDARD_REGION + `g)<<2)+`g-4}; //address-4
-	}
-
-	//incase of legal_RWX_L_TOR_3, pmpaddri-1 is (`NON_STANDARD_REGION + 3*`g)<<2
-	legal_RWX_L_TOR_3: coverpoint {pmpcfg_x[3],pmpcfg_wr[3], pmpcfg_l[3], pmpcfg_a[3], pmp_hit[3],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp3
-		wildcard bins pmp0cfg_xwr100_addr1  = {7'b1001011,(`NON_STANDARD_REGION + 3*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_xwr100_addr2  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr100_addr3  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_xwr100_addr4  = {7'b1001011,((`NON_STANDARD_REGION + 3*`g)<<2)+`g-4}; //address-4
-	}
-
-	//incase of legal_RWX_L_TOR_4, pmpaddri-1 is (`NON_STANDARD_REGION + 6*`g)<<2
-	legal_RWX_L_TOR_4: coverpoint {pmpcfg_x[4], pmpcfg_wr[4], pmpcfg_l[4], pmpcfg_a[4], pmp_hit[4],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp4
-		wildcard bins pmp0cfg_xwr101_addr1  = {7'b1011011,(`NON_STANDARD_REGION + 6*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_xwr101_addr2  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr101_addr3  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_xwr101_addr4  = {7'b1011011,((`NON_STANDARD_REGION + 6*`g)<<2)+`g-4}; //address-4
-	}
-
-	//incase of legal_RWX_L_TOR_5, pmpaddri-1 is (`NON_STANDARD_REGION + 10*`g)<<2
-	legal_RWX_L_TOR_5: coverpoint {pmpcfg_x[5], pmpcfg_wr[5], pmpcfg_l[5], pmpcfg_a[5], pmp_hit[5],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
-		wildcard bins pmp0cfg_xwr111_addr1  = {7'b1111011,(`NON_STANDARD_REGION + 10*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_xwr111_addr2  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr111_addr3  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_xwr111_addr4  = {7'b1111011,((`NON_STANDARD_REGION + 10*`g)<<2)+`g-4}; //address-4
-	}
-
-	//incase of legal_RWX_L_TOR_6, pmpaddri-1 is (`NON_STANDARD_REGION + 15*`g)<<2
-	legal_RWX_L_TOR_6: coverpoint {pmpcfg_x[6], pmpcfg_wr[6], pmpcfg_l[6], pmpcfg_a[6], pmp_hit[6],(ins.current.rs1_val + ins.current.imm)} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = TOR for region pmp5
-		wildcard bins pmp0cfg_xwr000_addr1  = {7'b0001011,(`NON_STANDARD_REGION + 15*`g)<<2}; //address-g
-		wildcard bins pmp0cfg_xwr000_addr2  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)-4}; //address-g-4
-		wildcard bins pmp0cfg_xwr000_addr3  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g}; //address
-		wildcard bins pmp0cfg_xwr000_addr4  = {7'b0001011,((`NON_STANDARD_REGION + 15*`g)<<2)+`g-4}; //address-4
-	}
-//-------------------------------------------------------
 
   	legal_RWX_L_NAPOT: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 3 for region pmp0
 		wildcard bins pmp0cfg_rwxl0001  = {105'b????????????????????????????00_??????????????0_??????????????1_????????????????????????????11_000000000000001};
@@ -1193,9 +1154,9 @@ covergroup PMPM_cg with function sample(
 
 	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, RWXL0001, read_instr_lw, addr_offset_cp_cfg_A_napot_all;
 
-	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, exec_instr;
-	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, read_instr_lw;
-	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, addr_offset_cp_cfg_A_napot, write_instr_sw;
+	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, exec_instr;
+	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, read_instr_lw;
+	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, write_instr_sw;
 
 
 	cp_cfg_A_na4_x : cross priv_mode_m, legal_RWX_L_NA4, addr_offset_cp_cfg_A_na4, exec_instr ;
@@ -1204,29 +1165,9 @@ covergroup PMPM_cg with function sample(
 
 	cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, RWXL0001, read_instr_lw, addr_offset_cp_cfg_A_NA4_all;
 
-	//we have 6 variants for each region,  with unique legal_RWX_L_TOR combination, pmpaddr_for_tor_regioni
-	//reuse the pmpaddr regions with increasing sizes, access addresses correspond to pmpaddri-1 for each region
-
-	cp_cfg_A_tor_r_1: cross priv_mode_m, pmpaddr_for_tor_region1, legal_RWX_L_TOR_1, read_instr_lw ;
-	cp_cfg_A_tor_r_2: cross priv_mode_m, pmpaddr_for_tor_region2, legal_RWX_L_TOR_2, read_instr_lw ;
-	cp_cfg_A_tor_r_3: cross priv_mode_m, pmpaddr_for_tor_region3, legal_RWX_L_TOR_3, read_instr_lw ;
-	cp_cfg_A_tor_r_4: cross priv_mode_m, pmpaddr_for_tor_region4, legal_RWX_L_TOR_4, read_instr_lw ;
-	cp_cfg_A_tor_r_5: cross priv_mode_m, pmpaddr_for_tor_region5, legal_RWX_L_TOR_5, read_instr_lw ;
-	cp_cfg_A_tor_r_6: cross priv_mode_m, pmpaddr_for_tor_region6, legal_RWX_L_TOR_6, read_instr_lw ;
-
-	cp_cfg_A_tor_w_1: cross priv_mode_m, pmpaddr_for_tor_region1, legal_RWX_L_TOR_1, write_instr_sw ;
-	cp_cfg_A_tor_w_2: cross priv_mode_m, pmpaddr_for_tor_region2, legal_RWX_L_TOR_2, write_instr_sw ;
-	cp_cfg_A_tor_w_3: cross priv_mode_m, pmpaddr_for_tor_region3, legal_RWX_L_TOR_3, write_instr_sw ;
-	cp_cfg_A_tor_w_4: cross priv_mode_m, pmpaddr_for_tor_region4, legal_RWX_L_TOR_4, write_instr_sw ;
-	cp_cfg_A_tor_w_5: cross priv_mode_m, pmpaddr_for_tor_region5, legal_RWX_L_TOR_5, write_instr_sw ;
-	cp_cfg_A_tor_w_6: cross priv_mode_m, pmpaddr_for_tor_region6, legal_RWX_L_TOR_6, write_instr_sw ;
-
-	cp_cfg_A_tor_x_1: cross priv_mode_m, pmpaddr_for_tor_region1, legal_RWX_L_TOR_1, exec_instr ;
-	cp_cfg_A_tor_x_2: cross priv_mode_m, pmpaddr_for_tor_region2, legal_RWX_L_TOR_2, exec_instr ;
-	cp_cfg_A_tor_x_3: cross priv_mode_m, pmpaddr_for_tor_region3, legal_RWX_L_TOR_3, exec_instr ;
-	cp_cfg_A_tor_x_4: cross priv_mode_m, pmpaddr_for_tor_region4, legal_RWX_L_TOR_4, exec_instr ;
-	cp_cfg_A_tor_x_5: cross priv_mode_m, pmpaddr_for_tor_region5, legal_RWX_L_TOR_5, exec_instr ;
-	cp_cfg_A_tor_x_6: cross priv_mode_m, pmpaddr_for_tor_region6, legal_RWX_L_TOR_6, exec_instr ;
+	cp_cfg_A_tor_x : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, exec_instr;
+	cp_cfg_A_tor_r : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, read_instr_lw;
+	cp_cfg_A_tor_w : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, write_instr_sw;
 
 	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, read_instr_lw ;
 	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, write_instr_sw ;
@@ -1468,7 +1409,7 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 	end
 
 	for (int k = 0; k < 15; k++) begin				// for first 15 regions
-		pmp_hit[k] = (pmpaddr[k] == `REGIONSTART);
+		pmp_hit[k] = (pmpaddr[k] == `NON_STANDARD_REGION);
 	end
 
 	for (int k = 15; k < 63; k++) begin				// for next 48 regions
@@ -2069,4 +2010,5 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
+	$display("AK-> %b",{pmpcfg_l[11:0], pmpcfg_a[23:0], pmpcfg_x[11:0], pmpcfg_wr[23:0], pmp_hit[11:0]});
 endfunction
