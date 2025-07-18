@@ -1,7 +1,5 @@
 # TODO: Migrate this whole file to pyproject.toml when swithcing to new project structure
 
-exclude = ["vector*"] # TODO: Remove this when vector scripts are passing lint
-
 # Target oldest version of Python used (Python 3.9 for Ubuntu 20.04 LTS)
 target-version = "py312"
 
@@ -28,5 +26,5 @@ ignore = [
   "B007",           # loop control variable not used
   "B9",             # overly opinionated rules
   "RUF005",         # iterable unpacking in list
-  "E701",           # multiple statements on one line
+  "E701",           # multiple statements on one line # TODO: Remove this when autoformatter is in place
 ]
