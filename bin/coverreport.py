@@ -12,13 +12,14 @@ import os
 import re
 import sys
 
+
 def remove_duplicates_after_second_header(file_path):
     unique_lines_before_header = set()  # Set to store unique lines before the second header
     header_count = 0
     header_line = "Covergroup                                             Metric       Goal       Bins    Status"
 
     # Read the file and process lines
-    with open(file_path, 'r') as infile:
+    with open(file_path) as infile:
         lines = infile.readlines()
 
     with open(file_path, 'w') as outfile:
@@ -76,7 +77,7 @@ for config in configs:
         os.system(cmd)
 
         # Process each line and replace the specified path pattern
-        with open(reportdir + "/temp_summary_" + config + ".txt", "r") as infile, open(reportdir + "/summary_" + config + ".txt", "w") as outfile:
+        with open(reportdir + "/temp_summary_" + config + ".txt") as infile, open(reportdir + "/summary_" + config + ".txt", "w") as outfile:
             metric_start_pos = None
             previous_line = None  # To keep track of the previous line
 

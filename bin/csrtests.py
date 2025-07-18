@@ -8,11 +8,10 @@
 # Emit tests of all 4096 CSRs for Zicsr functional coverage tests
 ##################################
 
-import random
-from random import randint
-from random import seed
-import os, sys
-from os import environ
+import os
+import sys
+from random import randint, seed
+
 
 def printwalk(regs):
     for reg in regs:
@@ -47,7 +46,7 @@ def csrwalk(pathname, regs, hregs):
         print("\n#if __riscv_xlen == 32")
         printwalk(hregs)
         print("#endif")
-    outfile.close
+    outfile.close()
 
 def csrtests(pathname, skipCsrs):
     outfile = open(pathname, 'w')
@@ -75,7 +74,7 @@ def csrtests(pathname, skipCsrs):
         print("\tcsrrs x"+reg3+", "+ih+", x"+reg2+"\t// Set all CSR bits")
         print("\tcsrrc x"+reg3+", "+ih+", x"+reg2+"\t// Clear all CSR bits")
         print("\tcsrrw x"+reg3+", "+ih+", x"+reg1+"\t// Restore CSR")
-    outfile.close
+    outfile.close()
 
 def readandswitchmode(regs, mode):
     # helper function to switch modes when reading csr
@@ -127,7 +126,7 @@ def counterenwalk(pathname, csr, regs, hregs, mode):
             print("\n#if __riscv_xlen == 32")
             mwalk(csr, hregs, mode)
             print("#endif")
-    outfile.close
+    outfile.close()
 
 def mwalkdouble(csr1, csr2, regs, mode):
     print("\n// Save the original values of csrs")
@@ -190,7 +189,7 @@ def cp_vsetvl_i_rd_nx0_rs1_x0(pathname):
                 print("\tcsrr     x1, vl")
                 print("\tRVTEST_SIGUPD(x3, x1)")
                 print()
-    outfile.close
+    outfile.close()
 
 def cp_vsetivli_avl_corners(pathname):
     with open(pathname, 'w') as outfile:
@@ -205,7 +204,7 @@ def cp_vsetivli_avl_corners(pathname):
                 print("\tcsrr     x1, vl")
                 print("\tRVTEST_SIGUPD(x3, x1)")
                 print()
-    outfile.close
+    outfile.close()
 
 # setup
 seed(0) # make tests reproducible
