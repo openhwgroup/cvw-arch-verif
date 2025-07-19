@@ -2646,7 +2646,7 @@ if __name__ == '__main__':
           sigupd_count = 10 # number of entries in signature - start with a margin of 10 spaces
           sigupd_countF = 0  #initialize signature update count for F tests
           signatureWords = 0 #initialize signature words
-          basename = "WALLY-COV-" + extension + "-" + test
+          basename = extension + "-" +test
           fname = pathname + "/" + basename + ".S"
           tempfname = pathname + "/" + basename + "_temp.S"
 
