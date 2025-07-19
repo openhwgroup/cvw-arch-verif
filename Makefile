@@ -155,3 +155,9 @@ clean:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/*
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/*
+
+lint:
+	uvx ruff check
+
+lint-fix:
+	uvx ruff check --fix
