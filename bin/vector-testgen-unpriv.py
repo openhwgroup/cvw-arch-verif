@@ -1165,7 +1165,7 @@ if __name__ == '__main__':
         else:
           immcornersv = [0, 1, 2, 14, 15, -1, -2, -15, -16]
 
-        basename = "WALLY-COV-" + extension + "-" + test
+        basename = extension + "-" + test
         fname = pathname + "/" + basename + ".S"
         tempfname = pathname + "/" + basename + "_temp.S"
 

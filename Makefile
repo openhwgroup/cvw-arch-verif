@@ -101,7 +101,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv32gc $(TESTDIR)/rv32/I/WALLY-COV-I-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(TESTDIR)/rv32/I/I-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 
 	$(MAKE) merge
 
@@ -155,3 +155,9 @@ clean:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/*
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/*
+
+lint:
+	uvx ruff check
+
+lint-fix:
+	uvx ruff check --fix

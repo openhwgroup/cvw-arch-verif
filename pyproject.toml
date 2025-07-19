@@ -1,11 +1,10 @@
-# TODO: Migrate this whole file to pyproject.toml when swithcing to new project structure
-
+[tool.ruff]
 # Target oldest version of Python used (Python 3.9 for Ubuntu 20.04 LTS)
 target-version = "py312"
 
-line-length=250
+line-length = 250
 
-[lint]
+[tool.ruff.lint]
 select = [
   "F",    # various basic rules (pyflakes)
   "E",    # errors (pycodestyle)

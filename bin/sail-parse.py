@@ -9,30 +9,31 @@
 # with RVVI input to cvw-arch-verif
 ##################################
 
+import argparse
 import re
-import sys
+from pathlib import Path
 
 
-def sailLog2Trace(inputLogFile, outputTraceFile):
+def sailLog2Trace(inputLogFile: Path, outputTraceFile: Path) -> None:
     # Regular expression to match instruction lines
     #                             [STEP]     [MODE]:    0xPC              (0xINSN)           DISASM
-    insn_pattern = re.compile(r'\[(\d+)\] \[([MSU])\]: 0x([0-9a-fA-F]+) \(0x([0-9a-fA-F]+)\) (.*)')
+    insn_pattern = re.compile(r"\[(\d+)\] \[([MSU])\]: 0x([0-9a-fA-F]+) \(0x([0-9a-fA-F]+)\) (.*)")
 
     # Regular expressions to match register updates
     reg_patterns = {
-        'CSR': re.compile(r'CSR .* \(0x([0-9a-fA-F]+)\) (?:<-|->) 0x([0-9a-fA-F]+)'),
-        'X':   re.compile(r'x(\d+) <- 0x([0-9a-fA-F]+)'),
-        'F':   re.compile(r'f(\d+) <- 0x([0-9a-fA-F]+)'),
-        'V':   re.compile(r'v(\d+) <- 0x([0-9a-fA-F]+)'),
+        "CSR": re.compile(r"CSR .* \(0x([0-9a-fA-F]+)\) (?:<-|->) 0x([0-9a-fA-F]+)"),
+        "X": re.compile(r"x(\d+) <- 0x([0-9a-fA-F]+)"),
+        "F": re.compile(r"f(\d+) <- 0x([0-9a-fA-F]+)"),
+        "V": re.compile(r"v(\d+) <- 0x([0-9a-fA-F]+)"),
     }
 
     # Mode mapping
-    mode_map = {'M': '3', 'S': '1', 'U': '0'}
+    mode_map = {"M": "3", "S": "1", "U": "0"}
 
     # TODO: Add support for parsing traps, interrupts, and VM signals
 
     # Main parsing of log file
-    with open(inputLogFile) as f, open(outputTraceFile, "w") as outfile:
+    with inputLogFile.open() as f, outputTraceFile.open("w") as outfile:
         lines = f.readlines()
         output_line = ""
         for i in range(len(lines)):
@@ -73,10 +74,15 @@ def sailLog2Trace(inputLogFile, outputTraceFile):
                 outfile.write(output_line)
                 output_line = next_output
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Convert a Sail log file into a trace format for use with RVVI")
+    parser.add_argument("input_file", type=Path, help="Input Sail log file to parse")
+    parser.add_argument("output_file", type=Path, help="Output trace file for RVVI")
+    args = parser.parse_args()
+
+    sailLog2Trace(args.input_file, args.output_file)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        input_file = sys.argv[1]
-        output_file = sys.argv[2]
-        sailLog2Trace(input_file, output_file)
-    else:
-        print("Invalid number of arguments. \nUsage: sail-parse.py <input_log_file> <output_trace_file>")
+    main()
