@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import re
+#import re
 import sys
-import os
+#import os
 
 
 def Combine(test_file, sig_file, output_file):
@@ -10,7 +10,7 @@ def Combine(test_file, sig_file, output_file):
     Combine the signature file with comments to the test file.
     """
     try:
-        with open(test_file, 'r') as tf, open(sig_file, 'r') as sf:
+        with open(test_file) as tf, open(sig_file) as sf:
             test_lines = tf.readlines()
             sig_lines = sf.readlines()
 
