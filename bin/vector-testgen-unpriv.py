@@ -26,6 +26,7 @@ from vector_testgen_common import (
   fcornersH,
   flen,
   freg_count,
+  frmList,
   genRandomVector,
   genRandomVectorLS,
   genVMaskCorners,
@@ -402,6 +403,15 @@ def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+
+def make_frm(instruction, sew):
+  for frm in frmList:
+    for i in range(10):
+      description = f"cp_csr_frm (Test frm = {frm}, Test number {i+1})"
+      instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount())
+
+      writeTest(description, instruction, instruction_data, sew=sew, frm=frm)
+      incrementBasetestCount()
 
 ##################################### length suite (vl!=1) test generation #####################################
 
@@ -815,6 +825,8 @@ def makeTest(coverpoints, test, sew=None):
     elif coverpoint == "cr_vxrm_vs2_rs1_corners_wx"   : make_vxrm_vs2_rs1_corners(test, sew, vcornersemul2)
     elif coverpoint == "cr_vxrm_vs2_imm_corners"      : make_vxrm_vs2_imm_corners(test, sew, vcornersemul1)
     elif coverpoint == "cr_vxrm_vs2_imm_corners_wi"   : make_vxrm_vs2_imm_corners(test, sew, vcornersemul2)
+    elif coverpoint == "cp_csr_frm_v"                 : make_frm(test, sew)
+    elif "cp_csr_fflags" in coverpoint                : pass # flags are expected to be raised by edge values of input
     elif coverpoint == "cp_imm_corners_5bit"          : pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
     elif coverpoint == "cp_imm_corners_5bit_u"        : pass # already tested in cp_imm_5bit but needed for cr_vs2_imm_corners
     elif coverpoint == "cp_csr_vxrm"                  : pass # already tested in cross coverpoints with vs2 and vs1/rs1/imm
@@ -1015,6 +1027,7 @@ def coverpointInclusions(coverpoints):
       applicable_coverpoints.remove(coverpoint)
       # cp_custom_vindexVX_rs1_not_truncated_32, cp_custom_vindexVX_rs1_not_truncated_64 are covered with cp_rs1_corners
   return applicable_coverpoints
+
 #####################################               rewrite               #####################################
 
 
