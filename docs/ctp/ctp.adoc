@@ -315,9 +315,13 @@ Sdtrig/Sdext
 ***Zkr
 *** drop SsstrictM?  No SsstrictU
 
+=== Conforming M-Mode Requirement
+
+The privileged testplan relies on a machine mode conforming to Sm1p11 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
+
 == General Test Plan Strategy
 
-Coverpoints are written with one file that covers both RV32 and RV64, to reduce the duplication and risk of becoming out of sync.  When a coverage file contains coverpoints that apply only to one XLEN or the other (e.g. 32 or 64-bit corner values), they are separated by ``ifdef XLEN32` or `XLEN64` directives.
+Coverpoints are written with one file that covers both RV32 and RV64, to reduce the duplication and risk of becoming out of sync.  When a coverage file contains coverpoints that apply only to one XLEN or the other (e.g. 32 or 64-bit edge values), they are separated by ``ifdef XLEN32` or `XLEN64` directives.
 
 Privileged tests are mostly written by hand and share a single .S file that can be compiled for either RV32 or RV64, again with `ifdef` directives to separate the two.  Unprivileged tests are generated from a template using a Python script, and are divided into RV32 and RV64 directories because the random values differ with XLEN.
 
@@ -385,14 +389,14 @@ and the architectural state of the hart.
 
 == Unprivileged Test Plan
 
-Unprivileged tests exercise every instruction using every applicable source and destination register, and reasonable corners of source values.  They are intended for certification, not verification. For example, they do not test all difficult floating-point cases.
+Unprivileged tests exercise every instruction using every applicable source and destination register, and reasonable edge values of sources.  They are intended for certification, not verification. For example, they do not test all difficult floating-point cases.
 
 The unprivileged test plan is written to be easily reviewed by a human, and to be automatically converted to machine-readable coverpoints and tests.
 It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Every bin in every coverpoint is associated with a specific test. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
+Every bin in every coverpoint is associated with a specific test footnote:[cp_asm_test is an exception, just counting the number of times the instruction was executed]. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
 
 [NOTE]
 ====
@@ -416,11 +420,11 @@ The coverpoints in <<t-unprivileged-coverpoints>> are used in most of the unpriv
 |cp_rs1|32|The rs1 register number used in the instruction.
 |cp_rs2|32|The rs2 register number used in the instruction.
 |cp_rd|32|The rd register number used in the instruction.
-|cp_rs1_corners|16|Corner values for rs1 (see <<t-integer-corner-definitions>>).
-|cp_rs2_corners|16|Corner values for rs2 (see <<t-integer-corner-definitions>>).
-|cp_imm_corners|16|Corner values for 12-bit immediates (see <<t-immediate-corner-definitions>>).
-|cr_rs1_imm_corners|16*20|Cross-product of rs1 and 12-bit immediate corners (see <<t-immediate-corner-definitions>>).
-|cr_rs1_rs2_corners|16*16|Cross-product of rs1 and rs2 corners, used for instructions with two source registers.
+|cp_rs1_edges|16|Edge values for rs1 (see <<t-integer-edge-definitions>>).
+|cp_rs2_edges|16|Edge values for rs2 (see <<t-integer-edge-definitions>>).
+|cp_imm_edges|16|Edge values for 12-bit immediates (see <<t-immediate-edge-definitions>>).
+|cr_rs1_imm_edges|16*20|Cross-product of rs1 and 12-bit immediate edges (see <<t-immediate-edge-definitions>>).
+|cr_rs1_rs2_edges|16*16|Cross-product of rs1 and rs2 edges, used for instructions with two source registers.
 |cmp_rs1_rs2|32|The rs1 and rs2 registers have the same register number.
 |cmp_rd_rs1|32|The rd register has the same register number as the rs1 register.
 |cmp_rd_rs2|32|The rd register has the same register number as the rs2 register.
@@ -441,17 +445,17 @@ The coverpoints in <<t-unprivileged-coverpoints>> are used in most of the unpriv
 |cp_fs2|32|The fs2 register number used in the instruction.
 |cp_fs3|32|The fs3 register number used in the instruction.
 |cp_fd|32|The fd register number used in the instruction.
-|cp_fs1_corners|26|Corner values for fs1 (see <<t-fp-corner-definitions>>)
-|cp_fs2_corners|26|Corner values for fs2 (see <<t-fp-corner-definitions>>)
-|cp_fs3_corners|26|Corner values for fs3 (see <<t-fp-corner-definitions>>)
+|cp_fs1_edges|26|Edge values for fs1 (see <<t-fp-edge-definitions>>)
+|cp_fs2_edges|26|Edge values for fs2 (see <<t-fp-edge-definitions>>)
+|cp_fs3_edges|26|Edge values for fs3 (see <<t-fp-edge-definitions>>)
 |cmp_fd_fs1|32|The fd register has the same register number as the fs1 register.
 |cmp_fd_fs2|32|The fd register has the same register number as the fs2 register.
 |cmp_fd_fs3|32|The fd register has the same register number as the fs3 register.
 |cp_frm|5|The floating-point rounding mode used in the instruction: rne, rdn, rup, rtz, rmm, dyn.
 |cp_csr_fflags|10|The instruction sets the {NV, DZ, OF, UF, NX} flags in the fflags CSR.
 |cp_csr_frm|6|Dynamic rounding mode in the frm CSR: rne, rdn, rup, rtz, rmm, illegal
-|cr_fs1_fs2_corners|26*26|Cross product of corners of fs1 and fs2 registers.
-|cr_fs1_fs3_corners|26*26|Cross product of corners of fs1 and fs3 registers.
+|cr_fs1_fs2_edges|26*26|Cross product of edges of fs1 and fs2 registers.
+|cr_fs1_fs3_edges|26*26|Cross product of edges of fs1 and fs3 registers.
 |cp_fclass|10|All 10 fclass classes.
 |cp_NaNBox|1|Upper bits of NaN-boxed value are all 1s
 |cp_fs1_badNB|12|The fs1 register contains an incorrectly-NaN-boxed lower-precision value.
@@ -478,10 +482,10 @@ Notes:
 
 * The cmp_* and cp_*_hazard coverpoints occupy the fuzzy land at the edge of certification and verification.  They are included because they are easy.
 
-* The riscvISACOV test plan had cmp_rd_{rs1/rs2}_eqval coverpoints that compare if rd and one of the sources have the same value.  These are generally hit by the cr_rs1_rs2_corners tests, so they don't add interesting additional coverage and were dropped.  riscvISACOV also had cp_{rs1/rs2/rd}_toggle tests that checked if each bit changed from 1 to 0 and vice versa.  This is trivially exercised by providing all 0s followed by all 1s followed by al 0s again, so they were dropped.
+* The riscvISACOV test plan had cmp_rd_{rs1/rs2}_eqval coverpoints that compare if rd and one of the sources have the same value.  These are generally hit by the cr_rs1_rs2_edges tests, so they don't add interesting additional coverage and were dropped.  riscvISACOV also had cp_{rs1/rs2/rd}_toggle tests that checked if each bit changed from 1 to 0 and vice versa.  This is trivially exercised by providing all 0s followed by all 1s followed by al 0s again, so they were dropped.
 
-[[t-integer-corner-definitions]]
-.Integer Corner Definitions
+[[t-integer-edge-definitions]]
+.Integer Edge Case Definitions
 [options=header]
 |===
 |Bin|RV32|RV64
@@ -503,8 +507,8 @@ Notes:
 |Wmaxp2  |n/a|`0000000000000000000000000000000100000000000000000000000000000001`
 |===
 
-[[t-immediate-corner-definitions]]
-.Immediate Corner Definitions (12-bit)
+[[t-immediate-edge-definitions]]
+.Immediate Edge Case Definitions (12-bit)
 [options=header]
 [%autowidth]
 |===
@@ -531,8 +535,8 @@ Notes:
 |randomp|1795
 |===
 
-[[t-fp-corner-definitions]]
-.Floating-Point Corner Definitions
+[[t-fp-edge-definitions]]
+.Floating-Point Edge Case Definitions
 [options=header]
 |===
 |Bin|Half|Float|Double
@@ -567,7 +571,7 @@ Notes:
 
 [NOTE]
 ====
-The register corner cases are selected to include extreme values and their immediate neighbors.  They also include walking 1s and a random number to exercise intermediate values.  RV64 adds corners near the 32-bit boundary to stress W-type instructions.  Immediate corners exercise each bit of the immediate and the extreme corners and one random intermediate value.
+The register edge cases are selected to include extreme values and their immediate neighbors.  They also include walking 1s and a random number to exercise intermediate values.  RV64 adds edge casess near the 32-bit boundary to stress W-type instructions.  Immediate edge cases exercise each bit of the immediate, extreme values, and one random intermediate value.
 ====
 
 
@@ -596,8 +600,8 @@ include::../../testplans/I.csv[]
 |cmp_rd_rs1_nx0|31|See cp_rs1_nx0
 |cp_offset_jalr|6|cp_offset + 2*2 combinations of rs1_val[0] and imm[0] affecting lsb of jalr address
 |cp_uimm_5|32|5-bit unsigned immediate shift amount for {slliw/srliw/sraiw}
-|cp_imm_corners_20bit|27|20-bit variant of <<t-immediate-corner-definitions>> for `lui` and `auipc`.
-|cp_imm_corners_jal|23|20-bit positive and negative jump offsets for `jal`.  Note that testing the full 20-bit range takes a large amount of program memory, so tests may cover a subset of this range.
+|cp_imm_edges_20bit|27|20-bit variant of <<t-immediate-edge-definitions>> for `lui` and `auipc`.
+|cp_imm_edges_jal|23|20-bit positive and negative jump offsets for `jal`.  Note that testing the full 20-bit range takes a large amount of program memory, so tests may cover a subset of this range.
 |cp_gpr_hazard_r|2|RAR and no hazard for instructions that only write a register
 |cp_gpr_hazard_w|3|WAW, WAR and no hazard for instructions that only write a register
 |cp_gpr_hazard_rw|4|RAW, WAW, WAR and no hazard for instructions that read and write registers
@@ -612,78 +616,78 @@ include::../../testplans/I.csv[]
 [cols="1, 4, 2" options=header]
 |===
 |Unpriv Section|Normative Statement|Coverpoints
-|2.1|For RV32I, the 32 `x` registers are each 32 bits wide, i.e., `XLEN=32`.| cp_rs1, cp_rs2, cp_rd, cp_rs1_corners
+|2.1|For RV32I, the 32 `x` registers are each 32 bits wide, i.e., `XLEN=32`.| cp_rs1, cp_rs2, cp_rd, cp_rs1_edges
 |2.1|Register `x0` is hardwired with all bits equal to 0.|cp_rs1, cp_rs2, cp_rd
 |2.2|In the base RV32I ISA, there are four core instruction formats (R/I/S/U)|cp_asm_count
-|2.2|Except for the 5-bit immediates used in CSR instructions (Chapter 6), immediates are always sign-extended|cp_imm_corners
+|2.2|Except for the 5-bit immediates used in CSR instructions (Chapter 6), immediates are always sign-extended|cp_imm_edges
 |2.2|Each immediate subfield is labeled with the bit position (imm[x]) in
-the immediate value being produced.|cp_imm_corners
+the immediate value being produced.|cp_imm_edges
 |2.3|The only difference between the S and B formats is that the 12-bit
 immediate field is used to encode branch offsets in multiples of 2 in
 the B format. Instead of shifting all bits in the instruction-encoded
 immediate left by one in hardware as is conventionally done, the middle
 bits (imm[10:1]) and sign bit stay in fixed positions, while the lowest
-bit in S format (inst[7]) encodes a high-order bit in B format.|{store/branch}/cp_imm_corners
+bit in S format (inst[7]) encodes a high-order bit in B format.|{store/branch}/cp_imm_edges
 |2.3|[T]he only difference between the U and J formats is that the
 20-bit immediate is shifted left by 12 bits to form U immediates and by
 1 bit to form J immediates. The location of instruction bits in the U
 and J format immediates is chosen to maximize overlap with the other
-formats and with each other.|{lui/jalr}/cp_imm_corners
-|2.3|Sign extensions always uses inst[31].|cp_imm_corners
-|2.4|Most integer computational instructions operate on XLEN bits of values held in the integer register file.|cp_rs1, cp_rs2, cr_rs1_rs2_corners
-|2.4|Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format.|cp_rs1, cp_cp_rs1_imm_corners
+formats and with each other.|{lui/jalr}/cp_imm_edges
+|2.3|Sign extensions always uses inst[31].|cp_imm_edges
+|2.4|Most integer computational instructions operate on XLEN bits of values held in the integer register file.|cp_rs1, cp_rs2, cr_rs1_rs2_edges
+|2.4|Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format.|cp_rs1, cp_cp_rs1_imm_edges
 |2.4|The destination is register rd for both register-immediate and register-register instructions.|cp_rd
 |2.4|No integer computational instructions cause arithmetic exceptions.|untestable
 |2.4.1|ADDI adds the sign-extended 12-bit immediate to register _rs1_.
 Arithmetic overflow is ignored and the result is simply the low XLEN
-bits of the result.|addi/cp_rs1_imm_corners
+bits of the result.|addi/cp_rs1_imm_edges
 |2.4.1|SLTI (set less than immediate) places the value 1 in register _rd_ if
 register _rs1_ is less than the sign-extended immediate when both are
-treated as signed numbers, else 0 is written to _rd_.|slti/cp_rs1_imm_corners
+treated as signed numbers, else 0 is written to _rd_.|slti/cp_rs1_imm_edges
 |2.4.1|SLTIU is similar
 but compares the values as unsigned numbers (i.e., the immediate is
-first sign-extended to XLEN bits then treated as an unsigned number).|sltiu/cp_rs1_imm_corners
+first sign-extended to XLEN bits then treated as an unsigned number).|sltiu/cp_rs1_imm_edges
 |2.4.1|ANDI, ORI, XORI are logical operations that perform bitwise AND, OR, and
 XOR on register _rs1_ and the sign-extended 12-bit immediate and place
-the result in _rd_.|{andi/ori/xori}/cp_rs1_imm_corners
+the result in _rd_.|{andi/ori/xori}/cp_rs1_imm_edges
 |2.4.1|Shifts by a constant are encoded as a specialization of the I-type
 format. The operand to be shifted is in _rs1_, and the shift amount is
 encoded in the lower 5 bits of the I-immediate field. The right shift
 type is encoded in bit 30. SLLI is a logical left shift (zeros are
 shifted into the lower bits); SRLI is a logical right shift (zeros are
 shifted into the upper bits); and SRAI is an arithmetic right shift (the
-original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_corners, cp_uimm
+original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_edges, cp_uimm
 |2.4.1|LUI (load upper immediate) is used to build 32-bit constants and uses
 the U-type format. LUI places the 32-bit U-immediate value into the
-destination register _rd_, filling in the lowest 12 bits with zeros.|lui/cp_imm_corners_20bit, cp_rd
+destination register _rd_, filling in the lowest 12 bits with zeros.|lui/cp_imm_edges_20bit, cp_rd
 |2.4.1|AUIPC (add upper immediate to `pc`) is used to build `pc`-relative
 addresses and uses the U-type format. AUIPC forms a 32-bit offset from
 the U-immediate, filling in the lowest 12 bits with zeros, adds this
 offset to the address of the AUIPC instruction, then places the result
-in register _rd_.|auipc/cp_imm_corners_20bit, cp_rd
+in register _rd_.|auipc/cp_imm_edges_20bit, cp_rd
 |2.4.2|RV32I defines several arithmetic R-type operations. All operations read
 the _rs1_ and _rs2_ registers as source operands and write the result
 into register _rd_. The _funct7_ and _funct3_ fields select the type of
-operation.|cr_rs1_rs2_corners, cp_rs1, cp_rs2, cp_rd
-|2.4.2|ADD performs the addition of _rs1_ and _rs2_.|add/cp_rs1_rs2_corners
+operation.|cr_rs1_rs2_edges, cp_rs1, cp_rs2, cp_rd
+|2.4.2|ADD performs the addition of _rs1_ and _rs2_.|add/cp_rs1_rs2_edges
 |2.4.2|SUB performs the
 subtraction of _rs2_ from _rs1_. Overflows are ignored and the low XLEN
-bits of results are written to the destination _rd_. |sub/cp_rs1_rs2_corners
+bits of results are written to the destination _rd_. |sub/cp_rs1_rs2_edges
 |2.4.2|SLT and SLTU
 perform signed and unsigned compares respectively, writing 1 to _rd_ if
-_rs1_ < _rs2_, 0 otherwise.|{slt/sltu}/cp_rs1_rs2_corners
+_rs1_ < _rs2_, 0 otherwise.|{slt/sltu}/cp_rs1_rs2_edges
 |2.4.2|AND, OR, and XOR perform bitwise
-logical operations.|{and/or/xor}/cp_rs1_rs2_corners
+logical operations.|{and/or/xor}/cp_rs1_rs2_edges
 |2.4.2|SLL, SRL, and SRA perform logical left, logical right, and arithmetic
 right shifts on the value in register _rs1_ by the shift amount held in
-the lower 5 bits of register _rs2_.|{sll/srl/sra}/cp_rs1_rs2_corners, cp_rs2
+the lower 5 bits of register _rs2_.|{sll/srl/sra}/cp_rs1_rs2_edges, cp_rs2
 |2.4.3|The NOP instruction does not change any architecturally visible state,
 except for advancing the `pc` and incrementing any applicable
-performance counters. NOP is encoded as ADDI _x0, x0, 0_.|addi/cp_rs1_imm_corners
+performance counters. NOP is encoded as ADDI _x0, x0, 0_.|addi/cp_rs1_imm_edges
 |2.5.1|The jump and link (JAL) instruction uses the J-type format, where the
 J-immediate encodes a signed offset in multiples of 2 bytes. The offset
 is sign-extended and added to the address of the jump instruction to
-form the jump target address.|jal/cp_imm_corners_jal
+form the jump target address.|jal/cp_imm_edges_jal
 |2.5.1|Plain unconditional jumps (assembler pseudoinstruction J) are encoded as
 a JAL with _rd_=`x0`.|jal/cp_rd
 |2.5.1|The indirect jump instruction JALR (jump and link register) uses the
@@ -692,21 +696,21 @@ sign-extended 12-bit I-immediate to the register _rs1_, then setting the
 least-significant bit of the result to zero. The address of the
 instruction following the jump (`pc`+4) is written to register _rd_.
 Register `x0` can be used as the destination if the result is not
-required.|jalr/{cp_offset_jalr, cp_rd, cp_imm_corners}
+required.|jalr/{cp_offset_jalr, cp_rd, cp_imm_edges}
 |2.5.2|All branch instructions use the B-type instruction format. The 12-bit
 B-immediate encodes signed offsets in multiples of 2 bytes. The offset
 is sign-extended and added to the address of the branch instruction to
 give the target address.|{beq/bne/blt/bge/bltu/bgeu}/cp_offset, *** more via Issue 717
 |2.5.2|BEQ and BNE take the branch
-if registers _rs1_ and _rs2_ are equal or unequal respectively.|{beq/bne}/cp_rs1_rs2_corners
+if registers _rs1_ and _rs2_ are equal or unequal respectively.|{beq/bne}/cp_rs1_rs2_edges
 |2.5.2|BLT and
 BLTU take the branch if _rs1_ is less than _rs2_, using signed and
-unsigned comparison respectively. |{blt/bltu}/cp_rs1_rs2_corners
+unsigned comparison respectively. |{blt/bltu}/cp_rs1_rs2_edges
 |2.5.2|BGE and BGEU take the branch if _rs1_
 is greater than or equal to _rs2_, using signed and unsigned comparison
-respectively.|{bge/bgeu}/cp_rs1_rs2_corners
+respectively.|{bge/bgeu}/cp_rs1_rs2_edges
 |2.6|The effective address is obtained by adding register _rs1_ to the
-sign-extended 12-bit offset.|cp_imm_corners
+sign-extended 12-bit offset.|cp_imm_edges
 |2.6|Loads copy a value from memory to register
 _rd_.|{lb/lbu/lh/lhu/lw}/{cp_rd}
 |2.6|Stores copy the value in register _rs2_ to memory.|{sb/sh/sw}/{cp_rs2}
@@ -717,7 +721,7 @@ in _rd_. LHU loads a 16-bit value from memory but then zero extends to
 32-bits before storing in _rd_. LB and LBU are defined analogously for
 8-bit values.|{lh/lhu/lb/lbu}/{cp_rd} hits these with random values ***good enough?
 |2.6|The SW, SH, and SB instructions store 32-bit, 16-bit, and
-8-bit values from the low bits of register _rs2_ to memory.|{sw/sh/sb}/cp_rs2_corners
+8-bit values from the low bits of register _rs2_ to memory.|{sw/sh/sb}/cp_rs2_edges
 |2.6|loads and stores whose effective addresses are
 naturally aligned shall not raise an address-misaligned exception.|untestable
 |2.7|FENCE instructions are used to order device I/O and memory accesses as
@@ -725,32 +729,32 @@ viewed by other RISC-V harts and external devices or coprocessors.|fence/cp_asm_
 |2.9|Implementations are always allowed to ignore the
 encoded hints.|Untested because they may not be implemented.
 3+^|RV64-Specific Statements
-|4.1|RV64I widens the integer registers and supported user address space to 64 bits|cp_rs1, cp_rs2, cp_rs1_rs2_corners
-|4.2.1|ADDIW is an RV64I instruction that adds the sign-extended 12-bit immediate to register rs1 and produces the proper sign extension of a 32-bit result in rd. Overflows are ignored and the result is the low 32 bits of the result sign-extended to 64 bits.|cp_rs1_imm_corners
-|4.2.1|Shifts by a constant are encoded as a specialization of the I-type format using the same instruction opcode as RV32I. The operand to be shifted is in rs1, and the shift amount is encoded in the lower 6 bits of the I-immediate field for RV64I. The right shift type is encoded in bit 30. SLLI is a logical left shift (zeros are shifted into the lower bits); SRLI is a logical right shift (zeros are shifted into the upper bits); and SRAI is an arithmetic right shift (the original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_corners, cp_uimm
+|4.1|RV64I widens the integer registers and supported user address space to 64 bits|cp_rs1, cp_rs2, cp_rs1_rs2_edges
+|4.2.1|ADDIW is an RV64I instruction that adds the sign-extended 12-bit immediate to register rs1 and produces the proper sign extension of a 32-bit result in rd. Overflows are ignored and the result is the low 32 bits of the result sign-extended to 64 bits.|cp_rs1_imm_edges
+|4.2.1|Shifts by a constant are encoded as a specialization of the I-type format using the same instruction opcode as RV32I. The operand to be shifted is in rs1, and the shift amount is encoded in the lower 6 bits of the I-immediate field for RV64I. The right shift type is encoded in bit 30. SLLI is a logical left shift (zeros are shifted into the lower bits); SRLI is a logical right shift (zeros are shifted into the upper bits); and SRAI is an arithmetic right shift (the original sign bit is copied into the vacated upper bits).|{slli/srli/srai}/cp_rs1_imm_edges, cp_uimm
 |4.2.1|SLLIW, SRLIW, and SRAIW are RV64I-only instructions that are analogously
 defined but operate on 32-bit values and sign-extend their 32-bit
-results to 64 bits.|{slliw/srliw/sraiw}/cp_rs1_imm_corners, cp_uimm
+results to 64 bits.|{slliw/srliw/sraiw}/cp_rs1_imm_edges, cp_uimm
 |4.2.1|LUI (load upper immediate) uses the same opcode as RV32I. LUI places the
 32-bit U-immediate into register _rd_, filling in the lowest 12 bits
-with zeros. The 32-bit result is sign-extended to 64 bits.|lui/cp_imm_corners_20bit, cp_rd
+with zeros. The 32-bit result is sign-extended to 64 bits.|lui/cp_imm_edges_20bit, cp_rd
 |4.2.1|AUIPC (add upper immediate to `pc`) uses the same opcode as RV32I. AUIPC
 is used to build `pc`-relative addresses and uses the U-type format.
 AUIPC forms a 32-bit offset from the U-immediate, filling in the lowest
 12 bits with zeros, sign-extends the result to 64 bits, adds it to the
 address of the AUIPC instruction, then places the result in register
-_rd_.|auipc/cp_imm_corners_20bit, cp_rd
+_rd_.|auipc/cp_imm_edges_20bit, cp_rd
 |4.2.2|ADDW and SUBW are RV64I-only instructions that are defined analogously
 to ADD and SUB but operate on 32-bit values and produce signed 32-bit
 results. Overflows are ignored, and the low 32-bits of the result is
-sign-extended to 64-bits and written to the destination register.|{addw/subw}/cp_rs1_rs2_corners
+sign-extended to 64-bits and written to the destination register.|{addw/subw}/cp_rs1_rs2_edges
 |4.2.2|SLL, SRL, and SRA perform logical left, logical right, and arithmetic
 right shifts on the value in register _rs1_ by the shift amount held in
 register _rs2_. In RV64I, only the low 6 bits of _rs2_ are considered
-for the shift amount.|{sll/srl/sra}/cp_rs1_rs2_corners
+for the shift amount.|{sll/srl/sra}/cp_rs1_rs2_edges
 |4.2.2|SLLW, SRLW, and SRAW are RV64I-only instructions that are analogously
 defined but operate on 32-bit values and sign-extend their 32-bit
-results to 64 bits. The shift amount is given by _rs2[4:0]_.|{sllw/srlw/sraw}/cp_rs1_rs2_corners, cp_rs2
+results to 64 bits. The shift amount is given by _rs2[4:0]_.|{sllw/srlw/sraw}/cp_rs1_rs2_edges, cp_rs2
 |4.3|RV64I extends the address space to 64 bits. The execution environment
 will define what portions of the address space are legal to access.|untestable
 |4.3|The LD instruction loads a 64-bit value from memory into register _rd_
@@ -762,7 +766,7 @@ memory for RV64I. LH and LHU are defined analogously for 16-bit values,
 as are LB and LBU for 8-bit values.|{lw/lwu/lh/lhu/lb/lbu}/cp_rd, ***sext
 |4.3|The SD, SW, SH, and SB instructions
 store 64-bit, 32-bit, 16-bit, and 8-bit values from the low bits of
-register _rs2_ to memory respectively.|{sd/sw/sh/sb}/cp_rs2_corners
+register _rs2_ to memory respectively.|{sd/sw/sh/sb}/cp_rs2_edges
 |4.4|The additional computational instructions in RV64I expand both the
 standard and custom HINT encoding spaces.|untestable
 |===
@@ -797,34 +801,34 @@ include::../../testplans/M.csv[]
 |Unpriv Section|Normative Statement|Coverpoints
 |12.1|MUL performs an XLEN-bit×XLEN-bit multiplication of
 `rs1` by `rs2` and places the lower XLEN bits in the destination
-register. |mul/{cp_rs1, cp_rs2, cp_rd, cr_rs1_rs2_corners}
+register. |mul/{cp_rs1, cp_rs2, cp_rd, cr_rs1_rs2_edges}
 |12.1|MULH, MULHU, and MULHSU perform the same multiplication but
 return the upper XLEN bits of the full 2×XLEN-bit
 product, for signed×signed,
-unsigned×unsigned, and `rs1`×unsigned `rs2` multiplication.|{mulh/mulhu/mulhsu}/cr_rs1_rs2_corners
+unsigned×unsigned, and `rs1`×unsigned `rs2` multiplication.|{mulh/mulhu/mulhsu}/cr_rs1_rs2_edges
 |12.1|MULW is an RV64 instruction that multiplies the lower 32 bits of the
 source registers, placing the sign extension of the lower 32 bits of the
-result into the destination register.|mulw/cr_rs1_rs2_corners
+result into the destination register.|mulw/cr_rs1_rs2_edges
 |12.2|DIV and DIVU perform an XLEN bits by XLEN bits signed and unsigned
-integer division of `rs1` by `rs2`, rounding towards zero.|{div/divu}/cr_rs1_rs2_corners
+integer division of `rs1` by `rs2`, rounding towards zero.|{div/divu}/cr_rs1_rs2_edges
 |12.2|REM and REMU
 provide the remainder of the corresponding division operation. For REM,
-the sign of a nonzero result equals the sign of the dividend.|{rem/remu}/cr_rs1_rs2_corners
+the sign of a nonzero result equals the sign of the dividend.|{rem/remu}/cr_rs1_rs2_edges
 |12.2|DIVW and DIVUW are RV64 instructions that divide the lower 32 bits of
 `rs1` by the lower 32 bits of `rs2`, treating them as signed and
 unsigned integers, placing the 32-bit quotient in `rd`,
-sign-extended to 64 bits. |{divw/divuw}/cr_rs1_rs2_corners
+sign-extended to 64 bits. |{divw/divuw}/cr_rs1_rs2_edges
 |12.2|REMW and REMUW are RV64 instructions that
 provide the corresponding signed and unsigned remainder operations. Both
 REMW and REMUW always sign-extend the 32-bit result
-to 64 bits, including on a divide by zero.|{remw/remuw}/cr_rs1_rs2_corners
+to 64 bits, including on a divide by zero.|{remw/remuw}/cr_rs1_rs2_edges
 |12.2|The semantics for division by zero and division overflow are summarized
 in <<divby0>>. The quotient of division by zero has all bits
 set, and the remainder of division by zero equals the dividend. Signed
 division overflow occurs only when the most-negative integer is divided
 by latexmath:[$-1$]. The quotient of a signed division with overflow is
 equal to the dividend, and the remainder is zero. Unsigned division
-overflow cannot occur.|cp_rs1_rs2_corners
+overflow cannot occur.|cp_rs1_rs2_edges
 |===
 
 
@@ -849,7 +853,7 @@ include::../../testplans/Zmmul.csv[]
 extension. It adds all of the instructions defined in
 <<Multiplication Operations>>, namely: MUL, MULH, MULHU,
 MULHSU, and (for RV64 only) MULW. The encodings are identical to those
-of the corresponding M-extension instructions. |{mul/mulh/mulhu/mulhsu/mulw}/cr_rs1_rs2_corners
+of the corresponding M-extension instructions. |{mul/mulh/mulhu/mulhsu/mulw}/cr_rs1_rs2_edges
 |===
 
 === C Compressed Extension
@@ -875,7 +879,7 @@ CL, CS, CA, and CB are limited to just 8 of them.|cp_rs1p, cp_rs2p, cp_rdp
 |27.2|Compressed register-based floating-point loads and stores also use the
 CL and CS formats respectively, with the eight registers mapping to `f8` to `f15`.|cp_fdp, cp_fs2p
 |27.2|For many RVC instructions, zero-valued immediates are disallowed and
-`x0` is not a valid 5-bit register specifier.|cp_rs1_imm_corners,cp_imm_mul, _nx0 coverpoints
+`x0` is not a valid 5-bit register specifier.|cp_rs1_imm_edges,cp_imm_mul, _nx0 coverpoints
 |27.4|As with base RVI instructions, the offsets of all RVC
 control transfer instructions are in multiples of 2 bytes.|***
 |27.7|A portion of the RVC encoding space is reserved for microarchitectural
@@ -1631,11 +1635,11 @@ The tests also account for unsupported register group overlap.  For example, a w
 
 ==== Vector Configuration Parameters
 
-The coverpoints and tests are parameterized by the minimum supported element width SEW~MIN~ and the maximum supported element width ELEN.  The coverpoints and tests exclude unsupported corner cases, such as widening to more than ELEN or using LMUL=1/8 with ELEN=32 but SEW~MIN~=8.
+The coverpoints and tests are parameterized by the minimum supported element width SEW~MIN~ and the maximum supported element width ELEN.  The coverpoints and tests exclude unsupported edge cases, such as widening to more than ELEN or using LMUL=1/8 with ELEN=32 but SEW~MIN~=8.
 
 ==== Vector Coverpoints
 
-Running long vectors is computationally expensive, so only a subset of vectors tests run on mult-element vectors.  Coverpoints for source and destination registers, corner values, etc. run on a vector length of vl = 1.
+Running long vectors is computationally expensive, so only a subset of vectors tests run on mult-element vectors.  Coverpoints for source and destination registers, edge values, etc. run on a vector length of vl = 1.
 
 <<t-vector-coverpoints>> defines the coverpoints used in vector instructions.  Unless otherwise specified, each coverpoint uses vector length vl=1 and length multiplier LMUL=1, no mask (vm=1), and vstart=0. Hence, they act on exactly one vector element. For such coverpoints, instructions that require a mask use v0=0.
 
@@ -1659,46 +1663,46 @@ Running long vectors is computationally expensive, so only a subset of vectors t
 |cmp_vs2_vs1|32|vs2 and vs1 are same register ID
 |cmp_vs3_vs2|32|vs3 and vs2 are the same register ID
 |cmp_vd_vs1_vs2|32|vd and vs1 and vs2 are same register ID
-|cp_rs1_corners|9|0, 1, 2, -1, -2, most negative, most negative+1, most positive, most positive-1
-|cp_rs2_corners|5|0, 1, 2, -1, -2 (for strided vector load/store)
-|cp_fs1_corners_v|20|±0, ±1, smallest normal, -largest normal, ±inf, 0.5, 1.5, -2, pi, 2^emax, 1+ulp, largest subnormal, subnormal with leading 1 in fraction, canonical quite NaN, -noncanonical quiet NaN, signaling NaN with payload of 1
-|cp_vs2_corners|9 or 20|see cp_rs1_corners or cp_fs1_corners_v
-|cp_vs1_corners|9 or 20|see cp_rs1_corners
-|cr_vs2_vs1_corners|9^2 or 20^2|Cross-product of corners of vs2 and vs1
-|cr_vs2_rs1_corners|9*9|Cross-product of corners of vs2 and rs1
-|cr_vs2_fs1_corners|20*20|Cross-product of corners of vs2 and fs1
-|cr_vs2_imm_corners|9*9|Cross-product of corners of vs2 and imm={0, 1, 2, 14, 15, -1, -2, -15,-16}
-|cr_vxrm_vs2_vs1_corners|9*9*4|Cross-product of corners of vs2 and vs1 with vector rounding mode={rod, rdn, rne, rnu}
-|cr_vxrm_vs2_rs1_corners|9*9*4|See cr_vxrm_vs2_vs1_corners
-|cr_vxrm_vs2_imm_corners|9*9*4|See cr_vxrm_vs2_vs1_corners
+|cp_rs1_edges|9|0, 1, 2, -1, -2, most negative, most negative+1, most positive, most positive-1
+|cp_rs2_edges|5|0, 1, 2, -1, -2 (for strided vector load/store)
+|cp_fs1_edges|20|0, -1, -smallest subnorm, -inf, 1, 1+ulp, 0.5, 1.5, 2, 4, pi, 2^emax, largest normal, smallest normal, largest subnormal, subnormal with leading 1 in fraction, infinity, canonical quite NaN, noncanonical quiet NaN, signaling NaN with payload of 1
+|cp_vs2_edges|9 or 20|see cp_rs1_edges or cp_fs1_edges
+|cp_vs1_edges|9 or 20|see cp_rs1_edges
+|cr_vs2_vs1_edges|9^2 or 20^2|Cross-product of edges of vs2 and vs1
+|cr_vs2_rs1_edges|9*9|Cross-product of edges of vs2 and rs1
+|cr_vs2_fs1_edges|20*20|Cross-product of edges of vs2 and fs1
+|cr_vs2_imm_edges|9*9|Cross-product of edges of vs2 and imm={0, 1, 2, 14, 15, -1, -2, -15,-16}
+|cr_vxrm_vs2_vs1_edges|9*9*4|Cross-product of edges of vs2 and vs1 with vector rounding mode={rod, rdn, rne, rnu}
+|cr_vxrm_vs2_rs1_edges|9*9*4|See cr_vxrm_vs2_vs1_edges
+|cr_vxrm_vs2_imm_edges|9*9*4|See cr_vxrm_vs2_vs1_edges
 |cp_csr_frm|5*10|Floating-point rounding mode={rdn, rmm, rne, rtz, rup} with 10 random inputs per mode
 |cp_csr_fflags|5*2|Floating-point sets and clears all applicable flags
 3+^|Coverpoints acting on multiple elements vl ≠ 1
-|cp_masking_corners|5|Mask corners v0=all 1s, all 0s, random, first VLMAX-1 ones, first VLMAX/2+1 ones; vl=VLMAX, vm=1 to mask, vma = random, vta = 0
+|cp_masking_edges|5|Mask edge cases v0=all 1s, all 0s, random, first VLMAX-1 ones, first VLMAX/2+1 ones; vl=VLMAX, vm=1 to mask, vma = random, vta = 0
 |cr_vl_lmul|7*3|Cross legal combinations of LMUL={1/2/4/8/f2/f4/f8} and vl={1, random, VLMAX}, while randomizing v0 mask value, vm, vta, vma.
 |cr_vtype_agnostic|4|Cross vta={0/1} and vma={0/1}. Random legal LMUL, random legal vl, vm=1, v0=random mask
-|cp_vxsat|2|vxsat={0, 1}.  Hit by cr_vs2_vs1_corners so no tests needed.
+|cp_vxsat|2|vxsat={0, 1}.  Hit by cr_vs2_vs1_edges so no tests needed.
 |cp_vl_0|1|vl=0.  LMUL=1, no mask, vma=0, vta=1
 |===
 
 As with other unprivileged testplans, an x in the spreadsheet indicates to use the coverpoint.  Other values in the spreadsheet indicate a variant of the coverpoint:
 
 * nv0: Do not include v0 in the coverpoint.  For example, cp_vd_nv0 means that the destination register vd does not include v0.
-* emul2: Only exercise even-numbered registers.  For example cp_vs2_emul2 uses vs2={v0, v2, v4, ...v30}.  For corner values, emul2 means the corner value is twice the width of SEW.
+* emul2: Only exercise even-numbered registers.  For example cp_vs2_emul2 uses vs2={v0, v2, v4, ...v30}.  For edge values, emul2 means the edge value is twice the width of SEW.
 * emul4/8: Similar to emul2
-* emulf2, emulf4, emulf8: corner values are 1/2, 1/4, or 1/8 the width of SEW.  Used in extension instructions such as vsext.vf2.
-* u: Treat immediate as unsigned 0 to 31 rather than signed -16 to +15. For corners, {0, 1, 2, 15, 16, 30, 31}.
+* emulf2, emulf4, emulf8: edge values are 1/2, 1/4, or 1/8 the width of SEW.  Used in extension instructions such as vsext.vf2.
+* u: Treat immediate as unsigned 0 to 31 rather than signed -16 to +15. For edge values, {0, 1, 2, 15, 16, 30, 31}.
 * eew1/mm: Mask instructions with 1-bit elements such as vmand.mm use at least vl=8 to operate on multi-bit masks.
-* wv: vs2 is double-width and uses emul2 for its corner values.  vs1 is normal width.
-* wred: vs1 is double-width and uses emul2 for its corner values.  vs2 is normal width.
-* wx: vs2 is double-width and uses emul2 for its corner values.  rs1 is normal width.
-* wi/wiu: vs2 is double-width and uses emul2 for its corner values.  immediate is 5 bit signed or unsigned.
+* wv: vs2 is double-width and uses emul2 for its edge values.  vs1 is normal width.
+* wred: vs1 is double-width and uses emul2 for its edge values.  vs2 is normal width.
+* wx: vs2 is double-width and uses emul2 for its edge values.  rs1 is normal width.
+* wi/wiu: vs2 is double-width and uses emul2 for its edge values.  immediate is 5 bit signed or unsigned.
 * lmul4max/emul4max: maximum LMUL/EMUL is 4 instead of 8.  vwadd.vv uses lmul4max because it cannot accept LMUL=8 widened to 16.  vlseg2e8.v uses emul4max because the number of segments * EMUL cannot exceed 8.
 * lmul2max/lmul1max/emul2max/emul1max: see lmul4max
 * lte30/.../lte24: Register number is less than or equal to 30, ..., 24.  Used for segmented load/store so segments won't overflow the register file.
-* ls_e{8/16/32/64}: load/store corners with EEW=8,...,64.  Used to convert strided loads from elements to bytes.
-* ls: load/store corners instead of integer corners: vs2={0, random < 2*VLMAX}.  rs2= {1, 2, -1, -2, 0}
-* f: floating-point corners instead of integer corners: ***
+* ls_e{8/16/32/64}: load/store edges with EEW=8,...,64.  Used to convert strided loads from elements to bytes.
+* ls: load/store edges instead of integer edges: vs2={0, random < 2*VLMAX}.  rs2= {1, 2, -1, -2, 0}
+* f: floating-point edges instead of integer edges: ***
 
 *** discuss special cases
 
@@ -1860,9 +1864,33 @@ environment.|
 
 === Privileged Instructions
 
+The privileged testplan is organized by major categories of behaviors or extensions.
+
+* Zicsr
+* Exceptions
+* Interrupts
+* Zicntr
+* Endian
+* Ssstrict
+* Svinval
+* PMP
+* Virtual Memory
+* *** CBO
+
+Each of these categories has multiple coverage files with suffixes indicating the circumstances to which they apply.  For example, InterruptsM applies to any configuration with Zicsr and M-mode.  InterruptsU applies to any configuration with Zicsr and U-mode.  InterruptsS applies to any configuration with Zicsr and S-mode.  S-mode implies the presence of U and M modes so all three coverage files apply to a system with S-mode.  Moreover, InterruptsS includes tests that execute in U and M-mode, such as setting a bit in mideleg and then checking that the corresponding interrupt is delegated to S-mode when taken in U-mode, but not when taken in M-mode.
+
 === Zicsr
 
-*** includes mret/sret
+Zicsr privileged tests access to CSRs that are mandatory in each privilege mode.
+It also tests mandatory privileged instructions: `ecall`, `ebreak`, `mret`, and `sret`.
+The CSR read/write/set/clear instructions themselves are tested in the
+unprivileged Zicsr tests of <<Zicsr Control/Status Register Instructions>>.
+
+`wfi` is tested in <<Interrupts>> and `sfence.vma` is tested in <<Sv* Virtual Memory>>.
+
+Zicsr does not test reserved or custom instructors or CSRs because their behavior is Unspecified.
+Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
+where they should throw an Illegal Instruction exception if not implemented.
 
 ==== ZicsrM
 
@@ -1988,7 +2016,167 @@ The Ssstrict extension indicates that reserved instructions throw an illegal ins
 
 ==== RV64CBO_PMP
 
+=== H Hypervisor
 
+The Hypervisor Extension adds an H coverage file containing new Hypervisor instructions, and additional coverage files related to exceptions, interrupts, endian, and virtual memory.
+
+[[t-H-normative-statements]]
+.Hypervisor Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Priv Section|Normative Statement|Coverpoints
+|21|CSR `mtval` must not be read-only zero|ZicsrH/mcsr/cp_mtvala
+|21|RISC-V harts that implement the
+hypervisor extension are encouraged not to hardwire `misa`[7], so that
+the extension may be disabled.|Untestable
+|21.1|VS-mode interrupts are globally disabled when executing in
+U-mode.|InterruptsH/cp_vsint_disabled_u
+|21.2|Additional CSRs are provided to HS-mode, but not to VS-mode,
+to manage two-stage address translation and to control the behavior of a
+VS-mode guest: `hstatus`, `hedeleg`, `hideleg`, `hvip`, `hip`, `hie`,
+`hgeip`, `hgeie`, `henvcfg`, `henvcfgh`, `hcounteren`, `htimedelta`,
+`htimedeltah`, `htval`, `htinst`, and `hgatp`.|ZicsrH/hcsr/cp_hcsr_access, vscsr/cp_hcsr_inaccessible
+|21.2|When V=1, the VS CSRs substitute for the corresponding supervisor CSRs,
+taking over all functions of the usual supervisor CSRs except as
+specified otherwise. |See each VS CSR
+|21.2|When V=1, ... Instructions that normally read or modify a
+supervisor CSR shall instead access the corresponding VS CSR.|ZicsrH/vscsr/cp_replica
+|21.2|When V=1,
+an attempt to read or write a VS CSR directly by its own separate CSR
+address causes a virtual-instruction exception.|ZicsrH/vscsr/cp_hcsr_virtualinstructionfault, vucsr/cp_scsr
+|21.2|Attempts [to read or write a VS CSR] from U-mode
+cause an illegal-instruction exception as usual.|ZicsrH/ucsr/cp_hcsr_inaccessible
+|21.2|The VS CSRs can be
+accessed as themselves only from M-mode or HS-mode.|Zicsr/mcsr/cp_hcsr_access, hcsr/cp_hcsr_access, vscsr/cp_hcsr_virtualinstructionfault, cp_scsr
+|21.2|While V=1, the normal HS-level supervisor CSRs that are replaced by VS
+CSRs retain their values but do not affect the behavior of the machine
+unless specifically documented to do so.|ZicsrH/vscsr/cp_replica
+|21.2|Conversely, when V=0, the VS
+CSRs do not ordinarily affect the behavior of the machine other than
+being readable and writable by CSR instructions.|Zicsr/hcsr/cp_replica, *** show no other effects
+|21.2|Some standard supervisor CSRs (`senvcfg`, `scounteren`, and `scontext`,
+possibly others) have no matching VS CSR. These supervisor CSRs continue
+to have their usual function and accessibility even when V=1|Zicsr/vscsr/cp_nonreplica
+|21.2|In this chapter, we use the term _HSXLEN_ to refer to the effective XLEN
+when executing in HS-mode, and _VSXLEN_ to refer to the effective XLEN
+when executing in VS-mode.|XLEN not tested
+|21.2.1|The VSXL field controls the effective XLEN for VS-mode (known as
+VSXLEN), which may differ from the XLEN for HS-mode (HSXLEN).|XLEN not tested
+|21.2.1|When VTSR=1, an attempt in VS-mode to execute SRET raises a
+virtual-instruction exception.|ExceptionsH/cp_virtual_instruction_vs
+|21.2.1|When VTW=1 (and assuming `mstatus`.TW=0),
+an attempt in VS-mode to execute WFI raises a virtual-instruction
+exception if the WFI does not complete within an
+implementation-specific, bounded time limit.|ExceptionsH/cp_virtual_instruction_vs
+|21.2.1|When VTVM=1, an attempt in
+VS-mode to execute SFENCE.VMA or SINVAL.VMA or to access CSR `satp`
+raises a virtual-instruction exception.|ExceptionsH/cp_virtual_instruction_vs
+|21.2.1|The VGEIN (Virtual Guest External Interrupt Number) field selects a
+guest external interrupt source for VS-level external interrupts.|InterruptsH/cp_trigger_vsei_hgeip
+|21.2.1|VGEIN
+is a *WLRL* field that must be able to hold values between zero and the
+maximum guest external interrupt number (known as GEILEN), inclusive.
+|Zicsr/hcsr/cp_hstatus_vgein
+|21.2.1|When VGEIN=0, no guest external interrupt source is selected for
+VS-level external interrupts.|cp_hgeip0
+|21.2.1|Field HU (Hypervisor in U-mode) controls whether the virtual-machine
+load/store instructions, HLV, HLVX, and HSV, can be used also in U-mode.
+When HU=1, these instructions can be executed in U-mode the same as in
+HS-mode. When HU=0, all hypervisor instructions cause an
+illegal-instruction exception in U-mode.|ZicsrH/uprivinst/cp_hinst
+|21.2.1|The SPV bit (Supervisor Previous Virtualization mode) is written by the
+implementation whenever a trap is taken into HS-mode. Just as the SPP
+bit in `sstatus` is set to the (nominal) privilege mode at the time of
+the trap, the SPV bit in `hstatus` is set to the value of the
+virtualization mode V at the time of the trap. |ExceptionsH/cp_ecall_to_hs, cp_hedeleg, InterruptsH/cp_trigger_vs{e/t/s}i, InteruptsS/cp_trigger_*
+|21.2.1|When an SRET instruction
+is executed when V=0, V is set to SPV.|ZicsrH/mprivinst/cp_sret, ZicsrH/hprivinst/cp_sret
+|21.2.1|When V=1 and a trap is taken into HS-mode, bit SPVP (Supervisor Previous
+Virtual Privilege) is set to the nominal privilege mode at the time of
+the trap, the same as `sstatus`.SPP.|ExeceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
+|21.2.1|But if V=0 before a trap, SPVP is
+left unchanged on trap entry. |ExeceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
+|21.2.1|SPVP controls the effective privilege of
+explicit memory accesses made by the virtual-machine load/store
+instructions, HLV, HLVX, and HSV.|H/h*v tests***
+|21.2.1|Field GVA (Guest Virtual Address) is written by the implementation
+whenever a trap is taken into HS-mode. For any trap (breakpoint, address
+misaligned, access fault, page fault, or guest-page fault) that writes a
+guest virtual address to `stval`, GVA is set to 1. For any other trap
+into HS-mode, GVA is set to 0.|ExceptionsH/cp_hedeleg, ***virtmemtets
+|21.2.1|The VSBE bit is a *WARL* field that controls the endianness of explicit memory
+accesses made from VS-mode. If VSBE=0, explicit load and store memory
+accesses made from VS-mode are little-endian, and if VSBE=1, they are
+big-endian.|EndianH/cp_cp_hstatus_vsbe_endianness
+|21.2.1|VSBE also controls the endianness of all implicit accesses
+to VS-level memory management data structures, such as page tables.|***virtmem endian; check this is adequately tested by VM/ms.5 about mstatus.SBE
+|22.2.2|Register `hedeleg` is a 64-bit read/write register|ZicsrH/hcsr/cp_hcsr_access
+|22.2.2|Register `hideleg` is an HSXLEN-bit read/write register|ZicsrH/hcsr/cp_hcsr_access
+|22.2.2|A synchronous trap that has been delegated to HS-mode (using `medeleg`)
+is further delegated to VS-mode if V=1 before the trap and the
+corresponding `hedeleg` bit is set.|ExceptionsH/cp_hedeleg
+|22.2.2|Each bit of `hedeleg` shall be
+either writable or read-only zero. Many bits of `hedeleg` are required
+specifically to be writable or zero|ZicsrH/mcsr/cp_hcsr_access
+|22.2.2|Bit 0, corresponding to
+instruction address-misaligned exceptions, must be writable if
+IALIGN=32.|ZicsrH/hcsr/cp_hcsr_access
+|22.2.2|When XLEN=32, `hedelegh` is a 32-bit read/write register
+that aliases bits 63:32 of `hedeleg`.|ZicsrH/hcsr/cp_hcsr_access
+|22.2.2|Register `hedelegh` does not exist when XLEN=64.|ZicsrH/mcsr/cp_illegalupper
+|22.2.2|An interrupt that has been delegated to HS-mode (using `mideleg`) is
+further delegated to VS-mode if the corresponding `hideleg` bit is set.|InterruptsH/cp_priority_deleg_vsi
+|22.2.2|Among bits 15:0 of `hideleg`, bits 10, 6, and 2 (corresponding to the
+standard VS-level interrupts) are writable, and bits 12, 9, 5, and 1
+(corresponding to the standard S-level interrupts) are read-only zeros.|ZicsrH/hcsr/cp_hcsr_access
+|22.2.2|When a virtual supervisor external interrupt (code 10) is delegated to
+VS-mode, it is automatically translated by the machine into a supervisor
+external interrupt (code 9) for VS-mode, including the value written to
+`vscause` on an interrupt trap. Likewise, a virtual supervisor timer
+interrupt (6) is translated into a supervisor timer interrupt (5) for
+VS-mode, and a virtual supervisor software interrupt (2) is translated
+into a supervisor software interrupt (1) for VS-mode.|cp_hideleg_hip_vs, cp_hideleg_hip_vu
+
+*** following entries need coverpoints
+
+|22.2.3|Register `hvip` is an HSXLEN-bit read/write register that a hypervisor
+can write to indicate virtual interrupts intended for VS-mode. Bits of
+`hvip` that are not writable are read-only zeros.|
+|22.2.3|Bits VSEIP, VSTIP,
+and VSSIP of `hvip` are writable.|
+|22.2.3|Setting VSEIP=1 in `hvip` asserts a
+VS-level external interrupt; setting VSTIP asserts a VS-level timer
+interrupt; and setting VSSIP asserts a VS-level software interrupt.|
+|22.2.3|Registers `hip` and `hie` are HSXLEN-bit read/write registers|
+|22.2.3|For each writable bit in `sie`, the corresponding bit shall be read-only
+zero in both `hip` and `hie`. Hence, the nonzero bits in `sie` and `hie`
+are always mutually exclusive, and likewise for `sip` and `hip`.|
+|22.2.3|An interrupt _i_ will trap to HS-mode whenever all of the following are
+true: (a) either the current operating mode is HS-mode and the SIE bit
+in the `sstatus` register is set, or the current operating mode has less
+privilege than HS-mode; (b) bit _i_ is set in both `sip` and `sie`, or
+in both `hip` and `hie`; and (c) bit _i_ is not set in `hideleg`.|
+|22.2.3||
+
+|===
+
+
+
+==== H
+
+==== ZicsrH
+
+==== ExceptionsH
+
+==== InterruptsH
+
+==== EndianH
+
+==== RV32VM_H
+
+==== RV64VM_H
+
+==== SsstrictH
 
 
 
@@ -2048,7 +2236,7 @@ covergroup I_add_cg with function sample(ins_t ins);
     cp_rd : coverpoint ins.get_gpr_reg(ins.current.rd)  iff (ins.trap == 0 )  {
         //RD register assignment
     }
-    cp_rs1_corners : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
+    cp_rs1_edges : coverpoint unsigned'(ins.current.rs1_val)  iff (ins.trap == 0 )  {
         `ifdef XLEN32
             bins zero  =    {0};
             bins one  =     {32'b00000000000000000000000000000001};
@@ -2081,7 +2269,7 @@ covergroup I_add_cg with function sample(ins_t ins);
             wildcard bins random = {64'b01???????????????????????????????????????????????????????????010};
         `endif
     }
-    cp_rs2_corners : coverpoint unsigned'(ins.current.rs2_val)  iff (ins.trap == 0 )  {
+    cp_rs2_edges : coverpoint unsigned'(ins.current.rs2_val)  iff (ins.trap == 0 )  {
         `ifdef XLEN32
             bins zero  =    {0};
  ...
@@ -2090,8 +2278,8 @@ covergroup I_add_cg with function sample(ins_t ins);
             ...
         `endif
     }
-    cr_rs1_rs2_corners : cross cp_rs1_corners,cp_rs2_corners  iff (ins.trap == 0 )  {
-        //Cross coverage of RS1 corners and RS2 corners
+    cr_rs1_rs2_edges : cross cp_rs1_edges,cp_rs2_edges  iff (ins.trap == 0 )  {
+        //Cross coverage of RS1 edges and RS2 edges
     }
     cmp_rs1_rs2 : coverpoint ins.get_gpr_reg(ins.current.rs1)  iff (ins.current.rs1 == ins.current.rs2 & ins.trap == 0 )  {
         //Compare assignments of all registers
@@ -2153,27 +2341,48 @@ RVTEST_SIGUPD(x20, x1)
 
 ...
 
-# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x0)
+# Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x0)
 li x15, 0x00000000 # initialize rs1
 li x5, 0x00000000 # initialize rs2
 add x11, x15, x5 # perform operation
 RVTEST_SIGUPD(x10, x11)
 
-# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x1)
+# Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x1)
 li x1, 0x00000000 # initialize rs1
 li x31, 0x00000001 # initialize rs2
 add x20, x1, x31 # perform operation
 RVTEST_SIGUPD(x10, x20)
 
-# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x2)
+# Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x2)
 li x27, 0x00000000 # initialize rs1
 li x3, 0x00000002 # initialize rs2
 add x11, x27, x3 # perform operation
 RVTEST_SIGUPD(x10, x11)
 
-# Testcase cr_rs1_rs2_corners (Test source rs1 = 0x0 rs2 = 0x80000000)
+# Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x80000000)
 li x8, 0x00000000 # initialize rs1
 li x5, 0x80000000 # initialize rs2
 add x16, x8, x5 # perform operation
 RVTEST_SIGUPD(x10, x16)
 ----
+
+# Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x80000000)
+li x8, 0x00000000 # initialize rs1
+li x5, 0x80000000 # initialize rs2
+add x16, x8, x5 # perform operation
+RVTEST_SIGUPD(x10, x16, x20) # load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
+
+
+if (RVTEST_SELFCHECK)
+    SREG x16, 0(x10)
+    addi x10, x10, WORDSIZE
+    nop
+else
+    LREG x20, 0(x10)
+    beq x16, x20, 1f
+    ecall
+    1f:
+
+
+
+RVTEST_CHECK(x10, x16, x20) # load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
