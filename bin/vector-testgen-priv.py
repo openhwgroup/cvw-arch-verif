@@ -42,12 +42,12 @@ from vector_testgen_common import (
 
 
 def writeLine(argument: str, comment = ""):
-    tab_over_distance = 50
+    comment_distance = 50
 
-    argument = str(argument)
+    argument = " " * (4 * common.tab_count) + str(argument)
 
     if comment != "":
-        padding = max(0, tab_over_distance - len(argument))
+        padding = max(0, comment_distance - len(argument))
         comment = " " * padding + str(comment)
 
     f.write(argument + comment +"\n")

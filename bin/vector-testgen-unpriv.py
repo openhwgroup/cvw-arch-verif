@@ -59,6 +59,10 @@ from vector_testgen_common import (
   setFlen,
   setXlen,
   v_edges_ls,
+  vd_widen_ins,
+  vector_loads,
+  vector_ls_ins,
+  vector_stores,
   vedgeseew1,
   vedgesemul1,
   vedgesemul2,
@@ -67,10 +71,6 @@ from vector_testgen_common import (
   vedgesemulf2,
   vedgesemulf4,
   vedgesemulf8,
-  vd_widen_ins,
-  vector_loads,
-  vector_ls_ins,
-  vector_stores,
   vextins,
   vfedgesemul1,
   vfedgesemul2,
@@ -102,12 +102,12 @@ unsupported_tests = [ # conflicting signatures between sail and spike, open PRs 
 ]
 
 def writeLine(argument: str, comment = ""):
-  tab_over_distance = 50
+  comment_distance = 50
 
-  argument = str(argument)
+  argument = " " * (4 * common.tab_count) + str(argument)
 
   if comment != "":
-    padding = max(0, tab_over_distance - len(argument))
+    padding = max(0, comment_distance - len(argument))
     comment = " " * padding + str(comment)
 
   f.write(argument + comment +"\n")

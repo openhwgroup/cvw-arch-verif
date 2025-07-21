@@ -23,7 +23,7 @@ from random import randint, seed
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
 
-    f.write(f"\n# {name}\n")
+    # f.write(f"\n# {name}\n")      no longer desired to include header name
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters

@@ -37,6 +37,8 @@ vreg_count              = 32
 # Global Variables
 ##################################
 
+tab_count = 0
+
 xlen                    = 0
 flen                    = 0
 
@@ -1062,7 +1064,7 @@ def myhash(s):
   return h
 
 def insertTemplate(test, signatureWords, name):
-    writeLine(f"\n# {name}")
+     # writeLine(f"\n# {name}")     no longer desired to include template name
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
 
@@ -1405,47 +1407,47 @@ def loadVxsatMode(*scalar_registers_used):
 def getLMULIfdef(lmul):
   ifdef = ""
   if (lmul == 0.5):
-    ifdef = "#ifdef LMULf2_SUPPORTED\n"
+    ifdef = "LMULf2_SUPPORTED & "
   elif (lmul == 0.25):
-    ifdef = "#ifdef LMULf4_SUPPORTED\n"
+    ifdef = "LMULf4_SUPPORTED & "
   elif (lmul == 0.125):
-    ifdef = "#ifdef LMULf8_SUPPORTED\n"
+    ifdef = "LMULf8_SUPPORTED & "
   return ifdef
 
 def getELENIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if ELEN >= 64\n"
+    ifdef = "ELEN >= 64 & n"
   elif instruction in eew32_ins:
-    ifdef = "#if ELEN >= 32\n"
+    ifdef = "ELEN >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if ELEN >= 16\n"
+    ifdef = "ELEN >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if ELEN >= 8\n"
+    ifdef = "ELEN >= 8 & "
   return ifdef
 
 def getSEWMINIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if SEWMIN <= 64\n"
+    ifdef = "SEWMIN <= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if SEWMIN <= 32\n"
+    ifdef = "SEWMIN <= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if SEWMIN <= 16\n"
+    ifdef = "SEWMIN <= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if SEWMIN <= 8\n"
+    ifdef = "SEWMIN <= 8 & "
   return ifdef
 
 def getMaxIndexEEWIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if MAXINDEXEEW >= 64\n"
+    ifdef = "MAXINDEXEEW >= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if MAXINDEXEEW >= 32\n"
+    ifdef = "MAXINDEXEEW >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if MAXINDEXEEW >= 16\n"
+    ifdef = "MAXINDEXEEW >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if MAXINDEXEEW >= 8\n"
+    ifdef = "MAXINDEXEEW >= 8 & "
   return ifdef
 
 def getInstructionEEW(instruction):
@@ -1540,6 +1542,8 @@ def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
               frm=None, vxsat=None, vta=0, vma=0):
 
+    global tab_count
+
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
     vd              = vector_register_data['vd'] ['reg']
@@ -1562,13 +1566,17 @@ def writeTest(description, instruction, instruction_data,
 
     # deal with conflict before generating lmul ifdefs to not cause issue if the test is unused
 
-    writeLine("\n" + getLMULIfdef(lmul))
+    ifdef_booleans = ""
 
-    writeLine(getELENIfdef(instruction))
+    ifdef_booleans = ifdef_booleans + getLMULIfdef(lmul)
+    ifdef_booleans = ifdef_booleans + getELENIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getMaxIndexEEWIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getSEWMINIfdef(instruction)
 
-    writeLine(getMaxIndexEEWIfdef(instruction))
-
-    writeLine(getSEWMINIfdef(instruction))
+    if ifdef_booleans != "":
+      ifdef_booleans = ifdef_booleans[:-3]
+      writeLine("#ifdef " + ifdef_booleans, "# selectively enable test")
+      tab_count = tab_count + 1
 
     writeLine("# Testcase " + str(description))
 
@@ -1670,14 +1678,11 @@ def writeTest(description, instruction, instruction_data,
     else:
       writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
 
-    if (getLMULIfdef(lmul) != ""):
+    if ifdef_booleans != "":
+      tab_count = tab_count - 1
       writeLine("#endif")
-    if (getELENIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getSEWMINIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getMaxIndexEEWIfdef(instruction) != ""):
-      writeLine("#endif")
+
+    writeLine("") # space between tests
 
 def getLoadEquivilentInstruction(instruction, sew):
   if instruction in whole_register_stores:
