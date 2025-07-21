@@ -62,4 +62,3 @@
     cp_custom_voffgroup_vs2_lmul8:    cross std_vec, vtype_lmul_8, vs2_all_reg_unaligned_lmul_8;
 
     ////end cp_custom_voffgroup_vs2_lmul8////////////////////////////////////////////////
-

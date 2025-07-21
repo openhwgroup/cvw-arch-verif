@@ -80,4 +80,3 @@
     cp_custom_vdOverlapTopVs2_vd_vs2_lmul4 : cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_reg_aligned_lmul_8, vs1_vd_no_overlap_lmul4, vs2_mod8_4;
 
     ////end cp_custom_vdOverlapTopVs2_vd_vs2_lmul4////////////////////////////////////////////////
-

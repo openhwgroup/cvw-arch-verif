@@ -23,4 +23,3 @@
     cp_custom_vshift_upperbits_vs1_ones : cross std_vec, vs1_top_bits_one_sew8;
 
     ////end cp_custom_vshift_upperbits_vs1_ones////////////////////////////////////////////////
-

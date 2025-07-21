@@ -37,4 +37,3 @@
     cp_custom_vindexEdges_index_gt_vl_lt_vlmax :   cross std_vec, vl_one, vtype_lmul_2, vtype_sew_elemt_zero_vs1_2_sew32;
 
     ////end cp_custom_vindexEdges_index_gt_vl_lt_vlmax////////////////////////////////////////////////
-

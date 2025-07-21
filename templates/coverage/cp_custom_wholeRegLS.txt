@@ -8,4 +8,3 @@
     cp_custom_vwholeRegLS_lmul:     cross std_vec, vl_max, vtype_all_lmulge1;
 
     ////end cp_custom_vwholeRegLS_lmul////////////////////////////////////////////////
-

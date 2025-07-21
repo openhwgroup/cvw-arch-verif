@@ -68,4 +68,3 @@
     cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4: cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_eq_vs2, vs2_all_reg_aligned_lmul_8;
 
     ////end cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4////////////////////////////////////////////////
-

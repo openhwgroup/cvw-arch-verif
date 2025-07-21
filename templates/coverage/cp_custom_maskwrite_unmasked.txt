@@ -30,4 +30,3 @@
     cp_custom_vmask_write_lmulge1:      cross std_vec, vtype_all_lmulge1, vl_max;
 
     ////end cp_custom_vmask_write_lmulge1////////////////////////////////////////////////
-
