@@ -77,7 +77,7 @@ fcorners = {"pos0":                 0x00000000, # 0
             "twoToEmax":            0x7f000000, # 2^emax
             "onePulp":              0x3f800001, # 1 + ulp
             "largestsubnorm":       0x007fffff, # largest positive subnorm
-            "negSubnormLeadingOne": 0x00400000, # positive subnorm with leading 1
+            "negSubnormLeadingOne": 0x80400000, # positive subnorm with leading 1
             "min_subnorm":          0x00000001, # smallest positive subnorm
             "canonicalQNaN":        0x7fc00000, # canonical quiet NaN
             "negNoncanonicalQNaN":  0xffffffff, # noncanonical quiet NaN
@@ -98,7 +98,7 @@ fcornersD  = {"pos0":                 0x0000000000000000, # 0
               "twoToEmax":            0x7FE0000000000000, # 2^emax
               "onePulp":              0x3FF0000000000001, # 1 + ulp
               "largestsubnorm":       0x000FFFFFFFFFFFFF, # largest positive subnorm
-              "negSubnormLeadingOne": 0x0008000000000000, # positive subnorm with leading 1
+              "negSubnormLeadingOne": 0x8008000000000000, # positive subnorm with leading 1
               "min_subnorm":          0x0000000000000001, # smallest positive subnorm
               "canonicalQNaN":        0x7FF8000000000000, # canonical quiet NaN
               "negNoncanonicalQNaN":  0xFFFFFFFFFFFFFFFF, # noncanonical quiet NaN
@@ -217,6 +217,13 @@ vxrmList = {"rod": "0x6",
             "rne": "0x2",
             "rnu": "0x0"} # vcsr[2:1] -> 11 , 10, 01, 00
 
+# frm tests
+# frm = fcsr[5:7]
+frmList = {"rmm": "0x80", # 100_00000
+           "rup": "0x60", # 011_00000
+           "rdn": "0x40", # 010_00000
+           "rtz": "0x20", # 001_00000
+           "rne": "0x00"} # 000_00000
 
 ##################################
 # Types
@@ -1362,8 +1369,17 @@ def writeVecTest(vd, sew, testline, *scalar_registers_used, test=None, rd=None, 
       writeSIGUPD_V(vd, sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)
 
 # TODO : Make this works with vector FP
-def loadFloatRoundingMode(vfloattype, *scalar_registers_used):
-  return
+def loadFrmRoundingMode(frm, *scalar_registers_used):
+  scalar_registers_used = list(scalar_registers_used)
+
+  tempReg = 13
+  while tempReg in scalar_registers_used:
+    tempReg = randint(1,31)
+  scalar_registers_used.append(tempReg)
+
+  writeLine(f"li x{tempReg}, {frmList[frm]}", "# generate mask for desired frm")
+  writeLine(f"csrw fcsr, x{tempReg}", f"# set fcsr.frm to {frm}")
+  return scalar_registers_used
 
 def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
   scalar_registers_used = list(scalar_registers_used)
@@ -1373,9 +1389,8 @@ def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
     tempReg3 = randint(1,31)
   scalar_registers_used.append(tempReg3)
 
-  writeLine("", f"# set vcsr.vxrm to {vxrm}")
-  writeLine(f"li x{tempReg3}, {vxrmList[vxrm]}")
-  writeLine(f"csrw vcsr, x{tempReg3}\n")
+  writeLine(f"li x{tempReg3}, {vxrmList[vxrm]}", "# generate mask for desired frm")
+  writeLine(f"csrw vcsr, x{tempReg3}", f"# set fcsr.frm to {vxrm}")
   return scalar_registers_used
 
 # TODO: doesnt work
@@ -1523,7 +1538,7 @@ def getInstructionArguments(instruction):
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
-              vfrm=None, vxsat=None, vta=0, vma=0):
+              frm=None, vxsat=None, vta=0, vma=0):
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
@@ -1568,8 +1583,8 @@ def writeTest(description, instruction, instruction_data,
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
-    if vfrm is not None:
-      scalar_registers_used = loadFloatRoundingMode(vfrm, *scalar_registers_used)
+    if frm is not None:
+      scalar_registers_used = loadFrmRoundingMode(frm, *scalar_registers_used)
     elif vxsat is not None:
       scalar_registers_used = loadVxsatMode(*scalar_registers_used)
     elif vxrm is not None:
