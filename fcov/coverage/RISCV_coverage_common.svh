@@ -159,17 +159,12 @@
 
 `ifdef VX64_COVERAGE
   `define VLS64_COVERAGE
-  `define VF64_COVERAGE
 `endif
 `ifdef VX32_COVERAGE
   `define VLS32_COVERAGE
-  `define VF32_COVERAGE
 `endif
 `ifdef VX16_COVERAGE
   `define VLS16_COVERAGE
-  `ifdef ZVFH_COVERAGE
-    `define VF16_COVERAGE
-  `endif
 `endif
 `ifdef VX8_COVERAGE
   `define VLS8_COVERAGE
