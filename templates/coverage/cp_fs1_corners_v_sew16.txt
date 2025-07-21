@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_fs1_corners_v_sew16
+    //////////////////////////////////////////////////////////////////////////////////
+
     cp_fs1_corners_v_sew16 : coverpoint unsigned'(ins.current.fs1_val[15:0])  iff (ins.trap == 0 )  {
         //FS1 corners (Half Precision)
         bins pos0                   = {16'h0000};
@@ -21,3 +25,6 @@
         bins negNoncanonicalQNaN    = {[16'hFE01:16'hFFFF]};     // Quiet NaNs excluding canonical
         bins sNaN_payload1          = {16'h7D01};                // Signaling NaN with payload 1
     }
+
+    ////end cp_fs1_corners_v_sew16////////////////////////////////////////////////
+

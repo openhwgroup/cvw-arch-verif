@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for Vector widening operations with vv operands
 
     // ensures vd updates
@@ -122,3 +126,6 @@
     cp_custom_allVdOverlapTopVs1_vd_vs1_lmul1 : cross std_vec, vtype_lmul_1, vs1_vd_overlap_lmul1, vd_all_reg_aligned_lmul_2, vs2_vd_no_overlap_lmul1, vs1_reg_unaligned_lmul_2;
     cp_custom_allVdOverlapTopVs1_vd_vs1_lmul2 : cross std_vec, vtype_lmul_2, vs1_vd_overlap_lmul2, vd_all_reg_aligned_lmul_4, vs2_vd_no_overlap_lmul2, vs1_mod4_2;
     cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4 : cross std_vec, vtype_lmul_4, vs1_vd_overlap_lmul4, vd_all_reg_aligned_lmul_8, vs2_vd_no_overlap_lmul4, vs1_mod8_4;
+
+    ////end cp_custom_allVdOverlapTopVs1_vd_vs1_lmul4////////////////////////////////////////////////
+

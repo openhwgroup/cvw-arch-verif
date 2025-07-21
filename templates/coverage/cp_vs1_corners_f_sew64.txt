@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_vs1_corners_f_sew64
+    //////////////////////////////////////////////////////////////////////////////////
+
     cp_vs1_corners_f_sew64 : coverpoint get_vr_element_zero(ins.hart, ins.issue, ins.current.vs1_val)[31:0]  iff (ins.trap == 0 )  {
         // (Double Precision)
         bins pos0                   = {64'h0000000000000000};
@@ -21,3 +25,6 @@
         bins negNoncanonicalQNaN    = {[64'hFFF8000000000001:64'hFFFFFFFFFFFFFFFF]}; // other quiet NaNs
         bins sNaN_payload1          = {64'h7FF0000000000001};   // signaling NaN with payload 1
     }
+
+    ////end cp_vs1_corners_f_sew64////////////////////////////////////////////////
+

@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cr_vs2_imm_corners_wi
+    //////////////////////////////////////////////////////////////////////////////////
+
     cp_imm_corners_5bit : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
         bins b_0 = {0};
         bins b_1 = {1};
@@ -13,3 +17,6 @@
     cr_vs2_imm_corners_wi : cross cp_vs2_corners_emul2,cp_imm_corners_5bit  iff (ins.trap == 0 )  {
         //Cross coverage of VS2 corners (emul = 2) and 5 bit imm corners values
     }
+
+    ////end cr_vs2_imm_corners_wi////////////////////////////////////////////////
+

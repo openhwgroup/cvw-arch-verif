@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_vshiftn_upperbits_rs1_ones
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for Vector shift and clip instructions with wx operands
 
     // ensures vd updates
@@ -66,3 +70,6 @@
     }
 
     cp_custom_vshiftn_upperbits_rs1_ones : cross std_vec, rs1_top_bits_one_cross_sew32;
+
+    ////end cp_custom_vshiftn_upperbits_rs1_ones////////////////////////////////////////////////
+
