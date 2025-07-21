@@ -170,7 +170,7 @@
   `define VLS8_COVERAGE
 `endif
 
-// corner cases
+// edge cases
 `ifdef VLEN64
   `ifdef ELEN64
     `define ELEN_EQ_VLEN

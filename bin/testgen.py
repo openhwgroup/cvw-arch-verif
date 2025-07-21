@@ -1209,7 +1209,7 @@ def randomize(test, rs1=None, rs2=None, rs3=None, allunique=True):
         rs3val = randint(0, 2**flen-1)
       else:
         rs3val = randint(0, 2**xlen-1)
-    # all three source registers must be different for corners to work
+    # all three source registers must be different for edges to work
     while (rs1 == rs2 and allunique):
       rs2 = randomNonconflictingReg(test)
     while ((rs3 is not None) and ((rs3 == rs1) or (rs3 == rs2)) and allunique):
@@ -1321,35 +1321,35 @@ def make_rs1_rs2(test, xlen, rng):
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_corners(test, xlen):
-  for v in corners:
+def make_rs1_edges(test, xlen):
+  for v in edges:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cp_rs1_corners (Test source rs1 value = " + hex(v) + ")"
+    desc = "cp_rs1_edges (Test source rs1 value = " + hex(v) + ")"
     if ((test in cbptype) or (test in citype)):
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, v, test, xlen)
     else:
       writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen)
 
-def make_rs2_corners(test, xlen):
-    for v in corners:
+def make_rs2_edges(test, xlen):
+    for v in edges:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       if test in ["c.swsp", "c.sdsp"]:
         while (rs2 == 2):
           [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rs2_corners (Test source rs2 value = " + hex(v) + ")"
+      desc = "cp_rs2_edges (Test source rs2 value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
-def make_rd_corners(test, xlen, corners):
+def make_rd_edges(test, xlen, edges):
   if test in c_shiftitype:
-    for v in corners:
+    for v in edges:
       # rs1 = all 1s, rs2 = v, others are random
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + " Shifted by 1)"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + " Shifted by 1)"
       writeCovVector(desc, rs1, rs2, rd, -1, v, 1, rdval, test, xlen)
   elif test in catype:   # Using rs1val as temp variable to pass rd value
-    for v in corners:
+    for v in edges:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       if test in ["c.or","c.addw","c.xor"]:
         rd_temp = 0
         rs2_temp = v
@@ -1364,48 +1364,48 @@ def make_rd_corners(test, xlen, corners):
         rs2_temp = (-v)>>1
       writeCovVector(desc, rs1, rs2, rd, rd_temp, rs2_temp, 0, rdval, test, xlen)
   elif test in crtype:
-    for v in corners:
+    for v in edges:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       rs2val = -(rdval - v)
       writeCovVector(desc, rs1, rs2, rd, 0, rs2val, 0, rdval, test, xlen)
   elif (test == "c.addiw" or test == "c.addi"):
-    for v in corners:
+    for v in edges:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       immval = int(signedImm6(immval))
       rdval = v - immval
       rdval &= 0xFFFFFFFFFFFFFFFF   # This prevents -ve decimal rdval (converts -10 to 18446744073709551606)
       writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen)
   elif (test == "divw" or test == "divuw" or test=="mulw"):
-    for v in corners:
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+    for v in edges:
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       writeCovVector(desc, rs1, rs2, rd, v, 1, v, rdval, test, xlen)
   elif (test == "c.lui"):
-    for v in corners:
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+    for v in edges:
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
   else:
-    for v in corners:
+    for v in edges:
       # rs1 = 0, rs2 = v, others are random
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       writeCovVector(desc, rs1, 0, rd, v, rs2val, 0, rdval, test, xlen)
       # rs1, rs2 = v, others are random
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, v, v, v, rdval, test, xlen)
       # rs1 = all 1s, rs2 = v, others are random
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cp_rd_corners (Test rd value = " + hex(v) + ")"
+      desc = "cp_rd_edges (Test rd value = " + hex(v) + ")"
       writeCovVector(desc, rs1, rs2, rd, -1, v, -1, rdval, test, xlen)
 
-def make_rd_corners_lui(test, xlen, corners):
-  for v in corners:
+def make_rd_edges_lui(test, xlen, edges):
+  for v in edges:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-    desc = "cp_rd_corners_lui (Test rd value = " + hex(v) + ")"
+    desc = "cp_rd_edges_lui (Test rd value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd,rs1val, rs2val, v>>12, rdval, test, xlen)
 
 def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
@@ -1432,16 +1432,16 @@ def make_cp_gpr_hazard(test, xlen, haz_class='rw'):
       desc = "cp_gpr/fpr_hazard " + haz + " test"
       writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, test, immvala, immvalb, src, rs3a=rs3a, rs3b=rs3b, haz_type=haz, xlen=xlen)
 
-def make_cr_rs1_rs2_corners(test, xlen):
-  for v1 in corners:
-    for v2 in corners:
+def make_cr_rs1_rs2_edges(test, xlen):
+  for v1 in edges:
+    for v2 in edges:
       # select distinct rs1 and rs2
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       while rs1 == rs2:
         [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
-      desc = "cr_rs1_rs2_corners (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
+      desc = "cr_rs1_rs2_edges (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
       if (test == "c.and"):
-        print(f"Running make_cr_rs1_rs2_corners for c.and with rs1 = {rs1} = {v1} rs2 = {rs2} = {v2} rd = {rd} = {rdval}")
+        print(f"Running make_cr_rs1_rs2_edges for c.and with rs1 = {rs1} = {v1} rs2 = {rs2} = {v2} rd = {rd} = {rdval}")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
 
 def make_imm_zero(test, xlen):
@@ -1449,7 +1449,7 @@ def make_imm_zero(test, xlen):
   desc = "cp_imm_zero"
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, 0, rdval, test, xlen)
 
-def make_imm_corners_jal(test, xlen): # update these test
+def make_imm_edges_jal(test, xlen): # update these test
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   if (test == "jal"):
     minrng = 3
@@ -1459,7 +1459,7 @@ def make_imm_corners_jal(test, xlen): # update these test
     minrng = 2
     maxrng = 13
   rng = range(minrng,maxrng) # Test smallest offset as special case
-  lines = "\n# Testcase cp_imm_corners_jal "+str(minrng-1)+"\n"
+  lines = "\n# Testcase cp_imm_edges_jal "+str(minrng-1)+"\n"
   lines = lines + ".align " + str(maxrng) + "\n # start all tests on a multiple of the largest one\n"
   if (test == "jal"):
     lines = lines + test + " x1, 1f\n"
@@ -1473,7 +1473,7 @@ def make_imm_corners_jal(test, xlen): # update these test
   f.write(lines)
 
   for r in rng:
-    lines = "\n# Testcase cp_imm_corners_jal " + str(r) + "\n"
+    lines = "\n# Testcase cp_imm_edges_jal " + str(r) + "\n"
     lines = lines + ".align " + str(r-1) + "\n"
     lines = lines + "b"+ str(r-1)+"_"+test+":\n"
     if (test == "jal"):
@@ -1537,12 +1537,12 @@ def make_imm_corners_jal(test, xlen): # update these test
   lines = "f"+str(maxrng)+"_"+test+":\n"
   f.write(lines)
 
-def make_imm_corners_jalr(test, xlen):
+def make_imm_edges_jalr(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
-  for immval in corners_imm_12bit:
+  for immval in edges_imm_12bit:
     if (immval == 0):
       continue
-    lines = "\n# Testcase cp_imm_corners jalr " + str(immval) + " bin\n"
+    lines = "\n# Testcase cp_imm_edges jalr " + str(immval) + " bin\n"
     lines = lines + "LA(x"+str(rs1)+", 1f)\n" #load the address of the label '1' into x21
     lines += f"LI(x{rs2}, 1)" + "\n"
     if (immval == -2048):
@@ -1680,16 +1680,16 @@ def make_f_mem_hazard(test, xlen):
   lines = lines + test + " f2, 0(x1)\n"
   f.write(lines)
 
-def make_cp_imm_corners(test, xlen, corners_imm):
-  desc = "cp_imm_corners"
-  for v1 in corners_imm:
+def make_cp_imm_edges(test, xlen, edges_imm):
+  desc = "cp_imm_edges"
+  for v1 in edges_imm:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v1, rdval, test, xlen)
 
-def make_cr_rs1_imm_corners(test, xlen, corners_imm):
-  desc = "cr_rs1_imm_corners"
-  for v1 in corners:
-    for v2 in corners_imm:
+def make_cr_rs1_imm_edges(test, xlen, edges_imm):
+  desc = "cr_rs1_imm_edges"
+  for v1 in edges:
+    for v2 in edges_imm:
       [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       if ((test in cbptype) or (test in citype)):
         writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v2, v1, test, xlen)
@@ -1757,67 +1757,67 @@ def make_frm(test, xlen):
 # *** should sweep the rounding modes, and coverpoints should check they are hit
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
 
-def make_cr_fs1_fs2_corners(test, xlen, frm = False):
-  corners = fcorners
+def make_cr_fs1_fs2_edges(test, xlen, frm = False):
+  edges = fedges
   if test[-1] == "h":
-    corners = fcornersH
+    edges = fedgesH
   if test[-1] == "d":
-    corners = fcornersD
-  for v1 in corners:
-    for v2 in corners:
+    edges = fedgesD
+  for v1 in edges:
+    for v2 in edges:
       # select distinct fs1 and fs2
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
       while rs1 == rs2:
         [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-      desc = "cr_fs1_fs2_corners (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
+      desc = "cr_fs1_fs2_edges (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
 
       #f.write("fsflagsi 0b00000 # clear all fflags\n")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
-def make_cr_fs1_fs3_corners(test, xlen, frm = False):
-  corners = fcorners
+def make_cr_fs1_fs3_edges(test, xlen, frm = False):
+  edges = fedges
   if test[-1] == "h":
-    corners = fcornersH
+    edges = fedgesH
   if test[-1] == "d":
-    corners = fcornersD
-  for v1 in corners:
-    for v2 in corners:
+    edges = fedgesD
+  for v1 in edges:
+    for v2 in edges:
       # select distinct fs1 and fs3
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-      desc = "cr_fs1_fs3_corners (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
+      desc = "cr_fs1_fs3_edges (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
       writeCovVector(desc, rs1, rs2, rd, v1, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v2, frm=frm)
 
-def make_fs1_corners(test, xlen, fcorners, frm = False):
-  for v in fcorners:
+def make_fs1_edges(test, xlen, fedges, frm = False):
+  for v in fedges:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     while rs2 == rs1:
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    desc = "cp_fs1_corners (Test source fs1 value = " + hex(v) + ")"
+    desc = "cp_fs1_edges (Test source fs1 value = " + hex(v) + ")"
     if frm:
-      desc = "cr_fs1_corners_frm (Test source fs1 value = " + hex(v) + ")"
+      desc = "cr_fs1_edges_frm (Test source fs1 value = " + hex(v) + ")"
     if NaNBox_tests:
       desc = f"Improper NaNBoxed argument test (Value {hex(v)} in f{rs1})"
     #f.write("fsflagsi 0b00000 # clear all fflags\n")
     writeCovVector(desc, rs1, rs2, rd, v, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm = frm)
 
-def make_fs2_corners(test, xlen, fcorners):
-  for v in fcorners:
+def make_fs2_edges(test, xlen, fedges):
+  for v in fedges:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
     while rs2 == rs1:
       [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    desc = "cp_fs2_corners (Test source fs2 value = " + hex(v) + ")"
+    desc = "cp_fs2_edges (Test source fs2 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
-def make_fs3_corners(test, xlen, fcorners):
-  for v in fcorners:
+def make_fs3_edges(test, xlen, fedges):
+  for v in fedges:
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    desc = "cp_fs3_corners (Test source fs3 value = " + hex(v) + ")"
+    desc = "cp_fs3_edges (Test source fs3 value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v)
 
-def make_imm5_corners(test, xlen):
+def make_imm5_edges(test, xlen):
   for v in range(maxreg+1):
     [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-    desc = "cp_imm5_corners (Test imm value = " + hex(v) + ")"
+    desc = "cp_imm5_edges (Test imm value = " + hex(v) + ")"
     writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, v, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
 def make_bs(test, xlen):
@@ -1899,30 +1899,30 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_fs3(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_fs2p"):
       make_fs2(test, xlen, range(8, 16))
-    elif (coverpoint == "cp_fs1_corners"):
-      make_fs1_corners(test, xlen, fcorners)
-    elif (coverpoint == "cp_fs2_corners"):
-      make_fs2_corners(test, xlen, fcorners)
-    elif (coverpoint == "cp_fs3_corners"):
-      make_fs3_corners(test, xlen, fcorners)
-    elif (coverpoint == "cp_fs1_corners_D"):
-      make_fs1_corners(test, xlen, fcornersD)
-    elif (coverpoint == "cp_fs2_corners_D"):
-      make_fs2_corners(test, xlen, fcornersD)
-    elif (coverpoint == "cp_fs3_corners_D"):
-      make_fs3_corners(test, xlen, fcornersD)
-    elif (coverpoint == "cp_fs1_corners_H"):
-      make_fs1_corners(test, xlen, fcornersH)
-    elif (coverpoint == "cp_fs2_corners_H"):
-      make_fs2_corners(test, xlen, fcornersH)
-    elif (coverpoint == "cp_fs3_corners_H"):
-      make_fs3_corners(test, xlen, fcornersH)
-    # elif (coverpoint == "cp_fs1_corners_Q"):
-    #   make_fs1_corners(test, xlen, fcornersQ)
-    # elif (coverpoint == "cp_fs2_corners_Q"):
-    #   make_fs2_corners(test, xlen, fcornersQ)
-    # elif (coverpoint == "cp_fs3_corners_Q"):
-    #   make_fs3_corners(test, xlen, fcornersQ)
+    elif (coverpoint == "cp_fs1_edges"):
+      make_fs1_edges(test, xlen, fedges)
+    elif (coverpoint == "cp_fs2_edges"):
+      make_fs2_edges(test, xlen, fedges)
+    elif (coverpoint == "cp_fs3_edges"):
+      make_fs3_edges(test, xlen, fedges)
+    elif (coverpoint == "cp_fs1_edges_D"):
+      make_fs1_edges(test, xlen, fedgesD)
+    elif (coverpoint == "cp_fs2_edges_D"):
+      make_fs2_edges(test, xlen, fedgesD)
+    elif (coverpoint == "cp_fs3_edges_D"):
+      make_fs3_edges(test, xlen, fedgesD)
+    elif (coverpoint == "cp_fs1_edges_H"):
+      make_fs1_edges(test, xlen, fedgesH)
+    elif (coverpoint == "cp_fs2_edges_H"):
+      make_fs2_edges(test, xlen, fedgesH)
+    elif (coverpoint == "cp_fs3_edges_H"):
+      make_fs3_edges(test, xlen, fedgesH)
+    # elif (coverpoint == "cp_fs1_edges_Q"):
+    #   make_fs1_edges(test, xlen, fedgesQ)
+    # elif (coverpoint == "cp_fs2_edges_Q"):
+    #   make_fs2_edges(test, xlen, fedgesQ)
+    # elif (coverpoint == "cp_fs3_edges_Q"):
+    #   make_fs3_edges(test, xlen, fedgesQ)
     elif (coverpoint == "cp_rs1"):
       make_rs1(test, xlen, range(maxreg+1))
     elif (coverpoint == "cp_rs1_nx0"):
@@ -1957,77 +1957,77 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rs1_rs2(test, xlen, range(1,maxreg+1))
     elif (coverpoint == "cmp_rs1_rs2_c"):
       make_rs1_rs2(test, xlen, range(8,16))
-    elif (coverpoint == "cp_rs1_corners"):
-      make_rs1_corners(test, xlen)
-    elif (coverpoint == "cp_rs2_corners"):
-      make_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_rd_corners_slli"):
+    elif (coverpoint == "cp_rs1_edges"):
+      make_rs1_edges(test, xlen)
+    elif (coverpoint == "cp_rs2_edges"):
+      make_rs2_edges(test, xlen)
+    elif (coverpoint == "cp_rd_edges_slli"):
       if (xlen == 32):
-        make_rd_corners(test, xlen, c_slli_32_corners)
+        make_rd_edges(test, xlen, c_slli_32_edges)
       else:
-        make_rd_corners(test, xlen, c_slli_64_corners)
-    elif (coverpoint == "cp_rd_corners_srli"):
+        make_rd_edges(test, xlen, c_slli_64_edges)
+    elif (coverpoint == "cp_rd_edges_srli"):
       if (xlen == 32):
-        make_rd_corners(test, xlen, c_srli_32_corners)
+        make_rd_edges(test, xlen, c_srli_32_edges)
       else:
-        make_rd_corners(test, xlen, c_srli_64_corners)
-    elif (coverpoint == "cp_rd_corners_srai"):
+        make_rd_edges(test, xlen, c_srli_64_edges)
+    elif (coverpoint == "cp_rd_edges_srai"):
       if (xlen == 32):
-        make_rd_corners(test, xlen, c_srai_32_corners)
+        make_rd_edges(test, xlen, c_srai_32_edges)
       else:
-        make_rd_corners(test, xlen, c_srai_64_corners)
-    elif (coverpoint == "cp_rd_corners"):
-      make_rd_corners(test, xlen, corners)
-    elif (coverpoint == "cp_rd_corners_clui"):
-      make_rd_corners(test, xlen, corners_6bit)
-    elif (coverpoint == "cp_rd_corners_lw" or coverpoint == "cp_rd_corners_lwu"):
-      make_rd_corners(test, xlen, corners_32bit)
-    elif (coverpoint == "cp_rd_corners_lh" or coverpoint == "cp_rd_corners_lhu"):
-      make_rd_corners(test, xlen, corners_16bit)           # Make rd corners for lh and lhu for both RV32I & RV64I
-    elif (coverpoint == "cp_rd_corners_lb" or coverpoint == "cp_rd_corners_lbu"):
-      make_rd_corners(test, xlen, corners_8bits)            # Make rd corners for lb and lbu for both RV32I & RV64I
-    elif (coverpoint == "cp_rd_corners_6bit"):
-      make_rd_corners(test, xlen, corners_6bit)
-    elif (coverpoint == "cp_rd_corners_32bit"):
-      make_rd_corners(test, xlen, corners_32bit)
-    elif (coverpoint == "cp_rd_corners_lui"):
-      make_rd_corners_lui(test, xlen, corners_20bit)
+        make_rd_edges(test, xlen, c_srai_64_edges)
+    elif (coverpoint == "cp_rd_edges"):
+      make_rd_edges(test, xlen, edges)
+    elif (coverpoint == "cp_rd_edges_clui"):
+      make_rd_edges(test, xlen, edges_6bit)
+    elif (coverpoint == "cp_rd_edges_lw" or coverpoint == "cp_rd_edges_lwu"):
+      make_rd_edges(test, xlen, edges_32bit)
+    elif (coverpoint == "cp_rd_edges_lh" or coverpoint == "cp_rd_edges_lhu"):
+      make_rd_edges(test, xlen, edges_16bit)           # Make rd edges for lh and lhu for both RV32I & RV64I
+    elif (coverpoint == "cp_rd_edges_lb" or coverpoint == "cp_rd_edges_lbu"):
+      make_rd_edges(test, xlen, edges_8bits)            # Make rd edges for lb and lbu for both RV32I & RV64I
+    elif (coverpoint == "cp_rd_edges_6bit"):
+      make_rd_edges(test, xlen, edges_6bit)
+    elif (coverpoint == "cp_rd_edges_32bit"):
+      make_rd_edges(test, xlen, edges_32bit)
+    elif (coverpoint == "cp_rd_edges_lui"):
+      make_rd_edges_lui(test, xlen, edges_20bit)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
-      pass # already covered by cr_rs1_rs2_corners
+      pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint == "cmp_rd_rs2_eqval"):
-      pass # already covered by cr_rs1_rs2_corners
+      pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint == "cp_rd_sign"):
-      pass # already covered by rd_corners
-    elif (coverpoint == "cr_rs1_rs2_corners"):
-      make_cr_rs1_rs2_corners(test, xlen)
-    elif (coverpoint == "cp_imm_corners"):
+      pass # already covered by rd_edges
+    elif (coverpoint == "cr_rs1_rs2_edges"):
+      make_cr_rs1_rs2_edges(test, xlen)
+    elif (coverpoint == "cp_imm_edges"):
       if (test == "jalr"):
-          make_imm_corners_jalr(test, xlen)
+          make_imm_edges_jalr(test, xlen)
       else:
-        make_cp_imm_corners(test, xlen, corners_imm_12bit)
-    elif (coverpoint == "cp_imm_corners_20bit"):
-      make_cp_imm_corners(test, xlen, corners_imm_20bit)
-    elif (coverpoint == "cp_imm_corners_6bit"):
-      make_cp_imm_corners(test, xlen, corners_imm_6bit)
-    elif (coverpoint == "cp_imm_corners_c"):
-      pass # handled by cr_rs1_imm_corners
-      # make_cp_imm_corners(test, xlen, corners_imm_c)
-    elif (coverpoint == "cp_imm_corners_jal"):
-      make_imm_corners_jal(test, xlen)
-    elif (coverpoint == "cp_imm_corners_c_jal"):
-        make_imm_corners_jal(test,xlen)
-    elif (coverpoint == "cr_rs1_imm_corners"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_12bit)
-    elif (coverpoint == "cr_rs1_imm_corners_6bit"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit)
-    elif (coverpoint == "cr_rs1_imm_corners_6bit_n0"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_6bit[1:]) # exclude imm=0
-    elif (coverpoint == "cp_imm_corners_6bit_n0"):
+        make_cp_imm_edges(test, xlen, edges_imm_12bit)
+    elif (coverpoint == "cp_imm_edges_20bit"):
+      make_cp_imm_edges(test, xlen, edges_imm_20bit)
+    elif (coverpoint == "cp_imm_edges_6bit"):
+      make_cp_imm_edges(test, xlen, edges_imm_6bit)
+    elif (coverpoint == "cp_imm_edges_c"):
+      pass # handled by cr_rs1_imm_edges
+      # make_cp_imm_edges(test, xlen, edges_imm_c)
+    elif (coverpoint == "cp_imm_edges_jal"):
+      make_imm_edges_jal(test, xlen)
+    elif (coverpoint == "cp_imm_edges_c_jal"):
+        make_imm_edges_jal(test,xlen)
+    elif (coverpoint == "cr_rs1_imm_edges"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_12bit)
+    elif (coverpoint == "cr_rs1_imm_edges_6bit"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_6bit)
+    elif (coverpoint == "cr_rs1_imm_edges_6bit_n0"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_6bit[1:]) # exclude imm=0
+    elif (coverpoint == "cp_imm_edges_6bit_n0"):
       pass # only used for cross product
-    elif (coverpoint == "cr_rs1_imm_corners_c"):
-      make_cr_rs1_imm_corners(test, xlen, corners_imm_c)
+    elif (coverpoint == "cr_rs1_imm_edges_c"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_c)
     elif (coverpoint == "cr_rs1_rs2"):
-      pass # already covered by cr_rs1_rs2_corners
+      pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
       haz_class = coverpoint.split('_')[-1] # get the suffix if there is one
       if haz_class == "hazard": # will only happen if there was no suffix, meaning do both reads and writes
@@ -2039,8 +2039,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_imm_zero(test, xlen)
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
-    elif (coverpoint == "cp_rd_corners_sraiw"):
-      make_rd_corners(test,xlen,corners_sraiw)
+    elif (coverpoint == "cp_rd_edges_sraiw"):
+      make_rd_edges(test,xlen,edges_sraiw)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
@@ -2067,28 +2067,28 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_fd_fs2(test, xlen)
     elif (coverpoint == "cmp_fd_fs3"):
       make_fd_fs3(test, xlen)
-    # elif (coverpoint == "cp_fs1_corners"):
-    #   make_fs1_corners(test, xlen)
-    # elif (coverpoint == "cp_fs2_corners"):
-    #   make_fs2_corners(test, xlen)
-    elif (coverpoint in ["cr_fs1_fs2_corners", "cr_fs1_fs2_corners_H", "cr_fs1_fs2_corners_D"]):
-      make_cr_fs1_fs2_corners(test, xlen)
-    elif (coverpoint in ["cr_fs1_fs2_corners_frm", "cr_fs1_fs2_corners_frm_H", "cr_fs1_fs2_corners_frm_D"]):
-      make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint in ["cr_fs1_fs2_corners_frm4", "cr_fs1_fs2_corners_frm4_H", "cr_fs1_fs2_corners_frm4_D"]):
-      make_cr_fs1_fs2_corners(test, xlen, frm = True)
-    elif (coverpoint in ["cr_fs1_fs3_corners_frm", "cr_fs1_fs3_corners_frm_H", "cr_fs1_fs3_corners_frm_D"]):
-      make_cr_fs1_fs3_corners(test, xlen, frm = True)
-    elif (coverpoint in ["cr_fs1_fs3_corners_frm4", "cr_fs1_fs3_corners_frm4_H", "cr_fs1_fs3_corners_frm4_D"]):
-      make_cr_fs1_fs3_corners(test, xlen, frm = True)
+    # elif (coverpoint == "cp_fs1_edges"):
+    #   make_fs1_edges(test, xlen)
+    # elif (coverpoint == "cp_fs2_edges"):
+    #   make_fs2_edges(test, xlen)
+    elif (coverpoint in ["cr_fs1_fs2_edges", "cr_fs1_fs2_edges_H", "cr_fs1_fs2_edges_D"]):
+      make_cr_fs1_fs2_edges(test, xlen)
+    elif (coverpoint in ["cr_fs1_fs2_edges_frm", "cr_fs1_fs2_edges_frm_H", "cr_fs1_fs2_edges_frm_D"]):
+      make_cr_fs1_fs2_edges(test, xlen, frm = True)
+    elif (coverpoint in ["cr_fs1_fs2_edges_frm4", "cr_fs1_fs2_edges_frm4_H", "cr_fs1_fs2_edges_frm4_D"]):
+      make_cr_fs1_fs2_edges(test, xlen, frm = True)
+    elif (coverpoint in ["cr_fs1_fs3_edges_frm", "cr_fs1_fs3_edges_frm_H", "cr_fs1_fs3_edges_frm_D"]):
+      make_cr_fs1_fs3_edges(test, xlen, frm = True)
+    elif (coverpoint in ["cr_fs1_fs3_edges_frm4", "cr_fs1_fs3_edges_frm4_H", "cr_fs1_fs3_edges_frm4_D"]):
+      make_cr_fs1_fs3_edges(test, xlen, frm = True)
     elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
       make_frm(test, xlen)
-    elif (coverpoint == "cr_fs1_corners_frm"):
-      make_fs1_corners(test, xlen, fcorners, frm=True)
-    elif (coverpoint == "cr_fs1_corners_frm_D"):
-      make_fs1_corners(test, xlen, fcornersD, frm=True)
-    elif (coverpoint == "cr_fs1_corners_frm_H"):
-      make_fs1_corners(test, xlen, fcornersH, frm=True)
+    elif (coverpoint == "cr_fs1_edges_frm"):
+      make_fs1_edges(test, xlen, fedges, frm=True)
+    elif (coverpoint == "cr_fs1_edges_frm_D"):
+      make_fs1_edges(test, xlen, fedgesD, frm=True)
+    elif (coverpoint == "cr_fs1_edges_frm_H"):
+      make_fs1_edges(test, xlen, fedgesH, frm=True)
     elif (coverpoint.startswith("cp_csr_fflags")):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_csr_frm"):
@@ -2099,42 +2099,42 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs1_corners(test, xlen, badNB_corners_D_S)
+      make_fs1_edges(test, xlen, badNB_edges_D_S)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs2_corners(test, xlen, badNB_corners_D_S)
+      make_fs2_edges(test, xlen, badNB_edges_D_S)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs3_corners(test, xlen, badNB_corners_D_S)
+      make_fs3_edges(test, xlen, badNB_edges_D_S)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs1_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs1_corners(test, xlen, badNB_corners_D_H)
+      make_fs1_edges(test, xlen, badNB_edges_D_H)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs2_corners(test, xlen, badNB_corners_D_H)
+      make_fs2_edges(test, xlen, badNB_edges_D_H)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs3_corners(test, xlen, badNB_corners_D_H)
+      make_fs3_edges(test, xlen, badNB_edges_D_H)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs1_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs1_corners(test, xlen, badNB_corners_S_H)
+      make_fs1_edges(test, xlen, badNB_edges_S_H)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs2_corners(test, xlen, badNB_corners_S_H)
+      make_fs2_edges(test, xlen, badNB_edges_S_H)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs3_corners(test, xlen, badNB_corners_S_H)
+      make_fs3_edges(test, xlen, badNB_edges_S_H)
       NaNBox_tests = False
-    elif (coverpoint == "cp_imm5_corners"):
-      make_imm5_corners(test, xlen)
+    elif (coverpoint == "cp_imm5_edges"):
+      make_imm5_edges(test, xlen)
     elif (coverpoint == "cp_bs"):
       make_bs(test, xlen)
     elif (coverpoint == "cp_rnum"):
@@ -2143,7 +2143,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_sbox(test, xlen)
     elif (coverpoint in ["cp_sc", "cp_prev_lr", "cp_prev_sc", "cp_custom_sc_after_sc", "cp_custom_sc_after_store",
                          "cp_custom_sc_after_load", "cp_sc_fail", "cp_address_difference", "cp_custom_sc_lrsc",
-                         "cp_custom_sc_addresses", "cp_custom_rd_corners"]):
+                         "cp_custom_sc_addresses", "cp_custom_rd_edges"]):
       pass # Zalrsc coverpoints handled custom
     elif (coverpoint in ["cp_custom_aqrl", "cp_custom_fencei", "cp_custom_fence", "cp_custom_pause"]):
       make_custom(test, xlen)
@@ -2407,43 +2407,43 @@ if __name__ == '__main__':
   author = "David_Harris@hmc.edu"
   xlens = [32, 64]
   numrand = 3
-  corners = []
-  fcorners = []
+  edges = []
+  fedges = []
 
   # setup
   seed(0) # make tests reproducible
-  corners_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
-  corners_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
-  corners_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
+  edges_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
+  edges_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
+  edges_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
                 0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
-  corners_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
+  edges_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
                     0b01010101, 0b10101010, 0b01011011, 0b11011011]
-  corners_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
+  edges_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
                     0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
                     0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
-  corners_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
+  edges_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                     0b101010, 0b010101, 0b010110]
-  corners_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
-  corners_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
-  corners_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
-  corners_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
+  edges_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
+  edges_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
+  edges_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
+  edges_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                     0b00000000000000000001000000000000,0b01001010111000100000000000000000]
-  c_slli_32_corners  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
+  c_slli_32_edges  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
                         0b01111111111111111111111111111111,0b01010101010101010101010101010101,
                         0b00101101110111100100010000111011]
-  c_slli_64_corners  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
+  c_slli_64_edges  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
                         0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B]
-  c_srli_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
+  c_srli_32_edges  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
                         0b10101010101010101010101010101010,0b10110111011110010001000011101110]
-  c_srli_64_corners =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+  c_srli_64_edges =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
                         0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
                         0xb77910eec75d0dee]
-  c_srai_32_corners  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]
-  c_srai_64_corners  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
+  c_srai_32_edges  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]
+  c_srai_64_edges  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
                         0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
 
 
-  fcorners =            [0x00000000, # 0
+  fedges =            [0x00000000, # 0
                             0x80000000, # -0
                             0x3f800000, # 1.0
                             0xbf800000, # -1.0
@@ -2472,7 +2472,7 @@ if __name__ == '__main__':
                             0x7ef8654f,  # random positive 1.65087e+38
                             0x813d9ab0]  # random negative -3.48248e-38
 
-  fcornersD = [0x0000000000000000, # 0.0
+  fedgesD = [0x0000000000000000, # 0.0
               0x8000000000000000,  # -0.0
               0x3FF0000000000000,  # 1.0
               0xBFF0000000000000,  # -1.0
@@ -2501,7 +2501,7 @@ if __name__ == '__main__':
               0x5A392534A57711AD, # 4.25535e126 random positive
               0xA6E895993737426C] # -2.97516e-121 random negative
 
-  fcornersH = [0x0000, # 0.0
+  fedgesH = [0x0000, # 0.0
                 0x8000, # -0.0
                 0x3C00, # 1.0
                 0xBC00, # -1.0
@@ -2530,9 +2530,9 @@ if __name__ == '__main__':
                 0x58B4,  # 150.5 random positive
                 0xC93A]  # -10.4531 random negative
 
-  # fcornersQ = [] # TODO: Fill out quad precision F corners
+  # fedgesQ = [] # TODO: Fill out quad precision F edges
 
-  badNB_corners_D_S =  [0xffffefff00000000,
+  badNB_edges_D_S =  [0xffffefff00000000,
                         0xaaaaaaaa80000000,
                         0x000000003f800000,
                         0xdeadbeefbf800000,
@@ -2547,7 +2547,7 @@ if __name__ == '__main__':
                         0xfeffffff7f800001,
                         0xfffffeff7fbfffff]
 
-  badNB_corners_D_H =  [0xffffffff00000000,
+  badNB_edges_D_H =  [0xffffffff00000000,
                         0xfffffffffffe8000,
                         0x7fffffffffff3C00,
                         0xfeedbee5beefBC00,
@@ -2562,7 +2562,7 @@ if __name__ == '__main__':
                         0xa1b2c3d4e5f67C01,
                         0xfffffffcffff7DFF]
 
-  badNB_corners_S_H =  [0x00000000,
+  badNB_edges_S_H =  [0x00000000,
                         0xfffe8000,
                         0x7fff3C00,
                         0xbeefBC00,
@@ -2579,7 +2579,7 @@ if __name__ == '__main__':
 
 # generate files for each test
   for xlen in xlens:
-    corners_imm_c = corners_imm_32_c if xlen == 32 else corners_imm_64_c # 32-bit or 64-bit immediate corners for compressed shifts
+    edges_imm_c = edges_imm_32_c if xlen == 32 else edges_imm_64_c # 32-bit or 64-bit immediate edges for compressed shifts
     # for E_ext in [False, True]:
     for E_ext in [False]: # for testing only ***
       if (E_ext):
@@ -2616,12 +2616,12 @@ if __name__ == '__main__':
           flen = 32
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-        corners = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        rcornersv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
+        edges = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
+        redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
         if (xlen == 32):
-          corners = corners + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
+          edges = edges + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         else:
-          corners = corners + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
+          edges = edges + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
                               0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
                               0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
                               0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
@@ -2629,7 +2629,7 @@ if __name__ == '__main__':
                               0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
                               0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-          corners_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
+          edges_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
                           0b0000000000000000000000000000000000000000000000000000000000000001,
                           0b1111111111111111111111111111111111111111111111111111111111111111,
                           0b0000000000000000000000000000000001111111111111111111111111111111,

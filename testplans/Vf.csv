@@ -1,4 +1,4 @@
-Instruction,Type,RV32,RV64,EFFEW8,EFFEW16,EFFEW32,EFFEW64,cp_asm_count,cp_vd,cp_fd,cp_vs2,cp_vs1,cp_fs1,cmp_vd_vs2,cmp_vd_vs1,cmp_vs1_vs2,cmp_vd_vs1_vs2,cp_vs2_corners,cp_vs1_corners,cr_vs2_vs1_corners,cp_fs1_corners,cr_vs2_fs1_corners,cp_masking_corners,cr_vl_lmul,cr_vtype_agnostic,cp_vl_0,cp_csr_fflags,cp_csr_frm
+Instruction,Type,RV32,RV64,EFFEW8,EFFEW16,EFFEW32,EFFEW64,cp_asm_count,cp_vd,cp_fd,cp_vs2,cp_vs1,cp_fs1,cmp_vd_vs2,cmp_vd_vs1,cmp_vs1_vs2,cmp_vd_vs1_vs2,cp_vs2_edges,cp_vs1_edges,cr_vs2_vs1_edges,cp_fs1_edges,cr_vs2_fs1_edges,cp_masking_edges,cr_vl_lmul,cr_vtype_agnostic,cp_vl_0,cp_csr_fflags,cp_csr_frm
 vfadd.vv,VVVM,x,x,,x,x,x,x,x,,x,x,,x,x,x,x,f,f,f,,,x,x,x,x,von,v
 vfadd.vf,VVFM,x,x,,x,x,x,x,x,,x,,x,x,,,,f,,,v,x,x,x,x,x,von,v
 vfwadd.vv,VVVM,x,x,,x,x,,x,emul2,,x,x,,,,x,,f,f,f,,,x,lmul4max,lmul4max,x,vn,v
