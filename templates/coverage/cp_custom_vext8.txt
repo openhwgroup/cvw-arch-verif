@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_vext8_overlapping_vd_vs2_lmul8
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for Vector zext and sext operations (f8)
 
     // ensures vd updates
@@ -24,3 +28,6 @@
     }
 
     cp_custom_vext8_overlapping_vd_vs2_lmul8:    cross std_vec, vtype_lmul_8, vs2_vd_overlap_lmul8, vs2_mod8_7;
+
+    ////end cp_custom_vext8_overlapping_vd_vs2_lmul8////////////////////////////////////////////////
+

@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cr_vxrm_vs2_imm_corners
+    //////////////////////////////////////////////////////////////////////////////////
+
     cp_csr_vxrm : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_AFTER, "vcsr", "vxrm")  iff (ins.trap == 0)  {
         // Value of VCSR.vxrm (vector fixed-point rounding mode)
         bins rnu  = {2'b00};
@@ -9,3 +13,6 @@
     cr_vxrm_vs2_imm_corners : cross cp_vs2_corners,cp_imm_corners_5bit_u,cp_csr_vxrm  iff (ins.trap == 0 )  {
         //Cross coverage VS2, imm corners (unsigned), rounding mode
     }
+
+    ////end cr_vxrm_vs2_imm_corners////////////////////////////////////////////////
+

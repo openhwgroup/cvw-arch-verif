@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_vs2_corners_emulf4
+    //////////////////////////////////////////////////////////////////////////////////
+
     cp_vs2_corners_emulf4 : coverpoint vs_corners_check(ins.hart, ins.issue, ins.current.vs2_val, "f4")  iff (ins.trap == 0 )  {
         // Corners values of vs2 (emul = f4), assuming vl = 1
         bins zero       = {vs_zero      };   //  = {(`SEW){1'b0}},
@@ -13,3 +17,6 @@
         bins walkeven   = {vs_walkeven  };   //  = {(`SEW/2){2'b01}},
         bins random     = {vs_random    };   //  = {(SEW){random}}
     }
+
+    ////end cp_vs2_corners_emulf4////////////////////////////////////////////////
+

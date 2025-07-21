@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for Vector shift and clip instructions with wi operands
 
     // ensures vd updates
@@ -62,3 +66,6 @@
     cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul1: cross std_vec, vtype_lmul_1, vs2_vd_overlap_lmul1, vd_eq_vs2, vs2_all_reg_aligned_lmul_2;
     cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul2: cross std_vec, vtype_lmul_2, vs2_vd_overlap_lmul2, vd_eq_vs2, vs2_all_reg_aligned_lmul_4;
     cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4: cross std_vec, vtype_lmul_4, vs2_vd_overlap_lmul4, vd_eq_vs2, vs2_all_reg_aligned_lmul_8;
+
+    ////end cp_custom_allVdOverlapBtmVs2_vd_vs2_lmul4////////////////////////////////////////////////
+

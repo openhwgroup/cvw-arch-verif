@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_voffgroup_vs2_lmul8
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for vmv.x.s
 
     vtype_prev_vill_clear: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") {
@@ -56,3 +60,6 @@
     cp_custom_voffgroup_vs2_lmul2:    cross std_vec, vtype_lmul_2, vs2_all_reg_unaligned_lmul_2;
     cp_custom_voffgroup_vs2_lmul4:    cross std_vec, vtype_lmul_4, vs2_all_reg_unaligned_lmul_4;
     cp_custom_voffgroup_vs2_lmul8:    cross std_vec, vtype_lmul_8, vs2_all_reg_unaligned_lmul_8;
+
+    ////end cp_custom_voffgroup_vs2_lmul8////////////////////////////////////////////////
+

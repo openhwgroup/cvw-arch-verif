@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cmp_vd_vs2_emul4
+    //////////////////////////////////////////////////////////////////////////////////
+
     cmp_vd_vs2_emul4 : coverpoint ins.get_vr_reg(ins.current.vd)  iff (ins.current.vd == ins.current.vs2 & ins.trap == 0 )  {
         //Compare assignments of all 32 registers, vd only registers of multiple of 4
         ignore_bins v1 = {v1};
@@ -25,3 +29,6 @@
         ignore_bins v30 = {v30};
         ignore_bins v31 = {v31};
     }
+
+    ////end cmp_vd_vs2_emul4////////////////////////////////////////////////
+

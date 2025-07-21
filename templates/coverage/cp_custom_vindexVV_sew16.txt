@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_vindexCorners_index_gt_vl_lt_vlmax
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Custom coverpoints for Vector slidedown and gather instructions
 
     //cross vtype_prev_vill_clear, vstart_zero, vl_nonzero, no_trap;
@@ -31,3 +35,6 @@
     }
 
     cp_custom_vindexCorners_index_gt_vl_lt_vlmax :   cross std_vec, vl_one, vtype_lmul_2, vtype_sew_elemt_zero_vs1_2_sew16;
+
+    ////end cp_custom_vindexCorners_index_gt_vl_lt_vlmax////////////////////////////////////////////////
+

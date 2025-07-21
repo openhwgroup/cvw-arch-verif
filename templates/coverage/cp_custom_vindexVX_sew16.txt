@@ -1,3 +1,7 @@
+//////////////////////////////////////////////////////////////////////////////////
+    // cp_custom_vindexVX_rs1_not_truncated_64
+    //////////////////////////////////////////////////////////////////////////////////
+
 
     std_vec: coverpoint {get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vill") == 0 &
                         get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vstart", "vstart") == 0 &
@@ -33,3 +37,6 @@
     cp_custom_vindexVX_rs1_not_truncated_64 : cross std_vec, rs1_target_value, vs2_element_zero_nonzero_sew16;
 
     `endif
+
+    ////end cp_custom_vindexVX_rs1_not_truncated_64////////////////////////////////////////////////
+
