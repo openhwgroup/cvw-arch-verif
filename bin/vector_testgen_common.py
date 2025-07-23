@@ -1146,35 +1146,39 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
     register_value        = register_data['val']
-    register_emul         = lmul * register_data['size_multiplier'] * register_data['segments']
+    register_emul         = lmul * register_data['size_multiplier']
+    register_segments     = register_data['segments']
+    register_eew          = int(sew  * register_data['size_multiplier'])
 
-    if register_data['reg_type'] == "mask" : register_sew = 8
-    if instruction in vector_ls_ins        :
-      if register_argument_name == 'vs2':
-        register_sew = getInstructionEEW(instruction) # vs2 uses eew
-      else:
-        register_sew = sew # regsiters are read with sew and lmul in vtype csr
-    else                                   : register_sew = int(register_data['size_multiplier'] * sew)
+    if register_data['reg_type'] == "mask" :
+      register_eew = 8
+      register_emul = 1
+    elif register_data['reg_type'] == "scalar":
+      register_emul = 1
+
+    if register_eew > 64 or register_eew < 8:
+      raise ValueError(f"Register EEW violates constrints: register_eew = {register_eew}")
 
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
-    # safely loading new vtype for fractional lmul to make sure all desired elements are loaded
-    if lmul < 1:
-      load_unique_vtype = True
-    elif getInstructionEEW(instruction) != sew and register_argument_name == 'vs2':
+
+    if register_eew != sew:
       load_unique_vtype = True
     elif instruction in whole_register_move:
+      load_unique_vtype = lmul != getInstructionNfields(instruction)
+      register_emul = 1
+    elif instruction in whole_register_ls: # whole register loads and stores have an EMUL of NF
+      register_emul = getInstructionSegments(instruction)
+      load_unique_vtype = lmul != getInstructionSegments(instruction)
+      register_emul = 1
+    elif register % lmul != 0: # off group register load
+      load_unique_vtype = True
+    elif register_data['reg_type'] == "mask": # only target register should be loaded and may be off group
+      load_unique_vtype = True
+    elif register_data['reg_type'] == "scalar": # only target register should be loaded and may be off group
       load_unique_vtype = True
     else:
-      if instruction in whole_register_ls:
-        load_unique_vtype = lmul != getInstructionSegments(instruction)
-      if register_emul <= 1 and register % lmul != 0:
-        load_unique_vtype = True
-      if register % lmul != 0:
-        load_unique_vtype = True
-      else:
-        load_unique_vtype = ((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar")) \
-          or (register_emul > 1 and register_data['reg_type'] == "scalar")
+      load_unique_vtype = False
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1189,7 +1193,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
       writeLine(f"csrr x{vtypeReg}, vtype", "# save vtype register for after load")
       writeLine(f"csrr x{avlReg}, vl",      "# save vl register for after load")
-      writeLine(f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
+      writeLine(f"vsetvli x0, x{avlReg}, e{register_eew}, m{math.ceil(register_emul)}, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
 
     load_vls_random_corner = register_val_pointer == "vs_corner_random_within_2vlmax"
 
@@ -1208,7 +1212,8 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       if register_val_pointer == "vs_corner_zero_emul8":
         writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               "# zero register")
       else:
-        writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
+        segment_instruction_phrase = f"seg{register_segments}" if register_segments is not None and register_segments != 1 else ""
+        writeLine(f"vl{segment_instruction_phrase}e{register_eew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
     if load_unique_vtype: # return vl and vtype register to what it was before
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}", "# restore vl and vtype setting")
@@ -1966,18 +1971,13 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     vector_register_preset_data['vs1']['segments'] = segments
     vector_register_preset_data[ 'vd']['segments'] = segments
 
-  eew = None
-  if   instruction in eew64_ins : eew = 64
-  elif instruction in eew32_ins : eew = 32
-  elif instruction in eew16_ins : eew = 16
-  elif instruction in eew8_ins  : eew = 8
+  eew = getInstructionEEW(instruction)
 
   if eew is not None : # if emul is greater than 1 use it for the size multiplier
-    if   instruction in whole_register_ls : pass
-    elif instruction in indexed_loads     : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
-    elif instruction in indexed_stores    : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
-    elif instruction in vector_loads      : vector_register_preset_data[ 'vd']['size_multiplier'] = eew/sew
-    elif instruction in vector_stores     : vector_register_preset_data['vs3']['size_multiplier'] = eew/sew
+    if   instruction in whole_register_ls   : pass # these use implied lmul as the number of registers to load instead of size_multiplier
+    elif instruction in indexed_ls_ins      : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
+    elif instruction in vector_loads        : vector_register_preset_data[ 'vd']['size_multiplier'] = eew/sew
+    elif instruction in vector_stores       : vector_register_preset_data['vs3']['size_multiplier'] = eew/sew
 
   if instruction in vextins: # swapped lmul and emul of vext instr for the convenience of register managing
     fraction_sew = 1/int(instruction[-1])
@@ -2071,7 +2071,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     # print(vector_register_data)
     max_randomization_count = 1000
     if (randomization_count >= max_randomization_count):
-      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" with sew "{sew}" and lmul "{lmul}" after {max_randomization_count} attempts')
+      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" with sew "{sew}", eew "{eew}" and lmul "{lmul}" after {max_randomization_count} attempts')
     randomization_count = randomization_count + 1
 
 
@@ -2106,6 +2106,17 @@ def getInstructionSegments(instruction):
   elif instruction in seg7 : return 7
   elif instruction in seg8 : return 8
   else                     : return 1
+
+def getInstructionNfields(instruction):
+  if   instruction == "vmv1r.v" : return 1
+  elif instruction == "vmv2r.v" : return 2
+  elif instruction == "vmv3r.v" : return 3
+  elif instruction == "vmv4r.v" : return 4
+  elif instruction == "vmv5r.v" : return 5
+  elif instruction == "vmv6r.v" : return 6
+  elif instruction == "vmv7r.v" : return 7
+  elif instruction == "vmv1r.v" : return 8
+  else                          : return None
 
 def getBaseLmul(instruction, sew):
   if   instruction in eew8_ins  and 8  / sew > 1: return sew / 8

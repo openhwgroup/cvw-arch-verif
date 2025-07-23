@@ -1081,7 +1081,7 @@ if __name__ == '__main__':
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
-  author = "kacassidy@g.hmc.edu"
+  author = "Georgia Tai & Kaden Cassidy: kacassidy@g.hmc.edu & gtai@g.hmc.edu"
   xlens = [32, 64]
   numrand = 3
   corners = []
@@ -1227,15 +1227,21 @@ if __name__ == '__main__':
 
         if test in vector_loads:
           genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-          genRandomVector(test, sew, vs="vd")
           if test in indexed_loads:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
+            genRandomVector(test, sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
+          else:
+            randomized_memory_sew = getInstructionEEW(test) if getInstructionEEW(test) is not None else sew
+            genRandomVector(test, randomized_memory_sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
           genRandomVectorLS()
         if test in vector_stores:
           genVsCorners(test, 64, "8") # max size corners to ave all zeros availible
-          genRandomVector(test, sew, vs="vs3")
           if test in indexed_stores:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
+            genRandomVector(test, sew, vs="vs3")
+          else:
+            randomized_memory_sew = getInstructionEEW(test) if getInstructionEEW(test) is not None else sew
+            genRandomVector(test, randomized_memory_sew, vs="vs3")
           genRandomVectorLS()
         if test not in vector_ls_ins:
           # generate vector data (random and corners)
