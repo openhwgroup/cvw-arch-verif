@@ -1140,24 +1140,28 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
 
-    if register_eew != sew:
-      load_unique_vtype = True
-    elif instruction in whole_register_move:
+    if instruction in whole_register_move:
       load_unique_vtype = register % lmul != 0
       register_emul = 1
     elif instruction in whole_register_ls: # whole register loads and stores have an EMUL of NF
+      if instruction not in whole_register_stores : # stores do not encode an eew
+        register_eew = getInstructionEEW(instruction) # for whole register loads and stores the eew is hardcoded for all registers but does not affect the register group size (completely independent of the vtype csr)
       register_emul = getInstructionSegments(instruction)
-      load_unique_vtype = register % lmul != 0
+      preloaded_value_emul = lmul * register_eew / sew
+      load_unique_vtype = register % lmul != 0 or preloaded_value_emul < 1/8 or preloaded_value_emul > 8 or register % math.ceil(preloaded_value_emul) != 0
       register_emul = 1
-    elif register % lmul != 0: # off group register load
-      load_unique_vtype = True
     elif register_data['reg_type'] == "mask": # only target register should be loaded and may be off group
       load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
       register_eew = 8
       register_emul = 1
     elif register_data['reg_type'] == "scalar": # only target register should be loaded and may be off group
       load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
+      load_unique_vtype = load_unique_vtype or register_emul != 1 # need to include widening reduction
       register_emul = 1
+    elif register_eew != sew:
+      load_unique_vtype = True
+    elif register % lmul != 0: # off group register load
+      load_unique_vtype = True
     else:
       load_unique_vtype = False
 

@@ -95,6 +95,8 @@ unsupported_tests = [ # conflicting signatures between sail and spike, open PRs 
   "vslideup.vi",    # Sail issue 1071
   "vslidedown.vi",  # Sail issue 1071
   "vrgather.vi",    # Sail issue 1071
+  "vwredsumu.vs",   # Sail claims to have fixed, we may not have the newest version
+  "vwredsum.vs"     # Sail claims to have fixed, we may not have the newest version
 ]
 
 def writeLine(argument: str, comment = ""):
@@ -330,6 +332,7 @@ def make_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners, vl=1):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1_val_pointer = v1, vs2_val_pointer = v2, additional_no_overlap=[['vs1', 'vs2']])
 
       writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
+      vsAddressCount()
 
 def make_vs2_rs1_corners(instruction, sew, vs2corners):
   for r1 in rcornersv:
@@ -338,6 +341,7 @@ def make_vs2_rs1_corners(instruction, sew, vs2corners):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vs2_fs1_corners(instruction, sew, vs2corners):
   if sew == 64:
@@ -354,6 +358,7 @@ def make_vs2_fs1_corners(instruction, sew, vs2corners):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, fs1_val = f1_val)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vs2_imm_corners(instruction, sew, vs2corners):
   for imm in immcornersv:
@@ -362,6 +367,7 @@ def make_vs2_imm_corners(instruction, sew, vs2corners):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vxrm_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners):
   for vxrm in vxrmList:
@@ -371,6 +377,7 @@ def make_vxrm_vs2_vs1_corners(instruction, sew, vs2corners, vs1corners):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, vs1_val_pointer = v1, additional_no_overlap=[['vs1','vs2']])
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_vxrm_vs2_rs1_corners(instruction, sew, vs2corners):
   for vxrm in vxrmList:
@@ -380,6 +387,7 @@ def make_vxrm_vs2_rs1_corners(instruction, sew, vs2corners):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
   for vxrm in vxrmList:
@@ -389,6 +397,7 @@ def make_vxrm_vs2_imm_corners(instruction, sew, vs2corners):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_frm(instruction, sew):
   for frm in frmList:
