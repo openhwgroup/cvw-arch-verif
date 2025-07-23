@@ -191,12 +191,12 @@ def cp_vsetvl_i_rd_nx0_rs1_x0(pathname):
                 print()
     outfile.close()
 
-def cp_vsetivli_avl_corners(pathname):
+def cp_vsetivli_avl_edges(pathname):
     with open(pathname, 'w') as outfile:
         sys.stdout = outfile
         sews = ["8", "16", "32", "64"]
 
-        print("// Tests for cp_vsetivli_avl_corners")
+        print("// Tests for cp_vsetivli_avl_edges")
         for sew in sews:
             for i in range(32):
                 print("\t// SEW = " + sew + " and LMUL = 1")
@@ -294,4 +294,4 @@ pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetvl-Tests.h"
 cp_vsetvl_i_rd_nx0_rs1_x0(pathname)
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrV-vsetivli-Tests.h"
-cp_vsetivli_avl_corners(pathname)
+cp_vsetivli_avl_edges(pathname)

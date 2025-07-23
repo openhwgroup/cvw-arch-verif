@@ -123,10 +123,10 @@ typedef enum {
     vs_walkeodd, // = {(`SEW/2){2'b10}},
     vs_walkeven, // = {(`SEW/2){2'b01}},
     vs_random
-} corner_vs_values_t;
+} edge_vs_values_t;
 
-// Check for vector operand corner values, assuming vl = 1
-function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val, string sew_multiplier);
+// Check for vector operand edge values, assuming vl = 1
+function edge_vs_values_t vs_edges_check(int hart, int issue, `VLEN_BITS val, string sew_multiplier);
   `XLEN_BITS vsew = get_csr_val(hart, issue, `SAMPLE_BEFORE, "vtype", "vsew");
   int sew = 2 ** (3 + unsigned'(vsew[2:0]));
   int eew;
@@ -147,15 +147,15 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
   endcase
 
   case (eew)
-    8:   return vs_corners_check_eew_8(val);
+    8:   return vs_edges_check_eew_8(val);
     `ifdef SEW16_SUPPORTED
-    16:  return vs_corners_check_eew_16(val);
+    16:  return vs_edges_check_eew_16(val);
     `endif
     `ifdef SEW32_SUPPORTED
-    32:  return vs_corners_check_eew_32(val);
+    32:  return vs_edges_check_eew_32(val);
     `endif
     `ifdef SEW64_SUPPORTED
-    64:  return vs_corners_check_eew_64(val);
+    64:  return vs_edges_check_eew_64(val);
     `endif
     default: begin
       $error("ERROR: SystemVerilog Functional Coverage: Unsupported EEW: %s", eew);
@@ -164,14 +164,14 @@ function corner_vs_values_t vs_corners_check(int hart, int issue, `VLEN_BITS val
   endcase
 endfunction
 
-function corner_vs_values_t vs_corners_check_eew_1(`VLEN_BITS val);
+function edge_vs_values_t vs_edges_check_eew_1(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-1){1'b?}}, {1'b1}}:  return vs_one;
     default:                      return vs_zero;
   endcase
 endfunction
 
-function corner_vs_values_t vs_corners_check_eew_8(`VLEN_BITS val);
+function edge_vs_values_t vs_edges_check_eew_8(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-8){1'b?}},         {(8){1'b0}}}:            return vs_zero;
     {{(`VLEN-8){1'b?}},         {(8-1){1'b0}}, {1'b1}}:  return vs_one;
@@ -189,7 +189,7 @@ function corner_vs_values_t vs_corners_check_eew_8(`VLEN_BITS val);
 endfunction
 
 `ifdef SEW16_SUPPORTED
-function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
+function edge_vs_values_t vs_edges_check_eew_16(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-16){1'b?}},         {(16){1'b0}}}:            return vs_zero;
     {{(`VLEN-16){1'b?}},         {(16-1){1'b0}}, {1'b1}}:  return vs_one;
@@ -207,7 +207,7 @@ function corner_vs_values_t vs_corners_check_eew_16(`VLEN_BITS val);
 endfunction
 `endif
 `ifdef SEW32_SUPPORTED
-function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
+function edge_vs_values_t vs_edges_check_eew_32(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-32){1'b?}},         {(32){1'b0}}}:            return vs_zero;
     {{(`VLEN-32){1'b?}},         {(32-1){1'b0}}, {1'b1}}:  return vs_one;
@@ -225,7 +225,7 @@ function corner_vs_values_t vs_corners_check_eew_32(`VLEN_BITS val);
 endfunction
 `endif
 `ifdef SEW64_SUPPORTED
-function corner_vs_values_t vs_corners_check_eew_64(`VLEN_BITS val);
+function edge_vs_values_t vs_edges_check_eew_64(`VLEN_BITS val);
   casez (val)
     {{(`VLEN-64){1'b?}},         {(64){1'b0}}}:            return vs_zero;
     {{(`VLEN-64){1'b?}},         {(64-1){1'b0}}, {1'b1}}:  return vs_one;
@@ -254,9 +254,9 @@ typedef enum {
     zero,
     random_in_range,
     None
-} corner_vs2_ls_values_t;
+} edge_vs2_ls_values_t;
 
-function corner_vs2_ls_values_t vs2_ls_corners_check (int hart, int issue, `VLEN_BITS val);
+function edge_vs2_ls_values_t vs2_ls_edges_check (int hart, int issue, `VLEN_BITS val);
 
   logic all_values_within_range = 1'b1;
 
@@ -363,10 +363,10 @@ typedef enum {
     mask_vlmaxm1ones,
     mask_vlmaxd2p1ones,
     mask_random
-} corner_mask_values_t;
+} edge_mask_values_t;
 
-// Check for vector operand corner values, assuming vl = 1
-function corner_mask_values_t mask_corners_check(int hart, int issue, `VLEN_BITS mask_val);
+// Check for vector operand edge values, assuming vl = 1
+function edge_mask_values_t mask_edges_check(int hart, int issue, `VLEN_BITS mask_val);
   int vlmax = get_vtype_vlmax(hart, issue, `SAMPLE_BEFORE);
 
   if      (mask_val == 0)                           return mask_zero;

@@ -83,7 +83,7 @@ tmp:
     csrrw t6, misa, s0       # restore MISA
 
 /////////////////////////////////
-// cp_misa_ext_write_corners:
+// cp_misa_ext_write_edges:
 // and cp_misa_middle_write
 /////////////////////////////////
 // write all 0s to extension bits [25:0]
@@ -428,15 +428,15 @@ postsrettest:
 /////////////////////////////////
 // walking 1s and 0s for each register, also 11 in 2-bit fields
 /////////////////////////////////
-// cp_medeleg_write_corners
-// cp_mideleg_write_corners
-// cp_mie_write_corners
-// cp_mepc_write_corners
-// cp_mtval_write_corners
-// cp_mseccfg_write_corners
-// cp_menvcfg_write_corners
-// cp_mip_write_corners
-// cp_mtvec_base_write_corners
+// cp_medeleg_write_edges
+// cp_mideleg_write_edges
+// cp_mie_write_edges
+// cp_mepc_write_edges
+// cp_mtval_write_edges
+// cp_mseccfg_write_edges
+// cp_menvcfg_write_edges
+// cp_mip_write_edges
+// cp_mtvec_base_write_edges
 // cp_mtvec_mode_write
 // cp_mstatus_sxl_write
 // cp_mstatus_uxl_write

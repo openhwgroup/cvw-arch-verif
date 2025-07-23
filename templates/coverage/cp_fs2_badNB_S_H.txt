@@ -1,5 +1,5 @@
     cp_fs2_badNB_S_H : coverpoint unsigned'(ins.current.fs2_val[31:0])  iff (ins.trap == 0 )  {
-        // "FS2 Bad NaNBox corners (half NaNBoxed to 32 bits)";
+        // "FS2 Bad NaNBox edges (half NaNBoxed to 32 bits)";
         bins pos0             = {32'h0000_0000};
         bins neg0             = {32'hfffe_8000};
         bins pos1             = {32'h7fff_3C00};

@@ -1,4 +1,4 @@
-Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rs2,cp_rd,cp_rs1_corners,cp_rs2_corners,cr_rs1_imm_corners,cr_rs1_rs2_corners,cmp_rs1_rs2,cmp_rd_rs1,cmp_rd_rs2,cp_offset,cp_uimm,cp_imm_corners,cp_rs1p,cp_rs2p,cp_rdp,cp_imm_mul
+Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rs2,cp_rd,cp_rs1_edges,cp_rs2_edges,cr_rs1_imm_edges,cr_rs1_rs2_edges,cmp_rs1_rs2,cmp_rd_rs1,cmp_rd_rs2,cp_offset,cp_uimm,cp_imm_edges,cp_rs1p,cp_rs2p,cp_rdp,cp_imm_mul
 c.add,CR,x,x,x,,nx0,nx0,x,x,,x,,,nx0,,,,,,,
 c.addi,CI,x,x,x,,,nx0,x,,6bit_n0,,,,,,,,,,,
 c.addi16sp,CI,x,x,x,,,,,,,,,,,,,,,,,addi16sp
