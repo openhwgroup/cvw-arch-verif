@@ -1,4 +1,4 @@
-Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rd,cp_rs1_corners,cmp_rd_rs1,cp_uimm,cp_gpr_hazard
+Instruction,Type,RV32,RV64,cp_asm_count,cp_rs1,cp_rd,cp_rs1_edges,cmp_rd_rs1,cp_uimm,cp_gpr_hazard
 csrrc,CSR,x,x,x,x,x,x,x,,rw
 csrrci,CSRI,x,x,x,,x,,,5,w
 csrrs,CSR,x,x,x,x,x,x,x,,rw

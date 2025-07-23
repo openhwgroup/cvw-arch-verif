@@ -37,6 +37,8 @@ vreg_count              = 32
 # Global Variables
 ##################################
 
+tab_count = 0
+
 xlen                    = 0
 flen                    = 0
 
@@ -59,10 +61,10 @@ sigupd_countF           = 0  # initialize signature update count for F tests
 mtrap_sig_count         = 64 # signature space for priviliged, default to 64
 
 ##################################
-# Corners
+# Edges
 ##################################
 
-fcorners = {"pos0":                 0x00000000, # 0
+fedges = {"pos0":                 0x00000000, # 0
             "neg0":                 0x80000000, # -0
             "pos1":                 0x3f800000, # 1.0
             "neg1":                 0xbf800000, # -1.0
@@ -83,7 +85,7 @@ fcorners = {"pos0":                 0x00000000, # 0
             "negNoncanonicalQNaN":  0xffffffff, # noncanonical quiet NaN
             "sNaN_payload1":        0x7f800001} # signaling NaN with lsb set
 
-fcornersD  = {"pos0":                 0x0000000000000000, # 0
+fedgesD  = {"pos0":                 0x0000000000000000, # 0
               "neg0":                 0x8000000000000000, # -0
               "pos1":                 0x3FF0000000000000, # 1.0
               "neg1":                 0xBFF0000000000000, # -1.0
@@ -104,7 +106,7 @@ fcornersD  = {"pos0":                 0x0000000000000000, # 0
               "negNoncanonicalQNaN":  0xFFFFFFFFFFFFFFFF, # noncanonical quiet NaN
               "sNaN_payload1":        0x7FF0000000000001} # signaling NaN with lsb set
 
-fcornersH  = {"pos0":                 0x0000, # 0
+fedgesH  = {"pos0":                 0x0000, # 0
               "neg0":                 0x8000, # -0
               "pos1":                 0x3C00, # 1.0
               "neg1":                 0xBC00, # -1.0
@@ -125,26 +127,26 @@ fcornersH  = {"pos0":                 0x0000, # 0
               "negNoncanonicalQNaN":  0xFFFF, # noncanonical quiet NaN
               "sNaN_payload1":        0x7D01} # signaling NaN with lsb set
 
-# fcornersQ = [] # TODO: Fill out quad precision F corners
+# fedgesQ = [] # TODO: Fill out quad precision F edges
 
-vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
-                  "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
-vcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorcorners]
-vcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorcorners]
-vcornersemul4  = [(vcorner + "_emul4" ) for vcorner in vectorcorners]
-vcornersemul8  = [(vcorner + "_emul8" ) for vcorner in vectorcorners]
-vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners]
-vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
-vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
-vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
-v_corners_ls   = ["vs_corner_zero_emul8", "vs_corner_random_within_2vlmax"]
+vectoredges = ["vs_edge_zero", "vs_edge_one", "vs_edge_two", "vs_edge_ones", "vs_edge_onesm1", "vs_edge_min", "vs_edge_minm1",
+                  "vs_edge_max", "vs_edge_maxm1", "vs_edge_walkeven", "vs_edge_walkodd", "vs_edge_random"]
+vedgesemul1  = [(vedge + "_emul1" ) for vedge in vectoredges]
+vedgesemul2  = [(vedge + "_emul2" ) for vedge in vectoredges]
+vedgesemul4  = [(vedge + "_emul4" ) for vedge in vectoredges]
+vedgesemul8  = [(vedge + "_emul8" ) for vedge in vectoredges]
+vedgesemulf2 = [(vedge + "_emulf2") for vedge in vectoredges]
+vedgesemulf4 = [(vedge + "_emulf4") for vedge in vectoredges]
+vedgesemulf8 = [(vedge + "_emulf8") for vedge in vectoredges]
+vedgeseew1   = [(vedge + "_eew1"  ) for vedge in vectoredges]
+v_edges_ls   = ["vs_edge_zero_emul8", "vs_edge_random_within_2vlmax"]
 
-vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negmaxnorm",
-                   "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5", "vs_corner_f_pos1p5", "vs_corner_f_neg2", "vs_corner_f_pi",
-                   "vs_corner_f_twoToEmax", "vs_corner_f_onePulp", "vs_corner_f_largestsubnorm", "vs_corner_f_negSubnormLeadingOne", "vs_corner_f_min_subnorm",
-                   "vs_corner_f_canonicalQNaN", "vs_corner_f_negNoncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
-vfcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorfpcorners]
-vfcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorfpcorners]
+vectorfpedges = ["vs_edge_f_pos0", "vs_edge_f_neg0", "vs_edge_f_pos1", "vs_edge_f_neg1", "vs_edge_f_posminnorm", "vs_edge_f_negmaxnorm",
+                   "vs_edge_f_posinfinity", "vs_edge_f_neginfinity", "vs_edge_f_pos0p5", "vs_edge_f_pos1p5", "vs_edge_f_neg2", "vs_edge_f_pi",
+                   "vs_edge_f_twoToEmax", "vs_edge_f_onePulp", "vs_edge_f_largestsubnorm", "vs_edge_f_negSubnormLeadingOne", "vs_edge_f_min_subnorm",
+                   "vs_edge_f_canonicalQNaN", "vs_edge_f_negNoncanonicalQNaN", "vs_edge_f_sNaN_payload1"]
+vfedgesemul1  = [(vedge + "_emul1" ) for vedge in vectorfpedges]
+vfedgesemul2  = [(vedge + "_emul2" ) for vedge in vectorfpedges]
 
 ##################################
 # Functions to be implemented by importer
@@ -893,7 +895,7 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
   writeLine("    .align 3")
-  writeLine("// Corner Vectors")
+  writeLine("// Edge Vectors")
 
   eew = sew * emul
   for suite in ["base", "length"]:
@@ -922,7 +924,7 @@ def genRandomVectorLS():
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
   writeLine("    .align 4")
-  writeLine("// Corner Vectors")
+  writeLine("// Edge Vectors")
 
   num_words_either_side = int(maxELEN / 64) * 2 * 2 * maxVLEN # 2 times max vlen elements on either side of pointer (sewMAX = 64)
 
@@ -937,7 +939,7 @@ def genRandomVectorLS():
 
   writeLine("")
 
-def genVMaskCorners():
+def genVMaskEdges():
   num_words = math.ceil(maxVLEN / 32)
 
   # generating random masks for length suite
@@ -949,15 +951,15 @@ def genVMaskCorners():
       word = (val >> (32 * i)) & 0xFFFFFFFF
       writeLine(f"    .word 0x{word:08x}")
 
-  # generating random mask for cp_masking_corners
+  # generating random mask for cp_masking_edges
   regenerate = True
-  while regenerate: # prevent overlapping with other mask corners
+  while regenerate: # prevent overlapping with other mask edges
     regenerate = False
     random_mask = getrandbits(maxVLEN)
     for i in range(3, int(math.log2(maxVLEN))): # getting all powers of 2: 8 through maxVLEN
       vlen = 2 ** i
       random_mask_bottom_vlen_bits = random_mask % vlen
-      if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask corner
+      if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask edge
         regenerate = True
 
   writeLine("cp_mask_random:")
@@ -967,7 +969,7 @@ def genVMaskCorners():
 
   writeLine("")
 
-def genVsCorners(test, sew, emul):
+def genVsEdges(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -986,7 +988,7 @@ def genVsCorners(test, sew, emul):
     eew = sew * int(emul)
     ending = "emul" + emul
 
-  v_register_corners = {
+  v_register_edges = {
     "zero":   0,
     "one":    1,
     "two":    2,
@@ -1000,23 +1002,23 @@ def genVsCorners(test, sew, emul):
     "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1),
   }
 
-  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
-  v_register_corners["random_within_2vlmax"] = r
-  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
-  v_register_corners["random"] = r
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_edges.values()): pass
+  v_register_edges["random_within_2vlmax"] = r
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_edges.values()): pass
+  v_register_edges["random"] = r
 
   writeLine("    .align 3")
-  for corner in v_register_corners:
-      val = v_register_corners[corner]
+  for edge in v_register_edges:
+      val = v_register_edges[edge]
       val &= (1 << eew) - 1
-      writeLine(f"vs_corner_{corner}_{ending}:")
+      writeLine(f"vs_edge_{edge}_{ending}:")
       for w in convert(val, eew):
         if (sew == 64) or (eew == 64):
           writeLine(f"    .dword {w}")
         else:
           writeLine(f"    .word {w}")
 
-def genVsCornersFP(test, sew, emul):
+def genVsEdgesFP(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -1026,23 +1028,23 @@ def genVsCornersFP(test, sew, emul):
               in range((bitwidth + (eew-1)) // eew)]
 
   if sew == 64:
-    vs_corners_f = fcornersD
+    vs_edges_f = fedgesD
   elif sew == 16:
-    vs_corners_f = fcornersH
+    vs_edges_f = fedgesH
   else:
-    vs_corners_f = fcorners
+    vs_edges_f = fedges
 
   eew = sew * int(emul)
   ending = "emul" + emul
 
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
-  writeLine("// vector corners data (floating point)")
+  writeLine("// vector edges data (floating point)")
   writeLine("///////////////////////////////////////////\n")
   writeLine("    .align 3")
-  for corner in vs_corners_f:
-      val = vs_corners_f[corner]
-      writeLine(f"vs_corner_f_{corner}_{ending}:")
+  for edge in vs_edges_f:
+      val = vs_edges_f[edge]
+      writeLine(f"vs_edge_f_{edge}_{ending}:")
       val &= (1 << eew) - 1
       for w in convert(val, eew):
         if (sew == 64) or (eew == 64):
@@ -1062,7 +1064,7 @@ def myhash(s):
   return h
 
 def insertTemplate(test, signatureWords, name):
-    writeLine(f"\n# {name}")
+     # writeLine(f"\n# {name}")     no longer desired to include template name
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
 
@@ -1191,9 +1193,9 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       writeLine(f"csrr x{avlReg}, vl",      "# save vl register for after load")
       writeLine(f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
 
-    load_vls_random_corner = register_val_pointer == "vs_corner_random_within_2vlmax"
+    load_vls_random_edge = register_val_pointer == "vs_edge_random_within_2vlmax"
 
-    if load_vls_random_corner: register_val_pointer = "vector_ls_random_base"
+    if load_vls_random_edge: register_val_pointer = "vector_ls_random_base"
 
     tempReg = 4
     while tempReg in scalar_registers_used:
@@ -1205,7 +1207,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       writeLine(f"vmv.v.x v{register}, x{tempReg}",       f"# Load desired value into v{register}")
     else:
       writeLine(f"la x{tempReg}, {register_val_pointer}",  "# Load address of desired value")
-      if register_val_pointer == "vs_corner_zero_emul8":
+      if register_val_pointer == "vs_edge_zero_emul8":
         writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               "# zero register")
       else:
         writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
@@ -1405,47 +1407,47 @@ def loadVxsatMode(*scalar_registers_used):
 def getLMULIfdef(lmul):
   ifdef = ""
   if (lmul == 0.5):
-    ifdef = "#ifdef LMULf2_SUPPORTED\n"
+    ifdef = "LMULf2_SUPPORTED & "
   elif (lmul == 0.25):
-    ifdef = "#ifdef LMULf4_SUPPORTED\n"
+    ifdef = "LMULf4_SUPPORTED & "
   elif (lmul == 0.125):
-    ifdef = "#ifdef LMULf8_SUPPORTED\n"
+    ifdef = "LMULf8_SUPPORTED & "
   return ifdef
 
 def getELENIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if ELEN >= 64\n"
+    ifdef = "ELEN >= 64 & n"
   elif instruction in eew32_ins:
-    ifdef = "#if ELEN >= 32\n"
+    ifdef = "ELEN >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if ELEN >= 16\n"
+    ifdef = "ELEN >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if ELEN >= 8\n"
+    ifdef = "ELEN >= 8 & "
   return ifdef
 
 def getSEWMINIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if SEWMIN <= 64\n"
+    ifdef = "SEWMIN <= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if SEWMIN <= 32\n"
+    ifdef = "SEWMIN <= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if SEWMIN <= 16\n"
+    ifdef = "SEWMIN <= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if SEWMIN <= 8\n"
+    ifdef = "SEWMIN <= 8 & "
   return ifdef
 
 def getMaxIndexEEWIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if MAXINDEXEEW >= 64\n"
+    ifdef = "MAXINDEXEEW >= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if MAXINDEXEEW >= 32\n"
+    ifdef = "MAXINDEXEEW >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if MAXINDEXEEW >= 16\n"
+    ifdef = "MAXINDEXEEW >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if MAXINDEXEEW >= 8\n"
+    ifdef = "MAXINDEXEEW >= 8 & "
   return ifdef
 
 def getInstructionEEW(instruction):
@@ -1540,6 +1542,8 @@ def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
               frm=None, vxsat=None, vta=0, vma=0):
 
+    global tab_count
+
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
     vd              = vector_register_data['vd'] ['reg']
@@ -1562,13 +1566,17 @@ def writeTest(description, instruction, instruction_data,
 
     # deal with conflict before generating lmul ifdefs to not cause issue if the test is unused
 
-    writeLine("\n" + getLMULIfdef(lmul))
+    ifdef_booleans = ""
 
-    writeLine(getELENIfdef(instruction))
+    ifdef_booleans = ifdef_booleans + getLMULIfdef(lmul)
+    ifdef_booleans = ifdef_booleans + getELENIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getMaxIndexEEWIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getSEWMINIfdef(instruction)
 
-    writeLine(getMaxIndexEEWIfdef(instruction))
-
-    writeLine(getSEWMINIfdef(instruction))
+    if ifdef_booleans != "":
+      ifdef_booleans = ifdef_booleans[:-3]
+      writeLine("#ifdef " + ifdef_booleans, "# selectively enable test")
+      tab_count = tab_count + 1
 
     writeLine("# Testcase " + str(description))
 
@@ -1670,14 +1678,11 @@ def writeTest(description, instruction, instruction_data,
     else:
       writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
 
-    if (getLMULIfdef(lmul) != ""):
+    if ifdef_booleans != "":
+      tab_count = tab_count - 1
       writeLine("#endif")
-    if (getELENIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getSEWMINIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getMaxIndexEEWIfdef(instruction) != ""):
-      writeLine("#endif")
+
+    writeLine("") # space between tests
 
 def getLoadEquivilentInstruction(instruction, sew):
   if instruction in whole_register_stores:
@@ -2177,7 +2182,7 @@ def readTestplans(priv=False):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
-                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_edges becomes cp_rd_edges_lui)
                                         key = key + "_" + value
                                     cps.append(key)
                         tp[instr] = cps

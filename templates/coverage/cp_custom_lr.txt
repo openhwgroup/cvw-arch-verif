@@ -2,7 +2,7 @@
         // Combinations of acquire and release
         ignore_bins rl_noaq = {2'b01};
     }
-    cp_custom_rd_corners : coverpoint ins.current.rd_val iff (ins.trap == 0) {
+    cp_custom_rd_edges : coverpoint ins.current.rd_val iff (ins.trap == 0) {
         `ifdef XLEN32
             bins zero = {0};
             bins one  = {32'b00000000000000000000000000000001};
