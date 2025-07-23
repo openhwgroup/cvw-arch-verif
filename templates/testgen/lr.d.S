@@ -13,7 +13,7 @@
     RVTEST_SIGUPD(SIGPOINTER, t2)
     RVTEST_SIGUPD(SIGPOINTER, t3)
 
-# cp_custom_rd_corners
+# cp_custom_rd_edges
     li t4, 0x0
     sd t4, 0(t0)
     lr.d t1, (t0)   # lr t1 = 0

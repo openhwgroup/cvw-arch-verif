@@ -20,7 +20,7 @@ import vector_testgen_common as common
 from vector_testgen_common import (
     ARCH_VERIF,
     flen,
-    genVMaskCorners,
+    genVMaskEdges,
     getBaseSuiteTestCount,
     getInstructionArguments,
     getLengthLmul,
@@ -42,12 +42,12 @@ from vector_testgen_common import (
 
 
 def writeLine(argument: str, comment = ""):
-    tab_over_distance = 50
+    comment_distance = 50
 
-    argument = str(argument)
+    argument = " " * (4 * common.tab_count) + str(argument)
 
     if comment != "":
-        padding = max(0, tab_over_distance - len(argument))
+        padding = max(0, comment_distance - len(argument))
         comment = " " * padding + str(comment)
 
     f.write(argument + comment +"\n")
@@ -200,8 +200,8 @@ if __name__ == '__main__':
     xlens = [32, 64]
     maxXLEN = 64
     numrand = 3
-    corners = []
-    fcorners = []
+    edges = []
+    fedges = []
 
     # setup
     seed(0) # make tests reproducible
@@ -247,8 +247,8 @@ if __name__ == '__main__':
         # print footer (before DATA)
         insertTemplate(basename, 0, "testgen_footer_vector1.S")
 
-        # generate vector data (random and corners)
-        genVMaskCorners() # TODO: change to generate a good random (vector_random)
+        # generate vector data (random and edges)
+        genVMaskEdges() # TODO: change to generate a good random (vector_random)
 
         # print footer (after DATA)
         signatureWords = getSigSpace(maxXLEN, flen) #figure out how many words are needed for signature
