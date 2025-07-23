@@ -45,9 +45,6 @@ extension               = ""
 formatstr               = "" # format as xlen-bit hexadecimal number
 formatstrFP             = "" # format as flen-bit hexadecimal number
 
-basetest_count          = 0
-lengthtest_count        = 0
-
 sigTotal                = 0 # total number of bytes in signature
 sigReg                  = 3 # start with x4 for signatures ->marina changed it to x3 because that what riscv-arch-test uses TO DO
 
@@ -161,10 +158,8 @@ def writeLine(argument: str, comment = ""):
 ##################################
 
 def newInstruction():
-  global sigReg, lengthtest_count, basetest_count, base_suite_test_count, length_suite_test_count, sigupd_count
+  global sigReg, base_suite_test_count, length_suite_test_count, sigupd_count
   sigReg                    = 3
-  lengthtest_count          = 0
-  basetest_count            = 0
   base_suite_test_count     = 0
   length_suite_test_count   = 0
   sigupd_count              = 0
@@ -186,14 +181,6 @@ def setFlen(new_flen):
 def setExtension(new_extension):
     global extension
     extension = new_extension
-
-def incrementLengthtestCount():
-    global lengthtest_count
-    lengthtest_count = lengthtest_count + 1
-
-def incrementBasetestCount():
-    global basetest_count
-    basetest_count += 1
 
 ##################################
 # Getter functions
@@ -668,7 +655,7 @@ eew8_ins = [
     "vsse8.v", "vssseg2e8.v", "vssseg3e8.v", "vssseg4e8.v", "vssseg5e8.v", "vssseg6e8.v", "vssseg7e8.v", "vssseg8e8.v",
     "vsuxei8.v", "vsuxseg2ei8.v", "vsuxseg3ei8.v", "vsuxseg4ei8.v", "vsuxseg5ei8.v", "vsuxseg6ei8.v", "vsuxseg7ei8.v", "vsuxseg8ei8.v",
     "vsoxei8.v", "vsoxseg2ei8.v", "vsoxseg3ei8.v", "vsoxseg4ei8.v", "vsoxseg5ei8.v", "vsoxseg6ei8.v", "vsoxseg7ei8.v", "vsoxseg8ei8.v",
-    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v", "vs8r.v"
+    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v"
 ]
 
 eew16_ins = [
@@ -898,11 +885,11 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
   eew = sew * emul
   for suite in ["base", "length"]:
     if (suite == "base"):
-      maxVtests = basetest_count
+      maxVtests = base_suite_test_count
       vl = 1
       num_words = math.ceil((vl * eew) / 32)
     else:
-      maxVtests = lengthtest_count
+      maxVtests = length_suite_test_count
       if (test in vd_widen_ins and vs == "vd") or (test in vs2_widen_ins and vs == "vs2"):
         num_words = math.ceil(maxVLEN * 2 / 32)
       else:
@@ -1150,35 +1137,32 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     register_segments     = register_data['segments']
     register_eew          = int(sew  * register_data['size_multiplier'])
 
-    if register_data['reg_type'] == "mask" :
-      register_eew = 8
-      register_emul = 1
-    elif register_data['reg_type'] == "scalar":
-      register_emul = 1
-
-    if register_eew > 64 or register_eew < 8:
-      raise ValueError(f"Register EEW violates constrints: register_eew = {register_eew}")
-
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
 
     if register_eew != sew:
       load_unique_vtype = True
     elif instruction in whole_register_move:
-      load_unique_vtype = lmul != getInstructionNfields(instruction)
+      load_unique_vtype = register % lmul != 0
       register_emul = 1
     elif instruction in whole_register_ls: # whole register loads and stores have an EMUL of NF
       register_emul = getInstructionSegments(instruction)
-      load_unique_vtype = lmul != getInstructionSegments(instruction)
+      load_unique_vtype = register % lmul != 0
       register_emul = 1
     elif register % lmul != 0: # off group register load
       load_unique_vtype = True
     elif register_data['reg_type'] == "mask": # only target register should be loaded and may be off group
-      load_unique_vtype = True
+      load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
+      register_eew = 8
+      register_emul = 1
     elif register_data['reg_type'] == "scalar": # only target register should be loaded and may be off group
-      load_unique_vtype = True
+      load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
+      register_emul = 1
     else:
       load_unique_vtype = False
+
+    if register_eew > 64 or register_eew < 8:
+      raise ValueError(f"Register EEW violates constrints: register_eew = {register_eew}")
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1966,15 +1950,15 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     lmul      = max(1, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
   else:
     segments  = getInstructionSegments(instruction)
-    vector_register_preset_data['vs3']['segments'] = segments
-    vector_register_preset_data['vs2']['segments'] = segments
-    vector_register_preset_data['vs1']['segments'] = segments
-    vector_register_preset_data[ 'vd']['segments'] = segments
+    if   instruction in vector_loads  : vector_register_preset_data[ 'vd']['segments'] = segments
+    elif instruction in vector_stores : vector_register_preset_data['vs3']['segments'] = segments
+
 
   eew = getInstructionEEW(instruction)
 
   if eew is not None : # if emul is greater than 1 use it for the size multiplier
-    if   instruction in whole_register_ls   : pass # these use implied lmul as the number of registers to load instead of size_multiplier
+    if   instruction in ls_no_eew_ins       : pass # these use implied lmul as the number of registers to load instead of size_multiplier
+    elif instruction in whole_register_ls   : pass # do not reference lmul nor sew
     elif instruction in indexed_ls_ins      : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
     elif instruction in vector_loads        : vector_register_preset_data[ 'vd']['size_multiplier'] = eew/sew
     elif instruction in vector_stores       : vector_register_preset_data['vs3']['size_multiplier'] = eew/sew
