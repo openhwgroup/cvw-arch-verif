@@ -223,6 +223,9 @@
 `ifdef ZICSRV_COVERAGE
   `include "ZicsrV_coverage.svh"
 `endif
+`ifdef ZICSRVF_COVERAGE
+  `include "ZicsrVF_coverage.svh"
+`endif
 `ifdef ZICSRHV_COVERAGE
   `include "ZicsrHV_coverage.svh"
 `endif
