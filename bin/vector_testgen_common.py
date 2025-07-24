@@ -55,7 +55,7 @@ length_suite_test_count = 0
 
 sigupd_count            = 10 # number of entries in signature - start with a margin of 10 spaces
 sigupd_countF           = 0  # initialize signature update count for F tests
-mtrap_sig_count         = 64 # signature space for priviliged, default to 64
+mtrap_sig_count         = 64 # signature space for privileged, default to 64
 
 ##################################
 # Edges
@@ -1087,7 +1087,7 @@ def writeSIGUPD(rd):
 def writeSIGUPD_F(fd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
-    sigupd_count += 1    # Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_count += 1    # Increment counter for floating point signature since SIGUPD_F macro stores FCSR as SREG
     sigupd_countF += 1   # Increment counter on each call since SIGUPD_F macro stores FREG
     tempReg = 4
     while tempReg == sigReg:
@@ -1168,7 +1168,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       load_unique_vtype = False
 
     if register_eew > 64 or register_eew < 8:
-      raise ValueError(f"Register EEW violates constrints: register_eew = {register_eew}")
+      raise ValueError(f"Register EEW violates constraints: register_eew = {register_eew}")
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1208,7 +1208,7 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     if load_unique_vtype: # return vl and vtype register to what it was before
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}", "# restore vl and vtype setting")
 
-    if register_argument_name == 'vs2' and instruction in vector_ls_ins: # make sure elements in vs2 are within VLMAX and sew algined
+    if register_argument_name == 'vs2' and instruction in vector_ls_ins: # make sure elements in vs2 are within VLMAX and sew aligned
       vtypeReg = 1
       while vtypeReg in scalar_registers_used:
         vtypeReg = randint(1,31)
@@ -1240,12 +1240,12 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   "# save vlmax * 2")
       writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", "# setting sew to vs2 eew")
       if eew < xlen: # make sure the number is positive since it will be 0 extended to XLEN
-        element_positiv_reg = 15
-        while element_positiv_reg in scalar_registers_used:
-          element_positiv_reg = randint(1,31)
-        scalar_registers_used.append(element_positiv_reg)
-        writeLine(f"li x{element_positiv_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
-        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  "#  ")
+        element_positive_reg = 15
+        while element_positive_reg in scalar_registers_used:
+          element_positive_reg = randint(1,31)
+        scalar_registers_used.append(element_positive_reg)
+        writeLine(f"li x{element_positive_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
+        writeLine(f"vand.vx v{register}, v{register}, x{element_positive_reg}",  "#  ")
       writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               "# ensure all values are within (-2*vlmax, 2*vlmax)")
       writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             "# sew-aligning elements")
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           "# restore vl and vtype setting")
@@ -1639,8 +1639,8 @@ def writeTest(description, instruction, instruction_data,
     signature_target_vd = vd
 
     load_testline = None
-    if instruction in vector_stores: # for stores we reload the value saved to memeory to check against signature
-      load_instruction = getLoadEquivilentInstruction(instruction, sew)
+    if instruction in vector_stores: # for stores we reload the value saved to memory to check against signature
+      load_instruction = getLoadEquivalentInstruction(instruction, sew)
       load_instruction_data = randomizeVectorInstructionData(load_instruction, sew, None, None, lmul=lmul, additional_no_overlap=[['vs3_start', 'vd_start'], ['vd', 'v0']],
                                                         vs2_reg = vector_register_data['vs2']['reg'],
                                                         vs3_reg = vector_register_data['vs3']['reg'],
@@ -1677,7 +1677,7 @@ def writeTest(description, instruction, instruction_data,
 
     writeLine("") # space between tests
 
-def getLoadEquivilentInstruction(instruction, sew):
+def getLoadEquivalentInstruction(instruction, sew):
   if instruction in whole_register_stores:
     return "vl" + instruction[2] + "re" + str(sew) + ".v"
 
@@ -1792,7 +1792,7 @@ def getVectorEmulMultipliers(instruction):
   if instruction in vd_widen_ins:
     vector_register_data[ 'vd_size_multiplier'] = 2
 
-  if instruction in mmins or instruction in vmlogicalins: # instructions opperate with EEW = 1
+  if instruction in mmins or instruction in vmlogicalins: # instructions operate with EEW = 1
     vector_register_data['vs1_reg_type']        = "mask"
     vector_register_data['vs2_reg_type']        = "mask"
     if instruction != "viota.m":
@@ -1855,12 +1855,12 @@ def getInstructionRegisterOverlapConstraints (instruction, sew, lmul):
 
   return no_overlap
 
-def addOverlap(instruction_overlap_constaints, additional_no_overlap):
+def addOverlap(instruction_overlap_constraints, additional_no_overlap):
   no_overlap = []
   if additional_no_overlap is not None:
     no_overlap = no_overlap + additional_no_overlap
-  if instruction_overlap_constaints is not None:
-    no_overlap = no_overlap + instruction_overlap_constaints
+  if instruction_overlap_constraints is not None:
+    no_overlap = no_overlap + instruction_overlap_constraints
 
   return no_overlap
 
@@ -1882,8 +1882,8 @@ def randomizeOngroupVectorRegister(instruction, *preset_vreg, lmul=1, maskval=No
 def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
   preset_variables.update(getVectorEmulMultipliers(instruction))
 
-  instruction_overlap_constaints  = getInstructionRegisterOverlapConstraints(instruction, sew, lmul)
-  no_overlap                      = addOverlap(instruction_overlap_constaints, additional_no_overlap)
+  instruction_overlap_constraints  = getInstructionRegisterOverlapConstraints(instruction, sew, lmul)
+  no_overlap                      = addOverlap(instruction_overlap_constraints, additional_no_overlap)
 
   scalar_register_preset_data         = {
     'rd'  : {'reg' : None, 'val' : None, "val_pointer" : None},
