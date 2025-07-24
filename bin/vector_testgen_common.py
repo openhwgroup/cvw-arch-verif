@@ -2103,7 +2103,7 @@ def getInstructionNfields(instruction):
   elif instruction == "vmv5r.v" : return 5
   elif instruction == "vmv6r.v" : return 6
   elif instruction == "vmv7r.v" : return 7
-  elif instruction == "vmv1r.v" : return 8
+  elif instruction == "vmv8r.v" : return 8
   else                          : return None
 
 def getBaseLmul(instruction, sew):
