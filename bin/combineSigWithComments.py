@@ -5,25 +5,43 @@ import sys
 
 #import os
 
-
 def Combine(test_file, sig_file, output_file):
     """
     Combine the signature file with comments to the test file.
     """
     try:
-        with open(test_file) as tf, open(sig_file) as sf:
+        with open(test_file) as tf, open(sig_file) as sf: #read both files
             test_lines = tf.readlines()
             sig_lines = sf.readlines()
 
-        sigBaseFound = False
-        sig_idx = 1 #1 to skip canary need to be 2 for rv64 and skip missalignment jumps and take two lines for rv64
+        sigBaseFound = False #boolean to track sigbase macro for correct memory placement
+        mult = 2 if "e7d4b281" in sig_lines[0] else 1 #check fist signiture for XLEN=64 canary
+        sig_idx = mult #1 to skip canary need to be 2 for rv64 and skip missalignment jumps and take two lines for rv64
         new_lines = []
         for line in test_lines:
             # Add signature result as a comment to instruction lines (skip comments and blank lines)
-            if "RVTEST_SIGUPD(" in line:
+            if "RVTEST_SIGUPD(" in line:  #add comment to every SIGUPD macro
                 if sig_idx < len(sig_lines):
-                    new_lines.append(line.rstrip() + f'    // expected result: {sig_lines[sig_idx]}')
-                    sig_idx += 1
+                    if mult == 2:  #if RV64, take two lines for signature
+                        signiture_line = sig_lines[sig_idx+1] + sig_lines[sig_idx]
+                        signiture_line = signiture_line.replace("\n", '') + "\n"  #remove \n from middle of line
+                    else: #RV32, take one line for signature
+                        signiture_line = sig_lines[sig_idx]  #I dont think I need this: .rstrip() + "\n"
+                    #print(signiture_line)
+                    new_lines.append(line.rstrip() + f'    // expected result:  0x{signiture_line}') #add commentt
+                    sig_idx += mult
+                else:
+                    new_lines.append(line)
+            elif "RVTEST_SIGUPD_F(" in line:  #add comment to every SIGUPD_F macro uses 2 siglines
+                if sig_idx < len(sig_lines):
+                    if mult == 2:  #if RV64, take two lines for signature
+                        signiture_line = sig_lines[sig_idx+1] + sig_lines[sig_idx] + " with flags: " +  sig_lines[sig_idx+3] + sig_lines[sig_idx+2]
+                        signiture_line = signiture_line.replace("\n", '') + "\n"  #remove \n from middle of line
+                    else: #RV32, take one line for signature
+                        signiture_line = sig_lines[sig_idx]  + " with flags: " + sig_lines[sig_idx+1]#I dont think I need this: .rstrip() + "\n"
+                        signiture_line = signiture_line.replace("\n", '') + "\n"  #remove \n from middle of line
+                    new_lines.append(line.rstrip() + f'    // expected result:  0x{signiture_line}') #add comment
+                    sig_idx += 2 * mult
                 else:
                     new_lines.append(line)
             elif "signature_base:" in line:
