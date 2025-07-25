@@ -44,7 +44,8 @@ RUN_MAKEFILE   = Path(WALLY) / "tests/riscof/Makefile"
 # ---------------------------------------------------------------------------
 # Targets and their CSVs
 # ---------------------------------------------------------------------------
-TARGETS = ["Vx", "Vls", "Vf"]
+TARGETS = ["Vx", "Vls"] # , "Vf"
+# Vf currently unsupported due to zfhmin configuration issues
 
 CSV_DIR = ARCH_VERIF / "testplans"
 VX_CSV  = CSV_DIR / "Vx.csv"

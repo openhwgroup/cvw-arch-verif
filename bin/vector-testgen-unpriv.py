@@ -40,8 +40,6 @@ from vector_testgen_common import (
   getLengthSuiteTestCount,
   getSigSpace,
   imm_31,
-  incrementBasetestCount,
-  incrementLengthtestCount,
   indexed_loads,
   indexed_stores,
   insertTemplate,
@@ -97,8 +95,8 @@ unsupported_tests = [ # conflicting signatures between sail and spike, open PRs 
   "vslideup.vi",    # Sail issue 1071
   "vslidedown.vi",  # Sail issue 1071
   "vrgather.vi",    # Sail issue 1071
-  "vwredsum.vs",    # Sail issue 1135
-  "vwredsumu.vs"    # Sail issue 1135
+  "vwredsumu.vs",   # Sail issue 1135 Sail claims to have fixed, we may not have the newest version
+  "vwredsum.vs"     # Sail issue 1135 Sail claims to have fixed, we may not have the newest version
 ]
 
 def writeLine(argument: str, comment = ""):
@@ -122,7 +120,6 @@ def make_vd(instruction, sew, rng, lmul = 1):
     instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vd = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vl_0(instruction, sew, lmul = 1):
@@ -130,7 +127,6 @@ def make_vl_0(instruction, sew, lmul = 1):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl=0)
-  incrementLengthtestCount()
   vsAddressCount("length")
 
 def make_vs3(instruction, sew, rng, lmul = 1):
@@ -140,7 +136,6 @@ def make_vs3(instruction, sew, rng, lmul = 1):
     instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs3 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vs2(instruction, sew, rng, lmul = 1):
@@ -150,7 +145,6 @@ def make_vs2(instruction, sew, rng, lmul = 1):
     instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vs1(instruction, sew, rng):
@@ -160,7 +154,6 @@ def make_vs1(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vd_vs2(instruction, sew, rng, lmul = 1):
@@ -170,7 +163,6 @@ def make_vd_vs2(instruction, sew, rng, lmul = 1):
     instruction_data = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vd = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vd_vs1(instruction, sew, rng):
@@ -180,7 +172,6 @@ def make_vd_vs1(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v, vs1 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vd_vs1_vs2(instruction, sew, rng):
@@ -190,7 +181,6 @@ def make_vd_vs1_vs2(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v, vs1 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vs1_vs2(instruction, sew, rng):
@@ -200,7 +190,6 @@ def make_vs1_vs2(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vs3_vs2(instruction, sew, rng, lmul = 1):
@@ -210,7 +199,6 @@ def make_vs3_vs2(instruction, sew, rng, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs3 = v, vs2 = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_rs1_v(instruction, sew, rng, lmul = 1):
@@ -220,7 +208,7 @@ def make_rs1_v(instruction, sew, rng, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs1 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_rs2_v(instruction, sew, rng, lmul = 1):
 
@@ -229,7 +217,7 @@ def make_rs2_v(instruction, sew, rng, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs2 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_rs2_edges_v(instruction, sew, redges, lmul=1):
   vlvals = ["vlmax"]
@@ -239,7 +227,7 @@ def make_rs2_edges_v(instruction, sew, redges, lmul=1):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs2_val = r)
 
       writeTest(description, instruction, instruction_data, sew=sew, vl=vl, lmul = lmul)
-      incrementBasetestCount()
+      vsAddressCount()
 
 def make_rs1_rs2_v(instruction, sew, rng, lmul = 1):
 
@@ -248,7 +236,7 @@ def make_rs1_rs2_v(instruction, sew, rng, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, rs1 = r, rs2 = r)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_fs1_v(instruction, sew, rng, lmul = 1):
 
@@ -257,7 +245,7 @@ def make_fs1_v(instruction, sew, rng, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, fs1 = f)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul = lmul)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_imm_v(instruction, sew):
 
@@ -267,14 +255,14 @@ def make_imm_v(instruction, sew):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), imm = uimm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
-      incrementBasetestCount()
+      vsAddressCount()
   else:
     for imm in range(-16,16):
       description       = "cp_imm_5bit (Test imm = " + str(imm) + ")"
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), imm = imm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
-      incrementBasetestCount()
+      vsAddressCount()
 
 def make_rdv(instruction, sew, rng):
 
@@ -283,7 +271,6 @@ def make_rdv(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), rd = r)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_fdv(instruction, sew, rng):
@@ -293,7 +280,6 @@ def make_fdv(instruction, sew, rng):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), fd = f)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
     vsAddressCount()
 
 def make_vs2_edges(instruction, sew, vedges, vl=1, lmul = 1):
@@ -303,7 +289,7 @@ def make_vs2_edges(instruction, sew, vedges, vl=1, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), lmul = lmul, vs2_val_pointer = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, vl=vl, lmul = lmul)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_vs1_edges(instruction, sew, vedges, vl=1):
 
@@ -312,7 +298,7 @@ def make_vs1_edges(instruction, sew, vedges, vl=1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1_val_pointer = v)
 
     writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_rs1_edges_v(instruction, sew, redgesv):
 
@@ -321,7 +307,7 @@ def make_rs1_edges_v(instruction, sew, redgesv):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), rs1_val = redge)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_fs1_edges_v(instruction, sew):
   if sew == 64:
@@ -337,7 +323,7 @@ def make_fs1_edges_v(instruction, sew):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), fs1_val = fedge_val)
 
     writeTest(description, instruction, instruction_data, sew=sew)
-    incrementBasetestCount()
+    vsAddressCount()
 
 def make_vs2_vs1_edges(instruction, sew, vs2edges, vs1edges, vl=1):
   for v1 in vs1edges:
@@ -346,6 +332,7 @@ def make_vs2_vs1_edges(instruction, sew, vs2edges, vs1edges, vl=1):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs1_val_pointer = v1, vs2_val_pointer = v2, additional_no_overlap=[['vs1', 'vs2']])
 
       writeTest(description, instruction, instruction_data, sew=sew, vl=vl)
+      vsAddressCount()
 
 def make_vs2_rs1_edges(instruction, sew, vs2edges):
   for r1 in redgesv:
@@ -354,6 +341,7 @@ def make_vs2_rs1_edges(instruction, sew, vs2edges):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vs2_fs1_edges(instruction, sew, vs2edges):
   if sew == 64:
@@ -370,6 +358,7 @@ def make_vs2_fs1_edges(instruction, sew, vs2edges):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, fs1_val = f1_val)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vs2_imm_edges(instruction, sew, vs2edges):
   for imm in immedgesv:
@@ -378,6 +367,7 @@ def make_vs2_imm_edges(instruction, sew, vs2edges):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
 
       writeTest(description, instruction, instruction_data, sew=sew)
+      vsAddressCount()
 
 def make_vxrm_vs2_vs1_edges(instruction, sew, vs2edges, vs1edges):
   for vxrm in vxrmList:
@@ -387,6 +377,7 @@ def make_vxrm_vs2_vs1_edges(instruction, sew, vs2edges, vs1edges):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, vs1_val_pointer = v1, additional_no_overlap=[['vs1','vs2']])
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_vxrm_vs2_rs1_edges(instruction, sew, vs2edges):
   for vxrm in vxrmList:
@@ -396,6 +387,7 @@ def make_vxrm_vs2_rs1_edges(instruction, sew, vs2edges):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, rs1_val = r1)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_vxrm_vs2_imm_edges(instruction, sew, vs2edges):
   for vxrm in vxrmList:
@@ -405,6 +397,7 @@ def make_vxrm_vs2_imm_edges(instruction, sew, vs2edges):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vs2_val_pointer = v2, imm = imm)
 
         writeTest(description, instruction, instruction_data, sew=sew, vxrm=vxrm)
+        vsAddressCount()
 
 def make_frm(instruction, sew):
   for frm in frmList:
@@ -413,7 +406,7 @@ def make_frm(instruction, sew):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount())
 
       writeTest(description, instruction, instruction_data, sew=sew, frm=frm)
-      incrementBasetestCount()
+      vsAddressCount()
 
 ##################################### length suite (vl!=1) test generation #####################################
 
@@ -455,7 +448,6 @@ def make_vl_lmul(instruction, sew, maxemul=8, eew = None, preset_emul = None):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = emul, additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl=vl, maskval=maskval, vta=vta, vma=vma)
-      incrementLengthtestCount()
       vsAddressCount("length")
 
 def make_mask_edges(instruction, sew, lmul = 1):
@@ -469,7 +461,6 @@ def make_mask_edges(instruction, sew, lmul = 1):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), lmul=lmul, suite="length", additional_no_overlap=[['vs1', 'v0'], ['vs2', 'v0'], ['vd', 'v0'], ['vs3', 'v0']])
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="vlmax", maskval=m, vma=vma)
-    incrementLengthtestCount()
     vsAddressCount("length")
 
 def make_vtype_agnostic(instruction, sew, maxemul=8, eew = None, preset_emul = None):
@@ -497,7 +488,6 @@ def make_vtype_agnostic(instruction, sew, maxemul=8, eew = None, preset_emul = N
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = emul, additional_no_overlap=no_overlap)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="random", maskval=maskval, vta=vta, vma=vma)
-      incrementLengthtestCount()
       vsAddressCount("length")
 
 
@@ -509,7 +499,6 @@ def make_custom_vmask_write_lmulge1(instruction, sew):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length", lmul = lmul)
 
     writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul, vl="vlmax")
-    incrementLengthtestCount()
     vsAddressCount("length")
 
 def make_custom_vmask_write_v0_masked(instruction, sew):
@@ -520,7 +509,6 @@ def make_custom_vmask_write_v0_masked(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), vd = 0, suite="length", additional_no_overlap=no_overlap)
 
   writeTest(description, instruction, instruction_data, sew=sew, vl="vlmax", maskval=maskval)
-  incrementLengthtestCount()
   vsAddressCount("length")
 
 def make_custom_voffgroup_vr(instruction, sew, lmul, vr):
@@ -546,7 +534,6 @@ def make_custom_voffgroup_vr(instruction, sew, lmul, vr):
         instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = v, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-      incrementBasetestCount()
       vsAddressCount()
 
 def make_custom_gprWriting_vstart_eq_vl(instruction, sew):
@@ -554,7 +541,6 @@ def make_custom_gprWriting_vstart_eq_vl(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="length")
 
   writeTest(description, instruction, instruction_data, sew=sew, vl=0, vstart=0)
-  incrementLengthtestCount()
   vsAddressCount("length")
 
 def make_custom_vext_overlapping_vd_vs2(instruction, sew, vext):
@@ -568,7 +554,6 @@ def make_custom_vext_overlapping_vd_vs2(instruction, sew, vext):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vdOverlapTopVs1_vd_vs1(instruction, sew, lmul):
@@ -584,7 +569,6 @@ def make_custom_vdOverlapTopVs1_vd_vs1(instruction, sew, lmul):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
@@ -597,7 +581,6 @@ def make_custom_vdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vdOverlapBtmVs2_vd_vs2(instruction, sew, lmul):
@@ -609,7 +592,6 @@ def make_custom_vdOverlapBtmVs2_vd_vs2(instruction, sew, lmul):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, suite="base", lmul = lmul)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_allVdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
@@ -624,7 +606,6 @@ def make_custom_allVdOverlapTopVs2_vd_vs2(instruction, sew, lmul):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-      incrementBasetestCount()
       vsAddressCount()
     else:
       pass
@@ -644,7 +625,6 @@ def make_custom_allVdOverlapTopVs1_vd_vs1(instruction, sew, lmul):
       instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), vd = vd, vs2 = vs2, vs1 = vs1, suite="base", lmul = lmul)
 
       writeTest(description, instruction, instruction_data, sew=sew, lmul=lmul)
-      incrementBasetestCount()
       vsAddressCount()
     else:
       pass
@@ -654,7 +634,6 @@ def make_custom_vreductionw_vd_vs1_emul_16(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), suite="base", lmul = 8) # requires lmul = 8
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=8)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_element0Masked(instruction, sew):
@@ -664,7 +643,6 @@ def make_custom_element0Masked(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getLengthSuiteTestCount(), suite="base", additional_no_overlap=no_overlap)
 
   writeTest(description, instruction, instruction_data, sew=sew, vl="vlmax", maskval="ones")
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vshift_upperbits_r1_ones(instruction, sew, r1, narrow=False):
@@ -687,7 +665,6 @@ def make_custom_vshift_upperbits_r1_ones(instruction, sew, r1, narrow=False):
     instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), suite="base", vs1_val=r1_val)
 
   writeTest(description, instruction, instruction_data, sew=sew)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vindexEdges_index_ge_vlmax(instruction, sew):
@@ -695,7 +672,6 @@ def make_custom_vindexEdges_index_ge_vlmax(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), suite="base", vs1_val=-1)
 
   writeTest(description, instruction, instruction_data, sew=sew)
-  incrementBasetestCount()
   vsAddressCount()
 
 def make_custom_vindexEdges_index_gt_vl_lt_vlmax(instruction, sew):
@@ -703,7 +679,6 @@ def make_custom_vindexEdges_index_gt_vl_lt_vlmax(instruction, sew):
   instruction_data  = randomizeVectorInstructionData(instruction, sew, getBaseSuiteTestCount(), suite="base", lmul=2, vs1_val=2)
 
   writeTest(description, instruction, instruction_data, sew=sew, lmul=2)
-  incrementBasetestCount()
   vsAddressCount()
 
 #####################################           test generation           #####################################
@@ -717,8 +692,8 @@ def makeTest(coverpoints, test, sew=None):
     hashval = myhash(testname)
     # hashval = hash(testname) # doesn't work because of Python hash randomization
     seed(hashval)
-    # print(f"\ncoverpoint: {coverpoint}")
-    # print(f"instruction: {test}")
+    # print(f"\ninstruction: {test}")
+    # print(f"coverpoint: {coverpoint}")
     #seed(hash(test + coverpoint))
     ############################# base suite #############################
     if   ((coverpoint in ['RV32', 'RV64', 'EFFEW8', 'EFFEW16', 'EFFEW32', 'EFFEW64']) or
@@ -1083,7 +1058,7 @@ if __name__ == '__main__':
 
   # TODO: auipc missing, check whatelse is missing in ^these^ types
 
-  author = "kacassidy@g.hmc.edu"
+  author = "Georgia Tai & Kaden Cassidy: kacassidy@g.hmc.edu & gtai@g.hmc.edu"
   xlens = [32, 64]
   numrand = 3
   edges = []
@@ -1227,17 +1202,29 @@ if __name__ == '__main__':
           f.write("#endif\n")
         insertTemplate(test, 0, "testgen_footer_vector1.S")
 
+        # if test == "":
+        #   print(test)
+        #   print(f"EEW {getInstructionEEW(test)}")
+        #   print(f"indexed {test in indexed_loads}")
+        #   print(f"load {test in vector_loads}")
+
         if test in vector_loads:
           genVsEdges(test, 64, "8") # max size edges to ave all zeros availible
-          genRandomVector(test, sew, vs="vd")
           if test in indexed_loads:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
+            genRandomVector(test, sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
+          else:
+            randomized_memory_sew = getInstructionEEW(test) if getInstructionEEW(test) is not None else sew
+            genRandomVector(test, randomized_memory_sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
           genRandomVectorLS()
         if test in vector_stores:
           genVsEdges(test, 64, "8") # max size edges to ave all zeros availible
-          genRandomVector(test, sew, vs="vs3")
           if test in indexed_stores:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
+            genRandomVector(test, sew, vs="vs3")
+          else:
+            randomized_memory_sew = getInstructionEEW(test) if getInstructionEEW(test) is not None else sew
+            genRandomVector(test, randomized_memory_sew, vs="vs3")
           genRandomVectorLS()
         if test not in vector_ls_ins:
           # generate vector data (random and edges)
