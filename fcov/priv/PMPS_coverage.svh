@@ -21,7 +21,7 @@
 `define COVER_RV32PMP
 `define COVER_RV64PMP
 
-covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpaddr, logic [29:0] pmpcfg_a, logic [XLEN-1:0] pmpcfg [15:0], logic [14:0] pmp_hit);
+covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpaddr, logic [29:0] pmpcfg_a, logic [31:0] pmpcfg [15:0], logic [14:0] pmp_hit);
 	option.per_instance = 0;
 	`include  "coverage/RISCV_coverage_standard_coverpoints.svh"
 
@@ -300,13 +300,22 @@ function void pmps_sample(int hart, int issue, ins_t ins);
 
 	logic [16*XLEN-1:0] pack_pmpaddr;
 	logic [29:0] pmpcfg_a;			// for first 15 Regions
-	logic [XLEN-1:0] pmpcfg [15:0];
+	logic [31:0] pmpcfg [15:0];
 	logic [XLEN-1:0] pmpaddr [62:0];
 	logic [14:0] pmp_hit;
 
-	for (int i = 0; i < 16; i++) begin
-		pmpcfg[i] = ins.current.csr[12'h3A0 + i];
-	end
+	`ifdef XLEN32
+	    for (int i = 0; i < 16; i++) begin
+	        pmpcfg[i] = ins.current.csr[12'h3A0 + i];
+	    end
+	`else
+	    for (int i = 0; i < 16; i++) begin
+	        if (i % 2 == 0) begin
+	            pmpcfg[i] = ins.current.csr[12'h3A0 + i][31:0];
+	            pmpcfg[i+1] = ins.current.csr[12'h3A1 + (i-1)][63:32];
+	        end
+	    end
+	`endif
 
 	for (int j = 0; j < 63; j++) begin
 		pmpaddr[j] = ins.current.csr[12'h3B0 + j];
