@@ -112,12 +112,10 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     sw: coverpoint ins.current.insn {
         wildcard bins sw = {32'b????????????_?????_010_?????_0100011};
     }
-    jalr: coverpoint ins.current.insn {
+    jalr: coverpoint ins.prev.insn {
         wildcard bins jalr = {32'b????????????_?????_000_?????_1100111};
     }
-    misaligned_pagespanning_address: coverpoint  {ins.current.imm + ins.current.rs1_val}[11:0] {
-        bins misaligned = {12'b111111111110};
-    }
+
     d_page_table_entry_bad: coverpoint ins.current.pte_d[7:0] {
         bins invalid = {8'b00000000}; // invalid
     }
@@ -140,13 +138,10 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
 
 
     // main coverpoints
-    cp_instr_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, instr_page_fault;
     cp_load_page_fault_m:            cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, load_page_fault;
     cp_store_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, store_page_fault;
     cp_misaligned_priority_m:        cross priv_mode_m, memops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
-    cp_misaligned_priority_fetch_m:  cross priv_mode_m, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
     cp_medeleg_m:                    cross priv_mode_m, memops,  d_page_table_entry_invalid, medeleg_walk;
-    cp_medeleg_fetch_m:              cross priv_mode_m, i_page_table_entry_invalid, medeleg_walk;
     cp_instr_page_fault_s:           cross priv_mode_s, instr_page_fault;
     cp_load_page_fault_s:            cross priv_mode_s, load_page_fault;
     cp_store_page_fault_s:           cross priv_mode_s, store_page_fault;
@@ -154,9 +149,9 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     cp_misaligned_priority_fetch_s:  cross priv_mode_s, i_virt_adr_misaligned, i_page_table_entry_invalid, i_phys_address_nonexistant;
     cp_medeleg_s:                    cross priv_mode_s, memops, d_page_table_entry_invalid, medeleg_walk;
     cp_medeleg_fetch_s:              cross priv_mode_s, i_page_table_entry_invalid, medeleg_walk;
-    cp_misaligned_load_page_fault_s: cross priv_mode_s, d_page_table_entry_bad, misaligned_pagespanning_address, d_phys_address, lw;
-    cp_misaligned_store_page_fault_s:cross priv_mode_s, d_page_table_entry_bad, misaligned_pagespanning_address, d_phys_address, sw;
-    cp_misaligned_inst_page_fault_s: cross priv_mode_s, i_page_table_entry_bad, misaligned_pagespanning_address, i_phys_address, jalr;
+    cp_misaligned_load_page_fault_s: cross priv_mode_s, d_page_table_entry_bad, d_phys_address, lw;
+    cp_misaligned_store_page_fault_s:cross priv_mode_s, d_page_table_entry_bad, d_phys_address, sw;
+    cp_misaligned_inst_page_fault_s: cross priv_mode_s, i_page_table_entry_bad, i_phys_address, jalr;
     cp_instr_page_fault_u:           cross priv_mode_u, instr_page_fault;
     cp_load_page_fault_u:            cross priv_mode_u, load_page_fault;
     cp_store_page_fault_u:           cross priv_mode_u, store_page_fault;

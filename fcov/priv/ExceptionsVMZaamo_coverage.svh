@@ -21,7 +21,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-`define COVER_EXCEPTIONSVM
+`define COVER_EXCEPTIONSVMZAAMO
 covergroup ExceptionsVMZaamo_cg with function sample(ins_t ins);
     option.per_instance = 0;
     `include "coverage/RISCV_coverage_standard_coverpoints.svh"
@@ -69,16 +69,6 @@ covergroup ExceptionsVMZaamo_cg with function sample(ins_t ins);
         // bit 14 reserved
         bins storepagefault_enabled   = {16'b1000_0000_0000_0000};
         wildcard bins ones            = {16'b1011_0001_1111_111?};
-    }
-
-    d_page_table_entry_bad: coverpoint ins.current.pte_d[7:0] {
-        bins invalid = {8'b00000000}; // invalid
-    }
-
-    d_phys_address: coverpoint ins.current.phys_adr_d[11:0] {
-        // check that fault occurs on the last halfword of the first page and the first halfword of the second page
-        bins first  = {12'b111111111110};
-        bins second = {12'b000000000000};
     }
 
     // main coverpoints
