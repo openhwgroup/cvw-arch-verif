@@ -1,3 +1,0 @@
-    cp_vs2_corners_emul2 : coverpoint vs_corners_check(ins.hart, ins.issue, ins.current.vs2_val, "2")  iff (ins.trap == 0 )  {
-        // Corners values of vs2 (emul = 2), assuming vl = 1
-    }

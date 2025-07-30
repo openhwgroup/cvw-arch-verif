@@ -39,13 +39,13 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
     fflags: coverpoint ins.current.insn[31:20] {
         bins fflags = {12'h001};
     }
-    fcsr_frm_corners: coverpoint ins.current.rs1_val[7:5] {
+    fcsr_frm_edges: coverpoint ins.current.rs1_val[7:5] {
         // auto fills 0 through 7
     }
-    frm_corners: coverpoint ins.current.rs1_val[2:0] {
+    frm_edges: coverpoint ins.current.rs1_val[2:0] {
         // auto fills 0 through 7
     }
-    fflags_corners: coverpoint ins.current.rs1_val[4:0] {
+    fflags_edges: coverpoint ins.current.rs1_val[4:0] {
         // auto fills 0 through 15
     }
     walking_ones : coverpoint $clog2(ins.current.rs1_val) iff ($onehot(ins.current.rs1_val)) {
@@ -139,12 +139,12 @@ covergroup ZicsrF_fcsr_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_fcsr_frm_write:        cross csrrw, fcsr,   fcsr_frm_corners,  mstatus_FS_n0;
-    cp_fcsr_fflags_write:     cross csrrw, fcsr,   fflags_corners,    mstatus_FS_n0;
+    cp_fcsr_frm_write:        cross csrrw, fcsr,   fcsr_frm_edges,  mstatus_FS_n0;
+    cp_fcsr_fflags_write:     cross csrrw, fcsr,   fflags_edges,    mstatus_FS_n0;
     cp_fcsrwalk:              cross csrop, fcsr,   walking_ones,      mstatus_FS_n0;
-    cp_frm_write:             cross csrrw, frm,    frm_corners,       mstatus_FS_n0;
+    cp_frm_write:             cross csrrw, frm,    frm_edges,       mstatus_FS_n0;
     cp_frmwalk:               cross csrop, frm,    walking_ones,      mstatus_FS_n0;
-    cp_fflags_write:          cross csrrw, fflags, fflags_corners,    mstatus_FS_n0;
+    cp_fflags_write:          cross csrrw, fflags, fflags_edges,    mstatus_FS_n0;
     cp_fflagswalk:            cross csrop, fflags, walking_ones,      mstatus_FS_n0;
     cp_fflags_set_m_NV:       cross fsub, fs1_infinity, fs2_infinity, mstatus_FS;
     cp_fflags_set_m_DZ:       cross fdiv, fs1_one,      fs2_zero,     mstatus_FS;

@@ -317,7 +317,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vsetvl_i_avl_*
-    // tests corner case avl behavior on the vset instructions
+    // tests edge case avl behavior on the vset instructions
     //////////////////////////////////////////////////////////////////////////////////
 
     rs1_eq_zero : coverpoint (ins.current.rs1_val == 0 & ins.current.insn[19:15] != 0) {
@@ -345,8 +345,8 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
         wildcard bins vsetivli  =   {32'b1100_?_?_???_???_?????_111_?????_1010111};
     }
 
-    imm5_corners : coverpoint ins.current.insn[19:15] {
-        // all generated bins for imm corners
+    imm5_edges : coverpoint ins.current.insn[19:15] {
+        // all generated bins for imm edges
     }
 
     vtype_lmul_1: coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "vtype", "vlmul") {
@@ -359,7 +359,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     cp_vsetvl_i_avl_eq_2x_vlmax : cross vsetvl_i_instructions, rs1_eq_2x_vlmax;
     cp_vsetvl_i_avl_gt_2x_vlmax : cross vsetvl_i_instructions, rs1_gt_2x_vlmax;
 
-    cp_vsetivli_avl_corners     : cross vsetivli_instruction, vtype_all_sew_supported, imm5_corners, vtype_lmul_1;
+    cp_vsetivli_avl_edges     : cross vsetivli_instruction, vtype_all_sew_supported, imm5_edges, vtype_lmul_1;
 
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vstart_out_of_bounds

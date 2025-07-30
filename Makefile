@@ -32,7 +32,8 @@ UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 all: unpriv priv
 Vx  : riscv-arch-Vx8  riscv-arch-Vx16  riscv-arch-Vx32  riscv-arch-Vx64
 Vls : riscv-arch-Vls8 riscv-arch-Vls16 riscv-arch-Vls32 riscv-arch-Vls64
-V   : riscv-arch-Vx8  riscv-arch-Vx16  riscv-arch-Vx32  riscv-arch-Vx64 riscv-arch-Vls8 riscv-arch-Vls16 riscv-arch-Vls32 riscv-arch-Vls64
+Vf  : riscv-arch-Vf16 riscv-arch-Vf32  riscv-arch-Vf64
+V   : Vx Vls Vf
 
 
 unpriv: testgen
@@ -101,7 +102,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 sim:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
 # Modify the following line to run a specific test
-	wsim rv32gc $(TESTDIR)/rv32/I/WALLY-COV-I-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
+	wsim rv32gc $(TESTDIR)/rv32/I/I-add.elf --fcov --lockstepverbose --define "+define+FCOV_VERBOSE"
 
 	$(MAKE) merge
 
@@ -155,3 +156,9 @@ clean:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/*
 	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/*
+
+lint:
+	uvx ruff check
+
+lint-fix:
+	uvx ruff check --fix

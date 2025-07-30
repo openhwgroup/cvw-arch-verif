@@ -37,6 +37,8 @@ vreg_count              = 32
 # Global Variables
 ##################################
 
+tab_count = 0
+
 xlen                    = 0
 flen                    = 0
 
@@ -44,9 +46,6 @@ extension               = ""
 
 formatstr               = "" # format as xlen-bit hexadecimal number
 formatstrFP             = "" # format as flen-bit hexadecimal number
-
-basetest_count          = 0
-lengthtest_count        = 0
 
 sigTotal                = 0 # total number of bytes in signature
 sigReg                  = 3 # start with x4 for signatures ->marina changed it to x3 because that what riscv-arch-test uses TO DO
@@ -56,13 +55,13 @@ length_suite_test_count = 0
 
 sigupd_count            = 10 # number of entries in signature - start with a margin of 10 spaces
 sigupd_countF           = 0  # initialize signature update count for F tests
-mtrap_sig_count         = 64 # signature space for priviliged, default to 64
+mtrap_sig_count         = 64 # signature space for privileged, default to 64
 
 ##################################
-# Corners
+# Edges
 ##################################
 
-fcorners = {"pos0":                 0x00000000, # 0
+fedges = {"pos0":                 0x00000000, # 0
             "neg0":                 0x80000000, # -0
             "pos1":                 0x3f800000, # 1.0
             "neg1":                 0xbf800000, # -1.0
@@ -77,13 +76,13 @@ fcorners = {"pos0":                 0x00000000, # 0
             "twoToEmax":            0x7f000000, # 2^emax
             "onePulp":              0x3f800001, # 1 + ulp
             "largestsubnorm":       0x007fffff, # largest positive subnorm
-            "negSubnormLeadingOne": 0x00400000, # positive subnorm with leading 1
+            "negSubnormLeadingOne": 0x80400000, # positive subnorm with leading 1
             "min_subnorm":          0x00000001, # smallest positive subnorm
             "canonicalQNaN":        0x7fc00000, # canonical quiet NaN
             "negNoncanonicalQNaN":  0xffffffff, # noncanonical quiet NaN
             "sNaN_payload1":        0x7f800001} # signaling NaN with lsb set
 
-fcornersD  = {"pos0":                 0x0000000000000000, # 0
+fedgesD  = {"pos0":                 0x0000000000000000, # 0
               "neg0":                 0x8000000000000000, # -0
               "pos1":                 0x3FF0000000000000, # 1.0
               "neg1":                 0xBFF0000000000000, # -1.0
@@ -98,13 +97,13 @@ fcornersD  = {"pos0":                 0x0000000000000000, # 0
               "twoToEmax":            0x7FE0000000000000, # 2^emax
               "onePulp":              0x3FF0000000000001, # 1 + ulp
               "largestsubnorm":       0x000FFFFFFFFFFFFF, # largest positive subnorm
-              "negSubnormLeadingOne": 0x0008000000000000, # positive subnorm with leading 1
+              "negSubnormLeadingOne": 0x8008000000000000, # positive subnorm with leading 1
               "min_subnorm":          0x0000000000000001, # smallest positive subnorm
               "canonicalQNaN":        0x7FF8000000000000, # canonical quiet NaN
               "negNoncanonicalQNaN":  0xFFFFFFFFFFFFFFFF, # noncanonical quiet NaN
               "sNaN_payload1":        0x7FF0000000000001} # signaling NaN with lsb set
 
-fcornersH  = {"pos0":                 0x0000, # 0
+fedgesH  = {"pos0":                 0x0000, # 0
               "neg0":                 0x8000, # -0
               "pos1":                 0x3C00, # 1.0
               "neg1":                 0xBC00, # -1.0
@@ -125,26 +124,26 @@ fcornersH  = {"pos0":                 0x0000, # 0
               "negNoncanonicalQNaN":  0xFFFF, # noncanonical quiet NaN
               "sNaN_payload1":        0x7D01} # signaling NaN with lsb set
 
-# fcornersQ = [] # TODO: Fill out quad precision F corners
+# fedgesQ = [] # TODO: Fill out quad precision F edges
 
-vectorcorners = ["vs_corner_zero", "vs_corner_one", "vs_corner_two", "vs_corner_ones", "vs_corner_onesm1", "vs_corner_min", "vs_corner_minm1",
-                  "vs_corner_max", "vs_corner_maxm1", "vs_corner_walkeven", "vs_corner_walkodd", "vs_corner_random"]
-vcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorcorners]
-vcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorcorners]
-vcornersemul4  = [(vcorner + "_emul4" ) for vcorner in vectorcorners]
-vcornersemul8  = [(vcorner + "_emul8" ) for vcorner in vectorcorners]
-vcornersemulf2 = [(vcorner + "_emulf2") for vcorner in vectorcorners]
-vcornersemulf4 = [(vcorner + "_emulf4") for vcorner in vectorcorners]
-vcornersemulf8 = [(vcorner + "_emulf8") for vcorner in vectorcorners]
-vcornerseew1   = [(vcorner + "_eew1"  ) for vcorner in vectorcorners]
-v_corners_ls   = ["vs_corner_zero_emul8", "vs_corner_random_within_2vlmax"]
+vectoredges = ["vs_edge_zero", "vs_edge_one", "vs_edge_two", "vs_edge_ones", "vs_edge_onesm1", "vs_edge_min", "vs_edge_minm1",
+                  "vs_edge_max", "vs_edge_maxm1", "vs_edge_walkeven", "vs_edge_walkodd", "vs_edge_random"]
+vedgesemul1  = [(vedge + "_emul1" ) for vedge in vectoredges]
+vedgesemul2  = [(vedge + "_emul2" ) for vedge in vectoredges]
+vedgesemul4  = [(vedge + "_emul4" ) for vedge in vectoredges]
+vedgesemul8  = [(vedge + "_emul8" ) for vedge in vectoredges]
+vedgesemulf2 = [(vedge + "_emulf2") for vedge in vectoredges]
+vedgesemulf4 = [(vedge + "_emulf4") for vedge in vectoredges]
+vedgesemulf8 = [(vedge + "_emulf8") for vedge in vectoredges]
+vedgeseew1   = [(vedge + "_eew1"  ) for vedge in vectoredges]
+v_edges_ls   = ["vs_edge_zero_emul8", "vs_edge_random_within_2vlmax"]
 
-vectorfpcorners = ["vs_corner_f_pos0", "vs_corner_f_neg0", "vs_corner_f_pos1", "vs_corner_f_neg1", "vs_corner_f_posminnorm", "vs_corner_f_negmaxnorm",
-                   "vs_corner_f_posinfinity", "vs_corner_f_neginfinity", "vs_corner_f_pos0p5", "vs_corner_f_pos1p5", "vs_corner_f_neg2", "vs_corner_f_pi",
-                   "vs_corner_f_twoToEmax", "vs_corner_f_onePulp", "vs_corner_f_largestsubnorm", "vs_corner_f_negSubnormLeadingOne", "vs_corner_f_min_subnorm",
-                   "vs_corner_f_canonicalQNaN", "vs_corner_f_negNoncanonicalQNaN", "vs_corner_f_sNaN_payload1"]
-vfcornersemul1  = [(vcorner + "_emul1" ) for vcorner in vectorfpcorners]
-vfcornersemul2  = [(vcorner + "_emul2" ) for vcorner in vectorfpcorners]
+vectorfpedges = ["vs_edge_f_pos0", "vs_edge_f_neg0", "vs_edge_f_pos1", "vs_edge_f_neg1", "vs_edge_f_posminnorm", "vs_edge_f_negmaxnorm",
+                   "vs_edge_f_posinfinity", "vs_edge_f_neginfinity", "vs_edge_f_pos0p5", "vs_edge_f_pos1p5", "vs_edge_f_neg2", "vs_edge_f_pi",
+                   "vs_edge_f_twoToEmax", "vs_edge_f_onePulp", "vs_edge_f_largestsubnorm", "vs_edge_f_negSubnormLeadingOne", "vs_edge_f_min_subnorm",
+                   "vs_edge_f_canonicalQNaN", "vs_edge_f_negNoncanonicalQNaN", "vs_edge_f_sNaN_payload1"]
+vfedgesemul1  = [(vedge + "_emul1" ) for vedge in vectorfpedges]
+vfedgesemul2  = [(vedge + "_emul2" ) for vedge in vectorfpedges]
 
 ##################################
 # Functions to be implemented by importer
@@ -161,10 +160,8 @@ def writeLine(argument: str, comment = ""):
 ##################################
 
 def newInstruction():
-  global sigReg, lengthtest_count, basetest_count, base_suite_test_count, length_suite_test_count, sigupd_count
+  global sigReg, base_suite_test_count, length_suite_test_count, sigupd_count
   sigReg                    = 3
-  lengthtest_count          = 0
-  basetest_count            = 0
   base_suite_test_count     = 0
   length_suite_test_count   = 0
   sigupd_count              = 0
@@ -186,14 +183,6 @@ def setFlen(new_flen):
 def setExtension(new_extension):
     global extension
     extension = new_extension
-
-def incrementLengthtestCount():
-    global lengthtest_count
-    lengthtest_count = lengthtest_count + 1
-
-def incrementBasetestCount():
-    global basetest_count
-    basetest_count += 1
 
 ##################################
 # Getter functions
@@ -217,6 +206,13 @@ vxrmList = {"rod": "0x6",
             "rne": "0x2",
             "rnu": "0x0"} # vcsr[2:1] -> 11 , 10, 01, 00
 
+# frm tests
+# frm = fcsr[5:7]
+frmList = {"rmm": "0x80", # 100_00000
+           "rup": "0x60", # 011_00000
+           "rdn": "0x40", # 010_00000
+           "rtz": "0x20", # 001_00000
+           "rne": "0x00"} # 000_00000
 
 ##################################
 # Types
@@ -661,7 +657,7 @@ eew8_ins = [
     "vsse8.v", "vssseg2e8.v", "vssseg3e8.v", "vssseg4e8.v", "vssseg5e8.v", "vssseg6e8.v", "vssseg7e8.v", "vssseg8e8.v",
     "vsuxei8.v", "vsuxseg2ei8.v", "vsuxseg3ei8.v", "vsuxseg4ei8.v", "vsuxseg5ei8.v", "vsuxseg6ei8.v", "vsuxseg7ei8.v", "vsuxseg8ei8.v",
     "vsoxei8.v", "vsoxseg2ei8.v", "vsoxseg3ei8.v", "vsoxseg4ei8.v", "vsoxseg5ei8.v", "vsoxseg6ei8.v", "vsoxseg7ei8.v", "vsoxseg8ei8.v",
-    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v", "vs8r.v"
+    "vl1re8.v", "vl2re8.v", "vl4re8.v", "vl8re8.v"
 ]
 
 eew16_ins = [
@@ -886,16 +882,16 @@ def genRandomVector(test, sew, vs="vs2", emul=1):
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
   writeLine("    .align 3")
-  writeLine("// Corner Vectors")
+  writeLine("// Edge Vectors")
 
   eew = sew * emul
   for suite in ["base", "length"]:
     if (suite == "base"):
-      maxVtests = basetest_count
+      maxVtests = base_suite_test_count
       vl = 1
       num_words = math.ceil((vl * eew) / 32)
     else:
-      maxVtests = lengthtest_count
+      maxVtests = length_suite_test_count
       if (test in vd_widen_ins and vs == "vd") or (test in vs2_widen_ins and vs == "vs2"):
         num_words = math.ceil(maxVLEN * 2 / 32)
       else:
@@ -915,7 +911,7 @@ def genRandomVectorLS():
   writeLine("///////////////////////////////////////////\n")
   writeLine(".section .data\n")
   writeLine("    .align 4")
-  writeLine("// Corner Vectors")
+  writeLine("// Edge Vectors")
 
   num_words_either_side = int(maxELEN / 64) * 2 * 2 * maxVLEN # 2 times max vlen elements on either side of pointer (sewMAX = 64)
 
@@ -930,7 +926,7 @@ def genRandomVectorLS():
 
   writeLine("")
 
-def genVMaskCorners():
+def genVMaskEdges():
   num_words = math.ceil(maxVLEN / 32)
 
   # generating random masks for length suite
@@ -942,15 +938,15 @@ def genVMaskCorners():
       word = (val >> (32 * i)) & 0xFFFFFFFF
       writeLine(f"    .word 0x{word:08x}")
 
-  # generating random mask for cp_masking_corners
+  # generating random mask for cp_masking_edges
   regenerate = True
-  while regenerate: # prevent overlapping with other mask corners
+  while regenerate: # prevent overlapping with other mask edges
     regenerate = False
     random_mask = getrandbits(maxVLEN)
     for i in range(3, int(math.log2(maxVLEN))): # getting all powers of 2: 8 through maxVLEN
       vlen = 2 ** i
       random_mask_bottom_vlen_bits = random_mask % vlen
-      if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask corner
+      if (random_mask_bottom_vlen_bits == 0) or (random_mask_bottom_vlen_bits % 2 == 1): # if any of them overlap with a mask edge
         regenerate = True
 
   writeLine("cp_mask_random:")
@@ -960,7 +956,7 @@ def genVMaskCorners():
 
   writeLine("")
 
-def genVsCorners(test, sew, emul):
+def genVsEdges(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -979,7 +975,7 @@ def genVsCorners(test, sew, emul):
     eew = sew * int(emul)
     ending = "emul" + emul
 
-  v_register_corners = {
+  v_register_edges = {
     "zero":   0,
     "one":    1,
     "two":    2,
@@ -993,23 +989,23 @@ def genVsCorners(test, sew, emul):
     "walkodd":  sum(1 << i for i in range(eew) if i % 2 == 1),
   }
 
-  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
-  v_register_corners["random_within_2vlmax"] = r
-  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_corners.values()): pass
-  v_register_corners["random"] = r
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_edges.values()): pass
+  v_register_edges["random_within_2vlmax"] = r
+  while (r := randint(3, 2**(eew - 1) - 3)) in set(v_register_edges.values()): pass
+  v_register_edges["random"] = r
 
   writeLine("    .align 3")
-  for corner in v_register_corners:
-      val = v_register_corners[corner]
+  for edge in v_register_edges:
+      val = v_register_edges[edge]
       val &= (1 << eew) - 1
-      writeLine(f"vs_corner_{corner}_{ending}:")
+      writeLine(f"vs_edge_{edge}_{ending}:")
       for w in convert(val, eew):
         if (sew == 64) or (eew == 64):
           writeLine(f"    .dword {w}")
         else:
           writeLine(f"    .word {w}")
 
-def genVsCornersFP(test, sew, emul):
+def genVsEdgesFP(test, sew, emul):
   def convert(val, bitwidth):
     if (sew == 64) or (eew == 64):
       return [f"0x{(val >> (eew * i)) & 0xFFFFFFFFFFFFFFFF:016x}" for i
@@ -1019,23 +1015,23 @@ def genVsCornersFP(test, sew, emul):
               in range((bitwidth + (eew-1)) // eew)]
 
   if sew == 64:
-    vs_corners_f = fcornersD
+    vs_edges_f = fedgesD
   elif sew == 16:
-    vs_corners_f = fcornersH
+    vs_edges_f = fedgesH
   else:
-    vs_corners_f = fcorners
+    vs_edges_f = fedges
 
   eew = sew * int(emul)
   ending = "emul" + emul
 
   writeLine("\n")
   writeLine("///////////////////////////////////////////")
-  writeLine("// vector corners data (floating point)")
+  writeLine("// vector edges data (floating point)")
   writeLine("///////////////////////////////////////////\n")
   writeLine("    .align 3")
-  for corner in vs_corners_f:
-      val = vs_corners_f[corner]
-      writeLine(f"vs_corner_f_{corner}_{ending}:")
+  for edge in vs_edges_f:
+      val = vs_edges_f[edge]
+      writeLine(f"vs_edge_f_{edge}_{ending}:")
       val &= (1 << eew) - 1
       for w in convert(val, eew):
         if (sew == 64) or (eew == 64):
@@ -1055,7 +1051,7 @@ def myhash(s):
   return h
 
 def insertTemplate(test, signatureWords, name):
-    writeLine(f"\n# {name}")
+     # writeLine(f"\n# {name}")     no longer desired to include template name
     with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
         template = h.read()
 
@@ -1091,7 +1087,7 @@ def writeSIGUPD(rd):
 def writeSIGUPD_F(fd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
-    sigupd_count += 1    # Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG
+    sigupd_count += 1    # Increment counter for floating point signature since SIGUPD_F macro stores FCSR as SREG
     sigupd_countF += 1   # Increment counter on each call since SIGUPD_F macro stores FREG
     tempReg = 4
     while tempReg == sigReg:
@@ -1139,35 +1135,40 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
     register              = register_data['reg']
     register_val_pointer  = register_data['val_pointer']
     register_value        = register_data['val']
-    register_emul         = lmul * register_data['size_multiplier'] * register_data['segments']
-
-    if register_data['reg_type'] == "mask" : register_sew = 8
-    if instruction in vector_ls_ins        :
-      if register_argument_name == 'vs2':
-        register_sew = getInstructionEEW(instruction) # vs2 uses eew
-      else:
-        register_sew = sew # regsiters are read with sew and lmul in vtype csr
-    else                                   : register_sew = int(register_data['size_multiplier'] * sew)
+    register_emul         = lmul * register_data['size_multiplier']
+    register_segments     = register_data['segments']
+    register_eew          = int(sew  * register_data['size_multiplier'])
 
     # need to handle loading to mask and scalar registers which can be off group
     # also need to ensure that if a scalar value is widenened, that it only loads a single register
-    # safely loading new vtype for fractional lmul to make sure all desired elements are loaded
-    if lmul < 1:
+
+    if instruction in whole_register_move:
+      load_unique_vtype = register % lmul != 0
+      register_emul = 1
+    elif instruction in whole_register_ls: # whole register loads and stores have an EMUL of NF
+      if instruction not in whole_register_stores : # stores do not encode an eew
+        register_eew = getInstructionEEW(instruction) # for whole register loads and stores the eew is hardcoded for all registers but does not affect the register group size (completely independent of the vtype csr)
+      register_emul = getInstructionSegments(instruction)
+      preloaded_value_emul = lmul * register_eew / sew
+      load_unique_vtype = register % lmul != 0 or preloaded_value_emul < 1/8 or preloaded_value_emul > 8 or register % math.ceil(preloaded_value_emul) != 0
+      register_emul = 1
+    elif register_data['reg_type'] == "mask": # only target register should be loaded and may be off group
+      load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
+      register_eew = 8
+      register_emul = 1
+    elif register_data['reg_type'] == "scalar": # only target register should be loaded and may be off group
+      load_unique_vtype = lmul != 1 # if changing one should consider fractional lmul
+      load_unique_vtype = load_unique_vtype or register_emul != 1 # need to include widening reduction
+      register_emul = 1
+    elif register_eew != sew:
       load_unique_vtype = True
-    elif getInstructionEEW(instruction) != sew and register_argument_name == 'vs2':
-      load_unique_vtype = True
-    elif instruction in whole_register_move:
+    elif register % lmul != 0: # off group register load
       load_unique_vtype = True
     else:
-      if instruction in whole_register_ls:
-        load_unique_vtype = lmul != getInstructionSegments(instruction)
-      if register_emul <= 1 and register % lmul != 0:
-        load_unique_vtype = True
-      if register % lmul != 0:
-        load_unique_vtype = True
-      else:
-        load_unique_vtype = ((register_emul > 1 and register % register_emul != 0) and (register_data['reg_type'] == "mask" or register_data['reg_type'] == "scalar")) \
-          or (register_emul > 1 and register_data['reg_type'] == "scalar")
+      load_unique_vtype = False
+
+    if register_eew > 64 or register_eew < 8:
+      raise ValueError(f"Register EEW violates constraints: register_eew = {register_eew}")
 
     if load_unique_vtype:
       vtypeReg = 1
@@ -1182,11 +1183,11 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
 
       writeLine(f"csrr x{vtypeReg}, vtype", "# save vtype register for after load")
       writeLine(f"csrr x{avlReg}, vl",      "# save vl register for after load")
-      writeLine(f"vsetvli x0, x{avlReg}, e{max(register_sew, sew)}, m1, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
+      writeLine(f"vsetvli x0, x{avlReg}, e{register_eew}, m{math.ceil(register_emul)}, ta, ma", "# set lmul to 1 for load") # we do a max of sew an register_sew to ensure masks load with sew and scalars load with their eew so both load exactly a whole register when desired
 
-    load_vls_random_corner = register_val_pointer == "vs_corner_random_within_2vlmax"
+    load_vls_random_edge = register_val_pointer == "vs_edge_random_within_2vlmax"
 
-    if load_vls_random_corner: register_val_pointer = "vector_ls_random_base"
+    if load_vls_random_edge: register_val_pointer = "vector_ls_random_base"
 
     tempReg = 4
     while tempReg in scalar_registers_used:
@@ -1198,15 +1199,16 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       writeLine(f"vmv.v.x v{register}, x{tempReg}",       f"# Load desired value into v{register}")
     else:
       writeLine(f"la x{tempReg}, {register_val_pointer}",  "# Load address of desired value")
-      if register_val_pointer == "vs_corner_zero_emul8":
+      if register_val_pointer == "vs_edge_zero_emul8":
         writeLine(f"vl1re{getInstructionEEW(instruction)}.v v{register}, (x{tempReg})",               "# zero register")
       else:
-        writeLine(f"vle{register_sew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
+        segment_instruction_phrase = f"seg{register_segments}" if register_segments is not None and register_segments != 1 else ""
+        writeLine(f"vl{segment_instruction_phrase}e{register_eew}.v v{register}, (x{tempReg})", f"# Load desired value from memory into v{register}")
 
     if load_unique_vtype: # return vl and vtype register to what it was before
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}", "# restore vl and vtype setting")
 
-    if register_argument_name == 'vs2' and instruction in vector_ls_ins: # make sure elements in vs2 are within VLMAX and sew algined
+    if register_argument_name == 'vs2' and instruction in vector_ls_ins: # make sure elements in vs2 are within VLMAX and sew aligned
       vtypeReg = 1
       while vtypeReg in scalar_registers_used:
         vtypeReg = randint(1,31)
@@ -1238,12 +1240,12 @@ def loadVecReg(instruction, register_argument_name: str, vector_register_data, s
       writeLine(f"add x{vlmaxReg}, x{vlmaxReg}, x{vlmaxReg}",                   "# save vlmax * 2")
       writeLine(f"vsetvli x0, x{avlReg}, e{eew}, m{getLmulFlag(vs2_emul)}, ta, ma", "# setting sew to vs2 eew")
       if eew < xlen: # make sure the number is positive since it will be 0 extended to XLEN
-        element_positiv_reg = 15
-        while element_positiv_reg in scalar_registers_used:
-          element_positiv_reg = randint(1,31)
-        scalar_registers_used.append(element_positiv_reg)
-        writeLine(f"li x{element_positiv_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
-        writeLine(f"vand.vx v{register}, v{register}, x{element_positiv_reg}",  "#  ")
+        element_positive_reg = 15
+        while element_positive_reg in scalar_registers_used:
+          element_positive_reg = randint(1,31)
+        scalar_registers_used.append(element_positive_reg)
+        writeLine(f"li x{element_positive_reg}, {element_positive}",             "#  make sure the number is positive since it will be 0 extended to XLEN")
+        writeLine(f"vand.vx v{register}, v{register}, x{element_positive_reg}",  "#  ")
       writeLine(f"vrem.vx v{register}, v{register}, x{vlmaxReg}",               "# ensure all values are within (-2*vlmax, 2*vlmax)")
       writeLine(f"vand.vi v{register}, v{register}, {sew_aligned}",             "# sew-aligning elements")
       writeLine(f"vsetvl x0, x{avlReg}, x{vtypeReg}",                           "# restore vl and vtype setting")
@@ -1362,8 +1364,17 @@ def writeVecTest(vd, sew, testline, *scalar_registers_used, test=None, rd=None, 
       writeSIGUPD_V(vd, sew, avl=vl, sig_lmul=sig_lmul, load_testline = load_testline, sig_whole_register_store = sig_whole_register_store)
 
 # TODO : Make this works with vector FP
-def loadFloatRoundingMode(vfloattype, *scalar_registers_used):
-  return
+def loadFrmRoundingMode(frm, *scalar_registers_used):
+  scalar_registers_used = list(scalar_registers_used)
+
+  tempReg = 13
+  while tempReg in scalar_registers_used:
+    tempReg = randint(1,31)
+  scalar_registers_used.append(tempReg)
+
+  writeLine(f"li x{tempReg}, {frmList[frm]}", "# generate mask for desired frm")
+  writeLine(f"csrw fcsr, x{tempReg}", f"# set fcsr.frm to {frm}")
+  return scalar_registers_used
 
 def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
   scalar_registers_used = list(scalar_registers_used)
@@ -1373,9 +1384,8 @@ def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
     tempReg3 = randint(1,31)
   scalar_registers_used.append(tempReg3)
 
-  writeLine("", f"# set vcsr.vxrm to {vxrm}")
-  writeLine(f"li x{tempReg3}, {vxrmList[vxrm]}")
-  writeLine(f"csrw vcsr, x{tempReg3}\n")
+  writeLine(f"li x{tempReg3}, {vxrmList[vxrm]}", "# generate mask for desired frm")
+  writeLine(f"csrw vcsr, x{tempReg3}", f"# set fcsr.frm to {vxrm}")
   return scalar_registers_used
 
 # TODO: doesnt work
@@ -1390,47 +1400,47 @@ def loadVxsatMode(*scalar_registers_used):
 def getLMULIfdef(lmul):
   ifdef = ""
   if (lmul == 0.5):
-    ifdef = "#ifdef LMULf2_SUPPORTED\n"
+    ifdef = "LMULf2_SUPPORTED & "
   elif (lmul == 0.25):
-    ifdef = "#ifdef LMULf4_SUPPORTED\n"
+    ifdef = "LMULf4_SUPPORTED & "
   elif (lmul == 0.125):
-    ifdef = "#ifdef LMULf8_SUPPORTED\n"
+    ifdef = "LMULf8_SUPPORTED & "
   return ifdef
 
 def getELENIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if ELEN >= 64\n"
+    ifdef = "ELEN >= 64 & n"
   elif instruction in eew32_ins:
-    ifdef = "#if ELEN >= 32\n"
+    ifdef = "ELEN >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if ELEN >= 16\n"
+    ifdef = "ELEN >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if ELEN >= 8\n"
+    ifdef = "ELEN >= 8 & "
   return ifdef
 
 def getSEWMINIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if SEWMIN <= 64\n"
+    ifdef = "SEWMIN <= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if SEWMIN <= 32\n"
+    ifdef = "SEWMIN <= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if SEWMIN <= 16\n"
+    ifdef = "SEWMIN <= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if SEWMIN <= 8\n"
+    ifdef = "SEWMIN <= 8 & "
   return ifdef
 
 def getMaxIndexEEWIfdef(instruction):
   ifdef = ""
   if   instruction in eew64_ins:
-    ifdef = "#if MAXINDEXEEW >= 64\n"
+    ifdef = "MAXINDEXEEW >= 64 & "
   elif instruction in eew32_ins:
-    ifdef = "#if MAXINDEXEEW >= 32\n"
+    ifdef = "MAXINDEXEEW >= 32 & "
   elif instruction in eew16_ins:
-    ifdef = "#if MAXINDEXEEW >= 16\n"
+    ifdef = "MAXINDEXEEW >= 16 & "
   elif instruction in eew8_ins:
-    ifdef = "#if MAXINDEXEEW >= 8\n"
+    ifdef = "MAXINDEXEEW >= 8 & "
   return ifdef
 
 def getInstructionEEW(instruction):
@@ -1523,7 +1533,9 @@ def getInstructionArguments(instruction):
 
 def writeTest(description, instruction, instruction_data,
               sew=None, lmul=1, vl=1, vstart=0, maskval=None, vxrm=None,
-              vfrm=None, vxsat=None, vta=0, vma=0):
+              frm=None, vxsat=None, vta=0, vma=0):
+
+    global tab_count
 
     [vector_register_data, scalar_register_data, floating_point_register_data, imm_val] = instruction_data
 
@@ -1547,13 +1559,17 @@ def writeTest(description, instruction, instruction_data,
 
     # deal with conflict before generating lmul ifdefs to not cause issue if the test is unused
 
-    writeLine("\n" + getLMULIfdef(lmul))
+    ifdef_booleans = ""
 
-    writeLine(getELENIfdef(instruction))
+    ifdef_booleans = ifdef_booleans + getLMULIfdef(lmul)
+    ifdef_booleans = ifdef_booleans + getELENIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getMaxIndexEEWIfdef(instruction)
+    ifdef_booleans = ifdef_booleans + getSEWMINIfdef(instruction)
 
-    writeLine(getMaxIndexEEWIfdef(instruction))
-
-    writeLine(getSEWMINIfdef(instruction))
+    if ifdef_booleans != "":
+      ifdef_booleans = ifdef_booleans[:-3]
+      writeLine("#ifdef " + ifdef_booleans, "# selectively enable test")
+      tab_count = tab_count + 1
 
     writeLine("# Testcase " + str(description))
 
@@ -1568,8 +1584,8 @@ def writeTest(description, instruction, instruction_data,
 
     scalar_registers_used = prepBaseV(sew, lmul, vl, vstart, vta, vma, *scalar_registers_used)
 
-    if vfrm is not None:
-      scalar_registers_used = loadFloatRoundingMode(vfrm, *scalar_registers_used)
+    if frm is not None:
+      scalar_registers_used = loadFrmRoundingMode(frm, *scalar_registers_used)
     elif vxsat is not None:
       scalar_registers_used = loadVxsatMode(*scalar_registers_used)
     elif vxrm is not None:
@@ -1623,8 +1639,8 @@ def writeTest(description, instruction, instruction_data,
     signature_target_vd = vd
 
     load_testline = None
-    if instruction in vector_stores: # for stores we reload the value saved to memeory to check against signature
-      load_instruction = getLoadEquivilentInstruction(instruction, sew)
+    if instruction in vector_stores: # for stores we reload the value saved to memory to check against signature
+      load_instruction = getLoadEquivalentInstruction(instruction, sew)
       load_instruction_data = randomizeVectorInstructionData(load_instruction, sew, None, None, lmul=lmul, additional_no_overlap=[['vs3_start', 'vd_start'], ['vd', 'v0']],
                                                         vs2_reg = vector_register_data['vs2']['reg'],
                                                         vs3_reg = vector_register_data['vs3']['reg'],
@@ -1655,16 +1671,13 @@ def writeTest(description, instruction, instruction_data,
     else:
       writeVecTest(signature_target_vd, signature_target_sew, testline, *scalar_registers_used, test=instruction, rd=rd, fd=fd, sig_lmul=sig_lmul, load_testline = load_testline,  sig_whole_register_store=sig_whole_register_store)
 
-    if (getLMULIfdef(lmul) != ""):
-      writeLine("#endif")
-    if (getELENIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getSEWMINIfdef(instruction) != ""):
-      writeLine("#endif")
-    if (getMaxIndexEEWIfdef(instruction) != ""):
+    if ifdef_booleans != "":
+      tab_count = tab_count - 1
       writeLine("#endif")
 
-def getLoadEquivilentInstruction(instruction, sew):
+    writeLine("") # space between tests
+
+def getLoadEquivalentInstruction(instruction, sew):
   if instruction in whole_register_stores:
     return "vl" + instruction[2] + "re" + str(sew) + ".v"
 
@@ -1779,7 +1792,7 @@ def getVectorEmulMultipliers(instruction):
   if instruction in vd_widen_ins:
     vector_register_data[ 'vd_size_multiplier'] = 2
 
-  if instruction in mmins or instruction in vmlogicalins: # instructions opperate with EEW = 1
+  if instruction in mmins or instruction in vmlogicalins: # instructions operate with EEW = 1
     vector_register_data['vs1_reg_type']        = "mask"
     vector_register_data['vs2_reg_type']        = "mask"
     if instruction != "viota.m":
@@ -1842,12 +1855,12 @@ def getInstructionRegisterOverlapConstraints (instruction, sew, lmul):
 
   return no_overlap
 
-def addOverlap(instruction_overlap_constaints, additional_no_overlap):
+def addOverlap(instruction_overlap_constraints, additional_no_overlap):
   no_overlap = []
   if additional_no_overlap is not None:
     no_overlap = no_overlap + additional_no_overlap
-  if instruction_overlap_constaints is not None:
-    no_overlap = no_overlap + instruction_overlap_constaints
+  if instruction_overlap_constraints is not None:
+    no_overlap = no_overlap + instruction_overlap_constraints
 
   return no_overlap
 
@@ -1869,8 +1882,8 @@ def randomizeOngroupVectorRegister(instruction, *preset_vreg, lmul=1, maskval=No
 def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", lmul=1, additional_no_overlap = None, **preset_variables):
   preset_variables.update(getVectorEmulMultipliers(instruction))
 
-  instruction_overlap_constaints  = getInstructionRegisterOverlapConstraints(instruction, sew, lmul)
-  no_overlap                      = addOverlap(instruction_overlap_constaints, additional_no_overlap)
+  instruction_overlap_constraints  = getInstructionRegisterOverlapConstraints(instruction, sew, lmul)
+  no_overlap                      = addOverlap(instruction_overlap_constraints, additional_no_overlap)
 
   scalar_register_preset_data         = {
     'rd'  : {'reg' : None, 'val' : None, "val_pointer" : None},
@@ -1946,23 +1959,18 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     lmul      = max(1, getInstructionSegments(instruction)) # whole register load stores ignore lmul and instead use nfields as emul
   else:
     segments  = getInstructionSegments(instruction)
-    vector_register_preset_data['vs3']['segments'] = segments
-    vector_register_preset_data['vs2']['segments'] = segments
-    vector_register_preset_data['vs1']['segments'] = segments
-    vector_register_preset_data[ 'vd']['segments'] = segments
+    if   instruction in vector_loads  : vector_register_preset_data[ 'vd']['segments'] = segments
+    elif instruction in vector_stores : vector_register_preset_data['vs3']['segments'] = segments
 
-  eew = None
-  if   instruction in eew64_ins : eew = 64
-  elif instruction in eew32_ins : eew = 32
-  elif instruction in eew16_ins : eew = 16
-  elif instruction in eew8_ins  : eew = 8
+
+  eew = getInstructionEEW(instruction)
 
   if eew is not None : # if emul is greater than 1 use it for the size multiplier
-    if   instruction in whole_register_ls : pass
-    elif instruction in indexed_loads     : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
-    elif instruction in indexed_stores    : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
-    elif instruction in vector_loads      : vector_register_preset_data[ 'vd']['size_multiplier'] = eew/sew
-    elif instruction in vector_stores     : vector_register_preset_data['vs3']['size_multiplier'] = eew/sew
+    if   instruction in ls_no_eew_ins       : pass # these use implied lmul as the number of registers to load instead of size_multiplier
+    elif instruction in whole_register_ls   : pass # do not reference lmul nor sew
+    elif instruction in indexed_ls_ins      : vector_register_preset_data['vs2']['size_multiplier'] = eew/sew
+    elif instruction in vector_loads        : vector_register_preset_data[ 'vd']['size_multiplier'] = eew/sew
+    elif instruction in vector_stores       : vector_register_preset_data['vs3']['size_multiplier'] = eew/sew
 
   if instruction in vextins: # swapped lmul and emul of vext instr for the convenience of register managing
     fraction_sew = 1/int(instruction[-1])
@@ -2056,7 +2064,7 @@ def randomizeVectorInstructionData(instruction, sew, test_count, suite="base", l
     # print(vector_register_data)
     max_randomization_count = 1000
     if (randomization_count >= max_randomization_count):
-      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" with sew "{sew}" and lmul "{lmul}" after {max_randomization_count} attempts')
+      raise ValueError(f'No Overlap constraint "{no_overlap}" cannot be met for instruction "{instruction}" with sew "{sew}", eew "{eew}" and lmul "{lmul}" after {max_randomization_count} attempts')
     randomization_count = randomization_count + 1
 
 
@@ -2091,6 +2099,17 @@ def getInstructionSegments(instruction):
   elif instruction in seg7 : return 7
   elif instruction in seg8 : return 8
   else                     : return 1
+
+def getInstructionNfields(instruction):
+  if   instruction == "vmv1r.v" : return 1
+  elif instruction == "vmv2r.v" : return 2
+  elif instruction == "vmv3r.v" : return 3
+  elif instruction == "vmv4r.v" : return 4
+  elif instruction == "vmv5r.v" : return 5
+  elif instruction == "vmv6r.v" : return 6
+  elif instruction == "vmv7r.v" : return 7
+  elif instruction == "vmv8r.v" : return 8
+  else                          : return None
 
 def getBaseLmul(instruction, sew):
   if   instruction in eew8_ins  and 8  / sew > 1: return sew / 8
@@ -2162,7 +2181,7 @@ def readTestplans(priv=False):
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
-                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_edges becomes cp_rd_edges_lui)
                                         key = key + "_" + value
                                     cps.append(key)
                         tp[instr] = cps

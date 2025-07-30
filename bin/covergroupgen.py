@@ -52,7 +52,7 @@ def readTestplans():
                                 if(key == "Type"):
                                     cps.append("sample_" + value)
                                 else:
-                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_corners becomes cp_rd_corners_lui)
+                                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_edges becomes cp_rd_edges_lui)
                                         key = key + "_" + value
                                     cps.append(key)
                         tp[instr] = cps
@@ -131,8 +131,8 @@ def anyEFFEWExclusion(effew, instrs, tp):
             return True
     return False
 
-sew_dependent_cps = ["cp_vs2_corners_f", "cp_vs1_corners_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
-                     "cp_custom_vindex", "cr_vs2_vs1_corners_f", "cp_fs1_corners_v", "cr_vs2_fs1_corners", "cr_vl_lmul"]
+sew_dependent_cps = ["cp_vs2_edges_f", "cp_vs1_edges_f", "cp_custom_shift_wv", "cp_custom_shift_wx", "cp_custom_shift_vv", "cp_custom_shift_vx", "cp_custom_shift_vi",
+                     "cp_custom_vindex", "cr_vs2_vs1_edges_f", "cp_fs1_edges_v", "cr_vs2_fs1_edges", "cr_vl_lmul"]
 
 # Write the instruction if it has an x in the listed RV32 and RV64 columns.  When hasRV32/64 is false, the column must be empty
 # Thereby group instructions according to which XLEN they are in

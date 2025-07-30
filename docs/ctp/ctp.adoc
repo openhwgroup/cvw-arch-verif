@@ -60,7 +60,9 @@ endif::[]
 _Contributors to all versions of the spec in alphabetical order_
 
 * Jordan Carlin
+* James Kaden Cassidy
 * David Harris
+* Georgia Tai
 
 _This document is released under a Creative Commons Attribution 4.0 International License._
 

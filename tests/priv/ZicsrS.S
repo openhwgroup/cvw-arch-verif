@@ -439,17 +439,17 @@ postsrettest:
 ///////////////////////////////////
 // walking 1s and 0s for each register
 ///////////////////////////////////
-// cp_sstatus_write_corners
-// cp_scause_write_corners
-// cp_sie_write_corners
-// cp_stvec_write_corners
-// cp_scounteren_write_corners
-// cp_senvcfg_write_corners
-// cp_sscratch_write_corners
-// cp_sepc_write_corners
-// cp_stval_write_corners
-// cp_sip_write_corners
-// cp_scountinhibit_write_corners
+// cp_sstatus_write_edges
+// cp_scause_write_edges
+// cp_sie_write_edges
+// cp_stvec_write_edges
+// cp_scounteren_write_edges
+// cp_senvcfg_write_edges
+// cp_sscratch_write_edges
+// cp_sepc_write_edges
+// cp_stval_write_edges
+// cp_sip_write_edges
+// cp_scountinhibit_write_edges
 ///////////////////////////////////
 
 #include "ZicsrS-Walk.h"
