@@ -154,170 +154,254 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 
 Coverage files with multiple extensions in the name apply when all the extensions are supported; for example, ZfaZfhD is used in a system supporting Zfa, Zfh, and D extensions.
 
-*** also list the applicable extensions for each profile
+All privileged suites require at least version 1.12 of the privileged specification.  Features specific to version 1.13 are tested separately in the Sm1p13 and Ss1p13 suites.
 
 [[t-profiles]]
 .Profile Coverage Files
 [options=header]
+[cols="1, 4, 1, 1, 1, 1, 1" options=header]
+
 [%AUTOWIDTH]
 |===
-|Coverage File|RVI20|uController|RVB23S64|RVA23S64
-|XLEN|32/64|32|64|64
-5+^|Unprivileged
-|I|x|x|x|x
-|M|o|x|x|x
-|Zmmul||||
-|Zaamo|o|x|x|x
-|Zalrsc|o|x|x|x
-|Zca|o|x|x|x
-|Zcb||x|x|x
-|ZcbM||x|x|x
-|ZcbZba||x|x|x
-|ZcbZbb||x|x|x
-|Zcf|o|||
-|Zcd|o||x|x
-|F|o||x|x
-|D|o||x|x
-|Zfh|||o|o
-|ZfhD|||o|o
-|Zfhmin|||o|x
-|ZfhminD|||o|x
-|ZfaF|||x|x
-|ZfaD|||x|x
-|ZfaZfh|||o|o
-|ZfaZfhD|||o|o
-|Zba||x|x|x
-|Zbb||x|x|x
-|Zbc||||o
-|Zbs||x|x|x
-|Zbkb|||o|
-|Zbkc|||o|
-|Zbkx|||o|
-|Zknd|||o|
-|Zkne|||o|
-|Zknh|||o|
-|Zicsr|||x|x
-|Zicond|||x|x
-|Zifencei|o|x|x|x
-5+^|Privileged
-|ZicsrM||x|x|x
-|ZicsrS|||x|x
-|ZicsrU||x|x|x
-|ZicsrF|o||x|x
-|ZicsrUF|||x|x
-|ZicsrUV|||o|x
-|ExceptionsM||x|x|x
-|ExceptionsS|||x|x
-|ExceptionsU||x|x|x
-|ExceptionsF||x|x|x
-|ExceptionsZalrsc||x|x|x
-|ExceptionsZaammo||x|x|x
-|ExceptionsZc||x|x|x
-|ExceptionsZicboS|||x|x
-|ExceptionsZicboU|||x|x
-|ExceptionsVM|||x|x
-|ExceptionsVMZalrsc|||x|x
-|ExceptionsVMZaamo|||x|x
-|InterruptsM||x|x|x
-|InterruptsS|||x|x
-|InterruptsU||x|x|x
-|InterruptsSstc|||x|x
-|ZicntrM|o|x|x|x
-|ZicntrS|||x|x
-|ZicntrU||x|x|x
-|EndianM||||
-|EndianS||||
-|EndianU||||
-|EndianZaamo||||
-|EndianZalrsc||||
-|PMPM||x|x|x
-|PMPS|||x|x
-|PMPU||x|x|x
-|PMPZca|||x|x
-|PMPZicbo|||x|x
-|PMPZaamo|||x|x
-|PMPZalrsc|||x|x
-|RV32VM||||
-|RV32VM_PMP||||
-|RV32CBO_VM||||
-|RV32CBO_PMP||||
-|RV64VM|||Sv39; 48 and 57 optional|Sv39; 48 and 57 optional
-|RV64VM_PMP|||x|x
-|RV64CBO_VM|||x|x
-|RV64CBO_PMP|||x|x
-|Svinval|||x|x
-5+^|Vector In Progress
-|Vx8|||o|x
-|Vx16|||o|x
-|Vx32|||o|x
-|Vx64|||o|x
-|Vls8|||o|x
-|Vls16|||o|x
-|Vls32|||o|x
-|Vls64|||o|x
-|Vf16 (Zvfh)|||o|o
-|Vf32|||o|x
-|Vf64|||o|x
-|Zvbb8|||o|x
-|Zvbb16|||o|x
-|Zvbb32|||o|x
-|Zvbb64|||o|x
-|Zvbc64|||o|o
-|Zvg32|||o|o
-|Zvkned32|||o|o
-|Zvknha32||||
-|Zvknhb64|||o|o
-5+^|Vector Privileged
-|ExceptionsV|||o|x
-|ExceptionsHV|||o|x
-|ZicsrV|||o|x
-5+^|Strict
-|SsstrictM|||o|o
-|SsstrictS|||o|o
-|SsstrictV|||o|o
+|Coverage File|Description|RVI20|uController|RVA22S64|RVB23S64|RVA23S64
+|XLEN||32/64|32|64|64|64
+7+^|Unprivileged
+|I|Integer|x|x|x|x|x
+|M|Mult/Div|o|x|x|x|x
+|Zmmul|Mult Only|||||
+|Zaamo|Atomic Memory Ops|o|x|x|x|x
+|Zalrsc|Load Reserved / Store Cond|o|x|x|x|x
+|Zca|Compressed|o|x|x|x|x
+|Zcb|Extra Compressed||x||x|x
+|ZcbM|Compressed Multiply||x||x|x
+|ZcbZba|Compressed Zero Extend||x||x|x
+|ZcbZbb|Compressed Sign Extend||x||x|x
+|Zcf|Compressed Float|o||||
+|Zcd|Compressed Double|o||x|x|x
+|F|Float|o||x|x|x
+|D|Double|o||x|x|x
+|Zfh|Half|||o|o|o
+|ZfhD|Half-Double Converts|||o|o|o
+|Zfhmin|Half Converts|||x|o|x
+|ZfhminD|Half-Double Converts|||x|o|x
+|ZfaF|Additional Float||||x|x
+|ZfaD|Additional Double||||x|x
+|ZfaZfh||||o|o
+|ZfaZfhD||||o|o
+|Zba||x|x|x|x
+|Zbb||x|x|x|x
+|Zbc|||||o
+|Zbs||x|x|x|x
+|Zbkb||o||o|
+|Zbkc||o||o|
+|Zbkx||o||o|
+|Zknd||o||o|
+|Zkne||o||o|
+|Zknh||o||o|
+|Zicsr|||x|x|x
+|Zicond||||x|x
+|Zifencei|o|x|x|x|x
+|Zihintpause|||x|x|x
+|Zihintntl||||x|x
+|Zicbom|||x|x|x
+|Zicboz|||x|x|x
+|Zicbop|||x|x|x
+|Zkr|||o|o|o
+|Za64rs|||x|x|x
+|Zic64b|||x|x|x
+7+^|Privileged
+|ZicsrM||x|x|x|x
+|ZicsrS|||x|x|x
+|ZicsrU||x|x|x|x
+|ZicsrF|o||x|x|x
+|ZicsrUF|||x|x|x
+|ExceptionsM||x|x|x|x
+|ExceptionsS|||x|x|x
+|ExceptionsU||x|x|x|x
+|ExceptionsF||x|x|x|x
+|ExceptionsZalrsc||x|x|x|x
+|ExceptionsZaammo||x|x|x|x
+|ExceptionsZc||x|x|x|x
+|ExceptionsZicboS|||x|x|x
+|ExceptionsZicboU|||x|x|x
+|ExceptionsVM|||x|x|x
+|ExceptionsVMZalrsc|||x|x|x
+|ExceptionsVMZaamo|||x|x|x
+|InterruptsM||x|x|x|x
+|InterruptsS|||x|x|x
+|InterruptsU||x|x|x|x
+|InterruptsSstc|||x|x|x
+|ZicntrM|o|x|x|x|x
+|ZicntrS|||x|x|x
+|ZicntrU||x|x|x|x
+|ZihpmM|o|x|x|x|x
+|ZihpmS|||x|x|x
+|ZihpmU||x|x|x|x
+|PMPM||x|x|x|x
+|PMPS|||x|x|x
+|PMPU||x|x|x|x
+|PMPZca|||x|x|x
+|PMPZicbo|||x|x|x
+|PMPZaamo|||x|x|x
+|PMPZalrsc|||x|x|x
+|Svbare|||x|x|x
+|Sv32|||||
+|RV32VM_PMP|||||
+|RV32CBO_VM|||||
+|RV32CBO_PMP|||||
+|Sv39|||x|x|x
+|Sv48|||o|o|o
+|Sv57|||o|o|o
+|RV64VM_PMP|||x|x|x
+|RV64CBO_VM|||x|x|x
+|RV64CBO_PMP|||x|x|x
+|Svinval|||x|x|x
+|Svade|||x|x|x
+|Svpbmt|||x|x|x
+|Svnapot|||o|x|x
+|Sscofpmf|||o|x|x
+|Ssu64xl|||o|x|x
+|Sscounterenw|||x|x|x
+|Sstvecd|||x|x|x
+|Sstvala|||x|x|x
+|Zicclsm|||x|x|x
+|Smstateen|||||
+|Ssstateen|||o||x
+|EndianM|||||
+|EndianS|||||
+|EndianU|||||
+|EndianZaamo|||||
+|EndianZalrsc|||||
+7+^|Strict
+|SsstrictM|||o|o|o
+|SsstrictS|||o|o|o
+7+^|Vector In Progress
+|Vx8|||o|o|x
+|Vx16|||o|o|x
+|Vx32|||o|o|x
+|Vx64|||o|o|x
+|Vls8|||o|o|x
+|Vls16|||o|o|x
+|Vls32|||o|o|x
+|Vls64|||o|o|x
+|Vf16 (Zvfh)||||o|o
+|Vf32|||o|o|x
+|Vf64|||o|o|x
+|Zvbb8||||o|x
+|Zvbb16||||o|x
+|Zvbb32||||o|x
+|Zvbb64||||o|x
+|Zvkb8||||o|o
+|Zvkb16||||o|o
+|Zvkb32||||o|o
+|Zvkb64||||o|o
+|Zvbc64||||o|o
+|Zvg32||||o|o
+|Zvkned32||||o|o
+|Zvknha32|||||
+|Zvknhb64||||o|o
+|Zvfbmin||||o|o
+|Zvfbwma||||o|o
+7+^|Vector Privileged
+|ExceptionsV|||o|o|x
+|ExceptionsHV|||o|o|x
+|ZicsrV|||o|o|x
+|ZicsrUV|||o|o|x
+|SsstrictV|||o|o|o
+|SsstrictV|||o|o|o
+7+^|Hypervisor
+|H (Instructions)|||o|o|x
+|ZicsrH|||o|o|x
+|ZicsrHF|||o|o|x
+|ZicsrHV|||o|o|x
+|ExceptionsH|||o|o|x
+|ExceptionsHV|||o|o|x
+|InterruptsH|||o|o|x
+|EndianH|||o|o|x
+|ZicntrH|||o|o|x
+|ZihpmH|||o|o|x
+|PMPH|||o|o|x
+|RV32VMH|||||
+|RV32VMHCBO|||||
+|RV64VMH|||o|o|x
+|RV64VMHCBO|||o|o|x
+|SsstrictH|||o|o|x
+|Shcounterenw|||o|o|x
+|Shvsatpa|||o|o|x
+|Shgatpa|||o|o|x
+|Shvstvecd|||o|o|x
+|Shvstvala|||o|o|x
+|Shtvala|||o|o|x
+|Shlcofideleg|||||
+7+^|Miscellaneous RV{A/B}23 Extensions
+|Sm1p13||||x|x
+|Ss1p13||||x|x
+|Ssnpm||||x|x
+|Smnpm|||||
+|Smmpm|||||
+|Zacas||||o|o
+|Zabha||||o|o
+|Zicfilp||||o|o
+|Zicfiss||||o|o
+|Zfbfmin||||o|o
+|Zimop||||x|x
+|Zcmop||||x|x
+|Zawrs||||x|x
+|Svadu||||o|o
+|Sdtrig||||o|o
+7+^|Other Recent Extensions
+|Zfinx|||||
+|Zdinx|||||
+|Zhinx|||||
+|Zhinxmin|||||
+|Zcmp|||||
+|Zcmt|||||
+|Zilsd|||||
+|Zclsd|||||
+|Smcsrind|||||
+|Sscsrind|||||
+|Smepmp|||||
+|Smrnmi|||||
+|Ssrnmi|||||
+|Smcntrpmf|||||
+|Smcdeleg|||||
+|Ssccfg|||||
+|Smdbltrp|||||
+|Ssdbltrp|||||
+|Smctr|||||
+|Ssqosid|||||
+7+^|Embedded
+|E|||||
+|EM|||||
+|EZmmul|||||
+|EZca|||||
+|EZcb|||||
+|EZcmp|||||
+|EZcmt|||||
+|EZba|||||
+|EZb|||||
+|EZs|||||
+7+^|Debug
+|DM|||||
+|DTM|||||
+|Sdext|||||
+7+^|Advanced Interrupt Architecture
+|Smaia|||||
+|Ssaia|||||
+7+^|Extensions Lacking Architectural Visibility for Certification Testing
+|Ziccif|||x|x|x
+|Ziccrse|||x|x|x
+|Ziccamoa|||x|x|x
+|Ziccamoc||||x|x
+|Zama16b|||||x
+|Zkt|||x|x|x
+|Zvkt|||x|x|x
+|Svvptc||||x|x
 |===
-
-***Need to add Zicbom and Zicboz to unpriv table & tests
-*** Zicclsm
-*** Zihpm tested with Zicntr
-***Zihintntl not listed
-***Zimop
-***Zcmpo
-***Zawrs
-***Zabha
-***Hypervisor: ZicsrH, ExceptionsH, ZicntrH, EndianH, InterruptsH, VM***, SsstrictH
-***Zacas
-*** Zvfhmin
-***Zfbfmin
-***Zvfbfmin
-***Zvfbfwma
-***Svade/Svadu
-***Sstvecd
-***Sstvala
-***Sscounterenw
-***Svpbmt
-***Svnapot
-***Sscofpmf
-Sdtrig/Sdext
-***H
-***SSSTATEEN
-***SHCOUNTERENW
-***SHVSTVALA
-***SHVALA
-***SHVSTVECD
-***Shvsatpa
-***Shgatpa
-***Ssnpn
-***Supm
-***Zicfilp
-***Zicfiss
-***Sha
-***Zkr
-*** drop SsstrictM?  No SsstrictU
 
 === Conforming M-Mode Requirement
 
-The privileged testplan relies on a machine mode conforming to Sm1p11 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
+The privileged testplan relies on a machine mode conforming to Sm1p12 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
 
 == General Test Plan Strategy
 
@@ -389,7 +473,7 @@ and the architectural state of the hart.
 
 == Unprivileged Test Plan
 
-Unprivileged tests exercise every instruction using every applicable source and destination register, and reasonable edge values of sources.  They are intended for certification, not verification. For example, they do not test all difficult floating-point cases.
+Unprivileged tests exercise every instruction using every applicable source and destination register, and reasonable architectural edge values of sources.  They are intended for certification, not verification. For example, they do not test all difficult floating-point cases.
 
 The unprivileged test plan is written to be easily reviewed by a human, and to be automatically converted to machine-readable coverpoints and tests.
 It is defined with spreadsheets in comma-separated value (CSV) format.
