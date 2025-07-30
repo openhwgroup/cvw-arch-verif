@@ -137,7 +137,7 @@ def BuildExt(test_pathstr, work_path, test_name, march, mabi, dash_D ):
 
     make_txt += "# SIMULATE ON REF FOR SIGNATURE\n"
     make_txt += f"{work_path}/{test_name}.signature: {work_path}/{test_name}-sig.elf\n"
-    make_txt += f"\triscv_sim_{rv_xlen}d --config sail_cSim/{rv_xlen}gc.json --trace=step --test-signature={work_path}/{test_name}.signature {work_path}/{test_name}-sig.elf > {work_path}/{test_name}.log 2>&1\n\n"
+    make_txt += f"\tsail_riscv_sim --config sail_cSim/{rv_xlen}gc.json --trace=step --test-signature={work_path}/{test_name}.signature {work_path}/{test_name}-sig.elf > {work_path}/{test_name}.log 2>&1\n\n"
 
     make_txt += "# COMBINE SIGNATURE AND COMMENTS WITH TESTFILE \n"
     make_txt += f"{work_path}/{test_name}-selfcheck.S: {work_path}/{test_name}.signature\n"
