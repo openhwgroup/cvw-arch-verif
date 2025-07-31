@@ -148,6 +148,8 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 ** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
 * Microcontroller Profile (Not Ratified, but market demand)
 ** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified)
+** Application processor without vector, hypervisor, and other newer extensions
 * https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
 ** RVA23 less vector and hypervisor
 * https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
@@ -158,11 +160,11 @@ Coverage files with multiple extensions in the name apply when all the extension
 
 All privileged suites require at least version 1.12 of the privileged specification.  Features specific to version 1.13 are tested separately in the Sm1p13 and Ss1p13 suites.
 
+
 [[t-profiles]]
 .Profile Coverage Files
 [options=header]
 [cols="1, 4, 1, 1, 1, 1, 1" options=header]
-
 [%AUTOWIDTH]
 |===
 |Coverage File|Description|RVI20|uController|RVA22S64|RVB23S64|RVA23S64
@@ -188,217 +190,242 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZfhminD|Half-Double Converts|||x|o|x
 |ZfaF|Additional Float||||x|x
 |ZfaD|Additional Double||||x|x
-|ZfaZfh||||o|o
-|ZfaZfhD||||o|o
-|Zba||x|x|x|x
-|Zbb||x|x|x|x
-|Zbc|||||o
-|Zbs||x|x|x|x
-|Zbkb||o||o|
-|Zbkc||o||o|
-|Zbkx||o||o|
-|Zknd||o||o|
-|Zkne||o||o|
-|Zknh||o||o|
-|Zicsr|||x|x|x
-|Zicond||||x|x
-|Zifencei|o|x|x|x|x
-|Zihintpause|||x|x|x
-|Zihintntl||||x|x
-|Zicbom|||x|x|x
-|Zicboz|||x|x|x
-|Zicbop|||x|x|x
-|Zkr|||o|o|o
-|Za64rs|||x|x|x
-|Zic64b|||x|x|x
+|ZfaZfh|Additional Half||||o|o
+|ZfaZfhD|Additional Half-Double Converts||||o|o
+|Zba|||x|x|x|x
+|Zbb|||x|x|x|x
+|Zbc||||||o
+|Zbs|||x|x|x|x
+|Zbkb|||o||o|
+|Zbkc|||o||o|
+|Zbkx|||o||o|
+|Zknd|||o||o|
+|Zkne|||o||o|
+|Zknh|||o||o|
+|Zicsr||||x|x|x
+|Zicond|||||x|x
+|Zifencei||o|x|x|x|x
+|Zihintpause||||x|x|x
+|Zihintntl|||||x|x
+|Zicbom||||x|x|x
+|Zicboz||||x|x|x
+|Zicbop||||x|x|x
+|Zkr||||o|o|o
+|Za64rs||||x|x|x
+|Zic64b||||x|x|x
 7+^|Privileged
-|ZicsrM||x|x|x|x
-|ZicsrS|||x|x|x
-|ZicsrU||x|x|x|x
-|ZicsrF|o||x|x|x
-|ZicsrUF|||x|x|x
-|ExceptionsM||x|x|x|x
-|ExceptionsS|||x|x|x
-|ExceptionsU||x|x|x|x
-|ExceptionsF||x|x|x|x
-|ExceptionsZalrsc||x|x|x|x
-|ExceptionsZaammo||x|x|x|x
-|ExceptionsZc||x|x|x|x
-|ExceptionsZicboS|||x|x|x
-|ExceptionsZicboU|||x|x|x
-|ExceptionsVM|||x|x|x
-|ExceptionsVMZalrsc|||x|x|x
-|ExceptionsVMZaamo|||x|x|x
-|InterruptsM||x|x|x|x
-|InterruptsS|||x|x|x
-|InterruptsU||x|x|x|x
-|InterruptsSstc|||x|x|x
-|ZicntrM|o|x|x|x|x
-|ZicntrS|||x|x|x
-|ZicntrU||x|x|x|x
-|ZihpmM|o|x|x|x|x
-|ZihpmS|||x|x|x
-|ZihpmU||x|x|x|x
-|PMPM||x|x|x|x
-|PMPS|||x|x|x
-|PMPU||x|x|x|x
-|PMPZca|||x|x|x
-|PMPZicbo|||x|x|x
-|PMPZaamo|||x|x|x
-|PMPZalrsc|||x|x|x
-|Svbare|||x|x|x
-|Sv32|||||
-|RV32VM_PMP|||||
-|RV32CBO_VM|||||
-|RV32CBO_PMP|||||
-|Sv39|||x|x|x
-|Sv48|||o|o|o
-|Sv57|||o|o|o
-|RV64VM_PMP|||x|x|x
-|RV64CBO_VM|||x|x|x
-|RV64CBO_PMP|||x|x|x
-|Svinval|||x|x|x
-|Svade|||x|x|x
-|Svpbmt|||x|x|x
-|Svnapot|||o|x|x
-|Sscofpmf|||o|x|x
-|Ssu64xl|||o|x|x
-|Sscounterenw|||x|x|x
-|Sstvecd|||x|x|x
-|Sstvala|||x|x|x
-|Zicclsm|||x|x|x
-|Smstateen|||||
-|Ssstateen|||o||x
-|EndianM|||||
-|EndianS|||||
-|EndianU|||||
-|EndianZaamo|||||
-|EndianZalrsc|||||
+|ZicsrM|||x|x|x|x
+|ZicsrS||||x|x|x
+|ZicsrU|||x|x|x|x
+|ZicsrF||o||x|x|x
+|ZicsrUF||||x|x|x
+|ExceptionsM|||x|x|x|x
+|ExceptionsS||||x|x|x
+|ExceptionsU|||x|x|x|x
+|ExceptionsF|||x|x|x|x
+|ExceptionsZalrsc|||x|x|x|x
+|ExceptionsZaammo|||x|x|x|x
+|ExceptionsZc|||x|x|x|x
+|ExceptionsZicboS||||x|x|x
+|ExceptionsZicboU||||x|x|x
+|ExceptionsVM||||x|x|x
+|ExceptionsVMZalrsc||||x|x|x
+|ExceptionsVMZaamo||||x|x|x
+|InterruptsM|||x|x|x|x
+|InterruptsS||||x|x|x
+|InterruptsU|||x|x|x|x
+|InterruptsSstc||||x|x|x
+|ZicntrM||o|x|x|x|x
+|ZicntrS||||x|x|x
+|ZicntrU|||x|x|x|x
+|ZihpmM||o|x|x|x|x
+|ZihpmS||||x|x|x
+|ZihpmU|||x|x|x|x
+|PMPM|||x|x|x|x
+|PMPS||||x|x|x
+|PMPU|||x|x|x|x
+|PMPZca||||x|x|x
+|PMPZicbo||||x|x|x
+|PMPZaamo||||x|x|x
+|PMPZalrsc||||x|x|x
+|Svbare||||x|x|x
+|Sv32||||||
+|RV32VM_PMP||||||
+|RV32CBO_VM||||||
+|RV32CBO_PMP||||||
+|Sv39||||x|x|x
+|Sv48||||o|o|o
+|Sv57||||o|o|o
+|RV64VM_PMP||||x|x|x
+|RV64CBO_VM||||x|x|x
+|RV64CBO_PMP||||x|x|x
+|Svinval||||x|x|x
+|Svade||||x|x|x
+|Svpbmt||||x|x|x
+|Svnapot||||o|x|x
+|Sscofpmf||||o|x|x
+|Ssu64xl||||o|x|x
+|Sscounterenw||||x|x|x
+|Sstvecd||||x|x|x
+|Sstvala||||x|x|x
+|Zicclsm||||x|x|x
+|Smstateen||||||
+|Ssstateen||||o||x
+|EndianM||||||
+|EndianS||||||
+|EndianU||||||
+|EndianZaamo||||||
+|EndianZalrsc||||||
 7+^|Strict
-|SsstrictM|||o|o|o
-|SsstrictS|||o|o|o
-7+^|Vector In Progress
-|Vx8|||o|o|x
-|Vx16|||o|o|x
-|Vx32|||o|o|x
-|Vx64|||o|o|x
-|Vls8|||o|o|x
-|Vls16|||o|o|x
-|Vls32|||o|o|x
-|Vls64|||o|o|x
-|Vf16 (Zvfh)||||o|o
-|Vf32|||o|o|x
-|Vf64|||o|o|x
-|Zvbb8||||o|x
-|Zvbb16||||o|x
-|Zvbb32||||o|x
-|Zvbb64||||o|x
-|Zvkb8||||o|o
-|Zvkb16||||o|o
-|Zvkb32||||o|o
-|Zvkb64||||o|o
-|Zvbc64||||o|o
-|Zvg32||||o|o
-|Zvkned32||||o|o
-|Zvknha32|||||
-|Zvknhb64||||o|o
-|Zvfbmin||||o|o
-|Zvfbwma||||o|o
+|SsstrictM||||o|o|o
+|SsstrictS||||o|o|o
+7+^|Vector
+|Vx8||||o|o|x
+|Vx16||||o|o|x
+|Vx32||||o|o|x
+|Vx64||||o|o|x
+|Vls8||||o|o|x
+|Vls16||||o|o|x
+|Vls32||||o|o|x
+|Vls64||||o|o|x
+|Vf16 (Zvfh)|||||o|o
+|Vf32||||o|o|x
+|Vf64||||o|o|x
+|Zvbb8|||||o|x
+|Zvbb16|||||o|x
+|Zvbb32|||||o|x
+|Zvbb64|||||o|x
+|Zvkb8|||||o|o
+|Zvkb16|||||o|o
+|Zvkb32|||||o|o
+|Zvkb64|||||o|o
+|Zvbc64|||||o|o
+|Zvg32|||||o|o
+|Zvkned32|||||o|o
+|Zvknha32||||||
+|Zvknhb64|||||o|o
+|Zvfbmin|||||o|o
+|Zvfbwma|||||o|o
 7+^|Vector Privileged
-|ExceptionsV|||o|o|x
-|ExceptionsHV|||o|o|x
-|ZicsrV|||o|o|x
-|ZicsrUV|||o|o|x
-|SsstrictV|||o|o|o
-|SsstrictV|||o|o|o
+|ExceptionsV||||o|o|x
+|ExceptionsHV||||o|o|x
+|ZicsrV||||o|o|x
+|ZicsrUV||||o|o|x
+|SsstrictV||||o|o|o
+|SsstrictV||||o|o|o
 7+^|Hypervisor
-|H (Instructions)|||o|o|x
-|ZicsrH|||o|o|x
-|ZicsrHF|||o|o|x
-|ZicsrHV|||o|o|x
-|ExceptionsH|||o|o|x
-|ExceptionsHV|||o|o|x
-|InterruptsH|||o|o|x
-|EndianH|||o|o|x
-|ZicntrH|||o|o|x
-|ZihpmH|||o|o|x
-|PMPH|||o|o|x
-|RV32VMH|||||
-|RV32VMHCBO|||||
-|RV64VMH|||o|o|x
-|RV64VMHCBO|||o|o|x
-|SsstrictH|||o|o|x
-|Shcounterenw|||o|o|x
-|Shvsatpa|||o|o|x
-|Shgatpa|||o|o|x
-|Shvstvecd|||o|o|x
-|Shvstvala|||o|o|x
-|Shtvala|||o|o|x
-|Shlcofideleg|||||
+|H (Instructions)||||o|o|x
+|ZicsrH||||o|o|x
+|ZicsrHF||||o|o|x
+|ZicsrHV||||o|o|x
+|ExceptionsH||||o|o|x
+|ExceptionsHV||||o|o|x
+|InterruptsH||||o|o|x
+|EndianH||||o|o|x
+|ZicntrH||||o|o|x
+|ZihpmH||||o|o|x
+|PMPH||||o|o|x
+|RV32VMH||||||
+|RV32VMHCBO||||||
+|RV64VMH||||o|o|x
+|RV64VMHCBO||||o|o|x
+|SsstrictH||||o|o|x
+|Shcounterenw||||o|o|x
+|Shvsatpa||||o|o|x
+|Shgatpa||||o|o|x
+|Shvstvecd||||o|o|x
+|Shvstvala||||o|o|x
+|Shtvala||||o|o|x
+|Shlcofideleg||||||
+|ZkrH|||||o|o|o
+|SstcH|||||o|o|o
+|SsstateenH|||||o|o|o
+|SscrindH|||||o|o|o
+|SscfgH|||||o|o|o
+|SmctrH|||||o|o|o
+|SvinvalH|||||o|o|o
+|SvaduH|||||o|o|o
+|ZicfilpH|||||o|o|o
+|ZicfissH|||||o|o|o
+|SsdbltrpH|||||o|o|o
+|SsnpmH|||||o|o|o
+|SmnpmH|||||o|o|o
 7+^|Miscellaneous RV{A/B}23 Extensions
-|Sm1p13||||x|x
-|Ss1p13||||x|x
-|Ssnpm||||x|x
-|Smnpm|||||
-|Smmpm|||||
-|Zacas||||o|o
-|Zabha||||o|o
-|Zicfilp||||o|o
-|Zicfiss||||o|o
-|Zfbfmin||||o|o
-|Zimop||||x|x
-|Zcmop||||x|x
-|Zawrs||||x|x
-|Svadu||||o|o
-|Sdtrig||||o|o
+|Sm1p13|||||x|x
+|Ss1p13|||||x|x
+|Ssnpm|||||x|x
+|Smnpm||||||
+|Smmpm||||||
+|Zacas|||||o|o
+|Zabha|||||o|o
+|Zicfilp|||||o|o
+|Zicfiss|||||o|o
+|Zfbfmin|||||o|o
+|Zimop|||||x|x
+|Zcmop|||||x|x
+|Zawrs|||||x|x
+|Svadu|||||o|o
+|Sdtrig|||||o|o
 7+^|Other Recent Extensions
-|Zfinx|||||
-|Zdinx|||||
-|Zhinx|||||
-|Zhinxmin|||||
-|Zcmp|||||
-|Zcmt|||||
-|Zilsd|||||
-|Zclsd|||||
-|Smcsrind|||||
-|Sscsrind|||||
-|Smepmp|||||
-|Smrnmi|||||
-|Ssrnmi|||||
-|Smcntrpmf|||||
-|Smcdeleg|||||
-|Ssccfg|||||
-|Smdbltrp|||||
-|Ssdbltrp|||||
-|Smctr|||||
-|Ssqosid|||||
+|Zfinx||||||
+|Zdinx||||||
+|Zhinx||||||
+|Zhinxmin||||||
+|Zcmp||||||
+|Zcmt||||||
+|Zilsd||||||
+|Zclsd||||||
+|Smcsrind||||||
+|Sscsrind||||||
+|Smepmp||||||
+|Smrnmi||||||
+|Ssrnmi||||||
+|Smcntrpmf||||||
+|Smcdeleg||||||
+|Ssccfg||||||
+|Smdbltrp||||||
+|Ssdbltrp||||||
+|Smctr||||||
+|Ssqosid||||||
 7+^|Embedded
-|E|||||
-|EM|||||
-|EZmmul|||||
-|EZca|||||
-|EZcb|||||
-|EZcmp|||||
-|EZcmt|||||
-|EZba|||||
-|EZb|||||
-|EZs|||||
+|E||||||
+|EM||||||
+|EZmmul||||||
+|EZca||||||
+|EZcb||||||
+|EZcmp||||||
+|EZcmt||||||
+|EZba||||||
+|EZb||||||
+|EZs||||||
 7+^|Debug
-|DM|||||
-|DTM|||||
-|Sdext|||||
+|DM||||||
+|DTM||||||
+|Sdext||||||
 7+^|Advanced Interrupt Architecture
-|Smaia|||||
-|Ssaia|||||
-7+^|Extensions Lacking Architectural Visibility for Certification Testing
-|Ziccif|||x|x|x
-|Ziccrse|||x|x|x
-|Ziccamoa|||x|x|x
-|Ziccamoc||||x|x
-|Zama16b|||||x
-|Zkt|||x|x|x
-|Zvkt|||x|x|x
-|Svvptc||||x|x
+|Smaia||||||
+|Ssaia||||||
+|===
+
+=== Architecturally Untestable Extensions
+
+<<t-untested>> lists certain extensions whose behavior is not readily visible at the architectural level of observed program behavior, such as constant-time instructions and PMAs.  These are outside the scope of certification.  PMA properties are implicitly tested by executing instructions that depend on the property, but not tested comprehensively across the entire memory map.
+
+[[t-untested]]
+.Extensions Lacking Architectural Visibility for Certification Testing
+[options=header]
+[cols="1, 4, 1, 1, 1, 1, 1" options=header]
+[%AUTOWIDTH]
+|===
+|Coverage File|Description|RVI20|uController|RVA22S64|RVB23S64|RVA23S64
+|Ziccif||||x|x|x
+|Ziccrse||||x|x|x
+|Ziccamoa||||x|x|x
+|Ziccamoc|||||x|x
+|Zama16b||||||x
+|Zkt||||x|x|x
+|Zvkt||||x|x|x
+|Svvptc|||||x|x
 |===
 
 === Conforming M-Mode Requirement
@@ -482,7 +509,7 @@ It is defined with spreadsheets in comma-separated value (CSV) format.
 
 === Unprivileged Tests
 
-Every bin in every coverpoint is associated with a specific test footnote:[cp_asm_test is an exception, just counting the number of times the instruction was executed]. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
+Every bin in every coverpoint is associated with a specific test footnote:[cp_asm_count is an exception, just counting the number of times the instruction was executed]. Unprivileged tests sweep some feature under test (such as the destination register rd) while randomizing all applicable register IDs and source values (including values to be loaded from memory).  For example, the unprivileged test for the cp_rd coverpoint of the add instruction contains 32 add instructions, using the 32 different choices of rd.  The rs1 and rs2 register numbers and values are selected randomly. <<Appendix A: Examples>> gives examples of unprivileged coverpoints and tests meeting these requirements and the coverpoints of <<t-I-coverpoints>> for the `add` instruction.  Each test is self-checking, checking the destination register value against one provided by a reference model.  Certain tests also test other state such as stores or floating-point flags, as described in those sections.
 
 [NOTE]
 ====
@@ -1974,7 +2001,7 @@ unprivileged Zicsr tests of <<Zicsr Control/Status Register Instructions>>.
 
 `wfi` is tested in <<Interrupts>> and `sfence.vma` is tested in <<Sv* Virtual Memory>>.
 
-Zicsr does not test reserved or custom instructors or CSRs because their behavior is Unspecified.
+Zicsr does not test reserved or custom instructions or CSRs because their behavior is Unspecified.
 Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
 where they should throw an Illegal Instruction exception if not implemented.
 
