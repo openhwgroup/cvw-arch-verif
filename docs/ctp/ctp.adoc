@@ -106,11 +106,11 @@ Parameters will eventually all have formal names in UDB when they are all identi
 * Profile: A named collection of required and optional extensions, such as RVI20 or RVA23S64.  Profiles may be ratified by RISC-V or developed by the Certification Steering Committee to meet certification market needs, such as a simple microcontroller. A profile is a partial configuration.  The test plan must allow the DUT configuration to indicate which optional extensions and other parameters are used, and fully test all optional profile extensions provided by the DUT.
 
 
-* UDB: https://github.com/riscv-software-src/riscv-unified-db[Unified Database], a standardized way to describe the configurat***
+* UDB: https://github.com/riscv-software-src/riscv-unified-db[Unified Database], a standardized way to describe the configuration and generate config files for various tools from a single point of truth.
 
 * Coverage files: a SystemVerilog .svh file containing all of the covergroups for an extension or combination of extensions, such as I_coverage.svh or ZfaD_coverage.svh.
 
-* Covergroup: A SystemVerilog construct that contains one or more coverpoints.  Covergroups are used to collect functional coverage of a particular feature or set of features in the RISC-V architecture.  For example, the I_coverage.svh file contains a covergroup for each instruction in the I extension, such as add, addi, sub, etc.  ***privileged example
+* Covergroup: A SystemVerilog construct that contains one or more coverpoints.  Covergroups are used to collect functional coverage of a particular feature or set of features in the RISC-V architecture.  For example, the I_coverage.svh file contains a covergroup for each instruction in the I extension, such as add, addi, sub, etc.  The InterruptsM_coverage.svh contains a single InterruptsM_cg covergroup with all the coverpoints for machine-mode interrupts.
 
 * Coverpoint: A SystemVerilog construct describing a set of conditions to test.  For example, the cp_rd coverpoint checks that all 32 destination registers x0-x31 are exercised by instructions that don't trap. Each coverpoint has one or more bins; for example, cp_rd has 32 bins for the different registers.
 
@@ -699,8 +699,6 @@ The register edge cases are selected to include extreme values and their immedia
 include::../../testplans/I.csv[]
 ,===
 
-*** trim down spreadsheets to just have the relevant columns, delete equval*** coverpoints
-
 <<t-I-coverpoints>> uses the following coverpoint modifiers:
 
 [[t-I-modified-coverpoints]]
@@ -721,7 +719,12 @@ include::../../testplans/I.csv[]
 |cp_custom_fence|3|Test that fence, fence rw,rw, and fence.tso all execute without trapping.
 |===
 
-<<t-I-normative-statements>> summarizes the normative statements in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>.
+<<t-I-normative-statements>> summarizes the normative statements in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>. Note that the testplans always test the following fundamental capabilities, even if no normative statement is cited:
+
+* Opcodes (cp_asm_count)
+* All Source and Destination Registers (cp_rs1, cp_rs2, cp_rd)
+* Edge values (cp_rs1_edges, cp_rs2_edges, cp_imm_edges, cr_rs1_rs2_edges, cr_rs1_imm_edges)
+* All other bitfields in the instruction
 
 [[t-I-normative-statements]]
 .I Normative Statements
@@ -2303,23 +2306,20 @@ in both `hip` and `hie`; and (c) bit _i_ is not set in `hideleg`.|
 
 I think we might want to rethink some of our privileged testing structure and switch to having Sm, S, and U testplans/coverpoints/tests instead of lumping most of that into ZicsrM/S/U. I will also be more apparent what is being tested where that way.
 
-Also pull out hint and pause
-
-Test instructions and remove unused coverpoints
-
 === Current Status
 
 At present, coverpoints and tests are being developed in the https://github.com/openhwgroup/cvw-arch-verif/[cvw-arch-verif] repository and being tested on the https://github.com/openhwgroup/cvw[CORE-V Wally] processor.  The goal is to be able to certify RVA23S64 as well as spec-compliant machine mode.
 
 This test plan exists in the form of spreadsheets, and is being converted to ASCII Doc.
 
-As of June 2025, all unprivileged and privileged RVA23S64 features have tests hitting 100% of the coverpoints, with the following exceptions:
+As of July 2025, all unprivileged and privileged RVA23S64 features have tests hitting 100% of the coverpoints, with the following exceptions:
 
-* The Vector extension is in progress
+* The Vector tests found some bugs in Sail, which are being fixed
 * Interrupt tests coverpoints complete, tests partially complete
 * PMP tests in progress
 * Virtual memory: Sv39 and Sv48 100% coverage, Sv48 debugging one coverpoint
 * Hypervisor not started
+* Other minor new extensions not started
 
 [appendix]
 == Examples
@@ -2478,23 +2478,26 @@ add x16, x8, x5 # perform operation
 RVTEST_SIGUPD(x10, x16)
 ----
 
+=== Test case example: cr_rs1_rs2_edges bin with rs1 = 0x0, rs2 = 0x80000000
+
+```
 # Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x80000000)
-li x8, 0x00000000 # initialize rs1
-li x5, 0x80000000 # initialize rs2
-add x16, x8, x5 # perform operation
-RVTEST_SIGUPD(x10, x16, x20) # load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
+li x8, 0x00000000 # initialize rs1 in randomly selected register
+li x5, 0x80000000 # initialize rs2 in randomly selected register
+add x16, x8, x5 # perform operation, write randomly selected destination register
+# load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
+RVTEST_SIGUPD(x10, x16, x20)
+```
 
-
-if (RVTEST_SELFCHECK)
-    SREG x16, 0(x10)
-    addi x10, x10, WORDSIZE
-    nop
-else
+RVTEST_SIGUPD macro:
+```
+if (RVTEST_SELFCHECK) # check result against signature
     LREG x20, 0(x10)
     beq x16, x20, 1f
     ecall
     1f:
-
-
-
-RVTEST_CHECK(x10, x16, x20) # load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
+else # generate signature
+    SREG x16, 0(x10)
+    addi x10, x10, WORDSIZE
+    nop
+```
