@@ -199,16 +199,20 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		bins pmpcfg15  = {12'h3AF};
 	}
 
+	mode_switch: coverpoint ins.current.insn {
+		bins mret = {32'b00110000001000000000000001110011};
+	}
+
 	csrrw: coverpoint ins.current.insn {
 		wildcard bins csrrw  = {32'b????????????_?????_001_?????_1110011};
 	}
 
-	mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
+	mprv_mstatus: coverpoint ins.prev.csr[12'h300][17]{
 		bins set   = {1};
 		bins unset = {0};
 	}
 
-	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
+	mpp_mstatus: coverpoint ins.prev.csr[12'h300][12:11] {
 		bins S_mode = {2'b01};
 	}
 
@@ -262,9 +266,7 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	cp_cfg_R: cross priv_mode_s, legal_lxwr, read_instr, standard_region, addr_in_region ;
 	cp_cfg_W: cross priv_mode_s, legal_lxwr, write_instr, standard_region, addr_in_region ;
 
-	cp_none_lw: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, read_instr_lw ;
-	cp_none_sw: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, write_instr_sw ;
-	cp_none_jalr: cross priv_mode_s, all_pmp_entries_off, all_pmpaddr_zero, exec_instr ;
+	cp_none: cross priv_mode_m, mpp_mstatus, all_pmp_entries_off, all_pmpaddr_zero, mode_switch ;
 
 	cp_cfg_A_off_jalr: cross priv_mode_s, cfg_A_off, exec_instr, addr_in_region ;
 	cp_cfg_A_off_lw: cross priv_mode_s, cfg_A_off, read_instr_lw, addr_in_region ;
