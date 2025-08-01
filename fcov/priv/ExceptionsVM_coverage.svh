@@ -30,7 +30,7 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     mstatus_mprv_one: coverpoint ins.current.csr[12'h300][17] {
         bins one = {1};
     }
-    mstatus_mpp: coverpoint ins.current.csr[12'h300][12:11] {
+    mstatus_mpp: coverpoint ins.prev.csr[12'h300][12:11] {
         bins u_mode = {2'b00};
         bins s_mode = {2'b01};
     }
@@ -43,7 +43,11 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     store_page_fault: coverpoint (ins.current.csr[12'h342][31:0] == 32'd15) {
         // auto fill 0/1
     }
-    i_virt_adr_misaligned: coverpoint ins.current.virt_adr_i[2:0] {
+    i_virt_adr_misaligned: coverpoint ins.current.virt_adr_i[1:0] {
+        bins aligned    = {2'b00};
+        bins misaligned = {2'b10};
+    }
+    i_phys_adr_misaligned: coverpoint ins.current.phys_adr_i[1:0] {
         bins aligned    = {2'b00};
         bins misaligned = {2'b10};
     }
@@ -137,11 +141,15 @@ covergroup ExceptionsVM_cg with function sample(ins_t ins);
     }
 
 
-    // main coverpoints
+    // Main Coverpoints
+    // Test M mode fetches using an identity mapped Virtual Address with V=0. No translation for instruction fetches and V=0 won't be checked, therefore it must not fault
+    cp_instr_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, jalr;
     cp_load_page_fault_m:            cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, load_page_fault;
     cp_store_page_fault_m:           cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, store_page_fault;
     cp_misaligned_priority_m:        cross priv_mode_m, memops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_fetch_m:  cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, i_phys_adr_misaligned, i_phys_address_nonexistant, jalr;
     cp_medeleg_m:                    cross priv_mode_m, memops,  d_page_table_entry_invalid, medeleg_walk;
+    cp_medeleg_fetch_m:              cross priv_mode_m, mstatus_mprv_one, mstatus_mpp, medeleg_walk, jalr;
     cp_instr_page_fault_s:           cross priv_mode_s, instr_page_fault;
     cp_load_page_fault_s:            cross priv_mode_s, load_page_fault;
     cp_store_page_fault_s:           cross priv_mode_s, store_page_fault;
