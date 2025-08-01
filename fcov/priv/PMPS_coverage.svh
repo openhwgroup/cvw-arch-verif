@@ -207,7 +207,7 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		wildcard bins csrrw  = {32'b????????????_?????_001_?????_1110011};
 	}
 
-	mprv_mstatus: coverpoint ins.current.csr[12'h300][17]{
+	mprv_mstatus: coverpoint ins.prev.csr[12'h300][17]{
 		bins set   = {1};
 		bins unset = {0};
 	}
@@ -266,7 +266,7 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	cp_cfg_R: cross priv_mode_s, legal_lxwr, read_instr, standard_region, addr_in_region ;
 	cp_cfg_W: cross priv_mode_s, legal_lxwr, write_instr, standard_region, addr_in_region ;
 
-	cp_none: cross priv_mode_m, all_pmp_entries_off, all_pmpaddr_zero, mode_switch ;
+	cp_none: cross priv_mode_m, mpp_mstatus, all_pmp_entries_off, all_pmpaddr_zero, mode_switch ;
 
 	cp_cfg_A_off_jalr: cross priv_mode_s, cfg_A_off, exec_instr, addr_in_region ;
 	cp_cfg_A_off_lw: cross priv_mode_s, cfg_A_off, read_instr_lw, addr_in_region ;
