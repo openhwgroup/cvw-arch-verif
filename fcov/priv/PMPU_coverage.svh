@@ -213,9 +213,8 @@ covergroup PMPU_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		bins unset = {0};
 	}
 
-	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
+	mpp_mstatus: coverpoint ins.prev.csr[12'h300][12:11] {
 		bins U_mode = {2'b00};
-		bins M_mode = {2'b11};
 	}
 
 	lxwr: coverpoint ins.current.csr[12'h3A0][7:0] {

@@ -212,8 +212,9 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 		bins unset = {0};
 	}
 
-	mpp_mstatus: coverpoint ins.current.csr[12'h300][12:11] {
+	mpp_mstatus: coverpoint ins.prev.csr[12'h300][12:11] {
 		bins S_mode = {2'b01};
+		bins M_Mode = {2'b11};
 	}
 
 	lxwr: coverpoint ins.current.csr[12'h3A0][7:0] {
