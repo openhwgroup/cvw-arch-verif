@@ -44,50 +44,31 @@ covergroup PMPM_cg with function sample(
 		bins at_region = {`REGIONSTART};
 	}
 
-	addr_offset: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  		bins at_base      = {`REGIONSTART};
-
-  		// this should fault, since it’s outside the region
-  		bins below_base   = {`REGIONSTART-4};
-
-		//just into the region
-  		bins above_base   = {`REGIONSTART+4};
-
-  		// this should also fault as “outside”, but loads beyond this should succeed
-  		bins just_beyond  = {`REGIONSTART+`g};
-
-		//access just before the start of region
-        bins just_before_start  = {`REGIONSTART-`g};
-
-		//last word inside region
-		bins highest_word  = {`REGIONSTART +`g-4};
-	}
-
 	addr_offset_cp_cfg_A_napot_all: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  		bins at_base      = {`REGIONSTART};
+		bins at_base      = {`REGIONSTART};
 		bins below_base   = {`REGIONSTART-4};
-  		bins just_beyond  = {`REGIONSTART+`g};
+		bins just_beyond  = {`REGIONSTART+`g};
 	}
 
 	address_offsets: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  		bins at_base      = {`REGIONSTART};
-  		bins below_base   = {`REGIONSTART-4};
-  		bins above_base   = {`REGIONSTART+4};
-  		bins just_beyond  = {`REGIONSTART+`g};
+		bins at_base      = {`REGIONSTART};
+		bins below_base   = {`REGIONSTART-4};
+		bins above_base   = {`REGIONSTART+4};
+		bins just_beyond  = {`REGIONSTART+`g};
 		bins highest_word  = {`REGIONSTART +`g-4};
 	}
 
 	`ifdef G_IS_0
 		addr_offset_cp_cfg_A_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  			bins at_base     = {`REGIONSTART};
-  			bins just_beyond = {`REGIONSTART+4};
-  			bins below_base  = {`REGIONSTART-4};
+			bins at_base     = {`REGIONSTART};
+			bins just_beyond = {`REGIONSTART+4};
+			bins below_base  = {`REGIONSTART-4};
 		}
 	`endif
 
 	addr_offset_cp_cfg_A_tor0: coverpoint (ins.current.rs1_val + ins.current.imm) {
-  		bins at_base      = {`REGIONSTART};
-  		bins below_base   = {`REGIONSTART-4};
+		bins at_base      = {`REGIONSTART};
+		bins below_base   = {`REGIONSTART-4};
 	}
 
 	exec_instr: coverpoint ins.current.insn {
@@ -261,7 +242,7 @@ covergroup PMPM_cg with function sample(
    //15 configurtions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
 
  	// Region from 0 to REGIONSTART needs XWR Permissions for test to be exexcuted.
-    RWXL_i001_pmp0cfg: coverpoint { pmpcfg[0][7:0]} {
+    RWXL_i111_pmp0cfg: coverpoint { pmpcfg[0][7:0]} {
    		bins pmp0cfg_wrx111  = { 8'b10001111 };
    }
 
@@ -269,7 +250,7 @@ covergroup PMPM_cg with function sample(
    		bins pmp1cfg_xwr001  = { 8'b10001001 };
    }
 
-	RWXL_i001_pmp2cfg: coverpoint pmpcfg[0][23:15] {
+	RWXL_i001_pmp2cfg: coverpoint pmpcfg[0][23:16] {
    		bins pmp2cfg_xwr000  = { 8'b10001000 };
    }
 
@@ -317,7 +298,7 @@ covergroup PMPM_cg with function sample(
    		bins pmp0cfg_xwr001  = { 8'b10001001 };
    }
 
-	RWXL_i001_pmp14cfg: coverpoint pmpcfg[3][31:24] {
+	RWXL_i001_pmp14cfg: coverpoint pmpcfg[3][23:16] {
    		bins pmp0cfg_xwr000  = { 8'b10001000 };
    }
 
@@ -339,23 +320,6 @@ covergroup PMPM_cg with function sample(
 		wildcard bins OFF12 = {45'b????00????????????????????????_??1????????????};
 		wildcard bins OFF13 = {45'b??00??????????????????????????_?1?????????????};
 		wildcard bins OFF14 = {45'b00????????????????????????????_1??????????????};
-	}
-	pmpcfgA_TOR: coverpoint {pmpcfg_a,pmp_hit} {
-		wildcard bins TOR0  = {45'b????????????????????????????01_??????????????1};
-		wildcard bins TOR1  = {45'b??????????????????????????01??_?????????????1?};
-		wildcard bins TOR2  = {45'b????????????????????????01????_????????????1??};
-		wildcard bins TOR3  = {45'b??????????????????????01??????_???????????1???};
-		wildcard bins TOR4  = {45'b????????????????????01????????_??????????1????};
-		wildcard bins TOR5  = {45'b??????????????????01??????????_?????????1?????};
-		wildcard bins TOR6  = {45'b????????????????01????????????_????????1??????};
-		wildcard bins TOR7  = {45'b??????????????01??????????????_???????1???????};
-		wildcard bins TOR8  = {45'b????????????01????????????????_??????1????????};
-		wildcard bins TOR9  = {45'b??????????01??????????????????_?????1?????????};
-		wildcard bins TOR10 = {45'b????????01????????????????????_????1??????????};
-		wildcard bins TOR11 = {45'b??????01??????????????????????_???1???????????};
-		wildcard bins TOR12 = {45'b????01????????????????????????_??1????????????};
-		wildcard bins TOR13 = {45'b??01??????????????????????????_?1?????????????};
-		wildcard bins TOR14 = {45'b01????????????????????????????_1??????????????};
 	}
 
 	`ifdef G_IS_0
@@ -542,26 +506,6 @@ covergroup PMPM_cg with function sample(
 
 //-------------------------------------------------------
 
-	RWXL000: coverpoint {pmpcfg_wr, pmpcfg_x, pmpcfg_l, pmpcfg_a, pmp_hit} { // pmpcfg.RWX = 0, pmpcfg.L = 0
-		wildcard bins pmp0cfg_rwx000  = {75'b????????????????????????????00_??????????????0_??????????????0_000000000000001};
-		wildcard bins pmp1cfg_rwx000  = {75'b??????????????????????????00??_?????????????0?_?????????????0?_000000000000010};
-		wildcard bins pmp2cfg_rwx000  = {75'b????????????????????????00????_????????????0??_????????????0??_000000000000100};
-		wildcard bins pmp3cfg_rwx000  = {75'b??????????????????????00??????_???????????0???_???????????0???_000000000001000};
-		wildcard bins pmp4cfg_rwx000  = {75'b????????????????????00????????_??????????0????_??????????0????_000000000010000};
-		wildcard bins pmp5cfg_rwx000  = {75'b??????????????????00??????????_?????????0?????_?????????0?????_000000000100000};
-		wildcard bins pmp6cfg_rwx000  = {75'b????????????????00????????????_????????0??????_????????0??????_000000001000000};
-		wildcard bins pmp7cfg_rwx000  = {75'b??????????????00??????????????_???????0???????_???????0???????_000000010000000};
-		wildcard bins pmp8cfg_rwx000  = {75'b????????????00????????????????_??????0????????_??????0????????_000000100000000};
-		wildcard bins pmp9cfg_rwx000  = {75'b??????????00??????????????????_?????0?????????_?????0?????????_000001000000000};
-		wildcard bins pmp10cfg_rwx000 = {75'b????????00????????????????????_????0??????????_????0??????????_000010000000000};
-		wildcard bins pmp11cfg_rwx000 = {75'b??????00??????????????????????_???0???????????_???0???????????_000100000000000};
-		wildcard bins pmp12cfg_rwx000 = {75'b????00????????????????????????_??0????????????_??0????????????_001000000000000};
-		wildcard bins pmp13cfg_rwx000 = {75'b??00??????????????????????????_?0?????????????_?0?????????????_010000000000000};
-		wildcard bins pmp14cfg_rwx000 = {75'b00????????????????????????????_0??????????????_0??????????????_100000000000000};
-	}
-
-//-------------------------------------------------------
-
 	//6 legal combinations for XRW
 
 	// Configuration for pairs of pmpaddr ((11,10),(9,8),(7,6),(5,4),(3,2),(1,0)) for Default TOR.
@@ -586,7 +530,7 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 
 	`ifdef G_IS_0
-  		legal_RWX_L_NA4: coverpoint {pmpcfg_l[5:0], pmpcfg_a[11:0], pmpcfg_x[5:0], pmpcfg_wr[11:0], pmp_hit[5:0]} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 2'b10 for region pmp0
+  		legal_RWX_L_NA4: coverpoint {pmpcfg_l[5:0], pmpcfg_a[11:0], pmpcfg_x[5:0], pmpcfg_wr[11:0], pmp_hit[5:0]} { // pmpcfg.RWX = legal combinations, pmpcfg.L = 1 and pmpcfg.A = 2'b10
 			wildcard bins pmp1cfg_lxwr_1000  = {42'b1?????_10??????????_0?????_00??????????_1?????};
 			wildcard bins pmp1cfg_lxwr_1001  = {42'b?1????_??10????????_?0????_??01????????_?1????};
 			wildcard bins pmp0cfg_lxwr_1011  = {42'b??1???_????10??????_??0???_????11??????_??1???};
@@ -732,52 +676,32 @@ covergroup PMPM_cg with function sample(
 
 //-------------------------------------------------------
 
-	// Lock pmp_region_1 and check the writes on pmp_region_1 and pmp_region_0
-	lock_checking: coverpoint pmpcfg_l[1] {
-		bins region_locked = {1'b1};
-		bins region_unlocked = {1'b0};
+	/* These coverpoints are for cp_cfg_L_modify & cp_cfg_L_modify_TOR and it will just tell
+	 we're trying to write values in PMP CSRs when L = {0/1}, A = {OFF,TOR,NAPOT} and
+	 we need to check from tests and logs that pmpcfg and pmpaddr are unwritable when
+	 L = 1, and write to pmpaddr of previous region in case of TOR is also ignored.*/
+
+	pmp_region: coverpoint ins.prev.csr[12'h3A0][12:11] {
+		bins OFF   = {0};
+		bins TOR   = {1};
+		bins NAPOT = {3};
 	}
 
-	// Setting pmp_region_1 so incase of TOR we can check lock for pmp_region_0
-	pmp_region: coverpoint pmpcfg[1][12:11] {
-		bins OFF   = {2'b00};
-		bins TOR   = {2'b01};
-		bins NAPOT = {2'b11};
+	// L = {0/1} pmp_region_1 and check the writes on pmp_region_1 and pmp_region_0
+	lock_checking: coverpoint ins.prev.csr[12'h3A0][15] {
+		bins locked_region = {1};
+		bins unlocked_region = {0};
 	}
 
-	// Initial value in pmpcfg which we will attempt to clear when L = {1/0}
-	pmpcfg_xwr: coverpoint ins.prev.csr[12'h3A1][2:0] { // Region 1
-		bins XWR = {3'b111};
-	}
-
-	lower_pmpcfg_xwr: coverpoint ins.prev.csr[12'h3A0][2:0] { // Region 0
-		bins XWR = {3'b000};
-	}
-
-	// Initial value in pmpaddr which we will attempt to clear when L = {1/0}
-	val_in_pmpaddr: coverpoint ins.prev.csr[12'h3B1] { // Region 1
-		bins hex_0x100 = {256};
-	}
-
-	rs1_val_for_pmpcfg: coverpoint ins.prev.rs1_val { // rs1_val will try to change pmpcfg_i-1 to 00000111
-		bins pmpcfg_val = {7};
-	}
-
-	rs1_val_for_pmpaddr: coverpoint ins.prev.rs1_val { // rs1_val will try to change pmpaddr_i-1 to 0111 1111
-		bins pmpaddr_val = {127};
-	}
-
-	write_pmp_csr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110001_00000_001_?????_1110011}; // Try to write value of x0 in pmpaddr1
-		wildcard bins write_pmpcfg   = {32'b001110100001_00000_001_?????_1110011}; // Try to write value of x0 in pmpcfg1
-	}
-
-	write_lower_pmpaddr: coverpoint ins.prev.insn {
-		wildcard bins write_pmpaddr  = {32'b001110110000_?????_001_?????_1110011}; // Try to write pmpaddr0
-	}
-
-	write_lower_pmpcfg: coverpoint ins.prev.insn {
-		wildcard bins write_pmpcfg   = {32'b001110100000_?????_001_?????_1110011}; // Try to write pmpcfg0
+	// Attempt to write values in given PMP CSRs when A = {OFF/TOR/NAPOT} and L = {0/1}
+	// rs1 should be x0 while writing to pmpaddr1 & pmp1cfg0 in order to write all 0s.
+	// rs1 should be x4 with the value -1 which we try to write in lower pmpaddr.
+	// rs1 should be x5 having 3'b111 for XWR at LSB to write in lower pmpcfg.
+	pmp_csr_to_write: coverpoint ins.current.insn {
+		wildcard bins pmpaddr1 = {32'b001110110001_00000_001_?????_1110011};
+		wildcard bins pmp1cfg0 = {32'b001110100000_00000_001_?????_1110011};
+		wildcard bins pmp0cfg0 = {32'b001110100000_00101_001_?????_1110011};
+		wildcard bins pmpaddr0 = {32'b001110110000_00100_001_?????_1110011};
 	}
 
 //-------------------------------------------------------
@@ -1056,50 +980,31 @@ covergroup PMPM_cg with function sample(
 
 //-------------------------------------------------------
 
-	// Starting from same base address `REGIONSTART if pmphit is 1, NAPOT regions are locked, and rotating xwr.
-	pmp_entries_setup: coverpoint {pmp_hit, pmpcfg_a, pmpcfg_l, pmpcfg_x, pmpcfg_wr} {
-		bins pmp_entry = {105'b111111111111111_111111111111111111111111111111_111111111111111_000111000111000_11_01_00_11_01_00_11_01_00_11_01_00_11_01_00};
+	// Setting the even pmpcfg to 0 and odd pmpcfg to TOR & and rotating through the 6 legal XWR values for each pair.
+	pmp_entries_setup: coverpoint {pmpcfg_a[27:0], pmpcfg_l[13:0], pmpcfg_x[13:0], pmpcfg_wr[27:0]} {
+		bins tor_legal_xwr = {84'b0100010001000100010001000100_10101010101010_00100010001000_0000110001000000110001000000};
 	}
 
-//-------------------------------------------------------
-
-	// if G = 1, then smallest standard region will be of 8 bytes and each subsequent region will be twice.
-	overlapping_regions: coverpoint pack_pmpaddr {
-		bins twice_subsequent_regions = {(`REGIONSTART >> 2) | (2**(`k+14)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+13)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+12)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+11)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+10)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+9)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+8)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+7)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+6)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+5)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+4)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+3)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+2)-1),
-										 (`REGIONSTART >> 2) | (2**(`k+1)-1),
-										 (`REGIONSTART >> 2) | (2**(`k)-1)
-										 };
+	overlapping_regions: coverpoint pack_pmpaddr[14*XLEN-1:0] {
+		bins tor_regions = {(`REGIONSTART + 7*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (13,12)
+							(`REGIONSTART + 6*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (11,10)
+							(`REGIONSTART + 5*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (9,8)
+							(`REGIONSTART + 4*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (7,6)
+							(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (5,4)
+							(`REGIONSTART + 2*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (3,2)
+							(`REGIONSTART + 1*`g) >> 2, (`REGIONSTART >> 2)  // PMPADDR (1,0)
+							};
 	}
 
-	// Addresses at end of each twice subsequent standard region - 8
-	addr_in_overlapping_region: coverpoint (ins.current.imm + ins.current.rs1_val) {
-		bins addr_in_region14  = {`REGIONSTART + (2**(`k+17))-8};
-		bins addr_in_region13  = {`REGIONSTART + (2**(`k+16))-8};
-		bins addr_in_region12  = {`REGIONSTART + (2**(`k+15))-8};
-		bins addr_in_region11  = {`REGIONSTART + (2**(`k+14))-8};
-		bins addr_in_region10  = {`REGIONSTART + (2**(`k+13))-8};
-		bins addr_in_region9   = {`REGIONSTART + (2**(`k+12))-8};
-		bins addr_in_region8   = {`REGIONSTART + (2**(`k+11))-8};
-		bins addr_in_region7   = {`REGIONSTART + (2**(`k+10))-8};
-		bins addr_in_region6   = {`REGIONSTART + (2**(`k+9))-8};
-		bins addr_in_region5   = {`REGIONSTART + (2**(`k+8))-8};
-		bins addr_in_region4   = {`REGIONSTART + (2**(`k+7))-8};
-		bins addr_in_region3   = {`REGIONSTART + (2**(`k+6))-8};
-		bins addr_in_region2   = {`REGIONSTART + (2**(`k+5))-8};
-		bins addr_in_region1   = {`REGIONSTART + (2**(`k+4))-8};
-		bins addr_in_region0   = {`REGIONSTART + (2**(`k+3))-8};
+	// Address at the end of the overlapping regions
+	addr_offset_for_priority_check: coverpoint (ins.current.rs1_val+ins.current.imm) {
+		bins at_end_of_region13 = {`REGIONSTART + 7*`g - 4};
+		bins at_end_of_region11 = {`REGIONSTART + 6*`g - 4};
+		bins at_end_of_region9  = {`REGIONSTART + 5*`g - 4};
+		bins at_end_of_region7  = {`REGIONSTART + 4*`g - 4};
+		bins at_end_of_region5  = {`REGIONSTART + 3*`g - 4};
+		bins at_end_of_region3  = {`REGIONSTART + 2*`g - 4};
+		bins at_end_of_region1  = {`REGIONSTART + 1*`g - 4};
 	}
 
 //-------------------------------------------------------
@@ -1150,11 +1055,7 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_L_access_read: cross priv_mode_m, read_instr, RWX000, addr_in_region ;
 	cp_cfg_L_access_write: cross priv_mode_m, write_instr, RWX000, addr_in_region ;
 
-	cp_cfg_L_modify: cross priv_mode_m, lock_checking, pmp_region, write_pmp_csr, pmpcfg_xwr, val_in_pmpaddr ;
-
-	// If pmpcfg.A = TOR and pmpcfg.L = 1, pmpaddr_i-1 will be unchange but not pmpcfg_i-1.
-	cp_cfg_L_modify_TOR_pmpaddr: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpaddr, rs1_val_for_pmpaddr, lower_pmpcfg_xwr, val_in_pmpaddr ;
-	cp_cfg_L_modify_TOR_pmpcfg: cross priv_mode_m, lock_checking, pmp_region, write_lower_pmpcfg, rs1_val_for_pmpcfg, lower_pmpcfg_xwr, val_in_pmpaddr ;
+	cp_cfg_L_modify: cross priv_mode_m, lock_checking, pmp_region, pmp_csr_to_write ;
 
 	cp_cfg_A_all_even: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_even ;
 	cp_cfg_A_all_odd: cross priv_mode_m, rs1_val_for_pmpcfg_A, csrrw, legal_pmpcfg_entries_odd ;
@@ -1184,7 +1085,7 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, write_instr_sw ;
 	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, exec_instr;
 
-	cp_cfg_A_tor_all0: cross priv_mode_m, cp_cfg_A_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i001_pmp0cfg, read_instr_lw;
+	cp_cfg_A_tor_all0: cross priv_mode_m, cp_cfg_A_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i111_pmp0cfg, read_instr_lw;
 	cp_cfg_A_tor_all1: cross priv_mode_m, cp_cfg_A_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
 	cp_cfg_A_tor_all2: cross priv_mode_m, cp_cfg_A_tor_all_region2, pmpaddr_for_tor_region2, RWXL_i001_pmp2cfg, read_instr_lw;
 	cp_cfg_A_tor_all3: cross priv_mode_m, cp_cfg_A_tor_all_region3, pmpaddr_for_tor_region3, RWXL_i001_pmp3cfg, read_instr_lw;
@@ -1224,9 +1125,9 @@ covergroup PMPM_cg with function sample(
 		cp_pmp64_read: cross priv_mode_m, read_instr_lw, pmp64;
 	`endif
 
-	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, read_instr_lw ;
-	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, write_instr_sw ;
-	cp_priority_jalr: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_in_overlapping_region, exec_instr ;
+	cp_priority_lw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_offset_for_priority_check, read_instr_lw ;
+	cp_priority_sw: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_offset_for_priority_check, write_instr_sw ;
+	cp_priority_jalr: cross priv_mode_m, pmp_entries_setup, overlapping_regions, addr_offset_for_priority_check, exec_instr ;
 
 	cp_priority_off_lw: cross priv_mode_m, cfg_first_four_entries, first_four_pmp_entries, read_instr_lw ;
 	cp_priority_off_sw: cross priv_mode_m, cfg_first_four_entries, first_four_pmp_entries, write_instr_sw ;
@@ -2021,5 +1922,4 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					};
 	`endif
 	PMPM_cg.sample(ins, pmpcfg, pmpaddr, pack_pmpaddr, pmpcfg_wr, pmpcfg_WR, pmpcfg_a, pmpcfg_A, pmpcfg_x, pmpcfg_X, pmpcfg_l, pmpcfg_L, pmp_hit, pmp_HIT);
-	$display("AK-> %b",{pmpcfg_l[11:0], pmpcfg_a[23:0], pmpcfg_x[11:0], pmpcfg_wr[23:0], pmp_hit[11:0]});
 endfunction
