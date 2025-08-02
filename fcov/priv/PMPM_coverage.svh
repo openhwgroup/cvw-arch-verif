@@ -982,18 +982,18 @@ covergroup PMPM_cg with function sample(
 
 	// Setting the even pmpcfg to 0 and odd pmpcfg to TOR & and rotating through the 6 legal XWR values for each pair.
 	pmp_entries_setup: coverpoint {pmpcfg_a[27:0], pmpcfg_l[13:0], pmpcfg_x[13:0], pmpcfg_wr[27:0]} {
-		bins tor_legal_xwr = {84'b0100010001000100010001000100_10101010101010_00100010001000_0000110001000000110001000000};
+		bins tor_legal_xwr = {84'b010001000100010001000100010010101010101010001000100010000000110001000000110001000000};
 	}
 
-	overlapping_regions: coverpoint pack_pmpaddr[14*XLEN-1:0] {
-		bins tor_regions = {(`REGIONSTART + 7*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (13,12)
-							(`REGIONSTART + 6*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (11,10)
-							(`REGIONSTART + 5*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (9,8)
-							(`REGIONSTART + 4*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (7,6)
-							(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (5,4)
-							(`REGIONSTART + 2*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (3,2)
-							(`REGIONSTART + 1*`g) >> 2, (`REGIONSTART >> 2)  // PMPADDR (1,0)
-							};
+	overlapping_regions: coverpoint (pack_pmpaddr[14*XLEN-1:0] == {(`REGIONSTART + 7*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (13,12)
+																  (`REGIONSTART + 6*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (11,10)
+																  (`REGIONSTART + 5*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (9,8)
+																  (`REGIONSTART + 4*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (7,6)
+																  (`REGIONSTART + 3*`g) >> 2, (`REGIONSTART >> 2), // PMPADDR (5,4)
+																  (`REGIONSTART + 2*`g) >> 2 ,(`REGIONSTART >> 2), // PMPADDR (3,2)
+																  (`REGIONSTART + 1*`g) >> 2, (`REGIONSTART >> 2)  // PMPADDR (1,0)
+																}) {
+		bins tor_regions = {1};	// Set 1 when overlapping tor regions set up.
 	}
 
 	// Address at the end of the overlapping regions
