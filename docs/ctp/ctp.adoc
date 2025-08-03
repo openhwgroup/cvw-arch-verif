@@ -466,7 +466,7 @@ categories: standard, reserved, and custom. ... Reserved encodings are currently
 
 CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal (WLRL), or Write Any, Read Legal (WARL). Examples of WPRI fields include undefined fields of `xstatus`, `xenvcfg`, `mseccfg`, and `xstateen*` that could have unintended side effects if they are subsequently defined and unwittingly set to nonzero values. Examples of WLRL fields include `xcause.ExceptionCode` and `hstatus.VGEIN`.  Other CSR fields are generally WARL.
 
-WPRI and WLRL fields require careful testing ***.  WARL fields can be tested by trying all possible values of the field.  CSR tests (<<***>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
+WPRI fields are not tested. WLRL fields are tested with all legal values but no illegal values.   WARL fields are tested by trying all possible values of the field.  CSR tests (<<Zicsr>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
 
 <<t-bitfield-normative-statements>> summarizes the normative statements regarding CSR bitfields.
 
@@ -834,7 +834,7 @@ _rd_.|{lb/lbu/lh/lhu/lw}/{cp_rd}
 a 16-bit value from memory, then sign-extends to 32-bits before storing
 in _rd_. LHU loads a 16-bit value from memory but then zero extends to
 32-bits before storing in _rd_. LB and LBU are defined analogously for
-8-bit values.|{lh/lhu/lb/lbu}/{cp_rd} hits these with random values ***good enough?
+8-bit values.|{lh/lhu/lb/lbu}/{cp_rd} hits these with random values.  32 random values is sufficient to ensure sign and zero extension are taking place.
 |2.6|The SW, SH, and SB instructions store 32-bit, 16-bit, and
 8-bit values from the low bits of register _rs2_ to memory.|{sw/sh/sb}/cp_rs2_edges
 |2.6|loads and stores whose effective addresses are
@@ -886,14 +886,14 @@ register _rs2_ to memory respectively.|{sd/sw/sh/sb}/cp_rs2_edges
 standard and custom HINT encoding spaces.|untestable
 |===
 
-***
 [[t-I-normative-reserved]]
 .I Reserved Behavior
 [cols="1, 4, 2" options=header]
 |===
 |Unpriv Section|Normative Statement|Coverpoints
 |4.2.1|SLLIW, SRLIW, and SRAIW encodings with
-_imm[5] &#8800; 0_ are reserved.|
+_imm[5] &#8800; 0_ are reserved.|cp_uimm_5
+See also Ssstrict in <<Ssstrict>>
 
 |===
 
@@ -2009,6 +2009,7 @@ where they should throw an Illegal Instruction exception if not implemented.
 
 ==== ZicsrM
 
+*** find all WPRI and WLRL fields.  Don't look at WPRI results.  Only test legal values of WLRL.
 ==== ZicsrS
 
 ==== ZicsrU
