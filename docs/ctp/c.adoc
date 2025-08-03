@@ -32,31 +32,7 @@ applicable performance counters. HINTs are executed as no-ops on
 implementations that ignore them.|Hints are not tested
 |===
 
-***move***
-
-[[t-C-priv-normative-statements]]
-.C Privileged Normative Statements
-[cols="1, 4, 2" options=header]
-|===
-|Section|Normative Statement|Coverpoints
-|Unpriv 2.5.2|Instruction-address-misaligned exceptions are not possible on machines
-that support extensions with 16-bit aligned instructions, such as the
-compressed instruction-set extension, C.| ***
-|Unpriv 27.1|With the addition of the C extension, no instructions can raise
-instruction-address-misaligned exceptions.|***
-|Unpriv 27.5.4|A 16-bit instruction with all bits zero is permanently reserved as an illegal instruction.|***
-|Unpriv 27.5.4|Debuggers can use the `C.EBREAK` instruction, which expands to `ebreak`,
-to cause control to be transferred back to the debugging environment.
-`C.EBREAK` shares the opcode with the `C.ADD` instruction, but with _rd_ and
-_rs2_ both zero, thus can also use the `CR` format.|***
-|Unpriv 28.4|MISA.C is set if the following extensions are selected:|***read MISA
-|===
-
-***
-On implementations that support the C extension, compressed forms of the
-I instructions permitted inside constrained LR/SC sequences, as
-described in <<sec:lrscseq>>, are also permitted
-inside constrained LR/SC sequences.
+<<t-C-priv-normative-statements>> summarizes normative statements relating to compressed instructions affecting privileged behavior.
 
 ==== Zca Compressed Extension
 
