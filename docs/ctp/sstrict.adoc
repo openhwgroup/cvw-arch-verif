@@ -1,0 +1,10 @@
+
+=== Ssstrict
+
+The Ssstrict extension indicates that reserved instructions throw an illegal instruction exception, delegated to supervisor mode.
+
+==== SsstrictS
+
+==== SsstrictV
+
+*** get rid of SsstrictM

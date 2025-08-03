@@ -1,0 +1,31 @@
+
+=== Zicsr
+
+Zicsr privileged tests access to CSRs that are mandatory in each privilege mode.
+It also tests mandatory privileged instructions: `ecall`, `ebreak`, `mret`, and `sret`.
+The CSR read/write/set/clear instructions themselves are tested in the
+unprivileged Zicsr tests of <<Zicsr Control/Status Register Instructions>>.
+
+`wfi` is tested in <<Interrupts>> and `sfence.vma` is tested in <<Sv* Virtual Memory>>.
+
+Zicsr does not test reserved or custom instructions or CSRs because their behavior is Unspecified.
+Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
+where they should throw an Illegal Instruction exception if not implemented.
+
+==== ZicsrM
+
+*** find all WPRI and WLRL fields.  Don't look at WPRI results.  Only test legal values of WLRL.
+==== ZicsrS
+
+==== ZicsrU
+
+==== ZicsrF
+
+==== ZicsrV
+
+==== ZicsrUF
+
+==== ZicsrUV
+
+  TODO check WARL, WLRL, WPRI behaviors
+
