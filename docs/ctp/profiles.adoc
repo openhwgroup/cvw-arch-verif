@@ -1,0 +1,293 @@
+
+
+== Profiles & Test Suites
+
+This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification objectives, including the following ratified and unratified profiles:
+
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified)
+** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
+* Microcontroller Profile (Not Ratified, but market demand)
+** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified)
+** Application processor without vector, hypervisor, and other newer extensions
+* https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
+** RVA23 less vector and hypervisor
+* https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
+
+<<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
+
+Coverage files with multiple extensions in the name apply when all the extensions are supported; for example, ZfaZfhD is used in a system supporting Zfa, Zfh, and D extensions.
+
+All privileged suites require at least version 1.12 of the privileged specification.  Features specific to version 1.13 are tested separately in the Sm1p13 and Ss1p13 suites.
+
+
+[[t-profiles]]
+.Profile Coverage Files
+[options=header]
+[cols="1, 4, 1, 1, 1, 1, 1" options=header]
+[%AUTOWIDTH]
+|===
+|Coverage File|Description|RVI20|uController|RVA22S64|RVB23S64|RVA23S64
+|XLEN||32/64|32|64|64|64
+7+^|Unprivileged
+|I|Integer|x|x|x|x|x
+|M|Mult/Div|o|x|x|x|x
+|Zmmul|Mult Only|||||
+|Zaamo|Atomic Memory Ops|o|x|x|x|x
+|Zalrsc|Load Reserved / Store Cond|o|x|x|x|x
+|Zca|Compressed|o|x|x|x|x
+|Zcb|Extra Compressed||x||x|x
+|ZcbM|Compressed Multiply||x||x|x
+|ZcbZba|Compressed Zero Extend||x||x|x
+|ZcbZbb|Compressed Sign Extend||x||x|x
+|Zcf|Compressed Float|o||||
+|Zcd|Compressed Double|o||x|x|x
+|F|Float|o||x|x|x
+|D|Double|o||x|x|x
+|Zfh|Half|||o|o|o
+|ZfhD|Half-Double Converts|||o|o|o
+|Zfhmin|Half Converts|||x|o|x
+|ZfhminD|Half-Double Converts|||x|o|x
+|ZfaF|Additional Float||||x|x
+|ZfaD|Additional Double||||x|x
+|ZfaZfh|Additional Half||||o|o
+|ZfaZfhD|Additional Half-Double Converts||||o|o
+|Zba|Address Generation||x|x|x|x
+|Zbb|Basic Bit Manipulation||x|x|x|x
+|Zbc|Carryless Multiplication|||||o
+|Zbs|Single-Bit||x|x|x|x
+|Zbkb|Bit Manip for Crypto||o||o|
+|Zbkc|Carryless Multiply for Crypto||o||o|
+|Zbkx|Permutations||o||o|
+|Zknd|AES Decryption||o||o|
+|Zkne|AES Encryption||o||o|
+|Zknh|SHA2 Hashing||o||o|
+|Zicsr|CSR Instructions|||x|x|x
+|Zicond|Conditional Move||||x|x
+|Zifencei|Instruction Fence|o|x|x|x|x
+|Zihintpause|Pause Hint|||x|x|x
+|Zihintntl|Nontemporal Locality Hint||||x|x
+|ZihintntlZca|Compressed Nontemporal Locality Hint||||x|x
+|Zicbom|Cache Block Flush/Inval|||x|x|x
+|Zicboz|Cache Block Zero|||x|x|x
+|Zicbop|Cache Block Prefetch|||x|x|x
+|Zkr|Entropy CSR|||o|o|o
+|Za64rs|Max 64B Reservation Sets|||x|x|x
+|Zic64bZicboz|64B Cache Blocks|||x|x|x
+7+^|Privileged
+|ZicsrM|Machine CSRs||x|x|x|x
+|ZicsrS|Supervisor CSRs|||x|x|x
+|ZicsrU|User CSRs||x|x|x|x
+|ZicsrF|Float CSRs|o||x|x|x
+|ZicsrUF|User Float CSRs|||x|x|x
+|ExceptionsM|Machine Exceptions||x|x|x|x
+|ExceptionsS|Supervisor Exceptions|||x|x|x
+|ExceptionsU|User Exceptions||x|x|x|x
+|ExceptionsF|Float Exceptions||x|x|x|x
+|ExceptionsZalrsc|LR/SC Exceptions||x|x|x|x
+|ExceptionsZaamo|AMO Exceptions||x|x|x|x
+|ExceptionsZc|Compressed Exceptions||x|x|x|x
+|ExceptionsZicboS|Supervisor CBO Exceptions|||x|x|x
+|ExceptionsZicboU|User CBO Exceptions|||x|x|x
+|ExceptionsVM|Virt Mem Exceptions|||x|x|x
+|ExceptionsVMZalrsc|Virt Mem LR/SC Exceptions|||x|x|x
+|ExceptionsVMZaamo|Virt Mem AMO Exceptions|||x|x|x
+|InterruptsM|Machine Interrupts||x|x|x|x
+|InterruptsS|Supervisor Interrupts|||x|x|x
+|InterruptsU|User Interrupts||x|x|x|x
+|InterruptsSstc|Supervisor Timer Compare|||x|x|x
+|ZicntrM|Machine Counters|o|x|x|x|x
+|ZicntrS|Supervisor Counters|||x|x|x
+|ZicntrU|User Counters||x|x|x|x
+|ZihpmM|Machine Performance Monitors|o|x|x|x|x
+|ZihpmS|Machine Performance Monitors|||x|x|x
+|ZihpmU|Machine Performance Monitors||x|x|x|x
+|PMPM|Machine PMP||x|x|x|x
+|PMPS|Supervisor PMP|||x|x|x
+|PMPU|User PMP||x|x|x|x
+|PMPZca|Compressed PMP|||x|x|x
+|PMPZicbo|CBO PMP|||x|x|x
+|PMPZaamo|AMO PMP|||x|x|x
+|PMPZalrsc|LR/SC PMP|||x|x|x
+|Svbare|No Virtual Memory|||x|x|x
+|Sv32|Sv32 Virtual Memory|||||
+|RV32VM_PMP|VM + PMP|||||
+|RV32CBO_VM|VM + CBO|||||
+|RV32CBO_PMP|CBO + PMP|||||
+|Sv39|Sv39/48/57 Virtual Memory|||x|x|x
+|Sv48|Sv39/48/57 Virtual Memory|||o|o|o
+|Sv57|Sv39/48/57 Virtual Memory|||o|o|o
+|RV64VM_PMP|VM + PMP|||x|x|x
+|RV64CBO_VM|VM + CBO|||x|x|x
+|RV64CBO_PMP|CBO + PMP|||x|x|x
+|Svinval|TLB Invalidation|||x|x|x
+|Svade|Page Table A/D Exceptions|||x|x|x
+|Svpbmt|Page-based Memory Types|||x|x|x
+|Svnapot|Naturally Aligned Pages|||o|x|x
+|Sscofpmf|Counter Filtering|||o|x|x
+|Ssu64xl|64-bit UXL|||o|x|x
+|Sscounterenw|Counter Enables Writable|||x|x|x
+|Sstvecd|Direct Vector|||x|x|x
+|Sstvala|stval Addresses|||x|x|x
+|Zicclsm|Misaligned Loads / Stores|||x|x|x
+|Smstateen|Machine State Enable|||||
+|Ssstateen|Supervisor State Enable|||o||x
+|EndianM|Machine Endian|||||
+|EndianS|Supervisor Endian|||||
+|EndianU|User Endian|||||
+|EndianZaamo|AMO Endian|||||
+|EndianZalrsc|LR/SC Endian|||||
+7+^|Strict
+|SsstrictM|Machine Strict (unratified)|||o|o|o
+|SsstrictS|Superisor Strict|||o|o|o
+7+^|Vector
+|Vx8|Vector Integer 8-bit|||o|o|x
+|Vx16|Vector Integer 16-bit|||o|o|x
+|Vx32|Vector Integer 32-bit|||o|o|x
+|Vx64|Vector Integer 64-bit|||o|o|x
+|Vls8|Vector Load/Store 8-bit|||o|o|x
+|Vls16|Vector Load/Store 16-bit|||o|o|x
+|Vls32|Vector Load/Store 32-bit|||o|o|x
+|Vls64|Vector Load/Store 64-bit|||o|o|x
+|Vf16 (Zvfh)|Vector Float 16-bit||||o|o
+|Vf32|Vector Float 32-bit|||o|o|x
+|Vf64|Vector Float 64-bit|||o|o|x
+|Zvbb8|Vector Bit Manip 8-bit||||o|x
+|Zvbb16|Vector Bit Manip 16-bit||||o|x
+|Zvbb32|Vector Bit Manip 32-bit||||o|x
+|Zvbb64|Vector Bit Manip 64-bit||||o|x
+|Zvkb8|Vector Crypto Bit Manip 8-bit||||o|o
+|Zvkb16|Vector Crypto Bit Manip 16-bit||||o|o
+|Zvkb32|Vector Crypto Bit Manip 32-bit||||o|o
+|Zvkb64|Vector Crypto Bit Manip 64-bit||||o|o
+|Zvbc64|Vector Carryless Mult||||o|o
+|Zvg32|Vector GCM||||o|o
+|Zvkned32|Vector Crypt||||o|o
+|Zvknha32|Vector Hash 32-bit|||||
+|Zvknhb64|Vecotr Hash 64-bit||||o|o
+|Zvfbmin|Vector BF16 Convert||||o|o
+|Zvfbwma|Vector BF16 MAC||||o|o
+7+^|Vector Privileged
+|ExceptionsV|Vector Exceptions|||o|o|x
+|ZicsrV|Vector CSRs|||o|o|x
+|ZicsrUV|User Vector CSRs|||o|o|x
+|SsstrictV|Vector Strict|||o|o|o
+7+^|Hypervisor
+|H|Hypervisor Instructions|||o|o|x
+|ZicsrH|Hypervisor CSRs|||o|o|x
+|ZicsrHF|Hypervisor Float CSRs|||o|o|x
+|ZicsrHV|Hypervisor Vector CSRs|||o|o|x
+|ExceptionsH|Hypervisor Exceptions|||o|o|x
+|ExceptionsHV|Hypervisor Vector Exceptions|||o|o|x
+|InterruptsH|Hypervisor Interrupts|||o|o|x
+|EndianH|Hypervisor Endian|||o|o|x
+|ZicntrH|Hypervisor Counters|||o|o|x
+|ZihpmH|Hypervisor Performance Monitors|||o|o|x
+|PMPH|Hypervisor PMP|||o|o|x
+|RV32VMH|Hypervisor Virtual Memory|||o|o|x
+|RV32VMHCBO|Hypervisor Virtual Memory + CBO|||o|o|x
+|RV64VMH|Hypervisor Virtual Memory|||o|o|x
+|RV64VMHCBO|Hypervisor Virtual Memory + CBO|||o|o|x
+|SsstrictH|Hypervisor Strict|||o|o|x
+|Shcounterenw|Counter Enables|||o|o|x
+|Shvsatpa|VM Modes Supported|||o|o|x
+|Shgatpa|VM x4 Modes Supported|||o|o|x
+|Shvstvecd|Direct Vectoring|||o|o|x
+|Shvstvala|vstval Addresses|||o|o|x
+|Shtvala|htval Addresses|||o|o|x
+|Shlcofideleg|Counter Overflow Delegation|||o|o|x
+|ZkrH|Hypervisor Entropy|||o|o|x
+|SstcH|Hypervisor Supervisor Timer|||o|o|x
+|SsstateenH|Hypervisor State Enable|||o|o|x
+|SscrindH|Hypervisor Indirect CSR|||o|o|x
+|SscfgH|Hypervisor Counter Delegation|||o|o|x
+|SmctrH|Hypervisor Control Transfer Records|||o|o|x
+|SvinvalH|Hypervisor TLB Inval|||o|o|o
+|SvaduH|Hypervisor TLB Update|||o|o|o
+|ZicfilpH|Hypervisor Landing Pad|||o|o|o
+|ZicfissH|Hypervisor Shadow Stack|||o|o|o
+|SsdbltrpH|Double Trap|||o|o|o
+|SsnpmH|Pointer Masking|||o|o|o
+|SmnpmH|Pointer Masking|||o|o|o
+7+^|Miscellaneous RV{A/B}23 Extensions
+|Sm1p13|Machine 1p13||||x|x
+|Ss1p13|Supervisor 1p13||||x|x
+|Ssnpm|Pointer Masking||||x|x
+|Smnpm|Pointer Masking|||||
+|Smmpm|Pointer Masking|||||
+|Zacas|Atomic Compare-And-Swap||||o|o
+|Zabha|Subword Atomics||||o|o
+|Zicfilp|Landing Pads||||o|o
+|Zicfiss|Shadow Stack||||o|o
+|Zfbfmin|BF16 Convert||||o|o
+|Zimop|Maybe-Ops||||x|x
+|Zcmop|Compressed Maybe-Ops||||x|x
+|Zawrs|Wait on Reservation Set||||x|x
+|Svadu|Page Table Update||||o|o
+|Sdtrig|Debug Triggers||||o|o
+7+^|Other Recent Extensions
+|Zfinx|Float in Int Regs|||||
+|Zdinx|Double in Int Regs|||||
+|Zhinx|Half in Int Regs|||||
+|Zhinxmin|Half Cvt in Int Regs|||||
+|Zcmp|Compressed Push/Pop|||||
+|Zcmt|Compressed Table Jumps|||||
+|Zilsd|Load/Store Double|||||
+|Zclsd|Compressed Load/Store Double|||||
+|Smcsrind|Machine Indirect CSRs|||||
+|Sscsrind|Supervisor Indirect CSRs|||||
+|Smepmp|Enhanced PMP|||||
+|Smrnmi|Machine Resumable Interrupts|||||
+|Ssrnmi|Supervisor Resumable Interrupts|||||
+|Smcntrpmf|Cycle and Instret Mode Filtering|||||
+|Smcdeleg|Counter Delegation|||||
+|Ssccfg|Counter Delegation|||||
+|Smdbltrp|Machine Double Trap|||||
+|Ssdbltrp|Supervisor Double Trap|||||
+|Smctr|Control Transfer Recores|||||
+|Ssqosid|Quality-of-Service ID|||||
+7+^|Embedded
+|E|Embedded 16 Regs|||||
+|EM|Multiply/Divide|||||
+|EZmmul|Multiply|||||
+|EZca|Compressed|||||
+|EZcb|Additonal Compressed|||||
+|EZcmp|Compressed Push/Pop|||||
+|EZcmt|Compressed Table Jump|||||
+|EZba|Address Generation|||||
+|EZbb|Bit Manipulation|||||
+|EZbs|Single-Bit|||||
+7+^|Debug
+|DM|Debug Module|||||
+|DTM|Debug Transport Module|||||
+|Sdext|Debug Mode|||||
+7+^|Advanced Interrupt Architecture
+|Smaia|Machine Advanced Interrupts|||||
+|Ssaia|Supervisor Advanced Interrupts|||||
+|===
+
+=== Architecturally Untestable Extensions
+
+<<t-untested>> lists certain extensions whose behavior is not readily visible at the architectural level of observed program behavior, such as constant-time instructions and PMAs.  These are outside the scope of certification.  PMA properties are implicitly tested by executing instructions that depend on the property, but not tested comprehensively across the entire memory map.
+
+[[t-untested]]
+.Extensions Lacking Architectural Visibility for Certification Testing
+[options=header]
+[cols="1, 4, 1, 1, 1, 1, 1" options=header]
+[%AUTOWIDTH]
+|===
+|Coverage File|Description|RVI20|uController|RVA22S64|RVB23S64|RVA23S64
+|Ziccif||||x|x|x
+|Ziccrse||||x|x|x
+|Ziccamoa||||x|x|x
+|Ziccamoc|||||x|x
+|Zama16b||||||x
+|Zkt||||x|x|x
+|Zvkt||||x|x|x
+|Svvptc|||||x|x
+|===
+
+=== Conforming M-Mode Requirement
+
+The privileged testplan relies on a machine mode conforming to Sm1p12 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
+
