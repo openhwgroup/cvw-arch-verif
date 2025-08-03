@@ -1,0 +1,34 @@
+
+=== Zk*  Cryptographic Extensions
+
+==== Zkne NIST AES Encryption
+
+[[t-Zkne-coverpoints]]
+.Zkne Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zkne.csv[]
+,===
+
+
+==== Zknd NIST AES Decryption
+
+[[t-Zknd-coverpoints]]
+.Zknd Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zknd.csv[]
+,===
+
+
+==== Zknh NIST SHA2 Hashing
+
+[[t-Zknh-coverpoints]]
+.Zknh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zknh.csv[]
+,===

@@ -1,0 +1,115 @@
+
+=== Floating-Point Extensions
+
+Supporting floating-point involves enabling at least the F extension.  Other extensions depend on F.  The coverpoints are specified in the following sections. Some tests only apply when multiple extensions are supported.
+
+==== F Single-Precision FP
+
+[[t-F-coverpoints]]
+.F Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/F.csv[]
+,===
+
+
+==== D Double-Precision FP
+
+[[t-D-coverpoints]]
+.D Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/D.csv[]
+,===
+
+
+==== Zfh Half-Precision FP
+
+[[t-Zfh-coverpoints]]
+.Zfh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zfh.csv[]
+,===
+
+
+===== ZfhD
+
+[[t-ZfhD-coverpoints]]
+.ZfhD Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfhD.csv[]
+,===
+
+
+===== Zfhmin
+
+[[t-Zfhmin-coverpoints]]
+.Zfhmin Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zfhmin.csv[]
+,===
+
+
+===== ZfhminD
+
+[[t-ZfhminD-coverpoints]]
+.ZfhminD Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfhminD.csv[]
+,===
+å
+
+==== Zfa Additional FP
+
+*** called ZfaF
+[[t-ZfaF-coverpoints]]
+.ZfaF Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaF.csv[]
+,===
+
+
+
+===== ZfaD
+
+[[t-ZfaD-coverpoints]]
+.ZfaD Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaD.csv[]
+,===
+
+
+===== ZfaZfh
+
+[[t-ZfaZfh-coverpoints]]
+.ZfaZfh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaZfh.csv[]
+,===
+
+===== ZfaZfhD
+
+[[t-ZfaZfhD-coverpoints]]
+.ZfaZfhD Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaZfhD.csv[]
+,===
+
