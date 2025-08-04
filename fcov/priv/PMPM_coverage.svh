@@ -233,59 +233,59 @@ covergroup PMPM_cg with function sample(
 
  	// Region from 0 to REGIONSTART needs XWR Permissions for test to be exexcuted.
     RWXL_i111_pmp0cfg: coverpoint { pmpcfg[0]} {
-   		bins pmp0cfg_wrx111  = { 8'b10001111 };
+   		bins pmp0cfg_wrx111  = {8'b10001111};
    }
 
 	RWXL_i001_pmp1cfg: coverpoint pmpcfg[1] {
-   		bins pmp1cfg_xwr001  = { 8'b10001001 };
+   		bins pmp1cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp2cfg: coverpoint pmpcfg[2] {
-   		bins pmp2cfg_xwr000  = { 8'b10001000 };
+   		bins pmp2cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp3cfg: coverpoint pmpcfg[3] {
-   		bins pmp3cfg_xwr001  = { 8'b10001001 };
+   		bins pmp3cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp4cfg: coverpoint pmpcfg[4] {
-   		bins pmp4cfg_xwr000  = { 8'b10001000 };
+   		bins pmp4cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp5cfg: coverpoint pmpcfg[5] {
-   		bins pmp5cfg_xwr001  = { 8'b10001001 };
+   		bins pmp5cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp6cfg: coverpoint pmpcfg[6] {
-   		bins pmp6cfg_xwr000  = { 8'b10001000 };
+   		bins pmp6cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp7cfg: coverpoint pmpcfg[7] {
-   		bins pmp7cfg_xwr001  = { 8'b10001001 };
+   		bins pmp7cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp8cfg: coverpoint pmpcfg[8] {
-   		bins pmp8cfg_xwr000  = { 8'b10001000 };
+   		bins pmp8cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp9cfg: coverpoint pmpcfg[9] {
-   		bins pmp9cfg_xwr001  = { 8'b10001001 };
+   		bins pmp9cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp10cfg: coverpoint pmpcfg[10] {
-   		bins pmp10cfg_xwr000  = { 8'b10001000 };
+   		bins pmp10cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp11cfg: coverpoint pmpcfg[11] {
-   		bins pmp11cfg_xwr001  = { 8'b10001001 };
+   		bins pmp11cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp12cfg: coverpoint pmpcfg[12] {
-   		bins pmp0cfg_xwr000  = { 8'b10001000 };
+   		bins pmp0cfg_xwr000  = {8'b10001000};
    }
 
 	RWXL_i001_pmp13cfg: coverpoint pmpcfg[13] {
-   		bins pmp0cfg_xwr001  = { 8'b10001001 };
+   		bins pmp0cfg_xwr001  = {8'b10001001};
    }
 
 	RWXL_i001_pmp14cfg: coverpoint pmpcfg[14] {
@@ -471,11 +471,11 @@ covergroup PMPM_cg with function sample(
 		bins addr1 = {`REGIONSTART+3}; //for 3 byte outside the region
 	}
 
-	pmpaddr_for_tor_misaligned: coverpoint ({pmpaddr[3],pmpaddr[2]}=={(`REGIONSTART+`g)>>2,`REGIONSTART>>2}) {
-		bins pmpaddr = {1};
+	pmpaddr_for_tor_misaligned: coverpoint {pmpaddr[1],pmpaddr[0]}{
+		bins pmpaddr = {`NON_STANDARD_REGION+`g, `NON_STANDARD_REGION};
 	}
 
-	pmpcfg_for_tor_misaligned: coverpoint {pmpcfg[3]} {
+	pmpcfg_for_tor_misaligned: coverpoint {pmpcfg[4]} {
 		bins pmp_cfg_tor_locked = {8'b10001111}; //L=1,A=TOR,XWR=111
 		bins pmp_cfg_tor_unlocked = {8'b00001111}; //L=0,A=TOR,XWR=111
 	}
