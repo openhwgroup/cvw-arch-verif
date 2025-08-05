@@ -28,4 +28,3 @@ where they should throw an Illegal Instruction exception if not implemented.
 ==== ZicsrUV
 
   TODO check WARL, WLRL, WPRI behaviors
-
