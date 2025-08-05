@@ -93,7 +93,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
-	riscv64-unknown-elf-objdump -S -D -M numeric -M no-aliases $< > $@
+	riscv64-unknown-elf-objdump -S -M numeric -M no-aliases $< > $@
 
 %.elf.memfile: %.elf
 	riscv64-unknown-elf-elf2hex --bit-width $(BITWIDTH) --input $< --output $@
