@@ -1546,7 +1546,7 @@ def make_imm_edges_jalr(test, xlen):
     lines = lines + "LA(x"+str(rs1)+", 1f)\n" #load the address of the label '1' into x21
     lines += f"LI(x{rs2}, 1)" + "\n"
     if (immval == -2048):
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
@@ -1558,7 +1558,6 @@ def make_imm_edges_jalr(test, xlen):
     f.write(lines)
 
 def make_offset(test, xlen):
-  # *** all of these test will need signature / self-checking
   lines = "\n# Testcase cp_offset negative bin\n"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   handleSignaturePointerConflict(lines, rs1, rs2, rd)
@@ -1847,6 +1846,13 @@ def make_nanbox(test, xlen):
   [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
   desc = "Random test for cp_NaNBox "
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
+
+def make_memval(test, xlen, memval):
+  for v in memval:
+    # memory value from memval; everything else randomized
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+    desc = "cp_memval (Test memory value value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
 
 def make_custom(test, xlen):
     insertTemplate(f"{test}.S", is_custom=True)
@@ -2149,6 +2155,14 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_custom(test, xlen)
     elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
+    elif (coverpoint in ["cp_memval_byte"]):
+      make_memval(test, xlen, memval_byte)
+    elif (coverpoint in ["cp_memval_hword"]):
+      make_memval(test, xlen, memval_hword)
+    elif (coverpoint in ["cp_memval_word"]):
+      make_memval(test, xlen, memval_word)
+    elif (coverpoint in ["cp_memval_double"]):
+      make_memval(test, xlen, memval_double)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -2423,6 +2437,10 @@ if __name__ == '__main__':
                     0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
   edges_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                     0b101010, 0b010101, 0b010110]
+  memval_byte = [0, 1, 0x7f, 0x80, 0xff]
+  memval_hword = [0, 1, 0x7FFF, 0x8000, 0xFFFF]
+  memval_word = [0, 1, 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF]
+  memval_double = [0, 1, 0x7FFFFFFFFFFFFFFF, 0x8000000000000000, 0xFFFFFFFFFFFFFFFF]
   edges_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
   edges_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
   edges_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
