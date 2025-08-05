@@ -324,7 +324,7 @@ has an UNSPECIFIED effect on the value that the remaining fields assume and an
 UNSPECIFIED effect on G-stage address translation and protection behavior.|
 |21.2.10|When HSXLEN=32, the only other valid setting for MODE is Sv32x4, which
 is a modification of the usual Sv32 paged virtual-memory scheme,
-extended to support 34-bit guest physical addresses.| 
+extended to support 34-bit guest physical addresses.|
 |21.2.10|When HSXLEN=64,
 modes Sv39x4, Sv48x4, and Sv57x4 are defined as modifications of the
 Sv39, Sv48, and Sv57 paged virtual-memory schemes. All of these paged
@@ -663,7 +663,7 @@ are subject to G-stage address translation alone. This includes memory
 accesses made in support of VS-stage address translation, such as reads
 and writes of VS-level page tables.|
 |22.5|Machine-level physical memory protection applies to supervisor physical
-addresses and is in effect regardless of virtualization mode.| 
+addresses and is in effect regardless of virtualization mode.|
 |22.5.1|The mapping of guest physical addresses to supervisor physical addresses
 is controlled by CSR `hgatp` (<<hgatp>>).|
 |22.5.1|When the address translation scheme selected by the MODE field of
@@ -990,11 +990,7 @@ SIE=SPIE, and SPIE=1, and lastly sets `pc`=`vsepc`.|
 |22.6.4|If the Ssdbltrp extension is implemented, when `SRET` is executed in HS-mode,
 if the new privilege mode is VU, the `SRET` instruction sets `vsstatus.SDT`
 to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
-
-
-
 |===
-
 
 
 ==== H
@@ -1012,5 +1008,3 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 ==== RV64VM_H
 
 ==== SsstrictH
-
-
