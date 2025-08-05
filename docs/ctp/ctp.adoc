@@ -57,6 +57,9 @@ endif::[]
 :csrname: envcfg
 :imagesdir: images
 
+:autofit-option:
+:base-font-size-min: 0
+
 _Contributors to all versions of the spec in alphabetical order_
 
 * Jordan Carlin

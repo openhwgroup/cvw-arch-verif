@@ -192,7 +192,7 @@ register _rd′_. `C.ADDW` expands into
 register _rs2′_ from the value in register
 _rd′_, then sign-extends the lower 32 bits of the
 difference before writing the result to register _rd′_.
-`C.SUBW` expands into `subw rd′, rd′, rs2′`.|***
+`C.SUBW` expands into `subw rd′, rd′, rs2′`.|c.subw/{}
 |27.5.6|`C.NOP` is a CI-format instruction that does not change any user-visible
 state, except for advancing the `pc` and incrementing any applicable
 performance counters. `C.NOP` expands to `nop`.|c.nop/{}

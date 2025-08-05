@@ -64,7 +64,7 @@ formats and with each other.|{lui/jalr}/cp_imm_edges
 |2.4|Most integer computational instructions operate on XLEN bits of values held in the integer register file.|cp_rs1, cp_rs2, cr_rs1_rs2_edges
 |2.4|Integer computational instructions are either encoded as register-immediate operations using the I-type format or as register-register operations using the R-type format.|cp_rs1, cp_cp_rs1_imm_edges
 |2.4|The destination is register rd for both register-immediate and register-register instructions.|cp_rd
-|2.4|No integer computational instructions cause arithmetic exceptions.|untestable
+|2.4|No integer computational instructions cause arithmetic exceptions.|No such exceptions exist, so nothing to test.
 |2.4.1|ADDI adds the sign-extended 12-bit immediate to register _rs1_.
 Arithmetic overflow is ignored and the result is simply the low XLEN
 bits of the result.|addi/cp_rs1_imm_edges
@@ -127,15 +127,15 @@ required.|jalr/{cp_offset_jalr, cp_rd, cp_imm_edges}
 |2.5.2|All branch instructions use the B-type instruction format. The 12-bit
 B-immediate encodes signed offsets in multiples of 2 bytes. The offset
 is sign-extended and added to the address of the branch instruction to
-give the target address.|{beq/bne/blt/bge/bltu/bgeu}/cp_offset, *** more via Issue 717
+give the target address.|{beq/bne/blt/bge/bltu/bgeu}/cr_simple_edges_offset, ***Issue 717
 |2.5.2|BEQ and BNE take the branch
-if registers _rs1_ and _rs2_ are equal or unequal respectively.|{beq/bne}/cp_rs1_rs2_edges
+if registers _rs1_ and _rs2_ are equal or unequal respectively.|{beq/bne}/cr_simple_edges_offset ***Issue717
 |2.5.2|BLT and
 BLTU take the branch if _rs1_ is less than _rs2_, using signed and
-unsigned comparison respectively. |{blt/bltu}/cp_rs1_rs2_edges
+unsigned comparison respectively. |{blt/bltu}/cr_simple_edges_offset
 |2.5.2|BGE and BGEU take the branch if _rs1_
 is greater than or equal to _rs2_, using signed and unsigned comparison
-respectively.|{bge/bgeu}/cp_rs1_rs2_edges
+respectively.|{bge/bgeu}/cr_simple_edges_offset
 |2.6|The effective address is obtained by adding register _rs1_ to the
 sign-extended 12-bit offset.|cp_imm_edges
 |2.6|Loads copy a value from memory to register
@@ -190,7 +190,7 @@ for RV64I.|ld/cp_rd
 this to 64 bits before storing it in register _rd_ for RV64I. The LWU
 instruction, on the other hand, zero-extends the 32-bit value from
 memory for RV64I. LH and LHU are defined analogously for 16-bit values,
-as are LB and LBU for 8-bit values.|{lw/lwu/lh/lhu/lb/lbu}/cp_rd, ***sext
+as are LB and LBU for 8-bit values.|lb/cp_rd_edge_byte, lbu/cp_rd_edge_byte, lh/cp_rd_edge_half, lhu/cp_rd_edge_half, lw/cp_rd_edge_word, lwu/cp_rd_edge_word ***Issue717
 |4.3|The SD, SW, SH, and SB instructions
 store 64-bit, 32-bit, 16-bit, and 8-bit values from the low bits of
 register _rs2_ to memory respectively.|{sd/sw/sh/sb}/cp_rs2_edges
@@ -204,7 +204,7 @@ standard and custom HINT encoding spaces.|untestable
 |===
 |Unpriv Section|Normative Statement|Coverpoints
 |4.2.1|SLLIW, SRLIW, and SRAIW encodings with
-_imm[5] &#8800; 0_ are reserved.|cp_uimm_5
+_imm[5] &#8800; 0_ are reserved.|cp_uimm_5.
 See also Ssstrict in <<Ssstrict>>
 
 |===
