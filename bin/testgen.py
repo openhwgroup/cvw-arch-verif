@@ -1440,9 +1440,33 @@ def make_cr_rs1_rs2_edges(test, xlen):
       while rs1 == rs2:
         [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       desc = "cr_rs1_rs2_edges (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
-      if (test == "c.and"):
-        print(f"Running make_cr_rs1_rs2_edges for c.and with rs1 = {rs1} = {v1} rs2 = {rs2} = {v2} rd = {rd} = {rdval}")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
+
+def make_cr_rs1_rs2_edges_offset(test, xlen):
+  for v1 in edges:
+    for v2 in edges:
+      # select distinct rs1 and rs2
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+      while rs1 == rs2:
+        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+      lines = "\n# Testcase cr_rs1_rs2_edges_offset (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")\n"
+      handleSignaturePointerConflict(lines, rs1, rs2, 0)
+      lines = lines + f"LI(x{rs1}, {v1}) # initialize rs1\n"
+      lines = lines + f"LI(x{rs2}, {v2}) # initialize rs2\n"
+      lines = lines + "0: # destination for backward branch that is never taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 3f # forward branch, if taken\n"
+      lines = lines + "1: # goes here if not taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 0b # backward branch, never taken\n"
+      lines = lines + writeSIGUPD(0) + " # signature 0 for not taken\n"
+      lines = lines + "j 4f # done with test\n"
+      lines = lines + "2: # goes here during backward branch if taken\n"
+      lines = lines + f"LI(x{rs1}, 1)\n"
+      lines = lines + writeSIGUPD(rs1) + " # signature 1 for taken\n"
+      lines = lines + "j 4f # done with test\n"
+      lines = lines + "3: # goes here during forward branch if taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 2b # backward branch, definitely taken\n"
+      lines = lines + "4: \n"
+      f.write(lines)
 
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
@@ -2006,6 +2030,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       pass # already covered by rd_edges
     elif (coverpoint == "cr_rs1_rs2_edges"):
       make_cr_rs1_rs2_edges(test, xlen)
+    elif (coverpoint == "cr_rs1_rs2_edges_offset"):
+      make_cr_rs1_rs2_edges_offset(test, xlen)
     elif (coverpoint == "cp_imm_edges"):
       if (test == "jalr"):
           make_imm_edges_jalr(test, xlen)
