@@ -10,7 +10,7 @@ max,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 maxu,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 min,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 minu,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
-orc.b,I1,x,x,x,x,,x,x,,,,x,,,,rw
+orc.b,I1,x,x,x,x,,x,orcb,,,,x,,,,rw
 orn,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 rev8,I1,x,x,x,x,,x,x,,,,x,,,,rw
 rol,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw

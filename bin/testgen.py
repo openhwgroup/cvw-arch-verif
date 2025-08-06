@@ -1321,7 +1321,7 @@ def make_rs1_rs2(test, xlen, rng):
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_edges(test, xlen):
+def make_rs1_edges(test, xlen, edges):
   for v in edges:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     desc = "cp_rs1_edges (Test source rs1 value = " + hex(v) + ")"
@@ -1988,7 +1988,9 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cmp_rs1_rs2_c"):
       make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_edges"):
-      make_rs1_edges(test, xlen)
+      make_rs1_edges(test, xlen, edges)
+    elif (coverpoint == "cp_rs1_edges_orcb"):
+      make_rs1_edges(test, xlen, edges_orcb)
     elif (coverpoint == "cp_rs2_edges"):
       make_rs2_edges(test, xlen)
     elif (coverpoint == "cp_rd_edges_slli"):
@@ -2669,7 +2671,7 @@ if __name__ == '__main__':
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
         edges = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
+        # redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
         if (xlen == 32):
           edges = edges + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         else:
@@ -2686,6 +2688,11 @@ if __name__ == '__main__':
                           0b1111111111111111111111111111111111111111111111111111111111111111,
                           0b0000000000000000000000000000000001111111111111111111111111111111,
                           0b1111111111111111111111111111111110000000000000000000000000000000]
+
+        if (xlen == 32):
+          edges_orcb = edges + [0x01020408, 0x10204080, 0x02040801, 0x20408010]
+        else: # xlen = 64
+          edges_orcb = edges + [0x1020408001020408, 0x2040801002040801, 0x4080102004080102, 0x8010204008010204]
 
         # global NaNBox_tests
         NaNBox_tests = False
