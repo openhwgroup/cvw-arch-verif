@@ -1561,6 +1561,49 @@ def make_imm_edges_jal(test, xlen): # update these test
   lines = "f"+str(maxrng)+"_"+test+":\n"
   f.write(lines)
 
+def make_imm_edges_branch(test, xlen):
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+  # *** does this need to check that random regs don't interfere with signature pointer?
+  lines = "\n# Testcase cp_imm_edges_branch\n"
+  lines = lines + f"LI(x{rs1}, 1)\n"
+  if (test in ["beq", "bge", "bgeu"]):
+    lines = lines + f"LI(x{rs2}, 1) # set up for taken branch\n"
+  else:
+    lines = lines + f"LI(x{rs2}, 2)# set up for taken branch\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 1f # branch forward by 4\n"
+  lines = lines + f"1: {test} x{rs1}, x{rs2}, 2f # branch forward by 8\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + f"2: {test} x{rs1}, x{rs2}, 3f # branch forward by 16\n"
+  lines = lines + "j 19f # shouldn't happen\n nop\n nop # shouldn't be executed\n"
+  lines = lines + f"3: LI(x{rs1}, 1) # insignificant, just an action before the next align\n"
+  lines = lines + ".align 11 # align to 2048 bytes\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 4f # branch forward by 2048\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 11 # align to 2048 bytes\n"
+  lines = lines + f"4: LI(x{rs1}, 1) # insignificant, just an action before the next align\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "nop # use up 4 bytes\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 5f # branch forward by 4092\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "5: j 7f # jump around to test backward branch\n"
+  lines = lines + "6: j 9f # backward branch succeeded\n"
+  lines = lines + f"7: {test} x{rs1}, x{rs2}, 6b # backward branch by -4\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + "8: j 11f # backward branch succeeded\n nop\n"
+  lines = lines + f"9: {test} x{rs1}, x{rs2}, 8b # backward branch by -8\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "10: j 20f # backward branch succeeded\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + f"11: {test} x{rs1}, x{rs2}, 10b # backward branch by -4096\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + f"19: li x{rs1}, -1 # write failure code\n"
+  lines = lines + writeSIGUPD(rs1) # failure code
+  lines = lines + f"20: li x{rs1}, 1 # write success code\n"
+  lines = lines + writeSIGUPD(rs1) # success code
+  f.write(lines)
+
 def make_imm_edges_jalr(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
   for immval in edges_imm_12bit:
@@ -2048,6 +2091,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       # make_cp_imm_edges(test, xlen, edges_imm_c)
     elif (coverpoint == "cp_imm_edges_jal"):
       make_imm_edges_jal(test, xlen)
+    elif (coverpoint == "cp_imm_edges_branch"):
+      make_imm_edges_branch(test, xlen)
     elif (coverpoint == "cp_imm_edges_c_jal"):
         make_imm_edges_jal(test,xlen)
     elif (coverpoint == "cr_rs1_imm_edges"):
