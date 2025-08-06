@@ -2058,6 +2058,12 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       pass # only used for cross product
     elif (coverpoint == "cr_rs1_imm_edges_c"):
       make_cr_rs1_imm_edges(test, xlen, edges_imm_c)
+    elif (coverpoint == "cr_rs1_imm_edges_uimm"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimm if xlen==64 else edges_imm_uimmw) # more unsigned immediates for RV64
+    elif (coverpoint == "cr_rs1_imm_edges_uimmw"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimmw)
+    elif (coverpoint in ["cp_imm_edges_uimm", "cp_imm_edges_uimmw"]):
+      pass  # covered by cr_rs1_imm_edges_uimm
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
@@ -2470,6 +2476,8 @@ if __name__ == '__main__':
   edges_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
   edges_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
   edges_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
+  edges_imm_uimmw = [0, 1, 19, 30, 31]
+  edges_imm_uimm = [0, 1, 19, 30, 31, 32, 33, 45, 62, 63]
   edges_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                     0b00000000000000000001000000000000,0b01001010111000100000000000000000]
   c_slli_32_edges  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
