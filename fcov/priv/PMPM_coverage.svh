@@ -135,98 +135,98 @@ covergroup PMPM_cg with function sample(
 
 //-------------------------------------------------------
 	// Addresses for TOR regions moving up by g*i
-	cp_cfg_A_tor_all_region0: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {0};
+	addr_for_tor_all_region0: coverpoint(ins.current.rs1_val+ ins.current.imm){
+		bins address = {`REGIONSTART-4}; // Region with XWR-111 for test to be executed.
 	}
 	// Access at the start of the region
-	cp_cfg_A_tor_all_region1: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region1: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART)};
 	}
-	cp_cfg_A_tor_all_region2: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region2: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + `g)};
 	}
-	cp_cfg_A_tor_all_region3: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region3: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 3*`g)};
 	}
-	cp_cfg_A_tor_all_region4: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region4: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 6*`g)};
 	}
-	cp_cfg_A_tor_all_region5: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region5: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 10*`g)};
 	}
-	cp_cfg_A_tor_all_region6: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region6: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 15*`g)};
 	}
-	cp_cfg_A_tor_all_region7: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region7: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 21*`g)};
 	}
-	cp_cfg_A_tor_all_region8: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region8: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 28*`g)};
 	}
-	cp_cfg_A_tor_all_region9: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region9: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 36*`g)};
 	}
-	cp_cfg_A_tor_all_region10: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region10: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 45*`g)};
 	}
-	cp_cfg_A_tor_all_region11: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region11: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 55*`g)};
 	}
-	cp_cfg_A_tor_all_region12: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region12: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 66*`g)};
 	}
-	cp_cfg_A_tor_all_region13: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region13: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 78*`g)};
 	}
-	cp_cfg_A_tor_all_region14: coverpoint(ins.current.rs1_val+ ins.current.imm){
+	addr_for_tor_all_region14: coverpoint(ins.current.rs1_val+ ins.current.imm){
 		bins address = {(`REGIONSTART + 91*`g)};
 	}
 
 	// TOR regions increasing size by g*i
-	pmpaddr_for_tor_region0: coverpoint {pmpaddr[0]}  {
-		bins region  = {`REGIONSTART >> 2};
+	pmpaddr_for_tor_region0: coverpoint ({pmpaddr[0]}=={`REGIONSTART >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region1: coverpoint {pmpaddr[1], pmpaddr[0]}  {
-		bins region  = {(`REGIONSTART + 1*`g) >> 2, `REGIONSTART >> 2};
+	pmpaddr_for_tor_region1: coverpoint ({pmpaddr[1], pmpaddr[0]}== {(`REGIONSTART + 1*`g) >> 2, `REGIONSTART >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region2: coverpoint {pmpaddr[2], pmpaddr[1]}  {
-		bins region  = {(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART + 1*`g) >> 2};
+	pmpaddr_for_tor_region2: coverpoint ({pmpaddr[2], pmpaddr[1]}=={(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART + 1*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region3: coverpoint {pmpaddr[3], pmpaddr[2]}  {
-		bins region  = {(`REGIONSTART + 6*`g) >> 2, (`REGIONSTART + 3*`g) >> 2};
+	pmpaddr_for_tor_region3: coverpoint ({pmpaddr[3], pmpaddr[2]}=={(`REGIONSTART + 6*`g) >> 2, (`REGIONSTART + 3*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region4: coverpoint {pmpaddr[4], pmpaddr[3]}  {
-		bins region  = {(`REGIONSTART + 10*`g) >> 2, (`REGIONSTART + 6*`g) >> 2};
+	pmpaddr_for_tor_region4: coverpoint ({pmpaddr[4], pmpaddr[3]}=={(`REGIONSTART + 10*`g) >> 2, (`REGIONSTART + 6*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region5: coverpoint {pmpaddr[5], pmpaddr[4]}  {
-		bins region  = {(`REGIONSTART + 15*`g) >> 2, (`REGIONSTART + 10*`g) >> 2};
+	pmpaddr_for_tor_region5: coverpoint ({pmpaddr[5], pmpaddr[4]}=={(`REGIONSTART + 15*`g) >> 2, (`REGIONSTART + 10*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region6: coverpoint {pmpaddr[6], pmpaddr[5]}  {
-		bins region  = {(`REGIONSTART + 21*`g) >> 2, (`REGIONSTART + 15*`g) >> 2};
+	pmpaddr_for_tor_region6: coverpoint ({pmpaddr[6], pmpaddr[5]}=={(`REGIONSTART + 21*`g) >> 2, (`REGIONSTART + 15*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region7: coverpoint {pmpaddr[7], pmpaddr[6]}  {
-		bins region  = {(`REGIONSTART + 28*`g) >> 2, (`REGIONSTART + 21*`g) >> 2};
+	pmpaddr_for_tor_region7: coverpoint ({pmpaddr[7], pmpaddr[6]}=={(`REGIONSTART + 28*`g) >> 2, (`REGIONSTART + 21*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region8: coverpoint {pmpaddr[8], pmpaddr[7]}  {
-		bins region  = {(`REGIONSTART + 36*`g) >> 2, (`REGIONSTART + 28*`g) >> 2};
+	pmpaddr_for_tor_region8: coverpoint ({pmpaddr[8], pmpaddr[7]}=={(`REGIONSTART + 36*`g) >> 2, (`REGIONSTART + 28*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region9: coverpoint {pmpaddr[9], pmpaddr[8]}  {
-		bins region  = {(`REGIONSTART + 45*`g) >> 2, (`REGIONSTART + 36*`g) >> 2};
+	pmpaddr_for_tor_region9: coverpoint ({pmpaddr[9], pmpaddr[8]}=={(`REGIONSTART + 45*`g) >> 2, (`REGIONSTART + 36*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region10: coverpoint {pmpaddr[10], pmpaddr[9]}  {
-		bins region  = {(`REGIONSTART + 55*`g) >> 2, (`REGIONSTART + 45*`g) >> 2};
+	pmpaddr_for_tor_region10: coverpoint ({pmpaddr[10], pmpaddr[9]}=={(`REGIONSTART + 55*`g) >> 2, (`REGIONSTART + 45*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region11: coverpoint {pmpaddr[11], pmpaddr[10]}  {
-		bins region  = {(`REGIONSTART + 66*`g) >> 2, (`REGIONSTART + 55*`g) >> 2};
+	pmpaddr_for_tor_region11: coverpoint ({pmpaddr[11], pmpaddr[10]}=={(`REGIONSTART + 66*`g) >> 2, (`REGIONSTART + 55*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region12: coverpoint {pmpaddr[12], pmpaddr[11]}  {
-		bins region  = {(`REGIONSTART + 78*`g) >> 2, (`REGIONSTART + 66*`g) >> 2};
+	pmpaddr_for_tor_region12: coverpoint ({pmpaddr[12], pmpaddr[11]}=={(`REGIONSTART + 78*`g) >> 2, (`REGIONSTART + 66*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region13: coverpoint {pmpaddr[13], pmpaddr[12]}  {
-		bins region  = {(`REGIONSTART + 91*`g) >> 2, (`REGIONSTART + 78*`g) >> 2};
+	pmpaddr_for_tor_region13: coverpoint ({pmpaddr[13], pmpaddr[12]}=={(`REGIONSTART + 91*`g) >> 2, (`REGIONSTART + 78*`g) >> 2})  {
+		bins region  = {1};
  	}
-	pmpaddr_for_tor_region14: coverpoint {pmpaddr[14], pmpaddr[13]}  {
-		bins region  = {(`REGIONSTART + 105*`g) >> 2, (`REGIONSTART + 91*`g) >> 2};
+	pmpaddr_for_tor_region14: coverpoint ({pmpaddr[14], pmpaddr[13]}=={(`REGIONSTART + 105*`g) >> 2, (`REGIONSTART + 91*`g) >> 2})  {
+		bins region  = {1};
  	}
 
    //15 configurtions, with  pmpcfg.L = 1, pmpcfg.A = TOR, pmpcfg.XWR=00(i%2)
@@ -394,20 +394,20 @@ covergroup PMPM_cg with function sample(
 		wildcard bins pmp0cfg_xwr000  = {8'b10001000}; //L=1,A=TOR,XWR=000
 	}
 
-	pmpcfg_tor_bot_L0: coverpoint { pmpcfg[1] } {
-    	bins pmp_cfg_tor1 =  {16'b1000110100000000}; //L=0 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+	pmpcfg_tor_bot_L0: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
+    	bins pmp_cfg_tor1 =  {16'b10001101_00000000}; //L=0 for pmpcfg0 and L=1 for pmpcfg1.A=TOR,XWR=101 and 000 respectively
 	}
 
-	pmpcfg_tor_bot_L1: coverpoint { pmpcfg[1] } {
-		bins pmp_cfg_tor1 =  {16'b1000110110000000}; //L=1 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+	pmpcfg_tor_bot_L1: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
+		bins pmp_cfg_tor1 =  {16'b10001101_10000000}; //L=1 for pmpcfg0 and L=1 for pmpcfg1.A=TOR,XWR=101 and 000 respectively
 	}
 
 	pmp_addr_for_tor: coverpoint {pmpaddr[1],pmpaddr[0]} {
 		bins range = {`NON_STANDARD_REGION+`g,`NON_STANDARD_REGION};
 	}
 
-	pmp_addr_for_tor_bot: coverpoint {pmpaddr[1],pmpaddr[0]} {  //pmpaddr0 = pmpaddr1-g
-		bins range = {`NON_STANDARD_REGION+`g,`NON_STANDARD_REGION};
+	pmp_addr_for_tor_bot: coverpoint ({pmpaddr[1],pmpaddr[0]} == {(`REGIONSTART+`g)>>2,`REGIONSTART>>2})  {  //pmpaddr0 = pmpaddr1-g
+		bins range = {1};
 	}
 
 	pmp_addr_for_tor0: coverpoint {pmpaddr[0]} {
@@ -438,20 +438,12 @@ covergroup PMPM_cg with function sample(
 	}
 
 	pmpaddr_for_napot_misaligned: coverpoint {pmpaddr[0]} {
-		bins pmpaddr = {(`REGIONSTART>>2) | ((1 << `G) - 1) }; //No of Trailing 1s = (1 << G) - 1, a standard NAPOT Region
+		bins pmpaddr = {(`REGIONSTART>>2) | ((1 << (`k)) - 1) }; //No of Trailing 1s = (1 << G-1) - 1, a standard NAPOT Region
 	}
 
 	pmpcfg_for_napot_misaligned: coverpoint {pmpcfg[0]} {
 		bins pmp_cfg_napot_locked = {8'b10011111}; //L=1,A=NAPOT,XWR=111
 		bins pmp_cfg_napot_unlocked = {8'b00011111}; //L=0,A=NAPOT,XWR=111
-	}
-
-	addr_napot_misaligned_straddling_start: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins addr1 = {`REGIONSTART-1}; //for 1 byte outside the region
-	}
-
-	addr_napot_misaligned_straddling_end: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins addr1 = {(`REGIONSTART+`g)-1}; //for 1 byte inside the region
 	}
 
 	pmpaddr_for_na4_misaligned: coverpoint {pmpaddr[0]} {
@@ -471,27 +463,30 @@ covergroup PMPM_cg with function sample(
 		bins addr1 = {`REGIONSTART+3}; //for 3 byte outside the region
 	}
 
-	pmpaddr_for_tor_misaligned: coverpoint {pmpaddr[1],pmpaddr[0]}{
-		bins pmpaddr = {`NON_STANDARD_REGION+`g, `NON_STANDARD_REGION};
+	pmpaddr_for_tor_misaligned: coverpoint ({pmpaddr[3],pmpaddr[2]}=={(`REGIONSTART+`g)>>2,`REGIONSTART>>2}) {
+		bins pmpaddr = {1};
 	}
 
-	pmpcfg_for_tor_misaligned: coverpoint {pmpcfg[4]} {
+	pmpcfg_for_tor_misaligned: coverpoint {pmpcfg[3]} {
 		bins pmp_cfg_tor_locked = {8'b10001111}; //L=1,A=TOR,XWR=111
 		bins pmp_cfg_tor_unlocked = {8'b00001111}; //L=0,A=TOR,XWR=111
 	}
 
-	addr_for_tor_misaligned_straddling_start: coverpoint (ins.current.rs1_val + ins.current.imm) {
+	addr_for_misaligned_straddling_start: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins addr1 = {`REGIONSTART-1};
 	}
 
-	addr_for_tor_misaligned_straddling_end: coverpoint (ins.current.rs1_val + ins.current.imm) {
+	addr_for_misaligned_straddling_end: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins addr1 = {(`REGIONSTART+`g)-1};
 	}
 
-	//we can use the same addresses as tor_misaligned.
-	pmpcfg_for_off_misaligned: coverpoint {pmpcfg[4]} {
+	pmpcfg_for_off_misaligned: coverpoint {ins.current.csr[12'h3A0][7:0]} {
 		bins pmp_cfg_tor_locked = {8'b10000111}; //L=1,A=OFF,XWR=111
 		bins pmp_cfg_tor_unlocked = {8'b00000111}; //L=0,A=OFF,XWR=111
+	}
+
+	pmpaddr_for_off_misaligned: coverpoint (pmpaddr[0]==`REGIONSTART>>2) {
+		bins pmpaddr = {1};
 	}
 
 //-------------------------------------------------------
@@ -985,13 +980,8 @@ covergroup PMPM_cg with function sample(
 	}
 
 	// {all 1s, all 0s, all 1s, all 0s}
-	first_four_pmp_entries: coverpoint pack_pmpaddr[4*XLEN-1:0] {
-		`ifdef XLEN32
-			bins pmp_entries = {128'hFFFFFFFF_00000000_FFFFFFFF_00000000};
-		`endif
-		`ifdef XLEN64
-			bins pmp_entries = {256'h???FFFFFFFFFFFFF_???0000000000000000_???FFFFFFFFFFFFF_???0000000000000000};
-		`endif
+	first_four_pmp_entries: coverpoint (pack_pmpaddr[4*XLEN-1:0] == {(`REGIONSTART+`g) >> 2,`REGIONSTART >> 2,(`REGIONSTART+`g) >> 2,`REGIONSTART >> 2}) {
+		bins pmp_entries = {1};
 	}
 
 //-------------------------------------------------------
@@ -1056,21 +1046,21 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, write_instr_sw ;
 	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, exec_instr;
 
-	cp_cfg_A_tor_all0: cross priv_mode_m, cp_cfg_A_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i111_pmp0cfg, read_instr_lw;
-	cp_cfg_A_tor_all1: cross priv_mode_m, cp_cfg_A_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
-	cp_cfg_A_tor_all2: cross priv_mode_m, cp_cfg_A_tor_all_region2, pmpaddr_for_tor_region2, RWXL_i001_pmp2cfg, read_instr_lw;
-	cp_cfg_A_tor_all3: cross priv_mode_m, cp_cfg_A_tor_all_region3, pmpaddr_for_tor_region3, RWXL_i001_pmp3cfg, read_instr_lw;
-	cp_cfg_A_tor_all4: cross priv_mode_m, cp_cfg_A_tor_all_region4, pmpaddr_for_tor_region4, RWXL_i001_pmp4cfg, read_instr_lw;
-	cp_cfg_A_tor_all5: cross priv_mode_m, cp_cfg_A_tor_all_region5, pmpaddr_for_tor_region5, RWXL_i001_pmp5cfg, read_instr_lw;
-	cp_cfg_A_tor_all6: cross priv_mode_m, cp_cfg_A_tor_all_region6, pmpaddr_for_tor_region6, RWXL_i001_pmp6cfg, read_instr_lw;
-	cp_cfg_A_tor_all7: cross priv_mode_m, cp_cfg_A_tor_all_region7, pmpaddr_for_tor_region7, RWXL_i001_pmp7cfg, read_instr_lw;
-	cp_cfg_A_tor_all8: cross priv_mode_m, cp_cfg_A_tor_all_region8, pmpaddr_for_tor_region8, RWXL_i001_pmp8cfg, read_instr_lw;
-	cp_cfg_A_tor_all9: cross priv_mode_m, cp_cfg_A_tor_all_region9, pmpaddr_for_tor_region9, RWXL_i001_pmp9cfg, read_instr_lw;
-	cp_cfg_A_tor_all10: cross priv_mode_m, cp_cfg_A_tor_all_region10, pmpaddr_for_tor_region10, RWXL_i001_pmp10cfg, read_instr_lw;
-	cp_cfg_A_tor_all11: cross priv_mode_m, cp_cfg_A_tor_all_region11, pmpaddr_for_tor_region11, RWXL_i001_pmp11cfg, read_instr_lw;
-	cp_cfg_A_tor_all12: cross priv_mode_m, cp_cfg_A_tor_all_region12, pmpaddr_for_tor_region12, RWXL_i001_pmp12cfg, read_instr_lw;
-	cp_cfg_A_tor_all13: cross priv_mode_m, cp_cfg_A_tor_all_region13, pmpaddr_for_tor_region13, RWXL_i001_pmp13cfg, read_instr_lw;
-	cp_cfg_A_tor_all14: cross priv_mode_m, cp_cfg_A_tor_all_region14, pmpaddr_for_tor_region14, RWXL_i001_pmp14cfg, read_instr_lw;
+	cp_cfg_A_tor_all0: cross priv_mode_m, addr_for_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i111_pmp0cfg, read_instr_lw;
+	cp_cfg_A_tor_all1: cross priv_mode_m, addr_for_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
+	cp_cfg_A_tor_all2: cross priv_mode_m, addr_for_tor_all_region2, pmpaddr_for_tor_region2, RWXL_i001_pmp2cfg, read_instr_lw;
+	cp_cfg_A_tor_all3: cross priv_mode_m, addr_for_tor_all_region3, pmpaddr_for_tor_region3, RWXL_i001_pmp3cfg, read_instr_lw;
+	cp_cfg_A_tor_all4: cross priv_mode_m, addr_for_tor_all_region4, pmpaddr_for_tor_region4, RWXL_i001_pmp4cfg, read_instr_lw;
+	cp_cfg_A_tor_all5: cross priv_mode_m, addr_for_tor_all_region5, pmpaddr_for_tor_region5, RWXL_i001_pmp5cfg, read_instr_lw;
+	cp_cfg_A_tor_all6: cross priv_mode_m, addr_for_tor_all_region6, pmpaddr_for_tor_region6, RWXL_i001_pmp6cfg, read_instr_lw;
+	cp_cfg_A_tor_all7: cross priv_mode_m, addr_for_tor_all_region7, pmpaddr_for_tor_region7, RWXL_i001_pmp7cfg, read_instr_lw;
+	cp_cfg_A_tor_all8: cross priv_mode_m, addr_for_tor_all_region8, pmpaddr_for_tor_region8, RWXL_i001_pmp8cfg, read_instr_lw;
+	cp_cfg_A_tor_all9: cross priv_mode_m, addr_for_tor_all_region9, pmpaddr_for_tor_region9, RWXL_i001_pmp9cfg, read_instr_lw;
+	cp_cfg_A_tor_all10: cross priv_mode_m, addr_for_tor_all_region10, pmpaddr_for_tor_region10, RWXL_i001_pmp10cfg, read_instr_lw;
+	cp_cfg_A_tor_all11: cross priv_mode_m, addr_for_tor_all_region11, pmpaddr_for_tor_region11, RWXL_i001_pmp11cfg, read_instr_lw;
+	cp_cfg_A_tor_all12: cross priv_mode_m, addr_for_tor_all_region12, pmpaddr_for_tor_region12, RWXL_i001_pmp12cfg, read_instr_lw;
+	cp_cfg_A_tor_all13: cross priv_mode_m, addr_for_tor_all_region13, pmpaddr_for_tor_region13, RWXL_i001_pmp13cfg, read_instr_lw;
+	cp_cfg_A_tor_all14: cross priv_mode_m, addr_for_tor_all_region14, pmpaddr_for_tor_region14, RWXL_i001_pmp14cfg, read_instr_lw;
 
 	cp_cfg_A_tor_bot_L0_x: cross priv_mode_m, addr_for_tor_bot, pmpcfg_tor_bot_L0, pmp_addr_for_tor_bot, exec_instr;
 	cp_cfg_A_tor_bot_L0_w: cross priv_mode_m, addr_for_tor_bot, pmpcfg_tor_bot_L0, pmp_addr_for_tor_bot, write_instr_sw;
@@ -1133,24 +1123,24 @@ covergroup PMPM_cg with function sample(
 	cp_grain_check: cross priv_mode_m, pmpcfg_for_cp_grain_check, pmpaddr0_for_cp_grain_check, csrrw_to_pmpaddr0, csrr_to_pmpaddr0;
 
 	//crosses boundary for napot region at the start of the region.
-	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, read_instr_for_misaligned;
-	cp_misaligned_napot_start_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_start, write_instr_for_misaligned;
+	cp_misaligned_napot_start_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_for_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_napot_start_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_for_misaligned_straddling_start, write_instr_for_misaligned;
 
 	//crosses boundary for napot region at the end of the region.
-	cp_misaligned_napot_end_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, read_instr_for_misaligned;
-	cp_misaligned_napot_end_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_napot_misaligned_straddling_end, write_instr_for_misaligned;
+	cp_misaligned_napot_end_r: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_for_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_napot_end_w: cross priv_mode_m, pmpaddr_for_napot_misaligned, pmpcfg_for_napot_misaligned, addr_for_misaligned_straddling_end, write_instr_for_misaligned;
 
-	cp_misaligned_tor_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, read_instr_for_misaligned;
-	cp_misaligned_tor_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_start, write_instr_for_misaligned;
+	cp_misaligned_tor_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_tor_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_misaligned_straddling_start, write_instr_for_misaligned;
 
-	cp_misaligned_tor_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, read_instr_for_misaligned;
-	cp_misaligned_tor_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_tor_misaligned_straddling_end, write_instr_for_misaligned;
+	cp_misaligned_tor_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_tor_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_tor_misaligned, addr_for_misaligned_straddling_end, write_instr_for_misaligned;
 
-	cp_misaligned_off_start_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, read_instr_for_misaligned;
-	cp_misaligned_off_start_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_start, write_instr_for_misaligned;
+	cp_misaligned_off_start_r: cross priv_mode_m, pmpaddr_for_off_misaligned, pmpcfg_for_off_misaligned, addr_for_misaligned_straddling_start, read_instr_for_misaligned;
+	cp_misaligned_off_start_w: cross priv_mode_m, pmpaddr_for_off_misaligned, pmpcfg_for_off_misaligned, addr_for_misaligned_straddling_start, write_instr_for_misaligned;
 
-	cp_misaligned_off_end_r: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, read_instr_for_misaligned;
-	cp_misaligned_off_end_w: cross priv_mode_m, pmpaddr_for_tor_misaligned, pmpcfg_for_off_misaligned, addr_for_tor_misaligned_straddling_end, write_instr;
+	cp_misaligned_off_end_r: cross priv_mode_m, pmpaddr_for_off_misaligned, pmpcfg_for_off_misaligned, addr_for_misaligned_straddling_end, read_instr_for_misaligned;
+	cp_misaligned_off_end_w: cross priv_mode_m, pmpaddr_for_off_misaligned, pmpcfg_for_off_misaligned, addr_for_misaligned_straddling_end, write_instr_for_misaligned;
 
 	`ifdef G_IS_0
 		cp_misaligned_na4_start_r: cross priv_mode_m, pmpaddr_for_na4_misaligned, pmpcfg_for_na4_misaligned, addr_for_na4_misaligned_straddling_start, read_instr_for_misaligned;
