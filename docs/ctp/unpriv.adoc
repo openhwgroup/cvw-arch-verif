@@ -189,6 +189,7 @@ The register edge cases are selected to include extreme values and their immedia
 include::i.adoc[]
 include::m.adoc[]
 include::c.adoc[]
+include::a.adoc[]
 include::f.adoc[]
 include::b.adoc[]
 include::k.adoc[]

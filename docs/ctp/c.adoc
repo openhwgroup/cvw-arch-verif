@@ -1,7 +1,7 @@
 
 === C Compressed Extension
 
-The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions. <<t-C-normative-statements>> lists the normative statements in the RV{32/64}C specification applicable to all instructions, and the unprivileged coverpoints that exercise them.  Normative statements related to privileged behavior of C instructions are given in <<
+The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions. <<t-C-normative-statements>> lists the normative statements in the RV{32/64}C specification applicable to all instructions, and the unprivileged coverpoints that exercise them.
 
 [[t-C-normative-statements]]
 .C Normative Statements
@@ -45,8 +45,6 @@ implementations that ignore them.|Hints are not tested
 ,===
 include::../../testplans/Zca.csv[]
 ,===
-
-*** update all coverpoint refs
 
 [[t-Zca-normative-statements]]
 .Zca Normative Statements
