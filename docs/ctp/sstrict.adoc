@@ -1,0 +1,13 @@
+
+=== Ssstrict
+
+The Ssstrict extension indicates that reserved instructions throw an illegal instruction exception, delegated to supervisor mode.
+
+==== SsstrictS
+
+*** for all mention of reserved in Zca, list normative statement here and give coverpoint
+
+
+==== SsstrictV
+
+*** get rid of SsstrictM

@@ -26,4 +26,4 @@
         bins sNaN_payload1          = {32'h7F800001};   // signaling NaN with payload 1
     }
 
-    ////end cp_vs1_edges_f_sew32        //////////////////////////////////////////////////
+    //// end cp_vs1_edges_f_sew32        //////////////////////////////////////////////////

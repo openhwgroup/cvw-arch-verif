@@ -1,0 +1,31 @@
+
+
+=== Za* Atomic Extensions
+
+==== Zaamo Atomic Memory Operations
+
+[[t-Zaamo-coverpoints]]
+.Zaamo Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zaamo.csv[]
+,===
+
+
+==== Zalrsc Load-Reserved / Store Conditional
+
+
+***
+On implementations that support the C extension, compressed forms of the
+I instructions permitted inside constrained LR/SC sequences, as
+described in <<sec:lrscseq>>, are also permitted
+inside constrained LR/SC sequences.
+
+[[t-Zalrsc-coverpoints]]
+.Zalrsc Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zalrsc.csv[]
+,===

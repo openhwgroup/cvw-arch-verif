@@ -1321,7 +1321,7 @@ def make_rs1_rs2(test, xlen, rng):
     desc = "cmp_rs1_rs2 (Test rs1 = rs2 = x" + str(r) + ")"
     writeCovVector(desc, r, r, rd, rs1val, rs2val, immval, rdval, test, xlen)
 
-def make_rs1_edges(test, xlen):
+def make_rs1_edges(test, xlen, edges):
   for v in edges:
     [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
     desc = "cp_rs1_edges (Test source rs1 value = " + hex(v) + ")"
@@ -1440,9 +1440,33 @@ def make_cr_rs1_rs2_edges(test, xlen):
       while rs1 == rs2:
         [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
       desc = "cr_rs1_rs2_edges (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")"
-      if (test == "c.and"):
-        print(f"Running make_cr_rs1_rs2_edges for c.and with rs1 = {rs1} = {v1} rs2 = {rs2} = {v2} rd = {rd} = {rdval}")
       writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen)
+
+def make_cr_rs1_rs2_edges_offset(test, xlen):
+  for v1 in edges:
+    for v2 in edges:
+      # select distinct rs1 and rs2
+      [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+      while rs1 == rs2:
+        [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+      lines = "\n# Testcase cr_rs1_rs2_edges_offset (Test source rs1 = " + hex(v1) + " rs2 = " + hex(v2) + ")\n"
+      handleSignaturePointerConflict(lines, rs1, rs2, 0)
+      lines = lines + f"LI(x{rs1}, {v1}) # initialize rs1\n"
+      lines = lines + f"LI(x{rs2}, {v2}) # initialize rs2\n"
+      lines = lines + "0: # destination for backward branch that is never taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 3f # forward branch, if taken\n"
+      lines = lines + "1: # goes here if not taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 0b # backward branch, never taken\n"
+      lines = lines + writeSIGUPD(0) + " # signature 0 for not taken\n"
+      lines = lines + "j 4f # done with test\n"
+      lines = lines + "2: # goes here during backward branch if taken\n"
+      lines = lines + f"LI(x{rs1}, 1)\n"
+      lines = lines + writeSIGUPD(rs1) + " # signature 1 for taken\n"
+      lines = lines + "j 4f # done with test\n"
+      lines = lines + "3: # goes here during forward branch if taken\n"
+      lines = lines + f"{test} x{rs1}, x{rs2}, 2b # backward branch, definitely taken\n"
+      lines = lines + "4: \n"
+      f.write(lines)
 
 def make_imm_zero(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
@@ -1537,6 +1561,49 @@ def make_imm_edges_jal(test, xlen): # update these test
   lines = "f"+str(maxrng)+"_"+test+":\n"
   f.write(lines)
 
+def make_imm_edges_branch(test, xlen):
+  [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+  # *** does this need to check that random regs don't interfere with signature pointer?
+  lines = "\n# Testcase cp_imm_edges_branch\n"
+  lines = lines + f"LI(x{rs1}, 1)\n"
+  if (test in ["beq", "bge", "bgeu"]):
+    lines = lines + f"LI(x{rs2}, 1) # set up for taken branch\n"
+  else:
+    lines = lines + f"LI(x{rs2}, 2)# set up for taken branch\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 1f # branch forward by 4\n"
+  lines = lines + f"1: {test} x{rs1}, x{rs2}, 2f # branch forward by 8\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + f"2: {test} x{rs1}, x{rs2}, 3f # branch forward by 16\n"
+  lines = lines + "j 19f # shouldn't happen\n nop\n nop # shouldn't be executed\n"
+  lines = lines + f"3: LI(x{rs1}, 1) # insignificant, just an action before the next align\n"
+  lines = lines + ".align 11 # align to 2048 bytes\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 4f # branch forward by 2048\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 11 # align to 2048 bytes\n"
+  lines = lines + f"4: LI(x{rs1}, 1) # insignificant, just an action before the next align\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "nop # use up 4 bytes\n"
+  lines = lines + f"{test} x{rs1}, x{rs2}, 5f # branch forward by 4092\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "5: j 7f # jump around to test backward branch\n"
+  lines = lines + "6: j 9f # backward branch succeeded\n"
+  lines = lines + f"7: {test} x{rs1}, x{rs2}, 6b # backward branch by -4\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + "8: j 11f # backward branch succeeded\n nop\n"
+  lines = lines + f"9: {test} x{rs1}, x{rs2}, 8b # backward branch by -8\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + "10: j 20f # backward branch succeeded\n"
+  lines = lines + ".align 12 # align to 4096 bytes\n"
+  lines = lines + f"11: {test} x{rs1}, x{rs2}, 10b # backward branch by -4096\n"
+  lines = lines + "j 19f # shouldn't happen\n"
+  lines = lines + f"19: li x{rs1}, -1 # write failure code\n"
+  lines = lines + writeSIGUPD(rs1) # failure code
+  lines = lines + f"20: li x{rs1}, 1 # write success code\n"
+  lines = lines + writeSIGUPD(rs1) # success code
+  f.write(lines)
+
 def make_imm_edges_jalr(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
   for immval in edges_imm_12bit:
@@ -1546,7 +1613,7 @@ def make_imm_edges_jalr(test, xlen):
     lines = lines + "LA(x"+str(rs1)+", 1f)\n" #load the address of the label '1' into x21
     lines += f"LI(x{rs2}, 1)" + "\n"
     if (immval == -2048):
-      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n" # ***
+      lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 2047 # increment rs1 by 2047 \n"
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", 1 # increment rs1 to bump it by a total of 2048 to compensate for -2048\n"
     else:
       lines = lines + "addi x" + str(rs1) + ", x" + str(rs1) + ", " + signedImm12(-immval) + " # sub immediate from rs1 to counter offset\n"
@@ -1558,7 +1625,6 @@ def make_imm_edges_jalr(test, xlen):
     f.write(lines)
 
 def make_offset(test, xlen):
-  # *** all of these test will need signature / self-checking
   lines = "\n# Testcase cp_offset negative bin\n"
   [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
   handleSignaturePointerConflict(lines, rs1, rs2, rd)
@@ -1848,6 +1914,13 @@ def make_nanbox(test, xlen):
   desc = "Random test for cp_NaNBox "
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val)
 
+def make_memval(test, xlen, memval):
+  for v in memval:
+    # memory value from memval; everything else randomized
+    [rs1, rs2, rd, rs1val, rs2val, immval, rdval] = randomize(test)
+    desc = "cp_memval (Test memory value value = " + hex(v) + ")"
+    writeCovVector(desc, rs1, rs2, rd, rs1val, v, immval, rdval, test, xlen)
+
 def make_custom(test, xlen):
     insertTemplate(f"{test}.S", is_custom=True)
 
@@ -1958,7 +2031,9 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cmp_rs1_rs2_c"):
       make_rs1_rs2(test, xlen, range(8,16))
     elif (coverpoint == "cp_rs1_edges"):
-      make_rs1_edges(test, xlen)
+      make_rs1_edges(test, xlen, edges)
+    elif (coverpoint == "cp_rs1_edges_orcb"):
+      make_rs1_edges(test, xlen, edges_orcb)
     elif (coverpoint == "cp_rs2_edges"):
       make_rs2_edges(test, xlen)
     elif (coverpoint == "cp_rd_edges_slli"):
@@ -2000,6 +2075,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       pass # already covered by rd_edges
     elif (coverpoint == "cr_rs1_rs2_edges"):
       make_cr_rs1_rs2_edges(test, xlen)
+    elif (coverpoint == "cr_rs1_rs2_edges_offset"):
+      make_cr_rs1_rs2_edges_offset(test, xlen)
     elif (coverpoint == "cp_imm_edges"):
       if (test == "jalr"):
           make_imm_edges_jalr(test, xlen)
@@ -2014,6 +2091,8 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       # make_cp_imm_edges(test, xlen, edges_imm_c)
     elif (coverpoint == "cp_imm_edges_jal"):
       make_imm_edges_jal(test, xlen)
+    elif (coverpoint == "cp_imm_edges_branch"):
+      make_imm_edges_branch(test, xlen)
     elif (coverpoint == "cp_imm_edges_c_jal"):
         make_imm_edges_jal(test,xlen)
     elif (coverpoint == "cr_rs1_imm_edges"):
@@ -2026,6 +2105,12 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       pass # only used for cross product
     elif (coverpoint == "cr_rs1_imm_edges_c"):
       make_cr_rs1_imm_edges(test, xlen, edges_imm_c)
+    elif (coverpoint == "cr_rs1_imm_edges_uimm"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimm if xlen==64 else edges_imm_uimmw) # more unsigned immediates for RV64
+    elif (coverpoint == "cr_rs1_imm_edges_uimmw"):
+      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimmw)
+    elif (coverpoint in ["cp_imm_edges_uimm", "cp_imm_edges_uimmw"]):
+      pass  # covered by cr_rs1_imm_edges_uimm
     elif (coverpoint == "cr_rs1_rs2"):
       pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint[:13] == "cp_gpr_hazard" or coverpoint[:13] == "cp_fpr_hazard"):
@@ -2149,6 +2234,14 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_custom(test, xlen)
     elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
+    elif (coverpoint in ["cp_memval_byte"]):
+      make_memval(test, xlen, memval_byte)
+    elif (coverpoint in ["cp_memval_hword"]):
+      make_memval(test, xlen, memval_hword)
+    elif (coverpoint in ["cp_memval_word"]):
+      make_memval(test, xlen, memval_word)
+    elif (coverpoint in ["cp_memval_double"]):
+      make_memval(test, xlen, memval_double)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -2193,7 +2286,7 @@ def getExtensions():
       m = re.search("(.*)_coverage.svh", filename)
       if (m is not None):
         ext = m.group(1)
-        if 'V' not in ext and 'v' not in ext:
+        if ('V' not in ext and 'Zv' not in ext) or ext in ['ZfaZvfh']:
           extensions.append(ext)
   return extensions
 
@@ -2423,9 +2516,15 @@ if __name__ == '__main__':
                     0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
   edges_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
                     0b101010, 0b010101, 0b010110]
+  memval_byte = [0, 1, 0x7f, 0x80, 0xff]
+  memval_hword = [0, 1, 0x7FFF, 0x8000, 0xFFFF]
+  memval_word = [0, 1, 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF]
+  memval_double = [0, 1, 0x7FFFFFFFFFFFFFFF, 0x8000000000000000, 0xFFFFFFFFFFFFFFFF]
   edges_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
   edges_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
   edges_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
+  edges_imm_uimmw = [0, 1, 19, 30, 31]
+  edges_imm_uimm = [0, 1, 19, 30, 31, 32, 33, 45, 62, 63]
   edges_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
                     0b00000000000000000001000000000000,0b01001010111000100000000000000000]
   c_slli_32_edges  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
@@ -2617,7 +2716,7 @@ if __name__ == '__main__':
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
         edges = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
+        # redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
         if (xlen == 32):
           edges = edges + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
         else:
@@ -2634,6 +2733,11 @@ if __name__ == '__main__':
                           0b1111111111111111111111111111111111111111111111111111111111111111,
                           0b0000000000000000000000000000000001111111111111111111111111111111,
                           0b1111111111111111111111111111111110000000000000000000000000000000]
+
+        if (xlen == 32):
+          edges_orcb = edges + [0x01020408, 0x10204080, 0x02040801, 0x20408010]
+        else: # xlen = 64
+          edges_orcb = edges + [0x1020408001020408, 0x2040801002040801, 0x4080102004080102, 0x8010204008010204]
 
         # global NaNBox_tests
         NaNBox_tests = False

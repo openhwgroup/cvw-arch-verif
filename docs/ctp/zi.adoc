@@ -1,0 +1,45 @@
+
+
+=== Zi*  Additional Unpriv Extensions
+
+==== Zicsr Control/Status Register Instructions
+
+[[t-Zicsr-coverpoints]]
+.Zicsr Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zicsr.csv[]
+,===
+
+
+==== Zifencei Instruction-Fetch Fence
+
+[[t-Zifencei-coverpoints]]
+.Zifencei Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zifencei.csv[]
+,===
+
+
+==== Zicond Conditional Instructions
+
+[[t-Zicond-coverpoints]]
+.Zicond Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zicond.csv[]
+,===
+
+==== Zihintpause Pause Hint
+
+[[t-Zihintpause-coverpoints]]
+.Zihintpause Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/Zihintpause.csv[]
+,===

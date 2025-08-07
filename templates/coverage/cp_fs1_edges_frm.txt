@@ -1,5 +1,5 @@
     cp_fs1_edges : coverpoint unsigned'(ins.current.fs1_val[31:0])  iff (ins.trap == 0 )  {
-        //FS1 edges
+        // FS1 edges
         bins pos0             = {32'h00000000};
         bins neg0             = {32'h80000000};
         bins pos1             = {32'h3f800000};
@@ -29,5 +29,5 @@
     }
 
     cr_fs1_edges_frm : cross cp_fs1_edges,cp_frm_2  iff (ins.trap == 0 )  {
-        //Cross coverage FS1, FRM
+        // Cross coverage FS1, FRM
     }
