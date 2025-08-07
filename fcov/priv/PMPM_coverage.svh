@@ -395,11 +395,11 @@ covergroup PMPM_cg with function sample(
 	}
 
 	pmpcfg_tor_bot_L0: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
-    	bins pmp_cfg_tor1 =  {16'b1000110100000000}; //L=0 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+    	bins pmp_cfg_tor1 =  {16'b10001101_00000000}; //L=0 for pmpcfg0 and L=1 for pmpcfg1.A=TOR,XWR=101 and 000 respectively
 	}
 
 	pmpcfg_tor_bot_L1: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
-		bins pmp_cfg_tor1 =  {16'b1000110110000000}; //L=1 for pmpcfg0 and L=1 for pmpcfg1,A=TOR(both),XWR=101 and 000 respectively
+		bins pmp_cfg_tor1 =  {16'b10001101_10000000}; //L=1 for pmpcfg0 and L=1 for pmpcfg1.A=TOR,XWR=101 and 000 respectively
 	}
 
 	pmp_addr_for_tor: coverpoint {pmpaddr[1],pmpaddr[0]} {
@@ -438,7 +438,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	pmpaddr_for_napot_misaligned: coverpoint {pmpaddr[0]} {
-		bins pmpaddr = {(`REGIONSTART>>2) | ((1 << (`G-1)) - 1) }; //No of Trailing 1s = (1 << G-1) - 1, a standard NAPOT Region
+		bins pmpaddr = {(`REGIONSTART>>2) | ((1 << (`k)) - 1) }; //No of Trailing 1s = (1 << G-1) - 1, a standard NAPOT Region
 	}
 
 	pmpcfg_for_napot_misaligned: coverpoint {pmpcfg[0]} {
@@ -450,7 +450,7 @@ covergroup PMPM_cg with function sample(
 		bins pmpaddr = {`NON_STANDARD_REGION};
 	}
 
-	pmpcfg_for_na4_misaligned: coverpoint {pmpcfg[0][7:0]} {
+	pmpcfg_for_na4_misaligned: coverpoint {pmpcfg[0]} {
 		bins pmp_cfg_na4_locked = {8'b10010111}; //L=1,A=NA4,XWR=111
 		bins pmp_cfg_na4_unlocked = {8'b00010111}; //L=0,A=NA4,XWR=111
 	}
@@ -467,7 +467,7 @@ covergroup PMPM_cg with function sample(
 		bins pmpaddr = {1};
 	}
 
-	pmpcfg_for_tor_misaligned: coverpoint {ins.current.csr[12'h3A0][31:24]} {
+	pmpcfg_for_tor_misaligned: coverpoint {pmpcfg[3]} {
 		bins pmp_cfg_tor_locked = {8'b10001111}; //L=1,A=TOR,XWR=111
 		bins pmp_cfg_tor_unlocked = {8'b00001111}; //L=0,A=TOR,XWR=111
 	}
