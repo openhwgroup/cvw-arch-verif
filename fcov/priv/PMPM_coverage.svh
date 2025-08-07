@@ -421,14 +421,20 @@ covergroup PMPM_cg with function sample(
 		bins pmpaddr1 = {`REGIONSTART+`g};
 	}
 
-	pmp_addr_for_tor_nonoverlap: coverpoint {pmpaddr[1], pmpaddr[0]} { // pmpaddr0 >= pmpaddr1.
-  		bins range1 = {`NON_STANDARD_REGION, `NON_STANDARD_REGION};
-		bins range2 = {`NON_STANDARD_REGION, `NON_STANDARD_REGION+`g};
-		bins range3 = {`NON_STANDARD_REGION, {$bits(pmpaddr[0]){1'b1}}}; //pmpaddr0 = all 1s
+	pmp_addr_for_tor_nonoverlap1: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, `REGIONSTART>>2}) { // pmpaddr0 >= pmpaddr1.
+  		bins range1 = {1};
  	}
 
-	pmpcfg_tor_nonoverlap: coverpoint { pmpcfg[1] } {
-    	bins pmp_cfg_tor1 =  {16'b1000100000000000}; //L=1 for pmpcfg1 and L=0 for pmpcfg0,A=TOR for cf1 and A=OFF for 0,XWR=000(both)
+	pmp_addr_for_tor_nonoverlap2: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, (`REGIONSTART+`g)>>2}) { // pmpaddr0 >= pmpaddr1.
+		bins range2 = {1};
+ 	}
+
+	pmp_addr_for_tor_nonoverlap3: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, {$bits(pmpaddr[0]){1'b1}}}) { // pmpaddr0 >= pmpaddr1.
+		bins range3 = {1}; //pmpaddr0 = all 1s
+ 	}
+
+	pmpcfg_tor_nonoverlap: coverpoint {pmpcfg[1],pmpcfg[0]} {
+    	bins pmp_cfg_tor1 =  {16'b10001000_00000000}; //L=1 for pmpcfg1 and L=0 for pmpcfg0,A=TOR for cf1 and A=OFF for 0,XWR=000(both)
 	}
 
 	addr_for_tor_nonoverlap: coverpoint (ins.current.rs1_val + ins.current.imm) {
@@ -1070,9 +1076,17 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor_bot_L1_w: cross priv_mode_m, addr_for_tor_bot, pmpcfg_tor_bot_L1, pmp_addr_for_tor_bot, write_instr_sw;
 	cp_cfg_A_tor_bot_L1_r: cross priv_mode_m, addr_for_tor_bot, pmpcfg_tor_bot_L1, pmp_addr_for_tor_bot, read_instr_lw;
 
-	cp_cfg_A_tor_nonoverlap_x: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, exec_instr;
-	cp_cfg_A_tor_nonoverlap_w: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, write_instr_sw;
-	cp_cfg_A_tor_nonoverlap_r: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap, read_instr_lw;
+	cp_cfg_A_tor_nonoverlap1_x: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap1, exec_instr;
+	cp_cfg_A_tor_nonoverlap1_w: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap1, write_instr_sw;
+	cp_cfg_A_tor_nonoverlap1_r: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap1, read_instr_lw;
+
+	cp_cfg_A_tor_nonoverlap2_x: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap2, exec_instr;
+	cp_cfg_A_tor_nonoverlap2_w: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap2, write_instr_sw;
+	cp_cfg_A_tor_nonoverlap2_r: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap2, read_instr_lw;
+
+	cp_cfg_A_tor_nonoverlap3_x: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap3, exec_instr;
+	cp_cfg_A_tor_nonoverlap3_w: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap3, write_instr_sw;
+	cp_cfg_A_tor_nonoverlap3_r: cross priv_mode_m, addr_for_tor_nonoverlap, pmpcfg_tor_nonoverlap, pmp_addr_for_tor_nonoverlap3, read_instr_lw;
 
 	cp_pmpaddr_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpaddr_entries ;
 	cp_pmpcfg_walk: cross priv_mode_m, cp_walk_rs1, csrrw, legal_pmpcfg_entries_even ;
