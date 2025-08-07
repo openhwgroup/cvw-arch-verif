@@ -3,7 +3,7 @@
     //////////////////////////////////////////////////////////////////////////////////
 
     cp_fs1_edges_v_sew16 : coverpoint unsigned'(ins.current.fs1_val[15:0])  iff (ins.trap == 0 )  {
-        //FS1 edges (Half Precision)
+        // FS1 edges (Half Precision)
         bins pos0                   = {16'h0000};
         bins neg0                   = {16'h8000};
         bins pos1                   = {16'h3C00};
@@ -26,4 +26,4 @@
         bins sNaN_payload1          = {16'h7D01};                // Signaling NaN with payload 1
     }
 
-    ////end cp_fs1_edges_v_sew16////////////////////////////////////////////////
+    //// end cp_fs1_edges_v_sew16////////////////////////////////////////////////

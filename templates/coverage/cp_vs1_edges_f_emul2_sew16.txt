@@ -26,4 +26,4 @@
         bins sNaN_payload1          = {32'h7F800001};   // signaling NaN with payload 1
     }
 
-    ////end         // Standard precision coverpoints////////////////////////////////////////////////
+    //// end         // Standard precision coverpoints////////////////////////////////////////////////

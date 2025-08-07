@@ -3,7 +3,7 @@
     //////////////////////////////////////////////////////////////////////////////////
 
     cp_vs3_emul4 : coverpoint ins.get_vr_reg(ins.current.vs3) iff (ins.trap == 0) {
-        //VD register assignment (widening instruction, including only registers of multiple of 4)
+        // VD register assignment (widening instruction, including only registers of multiple of 4)
         ignore_bins v1 = {v1};
         ignore_bins v2 = {v2};
         ignore_bins v3 = {v3};
@@ -30,4 +30,4 @@
         ignore_bins v31 = {v31};
     }
 
-    ////end cp_vs3_emul4////////////////////////////////////////////////
+    //// end cp_vs3_emul4////////////////////////////////////////////////

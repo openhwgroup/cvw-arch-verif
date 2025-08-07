@@ -1,5 +1,5 @@
     cp_imm_edges_20bit : coverpoint signed'(ins.current.imm)  iff (ins.trap == 0 )  {
-        //Imm Edges
+        // Imm Edges
         bins zero  = {0};
         bins p0    = {1};
         bins p1    = {2};
