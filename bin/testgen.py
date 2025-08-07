@@ -2286,7 +2286,7 @@ def getExtensions():
       m = re.search("(.*)_coverage.svh", filename)
       if (m is not None):
         ext = m.group(1)
-        if 'V' not in ext and 'v' not in ext:
+        if ('V' not in ext and 'Zv' not in ext) or ext in ['ZfaZvfh']:
           extensions.append(ext)
   return extensions
 
