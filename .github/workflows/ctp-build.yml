@@ -1,5 +1,4 @@
----
-name: CTP Build
+name: Build
 
 on:
   workflow_dispatch:
@@ -18,95 +17,157 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'docs/ctp/**'
+      - 'testplans/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'docs/ctp/**'
+      - 'testplans/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    # Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
 
-    # Set the short SHA for use in artifact names
-      - name: Set short SHA
-        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install -y make ruby
 
-    # Get the current date
-      - name: Get current date
-        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Install gems
+        run: sudo gem install asciidoctor asciidoctor-pdf
 
-    # Build PDF and HTML files using the container
-      - name: Build Files
-        id: build_files
-        run: make -C docs/ctp -j$(nproc)
+      - name: Build
+        run: make -j2
 
-    # Upload the CTP PDF file
-      - name: Upload ctp.pdf
-        if: steps.build_files.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ctp-${{ env.SHORT_SHA }}.pdf
-          path: ${{ github.workspace }}/docs/ctp/ctp.pdf
-          retention-days: 7
-
-    # Upload the CTP HTML file
-      - name: Upload ctp.html
-        if: steps.build_files.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ctp-${{ env.SHORT_SHA }}.html
-          path: ${{ github.workspace }}/docs/ctp/ctp.html
-          retention-days: 7
-
-      - name: Create Release
-        if: steps.build_files.outcome == 'success' && github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
-        #uses: softprops/action-gh-release@v2.2.2
-        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631
-        with:
-          draft: false
-          tag_name: ctp-release-${{ env.SHORT_SHA }}-${{ env.CURRENT_DATE }}
-          name: ${{ env.CURRENT_DATE }}
-          body: |
-            This release was created by: ${{ github.event.sender.login }}
-            Release Notes: ${{ github.event.inputs.release_notes }}
-          files: |
-            ${{ github.workspace }}/docs/ctp/ctp.pdf
-            ${{ github.workspace }}/docs/ctp/ctp.html
-
-    # Create directory structure pages sites for privileged and unprivileged specs.
       - name: Make GitHub pages directory
         run: |
-          mkdir -p dist/snapshot/ctp
-          cp docs/ctp/ctp.html dist/snapshot/ctp/index.html
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+          mkdir github-pages
+          cp docs/ctp/ctp.html github-pages/index.html
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctp.pdf
+          path: docs/ctp/ctp.pdf
+
+      - name: Upload HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctp.html
+          path: docs/ctp/ctp.html
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+          path: github-pages
 
-  # Deploy HTML to GitHub pages.
+  draft-release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PDF
+        uses: actions/download-artifact@v4
+        with:
+          name: ctp.pdf
+          path: ./
+
+      - name: Download HTML
+        uses: actions/download-artifact@v4
+        with:
+          name: ctp.html
+          path: ./
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date -u +'%Y%m%d')"
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: draft-${{ steps.date.outputs.date }}-${{ github.sha }}
+          release_name: Draft release ${{ steps.date.outputs.date }}
+          body: Latest snapshot (${{ github.sha }})
+          prerelease: true
+
+      - name: Upload PDF
+        id: upload-pdf
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ctp.pdf
+          asset_name: ctp.pdf
+          asset_content_type: application/pdf
+
+
+      - name: Upload HTML
+        id: upload-html
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ctp.html
+          asset_name: ctp.html
+          asset_content_type: text/html
+
+  release:
+    if: github.event_name == 'release' && github.event.action == 'created'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PDF
+        uses: actions/download-artifact@v4
+        with:
+          name: ctp.pdf
+          path: ./
+
+      - name: Download HTML
+        uses: actions/download-artifact@v4
+        with:
+          name: ctp.html
+          path: ./
+
+      - name: Upload PDF
+        id: upload-pdf
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ctp.pdf
+          asset_name: ctp.pdf
+          asset_content_type: application/pdf
+
+      - name: Upload HTML
+        id: upload-html
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ctp.html
+          asset_name: ctp.html
+          asset_content_type: text/html
+
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
     needs: build
-
+    runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
