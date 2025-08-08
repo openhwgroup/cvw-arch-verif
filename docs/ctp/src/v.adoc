@@ -305,5 +305,5 @@ When Zfa and Zvfh are both implemented, RISC-V provides a fli.h instruction (<<t
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfaZvfh.csv[]
+include::{testplansdir}/ZfaZvfh.csv[]
 ,===
