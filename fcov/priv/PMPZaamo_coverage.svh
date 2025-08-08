@@ -29,10 +29,6 @@ covergroup PMPZaamo_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],
 		bins at_region = {`REGIONSTART};
 	}
 
-	standard_region: coverpoint ins.current.csr[12'h3B0] {
-		bins standard_region = {`STANDARD_REGION};
-	}
-
 	atomic_intrs: coverpoint ins.current.insn {
 		wildcard bins amoswap_w  = {32'b00001????????????010?????0101111};
 		wildcard bins amoadd_w   = {32'b00000????????????010?????0101111};
