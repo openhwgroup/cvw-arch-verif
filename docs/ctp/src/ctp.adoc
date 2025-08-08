@@ -11,7 +11,7 @@ include::../docs-resources/global-config.adoc[]
 ifdef::draft-watermark[]
 :page-background-image: image:/draft.png[opacity=20%]
 endif::[]
-:back-cover-image: image:/risc-v_logo.svg[opacity=25%]
+:back-cover-image: image:risc-v_logo.svg[opacity=25%]
 // Settings:
 :experimental:
 :reproducible:
@@ -39,7 +39,7 @@ endif::[]
 :ne: &#8800;
 :approx: &#8776;
 :inf: &#8734;
-:testplansdir: testplans
+:testplansdir: {docdir}/../build/testplans
 
 // :autofit-option:
 // :base-font-size-min: 0

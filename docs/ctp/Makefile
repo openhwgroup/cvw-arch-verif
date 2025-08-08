@@ -67,10 +67,10 @@ build-docs: $(DOCS_PDF) $(DOCS_HTML)
 
 vpath %.adoc $(SRC_DIR)
 
-%.pdf: %.adoc
+%.pdf: %.adoc testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 
-%.html: %.adoc
+%.html: %.adoc testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 
 build:
@@ -96,6 +96,18 @@ build-no-container:
 # Update docker image to latest
 docker-pull-latest:
 	${DOCKER_BIN} pull ${DOCKER_IMG}
+
+TESTPLANS := $(wildcard ../../testplans/*)
+testplans: $(TESTPLANS)
+	@echo "Copying test plans..."
+	@if [ -d ../../testplans ]; then \
+		mkdir -p $(BUILD_DIR); \
+		rm -rf $(BUILD_DIR)/testplans; \
+		cp -r ../../testplans $(BUILD_DIR)/testplans; \
+	else \
+		echo "No test plans directory found in source."; \
+	fi
+	@echo "Test plans copied to build directory."
 
 clean:
 	@echo "Cleaning up generated files..."
