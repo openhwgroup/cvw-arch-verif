@@ -1,9 +1,7 @@
 [[manual:ctp,RISC-V Certification Test Plan Draft Proposal]]
 = RISC-V Certification Test Plan Draft Proposal
-Draft of {docdatetime}
-
 // These attributes have been copied over from riscv-isa-manual and are not yet all tested
-//{approx} include::../docs-resources/global-config.adoc[]
+include::../docs-resources/global-config.adoc[]
 :description: Certification Test Plan
 :colophon:
 :preface-title: Preamble
@@ -11,20 +9,12 @@ Draft of {docdatetime}
 :imagesdir: ../docs-resources/images
 :title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
 ifdef::draft-watermark[]
-:page-background-image: image:draft.png[opacity=20%]
+:page-background-image: image:/draft.png[opacity=20%]
 endif::[]
-//:title-page-background-image: none
-//:back-cover-image: image:backpage.png[opacity=25%]
-:back-cover-image: image:riscv-horizontal-color.svg[opacity=25%]
+:back-cover-image: image:/risc-v_logo.svg[opacity=25%]
 // Settings:
 :experimental:
 :reproducible:
-:imagesoutdir: {docdir}/../build/images-out
-:bibtex-file: src/resources/riscv-spec.bib
-:bibtex-order: alphabetical
-:bibtex-style: apa
-:bibtex-format: asciidoc
-:bibtex-throw: false
 :icons: font
 :lang: en
 :example-caption: Example
@@ -40,8 +30,6 @@ endif::[]
 :chapter-refsig: Chapter
 :section-refsig: Section
 :appendix-refsig: Appendix
-// Uncomment :data-uri: if your eBook reader is not capable of rendering
-// embedded images. One known affected device is PocketBook InkPad 3.
 :data-uri:
 :hide-uri-scheme:
 :stem: latexmath
@@ -51,11 +39,10 @@ endif::[]
 :ne: &#8800;
 :approx: &#8776;
 :inf: &#8734;
-:csrname: envcfg
-:imagesdir: images
+:testplansdir: testplans
 
-:autofit-option:
-:base-font-size-min: 0
+// :autofit-option:
+// :base-font-size-min: 0
 
 _Contributors to all versions of the spec in alphabetical order_
 

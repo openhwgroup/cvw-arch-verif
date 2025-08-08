@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/I.csv[]
+include::{testplansdir}/I.csv[]
 ,===
 
 <<t-I-coverpoints>> uses the following coverpoint modifiers:

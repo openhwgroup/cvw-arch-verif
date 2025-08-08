@@ -9,7 +9,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zaamo.csv[]
+include::{testplansdir}/Zaamo.csv[]
 ,===
 
 
@@ -27,5 +27,5 @@ inside constrained LR/SC sequences.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zalrsc.csv[]
+include::{testplansdir}/Zalrsc.csv[]
 ,===
