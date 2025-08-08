@@ -421,15 +421,15 @@ covergroup PMPM_cg with function sample(
 		bins pmpaddr1 = {`REGIONSTART+`g};
 	}
 
-	pmp_addr_for_tor_nonoverlap1: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, `REGIONSTART>>2}) { // pmpaddr0 >= pmpaddr1.
+	pmp_addr_for_tor_nonoverlap1: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, `REGIONSTART>>2}) { // pmpaddr0 >= pmpaddr1.
   		bins range1 = {1};
  	}
 
-	pmp_addr_for_tor_nonoverlap2: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, (`REGIONSTART+`g)>>2}) { // pmpaddr0 >= pmpaddr1.
+	pmp_addr_for_tor_nonoverlap2: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, (`REGIONSTART+`g)>>2}) { // pmpaddr0 >= pmpaddr1.
 		bins range2 = {1};
  	}
 
-	pmp_addr_for_tor_nonoverlap3: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`NON_STANDARD_REGION, {$bits(pmpaddr[0]){1'b1}}}) { // pmpaddr0 >= pmpaddr1.
+	pmp_addr_for_tor_nonoverlap3: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, {$bits(pmpaddr[0]){1'b1}}}) { // pmpaddr0 >= pmpaddr1.
 		bins range3 = {1}; //pmpaddr0 = all 1s
  	}
 
