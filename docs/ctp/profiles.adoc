@@ -20,7 +20,6 @@ Coverage files with multiple extensions in the name apply when all the extension
 
 All privileged suites require at least version 1.12 of the privileged specification.  Features specific to version 1.13 are tested separately in the Sm1p13 and Ss1p13 suites.
 
-
 [[t-profiles]]
 .Profile Coverage Files
 [options=header]

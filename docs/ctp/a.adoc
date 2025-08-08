@@ -15,7 +15,7 @@ The A extension is subdivided into Zaamo and Zalrsc.
 
 ==== Zaamo Atomic Memory Operations Extension
 
-<<t-Zaamo-coverpoints>> summarizes the coverpoints for the Zca extension.
+<<t-Zaamo-coverpoints>> summarizes the coverpoints for the Zaamo extension.
 
 [[t-Zaamo-coverpoints]]
 .Zaamo Instruction Coverpoints

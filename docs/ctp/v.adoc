@@ -295,3 +295,15 @@ include::../../testplans/Zvkned.csv[]
 ,===
 include::../../testplans/Zvknh.csv[]
 ,===
+
+==== ZfaZvfh Half-Precision Load Immediate
+
+When Zfa and Zvfh are both implemented, RISC-V provides a fli.h instruction (<<t-ZfaZvfh-coverpoints>>) even if full Zfh is not supported.
+
+[[t-ZfaZvfh-coverpoints]]
+.ZfaZvfh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::../../testplans/ZfaZvfh.csv[]
+,===
