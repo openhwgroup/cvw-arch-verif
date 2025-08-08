@@ -218,11 +218,31 @@ include::{testplansdir}/Vf.csv[]
 
 === Zvfh* Vector Half-Precision Floating-Point Extension
 
-Note that half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, all of these tests are in the same directory structure, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16.  Zvfhmin only exercises the widening and narrowing conversions:
+Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, Zvfh tests are in the same directory structure as V, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16.  
 
-* vfwcvt.f.f.v
+==== Zvfhmin Half-Precision Load Immediate
 
-* vfncvt.f.f.w
+Zvfhmin only exercises the widening and narrowing conversions: `vfwcvt.f.f.v` and `vfncvt.f.f.w`.
+
+[[t-Zfvhmin-coverpoints]]
+.Zffvhmin Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zvfhmin.csv[]
+,===
+
+==== ZfaZvfh Half-Precision Load Immediate
+
+When Zfa and Zvfh are both implemented, RISC-V provides a `fli.h` instruction (<<t-ZfaZvfh-coverpoints>>) even if full Zfh is not supported.
+
+[[t-ZfaZvfh-coverpoints]]
+.ZfaZvfh Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZfaZvfh.csv[]
+,===
 
 === Zvb* Vector Bit Manipulation Extension
 
@@ -294,16 +314,4 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvknh.csv[]
-,===
-
-==== ZfaZvfh Half-Precision Load Immediate
-
-When Zfa and Zvfh are both implemented, RISC-V provides a fli.h instruction (<<t-ZfaZvfh-coverpoints>>) even if full Zfh is not supported.
-
-[[t-ZfaZvfh-coverpoints]]
-.ZfaZvfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZvfh.csv[]
 ,===

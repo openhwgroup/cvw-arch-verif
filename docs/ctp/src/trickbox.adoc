@@ -56,8 +56,14 @@ The macros are defined in ***. *** shows sample implementations of these macros 
 
 https://github.com/openhwgroup/cvw/blob/main/tests/riscof/sail_cSim/env/model_test.h shows a trick box implementation that works for Spike and SAIL.
 
-*** HTIF for termination and UART, memory-mapped PLIC and CLINT
+*** HTIF (write_tohost followed by j to selfloop) for termination and UART, memory-mapped PLIC and CLINT
 *** not implemented yet on Sail
+
+=== Host Target Interface
+
+*** minimally documented (see ch 3)
+Ways to terminate (success or failure) and write a character
+Drawback that testbench must parse the ELF labels to find the address of write_tohost
 
 === Custom Trick Box Hints
 

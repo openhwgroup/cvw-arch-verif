@@ -4,15 +4,15 @@
 
 This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification objectives, including the following ratified and unratified profiles:
 
-* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified)
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified): Phase 0
 ** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
-* Microcontroller Profile (Not Ratified, but market demand)
+* Microcontroller Profile (Not Ratified, but market demand): Phase 1
 ** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
-* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified)
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified): Phase 1.5, stepping stone to phase 2
 ** Application processor without vector, hypervisor, and other newer extensions
-* https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
+* https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified): Phase 1.8, stepping stone to phase 2
 ** RVA23 less vector and hypervisor
-* https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
+* https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified): Phase 2
 
 <<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
 
@@ -70,7 +70,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Zicbom|Cache Block Flush/Inval|<<t-Zicbom-coverpoints>>|||x|x|x
 |Zicboz|Cache Block Zero|<<t-Zicboz-coverpoints>>|||x|x|x
 |Zicbop|Cache Block Prefetch|<<t-Zicbop-coverpoints>>|||x|x|x
-|Zkr|Entropy CSR|<<t-Zkr-coverpoints>>|||o|o|o
 |Za64rs|Max 64B Reservation Sets|<<t-Za64rs-coverpoints>>|||x|x|x
 |Zic64bZicboz|64B Cache Blocks|<<t-Zic64bZicboz-coverpoints>>|||x|x|x
 8+^|Privileged
@@ -79,6 +78,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZicsrU|User CSRs|<<t-ZicsrU-coverpoints>>||x|x|x|x
 |ZicsrF|Float CSRs|<<t-ZicsrF-coverpoints>>|o||x|x|x
 |ZicsrUF|User Float CSRs|<<t-ZicsrUF-coverpoints>>|||x|x|x
+|ZicsrZkr|Entropy CSR|<<t-ZicsrZkr-coverpoints>>|||o|o|o
 |ExceptionsM|Machine Exceptions|<<t-ExceptionsM-coverpoints>>||x|x|x|x
 |ExceptionsS|Supervisor Exceptions|<<t-ExceptionsS-coverpoints>>|||x|x|x
 |ExceptionsU|User Exceptions|<<t-ExceptionsU-coverpoints>>||x|x|x|x
@@ -140,30 +140,30 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |SsstrictM|Machine Strict (unratified)|<<t-SsstrictM-coverpoints>>|||o|o|o
 |SsstrictS|Superisor Strict|<<t-SsstrictS-coverpoints>>|||o|o|o
 8+^|Vector
-|Vx8|Vector Integer 8-bit|<<t-Vx8-coverpoints>>|||o|o|x
-|Vx16|Vector Integer 16-bit|<<t-Vx16-coverpoints>>|||o|o|x
-|Vx32|Vector Integer 32-bit|<<t-Vx32-coverpoints>>|||o|o|x
-|Vx64|Vector Integer 64-bit|<<t-Vx64-coverpoints>>|||o|o|x
-|Vls8|Vector Load/Store 8-bit|<<t-Vls8-coverpoints>>|||o|o|x
-|Vls16|Vector Load/Store 16-bit|<<t-Vls16-coverpoints>>|||o|o|x
-|Vls32|Vector Load/Store 32-bit|<<t-Vls32-coverpoints>>|||o|o|x
-|Vls64|Vector Load/Store 64-bit|<<t-Vls64-coverpoints>>|||o|o|x
-|Vf16 (Zvfh)|Vector Float 16-bit|<<t-Vf16_coverpoints>>||||o|o
-|Vf32|Vector Float 32-bit|<<t-Vf32_coverpoints>>|||o|o|x
-|Vf64|Vector Float 64-bit|<<t-Vf64_coverpoints>>|||o|o|x
-|Zvbb8|Vector Bit Manip 8-bit|<<t-Zvbb8_coverpoints>>||||o|x
-|Zvbb16|Vector Bit Manip 16-bit|<<t-Zvbb16_coverpoints>>||||o|x
-|Zvbb32|Vector Bit Manip 32-bit|<<t-Zvbb32_coverpoints>>||||o|x
-|Zvbb64|Vector Bit Manip 64-bit|<<t-Zvbb64_coverpoints>>||||o|x
-|Zvkb8|Vector Crypto Bit Manip 8-bit|<<t-Zvkb8_coverpoints>>||||o|o
-|Zvkb16|Vector Crypto Bit Manip 16-bit|<<t-Zvkb16_coverpoints>>||||o|o
-|Zvkb32|Vector Crypto Bit Manip 32-bit|<<t-Zvkb32_coverpoints>>||||o|o
-|Zvkb64|Vector Crypto Bit Manip 64-bit|<<t-Zvkb64_coverpoints>>||||o|o
-|Zvbc64|Vector Carryless Mult|<<t-Zvbc64_coverpoints>>||||o|o
-|Zvg32|Vector GCM|<<t-Zvg32_coverpoints>>||||o|o
-|Zvkned32|Vector Crypt|<<t-Zvkned32_coverpoints>>||||o|o
-|Zvknha32|Vector Hash 32-bit|<<t-Zvknha32_coverpoints>>|||||
-|Zvknhb64|Vector Hash 64-bit|<<t-Zvknhb64_coverpoints>>||||o|o
+|Vx8|Vector Integer 8-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx16|Vector Integer 16-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx32|Vector Integer 32-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx64|Vector Integer 64-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vls8|Vector Load/Store 8-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls16|Vector Load/Store 16-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls32|Vector Load/Store 32-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls64|Vector Load/Store 64-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vf16 (Zvfh)|Vector Float 16-bit|<<t-Vf_coverpoints>>||||o|o
+|Vf32|Vector Float 32-bit|<<t-Vf_coverpoints>>|||o|o|x
+|Vf64|Vector Float 64-bit|<<t-Vf_coverpoints>>|||o|o|x
+|Zvbb8|Vector Bit Manip 8-bit|<<t-Zvbb_coverpoints>>||||o|x
+|Zvbb16|Vector Bit Manip 16-bit|<<t-Zvbb_coverpoints>>||||o|x
+|Zvbb32|Vector Bit Manip 32-bit|<<t-Zvbb_coverpoints>>||||o|x
+|Zvbb64|Vector Bit Manip 64-bit|<<t-Zvbb_coverpoints>>||||o|x
+|Zvkb8|Vector Crypto Bit Manip 8-bit|<<t-Zvkb_coverpoints>>||||o|o
+|Zvkb16|Vector Crypto Bit Manip 16-bit|<<t-Zvkb_coverpoints>>||||o|o
+|Zvkb32|Vector Crypto Bit Manip 32-bit|<<t-Zvkb_coverpoints>>||||o|o
+|Zvkb64|Vector Crypto Bit Manip 64-bit|<<t-Zvkb_coverpoints>>||||o|o
+|Zvbc64|Vector Carryless Mult|<<t-Zvbc_coverpoints>>||||o|o
+|Zvg32|Vector GCM|<<t-Zvg_coverpoints>>||||o|o
+|Zvkned32|Vector Crypt|<<t-Zvkned_coverpoints>>||||o|o
+|Zvknha32|Vector Hash 32-bit|<<t-Zvknha_coverpoints>>|||||
+|Zvknhb64|Vector Hash 64-bit|<<t-Zvknhb_coverpoints>>||||o|o
 |Zvfbmin|Vector BF16 Convert|<<t-Zvfbmin_coverpoints>>||||o|o
 |Zvfbwma|Vector BF16 MAC|<<t-Zvfbwma_coverpoints>>||||o|o
 |ZfaZvfh|fli for Vector Half|<<t-ZfaZvfh_coverpoints>>||||o|o

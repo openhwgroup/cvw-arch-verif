@@ -1,10 +1,52 @@
 
 === Interrupts
 
+Interrupt tests are organized according to the privilege mode or extension supported. 
+
 ==== InterruptsM
+
+These tests are run on any configuration with machine mode that supports interrupts.
+
+[[t-InterruptsM-coverpoints]]
+.InterruptsM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/InterruptsM.csv[]
+,===
 
 ==== InterruptsS
 
+These tests are run on any configuration with supervisor mode that supports interrupts. Note that they include tests in other modes, such as interrupts from user mode delegated to supervisor mode.
+
+[[t-InterruptsS-coverpoints]]
+.InterruptsS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/InterruptsS.csv[]
+,===
+
 ==== InterruptsU
 
+These tests are run on any configuration with user mode that supports interrupts. 
+
+[[t-InterruptsU-coverpoints]]
+.InterruptsU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/InterruptsU.csv[]
+,===
+
 ==== InterruptsSstc
+
+These tests are run when the Sstc supervisor timer compare extension is supported.
+
+[[t-InterruptsSstc-coverpoints]]
+.InterruptsSstc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/InterruptsSstc.csv[]
+,===

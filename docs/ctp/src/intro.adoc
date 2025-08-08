@@ -45,7 +45,7 @@ Parameters will eventually all have formal names in UDB when they are all identi
 
 * Test files: A file containing one or more tests, typically written in assembly language.  For example, rv32/I/add.S contains all of the RV32 tests to exercise the add_cg covergroup in I_coverage.svh.
 
-* Tests: A program, typically a sequence of assembly language instructions, that exercises at least one bin of a coverpoint.
+* Test: A snippet of code, typically a sequence of assembly language instructions, that exercises at least one bin of a coverpoint.
 
 * Test Suite: A collection of coverage and test files to test a particular extension, combination of extensions, or group of extensions.  For example, the RV32I test suite contains the I_coverage.svh coverage file and the rv32/I/add.S, addi.S, sub.S, and other tests files with tests that hit the coverpoints in that coverage file.  The RV64ZfaD test suite contains the ZfaD_coverage.svh coverage file and the rv64/ZfaD/fround.d.S, and other tests files with tests that hit the coverpoints in that coverage file.  The RVA23S64 test suite contains all of the required and selected optional test suites for the profile, incluidng RV64I, RV64ZfaD, ExceptionsS, etc.
 
