@@ -9,7 +9,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zicsr.csv[]
+include::{testplansdir}/Zicsr.csv[]
 ,===
 
 
@@ -20,7 +20,7 @@ include::../../testplans/Zicsr.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zifencei.csv[]
+include::{testplansdir}/Zifencei.csv[]
 ,===
 
 
@@ -31,7 +31,7 @@ include::../../testplans/Zifencei.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zicond.csv[]
+include::{testplansdir}/Zicond.csv[]
 ,===
 
 ==== Zihintpause Pause Hint
@@ -41,5 +41,5 @@ include::../../testplans/Zicond.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zihintpause.csv[]
+include::{testplansdir}/Zihintpause.csv[]
 ,===

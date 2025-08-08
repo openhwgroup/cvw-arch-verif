@@ -10,7 +10,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zba.csv[]
+include::{testplansdir}/Zba.csv[]
 ,===
 
 ==== Zbb Basic Bit-Manipulation
@@ -20,7 +20,7 @@ include::../../testplans/Zba.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbb.csv[]
+include::{testplansdir}/Zbb.csv[]
 ,===
 
 ==== Zbc Carry-less Multiplication
@@ -30,7 +30,7 @@ include::../../testplans/Zbb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbc.csv[]
+include::{testplansdir}/Zbc.csv[]
 ,===
 
 
@@ -41,7 +41,7 @@ include::../../testplans/Zbc.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbs.csv[]
+include::{testplansdir}/Zbs.csv[]
 ,===
 
 
@@ -52,7 +52,7 @@ include::../../testplans/Zbs.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbkb.csv[]
+include::{testplansdir}/Zbkb.csv[]
 ,===
 
 
@@ -63,7 +63,7 @@ include::../../testplans/Zbkb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbkc.csv[]
+include::{testplansdir}/Zbkc.csv[]
 ,===
 
 
@@ -74,5 +74,5 @@ include::../../testplans/Zbkc.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zbkx.csv[]
+include::{testplansdir}/Zbkx.csv[]
 ,===

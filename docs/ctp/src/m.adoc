@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/M.csv[]
+include::{testplansdir}/M.csv[]
 ,===
 
 [[t-M-normative-statements]]
@@ -58,7 +58,7 @@ The Zmmul extension is a subset of the M extension that includes only the multip
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zmmul.csv[]
+include::{testplansdir}/Zmmul.csv[]
 ,===
 
 [[t-Zmmul-normative-statements]]
