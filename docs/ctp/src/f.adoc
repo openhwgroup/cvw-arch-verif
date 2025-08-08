@@ -10,7 +10,7 @@ Supporting floating-point involves enabling at least the F extension.  Other ext
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/F.csv[]
+include::{testplansdir}/F.csv[]
 ,===
 
 
@@ -21,7 +21,7 @@ include::../../testplans/F.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/D.csv[]
+include::{testplansdir}/D.csv[]
 ,===
 
 
@@ -32,7 +32,7 @@ include::../../testplans/D.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zfh.csv[]
+include::{testplansdir}/Zfh.csv[]
 ,===
 
 
@@ -43,7 +43,7 @@ include::../../testplans/Zfh.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfhD.csv[]
+include::{testplansdir}/ZfhD.csv[]
 ,===
 
 
@@ -54,7 +54,7 @@ include::../../testplans/ZfhD.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zfhmin.csv[]
+include::{testplansdir}/Zfhmin.csv[]
 ,===
 
 
@@ -65,7 +65,7 @@ include::../../testplans/Zfhmin.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfhminD.csv[]
+include::{testplansdir}/ZfhminD.csv[]
 ,===
 å
 
@@ -78,7 +78,7 @@ include::../../testplans/ZfhminD.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfaF.csv[]
+include::{testplansdir}/ZfaF.csv[]
 ,===
 
 
@@ -90,7 +90,7 @@ include::../../testplans/ZfaF.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfaD.csv[]
+include::{testplansdir}/ZfaD.csv[]
 ,===
 
 
@@ -101,7 +101,7 @@ include::../../testplans/ZfaD.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfaZfh.csv[]
+include::{testplansdir}/ZfaZfh.csv[]
 ,===
 
 ===== ZfaZfhD
@@ -111,5 +111,5 @@ include::../../testplans/ZfaZfh.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZfaZfhD.csv[]
+include::{testplansdir}/ZfaZfhD.csv[]
 ,===

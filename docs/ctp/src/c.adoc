@@ -43,7 +43,7 @@ implementations that ignore them.|Hints are not tested
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zca.csv[]
+include::{testplansdir}/Zca.csv[]
 ,===
 
 [[t-Zca-normative-statements]]
@@ -204,7 +204,7 @@ performance counters. `C.NOP` expands to `nop`.|c.nop/{cp_asm_count}
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zcf.csv[]
+include::{testplansdir}/Zcf.csv[]
 ,===
 
 [[t-Zcf-normative-statements]]
@@ -243,7 +243,7 @@ offset, scaled by 4, to the base address in register
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zcd.csv[]
+include::{testplansdir}/Zcd.csv[]
 ,===
 
 [[t-Zcd-normative-statements]]
@@ -280,7 +280,7 @@ register `_rs1′_`. It expands to
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zcb.csv[]
+include::{testplansdir}/Zcb.csv[]
 ,===
 
 [[t-Zcb-normative-statements]]
@@ -308,7 +308,7 @@ When both Zcb and M are supported, add the instruction in <<t-ZcbM-coverpoints>>
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZcbM.csv[]
+include::{testplansdir}/ZcbM.csv[]
 ,===
 
 [[t-ZcbM-normative-statements]]
@@ -328,7 +328,7 @@ When both Zcb and Zba are supported, add the instruction in <<t-ZcbZba-coverpoin
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZcbZba.csv[]
+include::{testplansdir}/ZcbZba.csv[]
 ,===
 
 [[t-ZcbZba-normative-statements]]
@@ -349,7 +349,7 @@ When both Zcb and Zbb are supported, add the instructions in <<t-ZcbZbb-coverpoi
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/ZcbZbb.csv[]
+include::{testplansdir}/ZcbZbb.csv[]
 ,===
 
 [[t-ZcbZbb-normative-statements]]

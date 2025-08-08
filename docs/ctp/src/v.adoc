@@ -193,7 +193,7 @@ The Vx testplan is the same for SEW={8, 16, 32, 64}.  Each SEW has its own cover
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Vx.csv[]
+include::{testplansdir}/Vx.csv[]
 ,===
 
 ==== Vls
@@ -203,7 +203,7 @@ include::../../testplans/Vx.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Vls.csv[]
+include::{testplansdir}/Vls.csv[]
 ,===
 
 ==== Vf
@@ -213,7 +213,7 @@ include::../../testplans/Vls.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Vf.csv[]
+include::{testplansdir}/Vf.csv[]
 ,===
 
 === Zvfh* Vector Half-Precision Floating-Point Extension
@@ -235,7 +235,7 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvbb.csv[]
+// include::{testplansdir}/Zvbb.csv[]
 ,===
 
 ==== Zvbc Vector Caryless Multiplication Extension
@@ -245,7 +245,7 @@ include::../../testplans/Zvbb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvbc.csv[]
+// include::{testplansdir}/Zvbc.csv[]
 ,===
 
 === Zvk* Vector Cryptography Extension
@@ -259,7 +259,7 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvkb.csv[]
+// include::{testplansdir}/Zvkb.csv[]
 ,===
 
 ==== Zvkg Vector Crypto Galois Field Extension
@@ -269,7 +269,7 @@ include::../../testplans/Zvkb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvkg.csv[]
+// include::{testplansdir}/Zvkg.csv[]
 ,===
 
 
@@ -280,7 +280,7 @@ include::../../testplans/Zvkg.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvkned.csv[]
+// include::{testplansdir}/Zvkned.csv[]
 ,===
 
 
@@ -293,7 +293,7 @@ include::../../testplans/Zvkned.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zvknh.csv[]
+// include::{testplansdir}/Zvknh.csv[]
 ,===
 
 ==== ZfaZvfh Half-Precision Load Immediate

@@ -10,6 +10,7 @@ Coverage is in I_coverage.svh:
 
 [[f-add-covergroup]]
 .`add` Covergroup
+[source,verilog]
 ----
 covergroup I_add_cg with function sample(ins_t ins);
     option.per_instance = 0;
@@ -94,6 +95,7 @@ Corresponding RV32 tests are in tests/rv32/I/I-add.S.  Observe how the directed 
 
 [[f-add-tests]]
 .`add` Tests
+[source,asm]
 ----
 # Testcase cp_rs1 (Test source rs1 = x0)
 li x0, 0xb4e96718 # initialize rs1
@@ -158,17 +160,19 @@ RVTEST_SIGUPD(x10, x16)
 
 === Test case example: cr_rs1_rs2_edges bin with rs1 = 0x0, rs2 = 0x80000000
 
-```
+[source,asm]
+----
 # Testcase cr_rs1_rs2_edges (Test source rs1 = 0x0 rs2 = 0x80000000)
 li x8, 0x00000000 # initialize rs1 in randomly selected register
 li x5, 0x80000000 # initialize rs2 in randomly selected register
 add x16, x8, x5 # perform operation, write randomly selected destination register
 # load expected value of 0x800000000 into x20 from table pointed to by x10. Check x20 against x16 and report mismmatch
 RVTEST_SIGUPD(x10, x16, x20)
-```
+----
 
-RVTEST_SIGUPD macro:
-```
+`RVTEST_SIGUPD` macro:
+[source,asm]
+----
 if (RVTEST_SELFCHECK) # check result against signature
     LREG x20, 0(x10)
     beq x16, x20, 1f
@@ -178,4 +182,4 @@ else # generate signature
     SREG x16, 0(x10)
     addi x10, x10, WORDSIZE
     nop
-```
+----
