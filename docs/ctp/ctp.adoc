@@ -33,10 +33,7 @@ endif::[]
 :sectnumlevels: 5
 :toc: left
 :toclevels: 5
-:source-highlighter: pygments
-ifdef::backend-pdf[]
 :source-highlighter: rouge
-endif::[]
 :table-caption: Table
 :figure-caption: Figure
 :xrefstyle: short
@@ -73,8 +70,6 @@ This is a draft Certification Test Plan.  It reflects the coverpoints and tests
 presently being developed in the https://github.com/openhwgroup/cvw-arch-verif/[cvw-arch-verif] repository soon to migrate to
 https://github.com/riscv-non-isa/riscv-arch-test[riscv-arch-test] cvw branch.  It is intended for discussion as a possible format
 of test plan for RISC-V Certification.
-
-:toc:
 
 include::intro.adoc[]
 include::cert.adoc[]
