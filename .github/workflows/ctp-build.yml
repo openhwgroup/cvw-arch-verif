@@ -20,12 +20,14 @@ on:
     paths:
       - 'docs/ctp/**'
       - 'testplans/**'
+      - '.github/workflows/ctp-build.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'docs/ctp/**'
       - 'testplans/**'
+      - '.github/workflows/ctp-build.yml'
 
 jobs:
   build:
@@ -40,7 +42,7 @@ jobs:
         run: sudo gem install asciidoctor asciidoctor-pdf
 
       - name: Build
-        run: make -j2
+        run: make -C docs/ctp -j2
 
       - name: Make GitHub pages directory
         run: |

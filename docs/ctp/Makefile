@@ -1,10 +1,13 @@
-all: ctp.pdf ctp.html
+NAME = ctp
+ADOCS = $(wildcard *.adoc)
 
-ctp.pdf: ctp.adoc
-	asciidoctor-pdf ctp.adoc
+all: $(NAME).pdf $(NAME).html
 
-ctp.html: ctp.adoc
-	asciidoctor ctp.adoc
+$(NAME).pdf: $(ADOCS)
+	asciidoctor-pdf $(NAME).adoc
+
+$(NAME).html: $(ADOCS)
+	asciidoctor $(NAME).adoc
 
 clean:
-	rm -f ctp.pdf ctp.html
+	rm -f $(NAME).pdf $(NAME).html
