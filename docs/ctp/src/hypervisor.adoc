@@ -995,16 +995,140 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 
 ==== H
 
+[[t-H-coverpoints]]
+.H Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/H.csv[]
+,===
+
 ==== ZicsrH
+
+[[t-ZicsrH-coverpoints]]
+.ZicsrH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicsrH.csv[]
+,===
+
+==== ZicsrHF
+
+[[t-ZicsrHF-coverpoints]]
+.ZicsrHF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicsrHF.csv[]
+,===
+
+==== ZicsrHV
+
+[[t-ZicsrHV-coverpoints]]
+.ZicsrHV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicsrHV.csv[]
+,===
 
 ==== ExceptionsH
 
+[[t-ExceptionsH-coverpoints]]
+.ExceptionsH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ExceptionsH.csv[]
+,===
+
+==== ExceptionsHV
+
+[[t-ExceptionsHV-coverpoints]]
+.ExceptionsHV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ExceptionsHV.csv[]
+,===
+
 ==== InterruptsH
+
+[[t-InterruptsH-coverpoints]]
+.InterruptsH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/InterruptsH.csv[]
+,===
 
 ==== EndianH
 
+[[t-EndianH-coverpoints]]
+.EndianH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianH.csv[]
+,===
+
 ==== RV32VM_H
+
+[[t-RV32VM_H-coverpoints]]
+.RV32VM_H Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32VM_H.csv[]
+,===
 
 ==== RV64VM_H
 
+[[t-RV64VM_H-coverpoints]]
+.RV64VM_H Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64VM_H.csv[]
+,===
+
 ==== SsstrictH
+
+[[t-SsstrictH-coverpoints]]
+.SsstrictH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsstrictH.csv[]
+,===
+
+|EndianH|Hypervisor Endian|<<t-EndianH_coverpoints>>|||o|o|x
+|ZicntrH|Hypervisor Counters|<<t-ZicntrH_coverpoints>>|||o|o|x
+|ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH_coverpoints>>|||o|o|x
+|PMPH|Hypervisor PMP|<<t-PMPH_coverpoints>>|||o|o|x
+|RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH_coverpoints>>|||o|o|x
+|RV32VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMHCBO_coverpoints>>|||o|o|x
+|RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH_coverpoints>>|||o|o|x
+|RV64VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMHCBO_coverpoints>>|||o|o|x
+|SsstrictH|Hypervisor Strict|<<t-SsstrictH_coverpoints>>|||o|o|x
+|Shcounterenw|Counter Enables|<<t-Shcounterenw_coverpoints>>|||o|o|x
+|Shvsatpa|VM Modes Supported|<<t-Shvsatpa_coverpoints>>|||o|o|x
+|Shgatpa|VM x4 Modes Supported|<<t-Shgatpa_coverpoints>>|||o|o|x
+|Shvstvecd|Direct Vectoring|<<t-Shvstvecd_coverpoints>>|||o|o|x
+|Shvstvala|vstval Addresses|<<t-Shvstvala_coverpoints>>|||o|o|x
+|Shtvala|htval Addresses|<<t-Shtvala_coverpoints>>|||o|o|x
+|Shlcofideleg|Counter Overflow Delegation|<<t-Shlcofideleg_coverpoints>>|||o|o|x
+|ZkrH|Hypervisor Entropy|<<t-ZkrH_coverpoints>>|||o|o|x
+|SstcH|Hypervisor Supervisor Timer|<<t-SstcH_coverpoints>>|||o|o|x
+|SsstateenH|Hypervisor State Enable|<<t-SsstateenH_coverpoints>>|||o|o|x
+|SscrindH|Hypervisor Indirect CSR|<<t-SscrindH_coverpoints>>|||o|o|x
+|SscfgH|Hypervisor Counter Delegation|<<t-SscfgH_coverpoints>>|||o|o|x
+|SmctrH|Hypervisor Control Transfer Records|<<t-SmctrH_coverpoints>>|||o|o|x
+|SvinvalH|Hypervisor TLB Inval|<<t-SvinvalH_coverpoints>>|||o|o|o
+|SvaduH|Hypervisor TLB Update|<<t-SvaduH_coverpoints>>|||o|o|o
+|ZicfilpH|Hypervisor Landing Pad|<<t-ZicfilpH_coverpoints>>|||o|o|o
+|ZicfissH|Hypervisor Shadow Stack|<<t-ZicfissH_coverpoints>>|||o|o|o
+|SsdbltrpH|Double Trap|<<t-SsdbltrpH_coverpoints>>|||o|o|o
+|SsnpmH|Pointer Masking|<<t-SsnpmH_coverpoints>>|||o|o|o
+|SmnpmH|Pointer Masking|<<t-SmnpmH_coverpoints>>|||o|o|o

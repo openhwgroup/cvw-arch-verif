@@ -3,14 +3,70 @@
 
 ==== PMPM
 
+[[t-PMPM-coverpoints]]
+.PMPM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPM.csv[]
+,===
+
 ==== PMPS
+
+[[t-PMPS-coverpoints]]
+.PMPS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPS.csv[]
+,===
 
 ==== PMPU
 
+[[t-PMPU-coverpoints]]
+.PMPU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPU.csv[]
+,===
+
 ==== PMPZca
+
+[[t-PMPZca-coverpoints]]
+.PMPZca Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZca.csv[]
+,===
 
 ==== PMPZicbo
 
+[[t-PMPZicbo-coverpoints]]
+.PMPZicbo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZicbo.csv[]
+,===
+
 ==== PMPZaamo
 
+[[t-PMPZaamo-coverpoints]]
+.PMPZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZaamo.csv[]
+,===
+
 ==== PMPZalrsc
+
+[[t-PMPZalrsc-coverpoints]]
+.PMPZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZalrsc.csv[]
+,===

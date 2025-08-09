@@ -1,2 +1,12 @@
 
 === Svinval
+
+The Svinval extension defines instructions to update memory management tables for virtual memory and optionally for PMP. Their effect is system-dependent, so these tests simply check that the instructions run.
+
+[[t-Svinval-coverpoints]]
+.Svinval Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svinval.csv[]
+,===

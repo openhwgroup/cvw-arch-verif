@@ -3,11 +3,27 @@
 
 The Ssstrict extension indicates that reserved instructions throw an illegal instruction exception, delegated to supervisor mode.
 
+*** get rid of SsstrictM or keep as optional
+
 ==== SsstrictS
 
 *** for all mention of reserved in Zca, list normative statement here and give coverpoint
 
+[[t-SsstrictS-coverpoints]]
+.SsstrictS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsstrictS.csv[]
+,===
 
 ==== SsstrictV
 
-*** get rid of SsstrictM
+[[t-SsstrictV-coverpoints]]
+.SsstrictV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsstrictV.csv[]
+,===
+

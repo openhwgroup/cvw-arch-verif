@@ -1,0 +1,35 @@
+
+=== Zihpm
+
+These tests exercise the custom hardware performance monitor CSRs.
+
+
+==== ZihpmM
+
+[[t-ZihpmM-coverpoints]]
+.ZihpmM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZihpmM.csv[]
+,===
+
+==== ZihpmS
+
+[[t-ZihpmS-coverpoints]]
+.ZihpmS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZihpmS.csv[]
+,===
+
+==== ZihpmU
+
+[[t-ZihpmU-coverpoints]]
+.ZihpmU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZihpmU.csv[]
+,===
