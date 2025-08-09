@@ -22,3 +22,33 @@ This section describes AIA extension test plans.
 ,===
 //include::{testplansdir}/Ssaia.csv[]
 ,===
+
+==== IMSIC Incoming MSI Controller
+
+[[t-imsic-coverpoints]]
+.IMSIC Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/imsic.csv[]
+,===
+
+==== APLIC Advanced Platform-Level Interrupt Controller
+
+[[t-aplic-coverpoints]]
+.APLIC Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/aplic.csv[]
+,===
+
+==== IOMMU I/O Memory Management Unit
+
+[[t-iommu-coverpoints]]
+.IOMMU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/iommu.csv[]
+,===
