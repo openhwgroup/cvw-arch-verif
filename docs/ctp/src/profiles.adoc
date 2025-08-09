@@ -133,7 +133,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Svpbmt|Page-based Memory Types|<<t-Svpbmt-coverpoints>>|||x|x|x
 |Svnapot|Naturally Aligned Pages|<<t-Svnapot-coverpoints>>|||o|x|x
 |Sscofpmf|Counter Filtering|<<t-Sscofpmf-coverpoints>>|||o|x|x
-|Smstateen|Machine State Enable|<<t-Smstateen-coverpoints>>|||||
 |Ssstateen|Supervisor State Enable|<<t-Ssstateen-coverpoints>>|||o||x
 |Ssu64xl|64-bit UXL|<<t-Ssu64xl-coverpoints>>|||o|x|x
 |Sscounterenw|Counter Enables Writable|<<t-Sscounterenw-coverpoints>>|||x|x|x
@@ -215,7 +214,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |SsnpmH|Pointer Masking|<<t-SsnpmH-coverpoints>>|||o|o|o
 |SmnpmH|Pointer Masking|<<t-SmnpmH-coverpoints>>|||o|o|o
 8+^|Miscellaneous RV{A/B}23 Extensions
-|Sm1p13|Machine 1p13|<<t-Sm1p13-coverpoints>>||||x|x
 |Ss1p13|Supervisor 1p13|<<t-Ss1p13-coverpoints>>||||x|x
 |Ssnpm|Pointer Masking|<<t-Ssnpm-coverpoints>>||||x|x
 |Smnpm|Pointer Masking|<<t-Smnpm-coverpoints>>|||||
@@ -243,6 +241,8 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Smepmp|Enhanced PMP|<<t-Smepmp-coverpoints>>|||||
 |Smrnmi|Machine Resumable Interrupts|<<t-Smrnmi-coverpoints>>|||||
 |Ssrnmi|Supervisor Resumable Interrupts|<<t-Ssrnmi-coverpoints>>|||||
+|Sm1p13|Machine 1p13|<<t-Sm1p13-coverpoints>>||||x|x
+|Smstateen|Machine State Enable|<<t-Smstateen-coverpoints>>|||||
 |Smcntrpmf|Cycle and Instret Mode Filtering|<<t-Smcntrpmf-coverpoints>>|||||
 |Smcdeleg|Counter Delegation|<<t-Smcdeleg-coverpoints>>|||||
 |Ssccfg|Counter Delegation|<<t-Ssccfg-coverpoints>>|||||

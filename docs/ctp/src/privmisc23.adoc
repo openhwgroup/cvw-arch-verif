@@ -11,16 +11,6 @@
 //include::{testplansdir}/Sscofpmf.csv[]
 ,===
 
-==== Smstateen Machine State Enable
-
-[[t-Smstateen-coverpoints]]
-.Smstateen Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/Smstateen.csv[]
-,===
-
 ==== Ssstateen Supervisor State Enable
 
 [[t-Ssstateen-coverpoints]]
@@ -71,16 +61,6 @@ RV64 only
 [%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Sstvala.csv[]
-,===
-
-==== Sm1p13 Machine Mode 1.13
-
-[[t-Sm1p13-coverpoints]]
-.Sm1p13 Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/Sm1p13.csv[]
 ,===
 
 ==== Ss1p13 Supervisor Mode 1.13

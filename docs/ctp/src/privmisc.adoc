@@ -1,6 +1,26 @@
 
 === Miscellaneous Non-RV23 Privileged Extensions
 
+==== Sm1p13 Machine Mode 1.13
+
+[[t-Sm1p13-coverpoints]]
+.Sm1p13 Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Sm1p13.csv[]
+,===
+
+==== Smstateen Machine State Enable
+
+[[t-Smstateen-coverpoints]]
+.Smstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smstateen.csv[]
+,===
+
 ==== Smcsrind Machine-Mode Indirect CSR Access
 
 [[t-Smcsrind-coverpoints]]
