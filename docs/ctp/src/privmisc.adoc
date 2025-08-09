@@ -1,76 +1,122 @@
 
-=== Miscellaneous Privileged Extensions
+=== Miscellaneous Non-RV23 Privileged Extensions
 
-==== Sscofpmf
+==== Smcsrind
 
-Counter filtering.
-
-[[t-Sscofpmf-coverpoints]]
-.Sscofpmf Coverpoints
+[[t-Smcsrind-coverpoints]]
+.Smcsrind Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Sscofpmf.csv[]
+include::{testplansdir}/Smcsrind.csv[]
 ,===
 
-==== Smstateen
+==== Sscsrind
 
-[[t-Smstateen-coverpoints]]
-.Smstateen Coverpoints
+[[t-Sscsrind-coverpoints]]
+.Sscsrind Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Smstateen.csv[]
+include::{testplansdir}/Sscsrind.csv[]
 ,===
 
-==== Ssstateen
+==== Smepmp
 
-[[t-Ssstateen-coverpoints]]
-.Ssstateen Coverpoints
+[[t-Smepmp-coverpoints]]
+.Smepmp Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Ssstateen.csv[]
+include::{testplansdir}/Smepmp.csv[]
 ,===
 
-==== Ssu64xl
+==== Smrnmi
 
-RV64 only: User-mode XLEN = 64 supported
-
-[[t-Ssu64xl-coverpoints]]
-.Ssu64xl Coverpoints
+[[t-Smrnmi-coverpoints]]
+.Smrnmi Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Ssu64xl.csv[]
+include::{testplansdir}/Smrnmi.csv[]
 ,===
 
-==== Sscounterenw
+==== Ssrnmi
 
-[[t-Sscounterenw-coverpoints]]
-.Sscounterenw Coverpoints
+[[t-Ssrnmi-coverpoints]]
+.Ssrnmi Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Sscounterenw.csv[]
+include::{testplansdir}/Ssrnmi.csv[]
 ,===
 
-==== Sstvecd
+==== Smcntrpmf
 
-[[t-Sstvecd-coverpoints]]
-.Sstvecd Coverpoints
+[[t-Smcntrpmf-coverpoints]]
+.Smcntrpmf Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Sstvecd.csv[]
+include::{testplansdir}/Smcntrpmf.csv[]
 ,===
 
-==== Sstvala
+==== Smcdeleg
 
-[[t-Sstvala-coverpoints]]
-.Sstvala Coverpoints
+[[t-Smcdeleg-coverpoints]]
+.Smcdeleg Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Sstvala.csv[]
+include::{testplansdir}/Smcdeleg.csv[]
+,===
+
+==== Ssccfg
+
+[[t-Ssccfg-coverpoints]]
+.Ssccfg Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssccfg.csv[]
+,===
+
+==== Smdbltrp
+
+[[t-Smdbltrp-coverpoints]]
+.Smdbltrp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smdbltrp.csv[]
+,===
+
+==== Ssdbltrp
+
+[[t-Ssdbltrp-coverpoints]]
+.Ssdbltrp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssdbltrp.csv[]
+,===
+
+==== Smctr
+
+[[t-Smctr-coverpoints]]
+.Smctr Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smctr.csv[]
+,===
+
+==== Ssqosid
+
+[[t-Ssqosid-coverpoints]]
+.Ssqosid Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssqosid.csv[]
 ,===

@@ -1,0 +1,34 @@
+
+=== Debug
+
+This section describes debug-related extensions not required in RVA23.
+
+==== DM Debug Module
+
+[[t-DM-coverpoints]]
+.DM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/DM.csv[]
+,===
+
+==== DTM Debug Transport Module
+
+[[t-DTM-coverpoints]]
+.DTM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/DTM.csv[]
+,===
+
+==== Sdext Debug Extension
+
+[[t-Sdext-coverpoints]]
+.Sdext Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sdext.csv[]
+,===

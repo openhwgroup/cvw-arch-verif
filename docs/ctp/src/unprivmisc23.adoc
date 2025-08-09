@@ -1,0 +1,50 @@
+
+=== Miscellaneous RV23 Unprivileged Extensions
+
+==== Zacas Atomic Compare and Swap
+
+Atomic compare and swap.
+
+[[t-Zacas-coverpoints]]
+.Zacas Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zacas.csv[]
+,===
+
+==== Zabha
+
+Subword atomics.
+
+[[t-Zabha-coverpoints]]
+.Zabha Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zabha.csv[]
+,===
+
+==== Zimop
+
+Maybe-ops.  Should write 0 to rd unless implemented.
+
+[[t-Zimop-coverpoints]]
+.Zimop Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zimop.csv[]
+,===
+
+==== Zcmop
+
+Compressed maybe-ops.  Should write 0 to rd unless implemented.
+
+[[t-Zcmop-coverpoints]]
+.Zcmop Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zcmop.csv[]
+,===

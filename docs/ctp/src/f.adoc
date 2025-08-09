@@ -113,3 +113,13 @@ include::{testplansdir}/ZfaZfh.csv[]
 ,===
 include::{testplansdir}/ZfaZfhD.csv[]
 ,===
+
+===== Zfbfmin Scalar BF16 Converts
+
+[[t-Zfbfmin-coverpoints]]
+.Zfbfmin Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zfbfmin.csv[]
+,===

@@ -1,0 +1,24 @@
+
+=== AIA Advanced Interrupt Architecture
+
+This section describes AIA extension test plans.
+
+==== Smaia Machine-Mode Advanced Interrupt Architecture
+
+[[t-Smaia-coverpoints]]
+.Smaia Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smaia.csv[]
+,===
+
+==== Ssaia Supervisor-Mode Advanced Interrupt Architecture
+
+[[t-Ssaia-coverpoints]]
+.Ssaia Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssaia.csv[]
+,===

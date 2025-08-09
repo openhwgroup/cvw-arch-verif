@@ -1,0 +1,82 @@
+
+=== Miscellaneous Non-RV23 Unprivileged Extensions
+
+==== Zfinx
+
+[[t-Zfinx-coverpoints]]
+.Zfinx Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zfinx.csv[]
+,===
+
+==== Zdinx
+
+[[t-Zdinx-coverpoints]]
+.Zdinx Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zdinx.csv[]
+,===
+
+==== Zhinx
+
+[[t-Zhinx-coverpoints]]
+.Zhinx Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zhinx.csv[]
+,===
+
+==== Zhinxmin
+
+[[t-Zhinxmin-coverpoints]]
+.Zhinxmin Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zhinxmin.csv[]
+,===
+
+==== Zcmp
+
+[[t-Zcmp-coverpoints]]
+.Zcmp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zcmp.csv[]
+,===
+
+==== Zcmt
+
+[[t-Zcmt-coverpoints]]
+.Zcmt Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zcmt.csv[]
+,===
+
+==== Zilsd
+
+[[t-Zilsd-coverpoints]]
+.Zilsd Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zilsd.csv[]
+,===
+
+==== Zclsd
+
+[[t-Zclsd-coverpoints]]
+.Zclsd Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zclsd.csv[]
+,===

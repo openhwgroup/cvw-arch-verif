@@ -1,0 +1,168 @@
+
+=== Miscellaneous RV23 Privileged Extensions
+
+==== Sscofpmf
+
+Counter filtering.
+
+[[t-Sscofpmf-coverpoints]]
+.Sscofpmf Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sscofpmf.csv[]
+,===
+
+==== Smstateen
+
+[[t-Smstateen-coverpoints]]
+.Smstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smstateen.csv[]
+,===
+
+==== Ssstateen
+
+[[t-Ssstateen-coverpoints]]
+.Ssstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssstateen.csv[]
+,===
+
+==== Ssu64xl
+
+RV64 only: User-mode XLEN = 64 supported
+
+[[t-Ssu64xl-coverpoints]]
+.Ssu64xl Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssu64xl.csv[]
+,===
+
+==== Sscounterenw
+
+[[t-Sscounterenw-coverpoints]]
+.Sscounterenw Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sscounterenw.csv[]
+,===
+
+==== Sstvecd
+
+[[t-Sstvecd-coverpoints]]
+.Sstvecd Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sstvecd.csv[]
+,===
+
+==== Sstvala
+
+[[t-Sstvala-coverpoints]]
+.Sstvala Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sstvala.csv[]
+,===
+
+==== Sm1p13
+
+[[t-Sm1p13-coverpoints]]
+.Sm1p13 Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sm1p13.csv[]
+,===
+
+==== Ss1p13
+
+[[t-Ss1p13-coverpoints]]
+.Ss1p13 Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ss1p13.csv[]
+,===
+
+==== Ssnpm
+
+[[t-Ssnpm-coverpoints]]
+.Ssnpm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssnpm.csv[]
+,===
+
+==== Smnpm
+
+[[t-Smnpm-coverpoints]]
+.Smnpm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smnpm.csv[]
+,===
+
+==== Smmpm
+
+[[t-Smmpm-coverpoints]]
+.Smmpm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smmpm.csv[]
+,===
+
+==== Zicfilp
+
+[[t-Zicfilp-coverpoints]]
+.Zicfilp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicfilp.csv[]
+,===
+
+==== Zicfiss
+
+[[t-Zicfiss-coverpoints]]
+.Zicfiss Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicfiss.csv[]
+,===
+
+==== Zawrs
+
+Wait on reservation set.  Waits until timeout on a single hart that cannot modify the reservation set.
+
+[[t-Zawrs-coverpoints]]
+.Zawrs Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zawrs.csv[]
+,===
+
+==== Sdtrig
+
+[[t-Sdtrig-coverpoints]]
+.Sdtrig Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sdtrig.csv[]
+,===

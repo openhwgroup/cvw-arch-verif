@@ -1089,6 +1089,42 @@ Endianness introduced by Hypervisor extension.
 include::{testplansdir}/EndianH.csv[]
 ,===
 
+==== ZicntrH
+
+Counter behavior introduced by Hypervisor extension.
+
+[[t-ZicntrH-coverpoints]]
+.ZicntrH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicntrH.csv[]
+,===
+
+==== ZihpmH
+
+Hardware performance monitor behavior introduced by Hypervisor extension.
+
+[[t-ZihpmH-coverpoints]]
+.ZihpmH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZihpmH.csv[]
+,===
+
+==== PMPH
+
+PMP behavior introduced by Hypervisor extension.
+
+[[t-PMPH-coverpoints]]
+.PMPH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPH.csv[]
+,===
+
 ==== RV32VMH
 
 Virtual memory behavior introduced by Hypervisor extension.
