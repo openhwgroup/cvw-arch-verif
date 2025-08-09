@@ -1,0 +1,51 @@
+
+=== A Atomic Extension
+
+The A extension is subdivided into Zaamo and Zalrsc.
+ <<t-A-normative-statements>> lists the normative statements in the RV{32/64}A specification applicable to all instructions, and the unprivileged coverpoints that exercise them.
+
+[[t-A-normative-statements]]
+.A Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|Unpriv Section|Normative Statement|Coverpoints
+|===
+
+<<t-A-priv-normative-statements>> summarizes normative statements relating to atomic instructions affecting privileged behavior.
+
+==== Zaamo Atomic Memory Operations Extension
+
+<<t-Zaamo-coverpoints>> summarizes the coverpoints for the Zaamo extension.
+
+[[t-Zaamo-coverpoints]]
+.Zaamo Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zaamo.csv[]
+,===
+
+[[t-Zaamo-normative-statements]]
+.Zaamo Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+
+|===
+
+==== Zalrsc Load-Reserved / Store-Conditional Extension
+
+<<t-Zalrsc-coverpoints>> summarizes the coverpoints for the Zalrsc extension.
+
+[[t-Zalrsc-coverpoints]]
+.Zalrsc Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zalrsc.csv[]
+,===
+
+[[t-Zalrsc-normative-statements]]
+.Zalrsc Normative Statements
+[cols="1, 4, 2" options=header]
+|===
+|===

@@ -72,6 +72,7 @@ include::{testplansdir}/ZfhminD.csv[]
 ==== Zfa Additional FP
 
 *** called ZfaF
+
 [[t-ZfaF-coverpoints]]
 .ZfaF Instruction Coverpoints
 [options=header]
@@ -111,4 +112,14 @@ include::{testplansdir}/ZfaZfh.csv[]
 [%AUTOWIDTH]
 ,===
 include::{testplansdir}/ZfaZfhD.csv[]
+,===
+
+===== Zfbfmin Scalar BF16 Converts
+
+[[t-Zfbfmin-coverpoints]]
+.Zfbfmin Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Zfbfmin.csv[]
 ,===

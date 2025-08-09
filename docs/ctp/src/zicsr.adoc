@@ -12,19 +12,102 @@ Zicsr does not test reserved or custom instructions or CSRs because their behavi
 Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
 where they should throw an Illegal Instruction exception if not implemented.
 
-==== ZicsrM
+==== ZicsrM Machine-Mode CSRs
+
+These test CSRs that exist in machine mode.
+
+[[t-ZicsrM-coverpoints]]
+.ZicsrM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrM.csv[]
+,===
 
 *** find all WPRI and WLRL fields.  Don't look at WPRI results.  Only test legal values of WLRL.
-==== ZicsrS
-
-==== ZicsrU
-
-==== ZicsrF
-
-==== ZicsrV
-
-==== ZicsrUF
-
-==== ZicsrUV
-
   TODO check WARL, WLRL, WPRI behaviors
+
+
+==== ZicsrS Supervisor-Mode CSRs
+
+These test additional CSRs that exist in supervisor mode.
+
+[[t-ZicsrS-coverpoints]]
+.ZicsrS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrS.csv[]
+,===
+
+==== ZicsrU User-Mode CSRs
+
+These test additional CSRs that exist in user mode.
+
+[[t-ZicsrU-coverpoints]]
+.ZicsrU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrU.csv[]
+,===
+
+==== ZicsrF Floating-Point CSRs
+
+These test additional CSRs that exist when floating-point is supported.
+
+[[t-ZicsrF-coverpoints]]
+.ZicsrF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrF.csv[]
+,===
+
+==== ZicsrV Vector CSRs
+
+These test additional CSRs that exist when vector is supported.
+
+[[t-ZicsrV-coverpoints]]
+.ZicsrV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrV.csv[]
+,===
+
+==== ZicsrUF Unprivileged Floating-Point CSRs
+
+These test additional CSR scenarios that exist when floating-point and user mode are supported.
+
+[[t-ZicsrUF-coverpoints]]
+.ZicsrUF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrUF.csv[]
+,===
+
+==== ZicsrUV Unprivileged Vector CSRs
+
+These test additional CSR scenarios that exist when vector and user mode are supported.
+
+[[t-ZicsrUV-coverpoints]]
+.ZicsrUV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrUV.csv[]
+,===
+
+==== ZicsrZkr Entropy CSR
+
+These test CSRs when the Zkr entropy extension is supported.
+
+[[t-ZicsrZkr-coverpoints]]
+.ZicsrZkr Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrZkr.csv[]
+,===

@@ -1,28 +1,158 @@
 
 === Exceptions
 
-==== ExceptionsM
+Exception tests are organized according to the privilege mode or extension supported.  For example, a configuration with Machine, Supervisor, User, and Floating-Point supported should run ExceptionsM, ExceptionsS, ExceptionsU, and ExceptionsF.
 
-==== ExceptionsS
+==== ExceptionsM Machine-Mode Exceptions
 
-==== ExceptionsU
+These tests are run on any configuration with machine mode that supports exceptions.
 
-==== ExceptionsF
+[[t-ExceptionsM-coverpoints]]
+.ExceptionsM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsM.csv[]
+,===
 
-==== ExceptionsV
+==== ExceptionsS Supervisor-Mode Exceptions
 
-==== ExceptionsZalrsc
+These additional exception tests are run on configurations with supervisor mode.
 
-==== ExceptionsZaammo
+[[t-ExceptionsS-coverpoints]]
+.ExceptionsS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsS.csv[]
+,===
 
-==== ExceptionsZc
+==== ExceptionsU User-Mode Exceptions
 
-==== ExceptionsZicboS
+These additional exception tests are run on configurations with user mode.
 
-==== ExceptionsZicboU
+[[t-ExceptionsU-coverpoints]]
+.ExceptionsU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsU.csv[]
+,===
 
-==== ExceptionsVM
+==== ExceptionsF Floating-Point Exceptions
 
-==== ExceptionsVMZalrsc
+These additional exception tests are run on configurations with floating-point (at least the F extension).
 
-==== ExceptionsVMZaamo
+[[t-ExceptionsF-coverpoints]]
+.ExceptionsF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsF.csv[]
+,===
+
+==== ExceptionsV Vector Exceptions
+
+These additional exception tests are run on configurations with vector (V extension or subsets thereof that rely on mstatus.VS).
+
+[[t-ExceptionsV-coverpoints]]
+.ExceptionsV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsV.csv[]
+,===
+
+==== ExceptionsZalrsc Atomic LR/SC Exceptions
+
+[[t-ExceptionsZalrsc-coverpoints]]
+.ExceptionsZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZalrsc.csv[]
+,===
+
+==== ExceptionsZaamo Atomic Memory Operation Exceptions
+
+[[t-ExceptionsZaamo-coverpoints]]
+.ExceptionsZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZaamo.csv[]
+,===
+
+==== ExceptionsZc Compressed Instruction Exceptions
+
+These additional exception tests are run on configurations with compressed instructions (C, Zca, Zcb, etc.).  They attempt to test all compressed loads and stores, but may throw an illegal instruction fault on compressed subword load/store if Zcb is not supported.
+
+[[t-ExceptionsZc-coverpoints]]
+.ExceptionsZc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZc.csv[]
+,===
+
+==== ExceptionsZicboS Supervisor-Mode CBO Exceptions
+
+[[t-ExceptionsZicboS-coverpoints]]
+.ExceptionsZicboS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZicboS.csv[]
+,===
+
+==== ExceptionsZicboU User-Mode CBO Exceptions
+
+[[t-ExceptionsZicboU-coverpoints]]
+.ExceptionsZicboU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZicboU.csv[]
+,===
+
+==== ExceptionsVM Virtual Memory Exceptions
+
+[[t-ExceptionsVM-coverpoints]]
+.ExceptionsVM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVM.csv[]
+,===
+
+==== ExceptionsVMZalrsc  Virtual Memory LR/SC Exceptions
+
+[[t-ExceptionsVMZalrsc-coverpoints]]
+.ExceptionsVMZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVMZalrsc.csv[]
+,===
+
+==== ExceptionsVMZaamo Virtual Memory AMO Exceptions
+
+[[t-ExceptionsVMZaamo-coverpoints]]
+.ExceptionsM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVMZaamo.csv[]
+,===
+
+==== Zicclsm Misaligned Loads/Stores
+
+Misaligned loads/stores handled in hardware.
+
+[[t-Zicclsm-coverpoints]]
+.Zicclsm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Zicclsm.csv[]
+,===

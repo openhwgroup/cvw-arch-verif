@@ -1,0 +1,142 @@
+
+=== Miscellaneous Non-RV23 Privileged Extensions
+
+==== Sm1p13 Machine Mode 1.13
+
+[[t-Sm1p13-coverpoints]]
+.Sm1p13 Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Sm1p13.csv[]
+,===
+
+==== Smstateen Machine State Enable
+
+[[t-Smstateen-coverpoints]]
+.Smstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smstateen.csv[]
+,===
+
+==== Smcsrind Machine-Mode Indirect CSR Access
+
+[[t-Smcsrind-coverpoints]]
+.Smcsrind Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smcsrind.csv[]
+,===
+
+==== Sscsrind Supervisor-Mode Indirect CSR Access
+
+[[t-Sscsrind-coverpoints]]
+.Sscsrind Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Sscsrind.csv[]
+,===
+
+==== Smepmp Enhanced PMP
+
+[[t-Smepmp-coverpoints]]
+.Smepmp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+/include::{testplansdir}/Smepmp.csv[]
+,===
+
+==== Smrnmi Machine-Mode Resumable Non-Maskable Interrupts
+
+[[t-Smrnmi-coverpoints]]
+.Smrnmi Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smrnmi.csv[]
+,===
+
+==== Ssrnmi Supervisor-Mode Resumable Non-Maskable Interrupts
+
+[[t-Ssrnmi-coverpoints]]
+.Ssrnmi Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Ssrnmi.csv[]
+,===
+
+==== Smcntrpmf Counter Privilege Mode Filtering
+
+[[t-Smcntrpmf-coverpoints]]
+.Smcntrpmf Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smcntrpmf.csv[]
+,===
+
+==== Smcdeleg Counter Delegation
+
+[[t-Smcdeleg-coverpoints]]
+.Smcdeleg Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smcdeleg.csv[]
+,===
+
+==== Ssccfg Counter Delegation
+
+[[t-Ssccfg-coverpoints]]
+.Ssccfg Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Ssccfg.csv[]
+,===
+
+==== Smdbltrp Machine Double Traps
+
+[[t-Smdbltrp-coverpoints]]
+.Smdbltrp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smdbltrp.csv[]
+,===
+
+==== Ssdbltrp Supervisor Double Traps
+
+[[t-Ssdbltrp-coverpoints]]
+.Ssdbltrp Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Ssdbltrp.csv[]
+,===
+
+==== Smctr Control Transer Records
+
+[[t-Smctr-coverpoints]]
+.Smctr Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Smctr.csv[]
+,===
+
+==== Ssqosid Quality-of-Service ID
+
+[[t-Ssqosid-coverpoints]]
+.Ssqosid Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Ssqosid.csv[]
+,===
