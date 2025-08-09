@@ -1,7 +1,7 @@
 
 === Zicntr
 
-These tests exercise the mtime, mcycle, and minstret counters and related registers.
+These tests exercise the mtime, mcycle, and minstret counters and related registers (time, cycle, instret).
 
 *** edit coverpoints to pull out hpm
 

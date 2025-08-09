@@ -3,14 +3,14 @@
 
 In principle, a test plan could simply list a set of features to test, and a set of tests that exercise these features.  Experienced verification engineers have learned that tests often have bugs and don't exercise the feature that the author intended.  Many of these bugs can be caught if a different engineer independently writes functional coverpoints that measure whether the tests exercised the features.
 
-This Certification Test Plan focuses on whether a DUT implements all of the architectural features of a profile. Architectural features are those that are directly visible to the programmer, especially those defined in the unprivileged and privileged ISA specifications.  
+This Certification Test Plan focuses on whether a DUT implements all of the architectural features of a profile. Architectural features are those that are directly visible to the programmer, especially those defined in the unprivileged and privileged ISA specifications.
 
 [NOTE]
 ====
 Later phases of certification tests may add ratified architectural features outside the ISA spec, such as IOMMU, debug, or AIA.
 ====
 
-_Certification_ differs from _design verification_ in that it does not systmatically test microarchitural features. Design verification must be aware of DUT-specific features such as the pipeline design.  For example, DV should test design-specific interactions of interrupt arrival time, pipeline hazards, multicycle instructions, MMU, and memory system. Design verification also should test tricky implementation issues, such as hard floating-point rounding cases.  
+_Certification_ differs from _design verification_ in that it does not systematically test microarchitectural features. Design verification must be aware of DUT-specific features such as the pipeline design.  For example, DV should test design-specific interactions of interrupt arrival time, pipeline hazards, multicycle instructions, MMU, and memory system. Design verification also should test tricky implementation issues, such as hard floating-point rounding cases.
 
 This plan uses the term _Architectural Functional Coverage_ to describe the functional coverpoints required for certification.  In contrast, full design verification also has _Microarchitectural Functional Coverage_.
 
@@ -51,7 +51,7 @@ As compared to the base RVVI, Extended RVVI adds the following signals:
 PPN_BITS = PA_BITS - 12
 *** why do we need ppn when we have phys_addr?  Why not derive locally?
 
-*** do we need to add guest physical address?  Such as 
+*** do we need to add guest physical address?  Such as
 
 * gpa_adr_i
 * gpa_adr_d
@@ -60,7 +60,7 @@ maybe guest page table entries?
 
 === riscvISACOV Signals
 
-Coverpoints are described using the open https://github.com/riscv-verification/riscvISACOV[riscvISACOV] framework.  
+Coverpoints are described using the open https://github.com/riscv-verification/riscvISACOV[riscvISACOV] framework.
 
 The framework collects data coming across the RVVI interface and presents it with `ins.current` and `ins.prev` data structures to allow easy access to the architectural state at the end of the current and previous instructions.  For example, `ins.current.rs1` is the source register for the current instruction, and `ins.current.rd_val` is the value written to the destination register by the current instruction.
 
@@ -69,7 +69,7 @@ The framework collects data coming across the RVVI interface and presents it wit
 Most coverpoints use `ins.current`, to measure architectural state at the end of the instruction.  However, some privileged coverpoints need to know the privilege mode or values of CSRs at the start of the instruction and thus use `ins.prev`.
 ====
 
-The available fields are given in fcov/coverage/RISCV_coverage_rvvi.svh.  Most commonly used fields are summarized in <<t-riscvISACOV>>. Other fields include floating-point and vector register IDs and values, MMU extended RVVI signals, vector type information, and pending interrupts. 
+The available fields are given in fcov/coverage/RISCV_coverage_rvvi.svh.  Most commonly used fields are summarized in <<t-riscvISACOV>>. Other fields include floating-point and vector register IDs and values, MMU extended RVVI signals, vector type information, and pending interrupts.
 
 [[t-riscvISACOV]]
 .riscvISACOV Signals for Coverpoints

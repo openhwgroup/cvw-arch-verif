@@ -10,7 +10,7 @@ instruction exception that results in a contained trap to the supervisor-mode tr
 
 ==== SsstrictM
 
-RISC-V does not have a ratified equivalent of Ssstrict for machine mode, but this optional test suite checks the behavior of unimplemented instructions and CSRs from machine mode.  
+RISC-V does not have a ratified equivalent of Ssstrict for machine mode, but this optional test suite checks the behavior of unimplemented instructions and CSRs from machine mode.
 
 [[t-SsstrictM-coverpoints]]
 .SsstrictM Coverpoints
@@ -38,7 +38,7 @@ include::{testplansdir}/SsstrictS.csv[]
 
 ==== SsstrictV
 
-Test that all behaviors called out as "reserved" in the vector specification cause an illegal instruction fault.  This is an optional test, not a ratified extension.
+Test that all behaviors called out as "reserved" in the vector specification cause an illegal instruction fault.  Required when Ssstrict and V are both present.
 
 [[t-SsstrictV-coverpoints]]
 .SsstrictV Coverpoints
