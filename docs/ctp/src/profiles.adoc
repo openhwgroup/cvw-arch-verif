@@ -14,6 +14,8 @@ This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification obje
 ** RVA23 less vector and hypervisor
 * https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified): Phase 2
 
+=== Profile Coverage Matrix
+
 <<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
 
 Coverage files with multiple extensions in the name apply when all the extensions are supported; for example, ZfaZfhD is used in a system supporting Zfa, Zfh, and D extensions.
@@ -253,7 +255,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |EM|Multiply/Divide|<<t-EM-coverpoints>>|||||
 |EZmmul|Multiply|<<t-EZmmul-coverpoints>>|||||
 |EZca|Compressed|<<t-EZca-coverpoints>>|||||
-|EZcb|Additonal Compressed|<<t-EZcb-coverpoints>>|||||
+|EZcb|Additional Compressed|<<t-EZcb-coverpoints>>|||||
 |EZcmp|Compressed Push/Pop|<<t-EZcmp-coverpoints>>|||||
 |EZcmt|Compressed Table Jump|<<t-EZcmt-coverpoints>>|||||
 |EZba|Address Generation|<<t-EZba-coverpoints>>|||||

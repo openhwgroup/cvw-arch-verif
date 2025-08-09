@@ -71,14 +71,14 @@ illegal-instruction exception in U-mode.|ZicsrH/uprivinst/cp_hinst
 implementation whenever a trap is taken into HS-mode. Just as the SPP
 bit in `sstatus` is set to the (nominal) privilege mode at the time of
 the trap, the SPV bit in `hstatus` is set to the value of the
-virtualization mode V at the time of the trap. |ExceptionsH/cp_ecall_to_hs, cp_hedeleg, InterruptsH/cp_trigger_vs{e/t/s}i, InteruptsS/cp_trigger_*
+virtualization mode V at the time of the trap. |ExceptionsH/cp_ecall_to_hs, cp_hedeleg, InterruptsH/cp_trigger_vs{e/t/s}i, InterruptsS/cp_trigger_*
 |21.2.1|When an SRET instruction
 is executed when V=0, V is set to SPV.|ZicsrH/mprivinst/cp_sret, ZicsrH/hprivinst/cp_sret
 |21.2.1|When V=1 and a trap is taken into HS-mode, bit SPVP (Supervisor Previous
 Virtual Privilege) is set to the nominal privilege mode at the time of
-the trap, the same as `sstatus`.SPP.|ExeceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
+the trap, the same as `sstatus`.SPP.|ExceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
 |21.2.1|But if V=0 before a trap, SPVP is
-left unchanged on trap entry. |ExeceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
+left unchanged on trap entry. |ExceptionsH/cp_hedeleg, ExceptionsH/cp_ecall_to_hs
 |21.2.1|SPVP controls the effective privilege of
 explicit memory accesses made by the virtual-machine load/store
 instructions, HLV, HLVX, and HSV.|H/h*v tests***
@@ -86,7 +86,7 @@ instructions, HLV, HLVX, and HSV.|H/h*v tests***
 whenever a trap is taken into HS-mode. For any trap (breakpoint, address
 misaligned, access fault, page fault, or guest-page fault) that writes a
 guest virtual address to `stval`, GVA is set to 1. For any other trap
-into HS-mode, GVA is set to 0.|ExceptionsH/cp_hedeleg, ***virtmemtets
+into HS-mode, GVA is set to 0.|ExceptionsH/cp_hedeleg, ***virtmemtests
 |21.2.1|The VSBE bit is a *WARL* field that controls the endianness of explicit memory
 accesses made from VS-mode. If VSBE=0, explicit load and store memory
 accesses made from VS-mode are little-endian, and if VSBE=1, they are
@@ -1380,7 +1380,7 @@ include::{testplansdir}/SsnpmH.csv[]
 
 ==== SmnpmH
 
-Hypervisor poitner masking.
+Hypervisor pointer masking.
 
 [[t-SmnpmH-coverpoints]]
 .SmnpmH Coverpoints
