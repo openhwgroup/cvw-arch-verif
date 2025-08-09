@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPM.csv[]
+//include::{testplansdir}/PMPM.csv[]
 ,===
 
 ==== PMPS
@@ -18,7 +18,7 @@ include::{testplansdir}/PMPM.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPS.csv[]
+//include::{testplansdir}/PMPS.csv[]
 ,===
 
 ==== PMPU
@@ -28,7 +28,7 @@ include::{testplansdir}/PMPS.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPU.csv[]
+//include::{testplansdir}/PMPU.csv[]
 ,===
 
 ==== PMPZca
@@ -38,7 +38,7 @@ include::{testplansdir}/PMPU.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPZca.csv[]
+//include::{testplansdir}/PMPZca.csv[]
 ,===
 
 ==== PMPZicbo
@@ -48,7 +48,7 @@ include::{testplansdir}/PMPZca.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPZicbo.csv[]
+//include::{testplansdir}/PMPZicbo.csv[]
 ,===
 
 ==== PMPZaamo
@@ -58,7 +58,7 @@ include::{testplansdir}/PMPZicbo.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPZaamo.csv[]
+//include::{testplansdir}/PMPZaamo.csv[]
 ,===
 
 ==== PMPZalrsc
@@ -68,7 +68,7 @@ include::{testplansdir}/PMPZaamo.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPZalrsc.csv[]
+//include::{testplansdir}/PMPZalrsc.csv[]
 ,===
 
 ==== RV32CBO_PMP
@@ -80,7 +80,7 @@ include::{testplansdir}/PMPZalrsc.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32CBO_PMP.csv[]
+//include::{testplansdir}/RV32CBO_PMP.csv[]
 ,===
 
 ==== RV64CBO_PMP
@@ -92,5 +92,5 @@ include::{testplansdir}/RV32CBO_PMP.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64CBO_PMP.csv[]
+//include::{testplansdir}/RV64CBO_PMP.csv[]
 ,===

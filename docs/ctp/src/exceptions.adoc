@@ -3,7 +3,7 @@
 
 Exception tests are organized according to the privilege mode or extension supported.  For example, a configuration with Machine, Supervisor, User, and Floating-Point supported should run ExceptionsM, ExceptionsS, ExceptionsU, and ExceptionsF.
 
-==== ExceptionsM
+==== ExceptionsM Machine-Mode Exceptions
 
 These tests are run on any configuration with machine mode that supports exceptions.
 
@@ -12,10 +12,10 @@ These tests are run on any configuration with machine mode that supports excepti
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsM.csv[]
+//include::{testplansdir}/ExceptionsM.csv[]
 ,===
 
-==== ExceptionsS
+==== ExceptionsS Supervisor-Mode Exceptions
 
 These additional exception tests are run on configurations with supervisor mode.
 
@@ -24,10 +24,10 @@ These additional exception tests are run on configurations with supervisor mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsS.csv[]
+//include::{testplansdir}/ExceptionsS.csv[]
 ,===
 
-==== ExceptionsU
+==== ExceptionsU User-Mode Exceptions
 
 These additional exception tests are run on configurations with user mode.
 
@@ -36,10 +36,10 @@ These additional exception tests are run on configurations with user mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsU.csv[]
+//include::{testplansdir}/ExceptionsU.csv[]
 ,===
 
-==== ExceptionsF
+==== ExceptionsF Floating-Point Exceptions
 
 These additional exception tests are run on configurations with floating-point (at least the F extension).
 
@@ -48,10 +48,10 @@ These additional exception tests are run on configurations with floating-point (
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsF.csv[]
+//include::{testplansdir}/ExceptionsF.csv[]
 ,===
 
-==== ExceptionsV
+==== ExceptionsV Vector Exceptions
 
 These additional exception tests are run on configurations with vector (V extension or subsets thereof that rely on mstatus.VS).
 
@@ -60,34 +60,30 @@ These additional exception tests are run on configurations with vector (V extens
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsV.csv[]
+//include::{testplansdir}/ExceptionsV.csv[]
 ,===
 
-==== ExceptionsZalrsc
-
-These additional exception tests are run on configurations with the Zalrsc extension.
+==== ExceptionsZalrsc Atomic LR/SC Exceptions
 
 [[t-ExceptionsZalrsc-coverpoints]]
 .ExceptionsZalrsc Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZalrsc.csv[]
+//include::{testplansdir}/ExceptionsZalrsc.csv[]
 ,===
 
-==== ExceptionsZaamo
-
-These additional exception tests are run on configurations with the Zaamo extension.
+==== ExceptionsZaamo Atomic Memory Operation Exceptions
 
 [[t-ExceptionsZaamo-coverpoints]]
 .ExceptionsZaamo Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZaamo.csv[]
+//include::{testplansdir}/ExceptionsZaamo.csv[]
 ,===
 
-==== ExceptionsZc
+==== ExceptionsZc Compressed Instruction Exceptions
 
 These additional exception tests are run on configurations with compressed instructions (C, Zca, Zcb, etc.).  They attempt to test all compressed loads and stores, but may throw an illegal instruction fault on compressed subword load/store if Zcb is not supported.
 
@@ -96,70 +92,60 @@ These additional exception tests are run on configurations with compressed instr
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZc.csv[]
+//include::{testplansdir}/ExceptionsZc.csv[]
 ,===
 
-==== ExceptionsZicboS
-
-These additional exception tests are run on configurations with Zicbo and Supervisor mode.
+==== ExceptionsZicboS Supervisor-Mode CBO Exceptions
 
 [[t-ExceptionsZicboS-coverpoints]]
 .ExceptionsZicboS Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZicboS.csv[]
+//include::{testplansdir}/ExceptionsZicboS.csv[]
 ,===
 
-==== ExceptionsZicboU
-
-These additional exception tests are run on configurations with Zicbo and User mode.
+==== ExceptionsZicboU User-Mode CBO Exceptions
 
 [[t-ExceptionsZicboU-coverpoints]]
 .ExceptionsZicboU Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZicboU.csv[]
+//include::{testplansdir}/ExceptionsZicboU.csv[]
 ,===
 
-==== ExceptionsVM
-
-These additional exception tests are run on configurations with virtual memory.
+==== ExceptionsVM Virtual Memory Exceptions
 
 [[t-ExceptionsVM-coverpoints]]
 .ExceptionsVM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsVM.csv[]
+//include::{testplansdir}/ExceptionsVM.csv[]
 ,===
 
-==== ExceptionsVMZalrsc
-
-These additional exception tests are run on configurations with virtual memory and load-reserved / store conditional.
+==== ExceptionsVMZalrsc  Virtual Memory LR/SC Exceptions
 
 [[t-ExceptionsVMZalrsc-coverpoints]]
 .ExceptionsVMZalrsc Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsVMZalrsc.csv[]
+//include::{testplansdir}/ExceptionsVMZalrsc.csv[]
 ,===
 
-==== ExceptionsVMZaamo
-
-These additional exception tests are run on configurations with virtual memory and atomic memory operations.
+==== ExceptionsVMZaamo Virtual Memory AMO Exceptions
 
 [[t-ExceptionsVMZaamo-coverpoints]]
 .ExceptionsM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsVMZaamo.csv[]
+//include::{testplansdir}/ExceptionsVMZaamo.csv[]
 ,===
 
-==== Zicclsm
+==== Zicclsm Misaligned Loads/Stores
 
 Misaligned loads/stores handled in hardware.
 
@@ -168,6 +154,5 @@ Misaligned loads/stores handled in hardware.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zicclsm.csv[]
+//include::{testplansdir}/Zicclsm.csv[]
 ,===
-

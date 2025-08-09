@@ -1,51 +1,52 @@
 
 === Endian
 
-==== EndianM
+==== EndianM Machine-Mode Endianness
 
 [[t-EndianM-coverpoints]]
 .EndianM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianM.csv[]
+//////include::{testplansdir}/EndianM.csv[]
 ,===
 
-==== EndianS
+==== EndianS Supervisor-Mode Endianness
 
 [[t-EndianS-coverpoints]]
 .EndianS Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianS.csv[]
+//include::{testplansdir}/EndianS.csv[]
 ,===
 
-==== EndianU
+==== EndianU User-Mode Endianness
 
 [[t-EndianU-coverpoints]]
 .EndianU Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianU.csv[]
+//include::{testplansdir}/EndianU.csv[]
 ,===
 
-==== EndianZaamo
+==== EndianZaamo Endianness for AMOs
 
 [[t-EndianZaamo-coverpoints]]
 .EndianZaamo Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianZaamo.csv[]
+//include::{testplansdir}/EndianZaamo.csv[]
 ,===
 
-==== EndianZalrsc
+==== EndianZalrsc Endianness for LR/SC
+
 [[t-EndianZalrsc-coverpoints]]
 .EndianZalrsc Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianZalrsc.csv[]
+//include::{testplansdir}/EndianZalrsc.csv[]
 ,===

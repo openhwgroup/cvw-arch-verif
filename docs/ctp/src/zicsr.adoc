@@ -12,7 +12,7 @@ Zicsr does not test reserved or custom instructions or CSRs because their behavi
 Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
 where they should throw an Illegal Instruction exception if not implemented.
 
-==== ZicsrM
+==== ZicsrM Machine-Mode CSRs
 
 These test CSRs that exist in machine mode.
 
@@ -21,14 +21,14 @@ These test CSRs that exist in machine mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrM.csv[]
+//include::{testplansdir}/ZicsrM.csv[]
 ,===
 
 *** find all WPRI and WLRL fields.  Don't look at WPRI results.  Only test legal values of WLRL.
   TODO check WARL, WLRL, WPRI behaviors
 
 
-==== ZicsrS
+==== ZicsrS Supervisor-Mode CSRs
 
 These test additional CSRs that exist in supervisor mode.
 
@@ -37,10 +37,10 @@ These test additional CSRs that exist in supervisor mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrS.csv[]
+//include::{testplansdir}/ZicsrS.csv[]
 ,===
 
-==== ZicsrU
+==== ZicsrU User-Mode CSRs
 
 These test additional CSRs that exist in user mode.
 
@@ -49,10 +49,10 @@ These test additional CSRs that exist in user mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrU.csv[]
+//include::{testplansdir}/ZicsrU.csv[]
 ,===
 
-==== ZicsrF
+==== ZicsrF Floating-Point CSRs
 
 These test additional CSRs that exist when floating-point is supported.
 
@@ -61,10 +61,10 @@ These test additional CSRs that exist when floating-point is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrF.csv[]
+//include::{testplansdir}/ZicsrF.csv[]
 ,===
 
-==== ZicsrV
+==== ZicsrV Vector CSRs
 
 These test additional CSRs that exist when vector is supported.
 
@@ -73,10 +73,10 @@ These test additional CSRs that exist when vector is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrV.csv[]
+//include::{testplansdir}/ZicsrV.csv[]
 ,===
 
-==== ZicsrUF
+==== ZicsrUF Unprivileged Floating-Point CSRs
 
 These test additional CSR scenarios that exist when floating-point and user mode are supported.
 
@@ -85,10 +85,10 @@ These test additional CSR scenarios that exist when floating-point and user mode
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrUF.csv[]
+//include::{testplansdir}/ZicsrUF.csv[]
 ,===
 
-==== ZicsrUV
+==== ZicsrUV Unprivileged Vector CSRs
 
 These test additional CSR scenarios that exist when vector and user mode are supported.
 
@@ -97,11 +97,10 @@ These test additional CSR scenarios that exist when vector and user mode are sup
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrUV.csv[]
+//include::{testplansdir}/ZicsrUV.csv[]
 ,===
 
-
-==== ZicsrZkr
+==== ZicsrZkr Entropy CSR
 
 These test CSRs when the Zkr entropy extension is supported.
 
@@ -110,5 +109,5 @@ These test CSRs when the Zkr entropy extension is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrZkr.csv[]
+//include::{testplansdir}/ZicsrZkr.csv[]
 ,===

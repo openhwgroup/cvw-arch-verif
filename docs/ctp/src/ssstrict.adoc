@@ -17,7 +17,7 @@ RISC-V does not have a ratified equivalent of Ssstrict for machine mode, but thi
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsstrictM.csv[]
+//include::{testplansdir}/SsstrictM.csv[]
 ,===
 
 ==== SsstrictS
@@ -33,7 +33,7 @@ According to the RVA23 profile spec, the illegal instruction should be cause a t
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsstrictS.csv[]
+//include::{testplansdir}/SsstrictS.csv[]
 ,===
 
 ==== SsstrictV
@@ -45,5 +45,5 @@ Test that all behaviors called out as "reserved" in the vector specification cau
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsstrictV.csv[]
+//include::{testplansdir}/SsstrictV.csv[]
 ,===

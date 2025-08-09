@@ -5,32 +5,32 @@ These tests exercise the mtime, mcycle, and minstret counters and related regist
 
 *** edit coverpoints to pull out hpm
 
-==== ZicntrM
+==== ZicntrM Machine-Mode Counters
 
 [[t-ZicntrM-coverpoints]]
 .ZicntrM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicntrM.csv[]
+//include::{testplansdir}/ZicntrM.csv[]
 ,===
 
-==== ZicntrS
+==== ZicntrS Supervisor-Mode Counters
 
 [[t-ZicntrS-coverpoints]]
 .ZicntrS Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicntrS.csv[]
+//include::{testplansdir}/ZicntrS.csv[]
 ,===
 
-==== ZicntrU
+==== ZicntrU User-Mode Counters
 
 [[t-ZicntrU-coverpoints]]
 .ZicntrU Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicntrU.csv[]
+//include::{testplansdir}/ZicntrU.csv[]
 ,===

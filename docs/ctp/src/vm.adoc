@@ -1,19 +1,17 @@
 
 === Sv* Virtual Memory
 
-==== Svbare
-
-Virtual memory can be turned off.
+==== Svbare Virtual Memory Off
 
 [[t-Svbare-coverpoints]]
 .Svbare Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svbare.csv[]
+//include::{testplansdir}/Svbare.csv[]
 ,===
 
-==== RV32VM
+==== RV32VM Sv32
 
 *** Can this be renamed Sv32?
 
@@ -22,30 +20,30 @@ include::{testplansdir}/Svbare.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32VM.csv[]
+//include::{testplansdir}/RV32VM.csv[]
 ,===
 
-==== RV32VM_PMP
+==== RV32VM_PMP Sv32 + PMP
 
 [[t-RV32VM_PMP-coverpoints]]
 .RV32VM_PMP Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32VM_PMP.csv[]
+//include::{testplansdir}/RV32VM_PMP.csv[]
 ,===
 
-==== RV32CBO_VM
+==== RV32CBO_VM Sv32 + CBO
 
 [[t-RV32CBO_VM-coverpoints]]
 .RV32CBO_VM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32CBO_VM.csv[]
+//include::{testplansdir}/RV32CBO_VM.csv[]
 ,===
 
-==== RV64VM
+==== RV64VM Sv39/48
 
 *** can/should this be renamed Sv39, Sv48, Sv57?
 
@@ -54,30 +52,30 @@ include::{testplansdir}/RV32CBO_VM.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64VM.csv[]
+//include::{testplansdir}/RV64VM.csv[]
 ,===
 
-==== RV64VM_PMP
+==== RV64VM_PMP Sv39/48 + PMP
 
 [[t-RV64VM_PMP-coverpoints]]
 .RV64VM_PMP Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64VM_PMP.csv[]
+//include::{testplansdir}/RV64VM_PMP.csv[]
 ,===
 
-==== RV64CBO_VM
+==== RV64CBO_VM Sv39/48 + CBO
 
 [[t-RV64CBO_VM-coverpoints]]
 .RV64CBO_VM Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64CBO_VM.csv[]
+//include::{testplansdir}/RV64CBO_VM.csv[]
 ,===
 
-==== Svinval
+==== Svinval Memory Management Unit Table Invalidation
 
 The Svinval extension defines instructions to update memory management tables for virtual memory and optionally for PMP. Their effect is system-dependent, so these tests simply check that the instructions run.
 
@@ -86,55 +84,45 @@ The Svinval extension defines instructions to update memory management tables fo
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svinval.csv[]
+//include::{testplansdir}/Svinval.csv[]
 ,===
 
-==== Svade
-
-Throw a page fault exception when the A/D bits need updating.
+==== Svade A/D Bit Page Fault Exception
 
 [[t-Svade-coverpoints]]
 .Svade Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svade.csv[]
+//include::{testplansdir}/Svade.csv[]
 ,===
 
-==== Svadu
-
-Hardware page table walker updates A/D bits without a page fault.
+==== Svadu A/D Bit Hardware Update
 
 [[t-Svadu-coverpoints]]
 .Svadu Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svadu.csv[]
+//include::{testplansdir}/Svadu.csv[]
 ,===
 
-==== Svpbmt
-
-Page-based memory types.
+==== Svpbmt Page-Based Memory Types
 
 [[t-Svpbmt-coverpoints]]
 .Svpbmt Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svpbmt.csv[]
+//include::{testplansdir}/Svpbmt.csv[]
 ,===
 
-==== Svnapot
-
-Normally-aligned power-of-two pages sizes.
+==== Svnapot Naturally-Aligned Power-of-Two Page Sizes
 
 [[t-Svnapot-coverpoints]]
 .Svnapot Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Svnapot.csv[]
+//include::{testplansdir}/Svnapot.csv[]
 ,===
-
-

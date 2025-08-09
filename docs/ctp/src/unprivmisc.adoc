@@ -1,82 +1,84 @@
 
 === Miscellaneous Non-RV23 Unprivileged Extensions
 
-==== Zfinx
+==== Zfinx Float in Integer Regs
+
+Zfinx replaces the F extension with a similar set of instructions that operate on x registers instead of f registers.  Zdinx and Zhinx are similar.
 
 [[t-Zfinx-coverpoints]]
 .Zfinx Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zfinx.csv[]
+//include::{testplansdir}/Zfinx.csv[]
 ,===
 
-==== Zdinx
+==== Zdinx Double in Integer Regs
 
 [[t-Zdinx-coverpoints]]
 .Zdinx Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zdinx.csv[]
+//include::{testplansdir}/Zdinx.csv[]
 ,===
 
-==== Zhinx
+==== Zhinx Half in Integer Regs
 
 [[t-Zhinx-coverpoints]]
 .Zhinx Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zhinx.csv[]
+//include::{testplansdir}/Zhinx.csv[]
 ,===
 
-==== Zhinxmin
+==== Zhinxmin Half Converts in Integer Regs
 
 [[t-Zhinxmin-coverpoints]]
 .Zhinxmin Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zhinxmin.csv[]
+//include::{testplansdir}/Zhinxmin.csv[]
 ,===
 
-==== Zcmp
+==== Zcmp Compressed Push/Pop
 
 [[t-Zcmp-coverpoints]]
 .Zcmp Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zcmp.csv[]
+//include::{testplansdir}/Zcmp.csv[]
 ,===
 
-==== Zcmt
+==== Zcmt Compressed Jump Tables
 
 [[t-Zcmt-coverpoints]]
 .Zcmt Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zcmt.csv[]
+//include::{testplansdir}/Zcmt.csv[]
 ,===
 
-==== Zilsd
+==== Zilsd Load/Store Double
 
 [[t-Zilsd-coverpoints]]
 .Zilsd Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zilsd.csv[]
+//include::{testplansdir}/Zilsd.csv[]
 ,===
 
-==== Zclsd
+==== Zclsd Compressed Load/Store Double
 
 [[t-Zclsd-coverpoints]]
 .Zclsd Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zclsd.csv[]
+//include::{testplansdir}/Zclsd.csv[]
 ,===

@@ -51,7 +51,7 @@ include::{testplansdir}/Zihintpause.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zihintntl.csv[]
+//include::{testplansdir}/Zihintntl.csv[]
 ,===
 
 ==== ZihintntlZca Compressed Non-temporal Locality Hint
@@ -61,7 +61,7 @@ include::{testplansdir}/Zihintntl.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zihintpause.csv[]
+//include::{testplansdir}/.ZihintntlZca.csv[]
 ,===
 
 ==== Zicbom Cache Block Flush/Invalidate
@@ -71,7 +71,7 @@ include::{testplansdir}/Zihintpause.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zicbom.csv[]
+//include::{testplansdir}/Zicbom.csv[]
 ,===
 
 ==== Zicboz Cache Block Zero
@@ -81,7 +81,7 @@ include::{testplansdir}/Zicbom.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zicboz.csv[]
+//include::{testplansdir}/Zicboz.csv[]
 ,===
 
 ==== Zicbop Cache Block Prefetch
@@ -91,7 +91,7 @@ include::{testplansdir}/Zicboz.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zicbop.csv[]
+//include::{testplansdir}/Zicbop.csv[]
 ,===
 
 ==== Za64rs Max 64B Reservation Set
@@ -101,7 +101,7 @@ include::{testplansdir}/Zicbop.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Za64rs.csv[]
+//include::{testplansdir}/Za64rs.csv[]
 ,===
 
 ==== Zic64bZicboz 64B Cache Block Zero
@@ -111,5 +111,5 @@ include::{testplansdir}/Za64rs.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zic64bZicboz.csv[]
+//include::{testplansdir}/Zic64bZicboz.csv[]
 ,===

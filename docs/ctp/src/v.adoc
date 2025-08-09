@@ -217,7 +217,7 @@ include::{testplansdir}/Vf.csv[]
 
 ==== Zvfh Vector Half-Precision Floating-Point Extension
 
-Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, Zvfh tests are in the same directory structure as V, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16. 
+Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, Zvfh tests are in the same directory structure as V, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16.
 
 ==== Zvfhmin Half-Precision Conversions
 
@@ -227,7 +227,7 @@ Zvfhmin only exercises the widening and narrowing conversions: `vfwcvt.f.f.v` an
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zvfhmin.csv[]
+//include::{testplansdir}/Zvfhmin.csv[]
 ,===
 
 ==== ZfaZvfh Half-Precision Load Immediate
@@ -249,7 +249,7 @@ include::{testplansdir}/ZfaZvfh.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zvfbfmin.csv[]
+//include::{testplansdir}/Zvfbfmin.csv[]
 ,===
 
 ==== Zvfbfwma BF16 MAC
@@ -259,7 +259,7 @@ include::{testplansdir}/Zvfbfmin.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zvfbfwma.csv[]
+//include::{testplansdir}/Zvfbfwma.csv[]
 ,===
 
 === Zvb* Vector Bit Manipulation Extension

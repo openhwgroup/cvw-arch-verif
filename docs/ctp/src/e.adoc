@@ -17,7 +17,7 @@ The E extension is a variant of I with 16 general purpose registers.  This test 
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/E.csv[]
+//include::{testplansdir}/E.csv[]
 ,===
 
 ==== EM Embedded + Multiply/Divide
@@ -29,7 +29,7 @@ include::{testplansdir}/E.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EM.csv[]
+//include::{testplansdir}/EM.csv[]
 ,===
 
 ==== EZmmul Embedded + Multiply
@@ -41,7 +41,7 @@ include::{testplansdir}/EM.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZmmul.csv[]
+//include::{testplansdir}/EZmmul.csv[]
 ,===
 
 ==== EZca Embedded + Compressed
@@ -53,7 +53,7 @@ include::{testplansdir}/EZmmul.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZca.csv[]
+//include::{testplansdir}/EZca.csv[]
 ,===
 
 ==== EZcb Embedded + More Compressed
@@ -65,7 +65,7 @@ include::{testplansdir}/EZca.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZcb.csv[]
+//include::{testplansdir}/EZcb.csv[]
 ,===
 
 ==== EZcmp Embedded + Compressed Push/Pop
@@ -77,7 +77,7 @@ include::{testplansdir}/EZcb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZcmp.csv[]
+//include::{testplansdir}/EZcmp.csv[]
 ,===
 
 ==== EZcmt Embedded + Jump Tables
@@ -89,7 +89,7 @@ include::{testplansdir}/EZcmp.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZcmt.csv[]
+//include::{testplansdir}/EZcmt.csv[]
 ,===
 
 ==== EZba Embedded + Address Generation
@@ -101,7 +101,7 @@ include::{testplansdir}/EZcmt.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZba.csv[]
+//include::{testplansdir}/EZba.csv[]
 ,===
 
 ==== EZbb Embedded + Basic Bit Manipulation
@@ -113,7 +113,7 @@ include::{testplansdir}/EZba.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZbb.csv[]
+//include::{testplansdir}/EZbb.csv[]
 ,===
 
 ==== EZbs Embedded + Single-Bit Manipulation
@@ -125,5 +125,5 @@ include::{testplansdir}/EZbb.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EZbs.csv[]
+//include::{testplansdir}/EZbs.csv[]
 ,===

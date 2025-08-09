@@ -121,5 +121,5 @@ include::{testplansdir}/ZfaZfhD.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zfbfmin.csv[]
+//include::{testplansdir}/Zfbfmin.csv[]
 ,===

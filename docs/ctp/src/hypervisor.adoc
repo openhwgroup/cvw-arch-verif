@@ -993,163 +993,137 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 |===
 
 
-==== H
-
-Instructions introduced by Hypervisor extension.
+==== H Hypervisor Instructions
 
 [[t-H-coverpoints]]
 .H Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/H.csv[]
+//include::{testplansdir}/H.csv[]
 ,===
 
-==== ZicsrH
-
-CSRs introduced by Hypervisor extension.
+==== ZicsrH Hypervisor CSRs
 
 [[t-ZicsrH-coverpoints]]
 .ZicsrH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrH.csv[]
+//include::{testplansdir}/ZicsrH.csv[]
 ,===
 
-==== ZicsrHF
-
-Floating-point CSR behavior introduced by Hypervisor extension.
+==== ZicsrHF Hypervisor Floating-Point CSRs
 
 [[t-ZicsrHF-coverpoints]]
 .ZicsrHF Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrHF.csv[]
+//include::{testplansdir}/ZicsrHF.csv[]
 ,===
 
-==== ZicsrHV
-
-Vector CSR behavior introduced by Hypervisor extension.
+==== ZicsrHV Hypervisor Vector CSRs
 
 [[t-ZicsrHV-coverpoints]]
 .ZicsrHV Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicsrHV.csv[]
+//include::{testplansdir}/ZicsrHV.csv[]
 ,===
 
-==== ExceptionsH
-
-Exceptions introduced by Hypervisor extension.
+==== ExceptionsH Hypervisor Exceptions
 
 [[t-ExceptionsH-coverpoints]]
 .ExceptionsH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsH.csv[]
+//include::{testplansdir}/ExceptionsH.csv[]
 ,===
 
-==== ExceptionsHV
-
-Vector exceptions introduced by Hypervisor extension.
+==== ExceptionsHV Hypervisor Vector Exceptions
 
 [[t-ExceptionsHV-coverpoints]]
 .ExceptionsHV Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsHV.csv[]
+//include::{testplansdir}/ExceptionsHV.csv[]
 ,===
 
-==== InterruptsH
-
-Interrupts introduced by Hypervisor extension.
+==== InterruptsH Hypervisor Interrupts
 
 [[t-InterruptsH-coverpoints]]
 .InterruptsH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/InterruptsH.csv[]
+//include::{testplansdir}/InterruptsH.csv[]
 ,===
 
-==== EndianH
-
-Endianness introduced by Hypervisor extension.
+==== EndianH Hypervisor Endianness
 
 [[t-EndianH-coverpoints]]
 .EndianH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/EndianH.csv[]
+//include::{testplansdir}/EndianH.csv[]
 ,===
 
-==== ZicntrH
-
-Counter behavior introduced by Hypervisor extension.
+==== ZicntrH Hypervisor Counters
 
 [[t-ZicntrH-coverpoints]]
 .ZicntrH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicntrH.csv[]
+//include::{testplansdir}/ZicntrH.csv[]
 ,===
 
-==== ZihpmH
-
-Hardware performance monitor behavior introduced by Hypervisor extension.
+==== ZihpmH Hypervisor Hardware Performance Monitors
 
 [[t-ZihpmH-coverpoints]]
 .ZihpmH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZihpmH.csv[]
+//include::{testplansdir}/ZihpmH.csv[]
 ,===
 
-==== PMPH
-
-PMP behavior introduced by Hypervisor extension.
+==== PMPH Hypervisor Physical Memory Protection
 
 [[t-PMPH-coverpoints]]
 .PMPH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/PMPH.csv[]
+//include::{testplansdir}/PMPH.csv[]
 ,===
 
-==== RV32VMH
-
-Virtual memory behavior introduced by Hypervisor extension.
+==== RV32VMH Hypervisor 2-Stage Virtual Memory
 
 [[t-RV32VMH-coverpoints]]
 .RV32VMH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32VMH.csv[]
+//include::{testplansdir}/RV32VMH.csv[]
 ,===
 
-==== RV32VMH_CBO
-
-Virtual memory / CBO behavior introduced by Hypervisor extension.
+==== RV32VMH_CBO Hypervisor VM + Cache Block Operations
 
 [[t-RV32VMH_CBO-coverpoints]]
 .RV32VMH_CBO Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32VMH_CBO.csv[]
+//include::{testplansdir}/RV32VMH_CBO.csv[]
 ,===
 
-==== RV64VMH
+==== RV64VMH Hypervisor 2-Stage Virtual Memory
 
 Virtual memory behavior introduced by Hypervisor extension.
 
@@ -1158,10 +1132,10 @@ Virtual memory behavior introduced by Hypervisor extension.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64VMH.csv[]
+//include::{testplansdir}/RV64VMH.csv[]
 ,===
 
-==== RV64VMH_CBO
+==== RV64VMH_CBO Hypervisor VM + Cache Block Operations
 
 Virtual memory / CBO behavior introduced by Hypervisor extension.
 
@@ -1170,143 +1144,120 @@ Virtual memory / CBO behavior introduced by Hypervisor extension.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64VMH_CBO.csv[]
+//include::{testplansdir}/RV64VMH_CBO.csv[]
 ,===
 
-==== SsstrictH
-
-Strict behavior introduced by Hypervisor extension.
+==== SsstrictH Hypervisor Strict Reserved Instructions & CSRs
 
 [[t-SsstrictH-coverpoints]]
 .SsstrictH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsstrictH.csv[]
+//include::{testplansdir}/SsstrictH.csv[]
 ,===
 
-==== Shcounterenw
-
-Writable counter enables.
+==== Shcounterenw Writable Counter Enables
 
 [[t-Shcounterenw-coverpoints]]
 .SsstrictH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shcounterenw.csv[]
+//include::{testplansdir}/Shcounterenw.csv[]
 ,===
 
-==== Shvsatpa
-
-VM modes supported.
+==== Shvsatpa Virtual Memory Modes Supported
 
 [[t-Shvsatpa-coverpoints]]
 .Shvsatpa Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shvsatpa.csv[]
+//include::{testplansdir}/Shvsatpa.csv[]
 ,===
 
-==== Shgatpa
-
-VM x4 modes supported.
+==== Shgatpa Virtual Memory x4 Modes Supported
 
 [[t-Shgatpa-coverpoints]]
 .Shgatpa Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shgatpa.csv[]
+//include::{testplansdir}/Shgatpa.csv[]
 ,===
 
-==== Shvstvecd
-
-VS-mode direct vector.
+==== Shvstvecd VS-Mode Direct Vectors
 
 [[t-Shvstvecd-coverpoints]]
 .Shvstvecd Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shvstvecd.csv[]
+//include::{testplansdir}/Shvstvecd.csv[]
 ,===
 
-==== Shvstvala
-
-VS-mode stval address.
+==== Shvstvala VS-Mode Trap Address
 
 [[t-Shvstvala-coverpoints]]
 .Shvstvala Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shvstvala.csv[]
+//include::{testplansdir}/Shvstvala.csv[]
 ,===
 
-==== Shtvala
-
-HS-mode htval address.
-
+==== Shtvala HS-Mode Trap Address
 
 [[t-Shtvala-coverpoints]]
 .Shtvala Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shtvala.csv[]
+//include::{testplansdir}/Shtvala.csv[]
 ,===
 
-==== Shlcofideleg
-
-Hypervisor counter overflow delegation.
+==== Shlcofideleg Hypervisor Counter Overflow Delegation
 
 [[t-Shlcofideleg-coverpoints]]
 .Shlcofideleg Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Shlcofideleg.csv[]
+//include::{testplansdir}/Shlcofideleg.csv[]
 ,===
 
-==== ZkrH
-
-Hypervisor entropy register.
+==== ZkrH Hypervisor Entropy Register
 
 [[t-ZkrH-coverpoints]]
 .ZkrH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZkrH.csv[]
+//include::{testplansdir}/ZkrH.csv[]
 ,===
 
-==== SstcH
-
-Hypervisor timer compare.
+==== SstcH Hypervisor Timer Compare
 
 [[t-SstcH-coverpoints]]
 .SstcH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SstcH.csv[]
+//nclude::{testplansdir}/SstcH.csv[]
 ,===
 
-==== SsstateenH
-
-Hypervisor state enable.
+==== SsstateenH Hypervisor State Enable
 
 [[t-SsstateenH-coverpoints]]
 .SsstateenH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsstateenH.csv[]
+//include::{testplansdir}/SsstateenH.csv[]
 ,===
 
-==== SscrindH
+==== SscrindH Hypervisor Indirect CSR Access
 
 Hypervisor indirect CSR access.
 
@@ -1315,113 +1266,95 @@ Hypervisor indirect CSR access.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SscrindH.csv[]
+//include::{testplansdir}/SscrindH.csv[]
 ,===
 
-==== SscfgH
-
-Hypervisor counter delegation.
+==== SscfgH Hypervisor Counter Delegation
 
 [[t-SscfgH-coverpoints]]
 .SscfgH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SscfgH.csv[]
+//include::{testplansdir}/SscfgH.csv[]
 ,===
 
-==== SmctrH
-
-Hypervisor control transfer records.
+==== SmctrH Hypervisor Control Transfer Records
 
 [[t-SmctrH-coverpoints]]
 .SmctrH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SmctrH.csv[]
+//include::{testplansdir}/SmctrH.csv[]
 ,===
 
-==== SvinvalH
-
-Hypervisor memory management table invalidation.
+==== SvinvalH Hypervisor Memory Management Table Invalidation
 
 [[t-SvinvalH-coverpoints]]
 .SvinvalH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SvinvalH.csv[]
+//include::{testplansdir}/SvinvalH.csv[]
 ,===
 
-==== SvaduH
-
-Hypervisor hardware page table A/D updates.
+==== SvaduH Hypervisor Hardware Page Table A/D Updates
 
 [[t-SvaduH-coverpoints]]
 .SvaduH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SvaduH.csv[]
+//include::{testplansdir}/SvaduH.csv[]
 ,===
 
-==== ZicfilpH
-
-Hypervisor landing pads.
+==== ZicfilpH Hypervisor Landing Pads
 
 [[t-ZicfilpH-coverpoints]]
 .ZicfilpH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicfilpH.csv[]
+//include::{testplansdir}/ZicfilpH.csv[]
 ,===
 
-==== ZicfissH
-
-Hypervisor shadow stack.
+==== ZicfissH Hypervisor Shadow Stack
 
 [[t-ZicfissH-coverpoints]]
 .ZicfissH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ZicfissH.csv[]
+//..include::{testplansdir}/ZicfissH.csv[]
 ,===
 
-==== SsdbltrpH
-
-Hypervisor double trap.
+==== SsdbltrpH Hypervisor Double Trap
 
 [[t-SsdbltrpH-coverpoints]]
 .SsdbltrpH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsdbltrpH.csv[]
+//include::{testplansdir}/SsdbltrpH.csv[]
 ,===
 
-==== SsnpmH
-
-Hypervisor pointer masking.
+==== SsnpmH Hypervisor Pointer Masking
 
 [[t-SsnpmH-coverpoints]]
 .SsnpmH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SsnpmH.csv[]
+//include::{testplansdir}/SsnpmH.csv[]
 ,===
 
-==== SmnpmH
-
-Hypervisor pointer masking.
+==== SmnpmH Hypervisor Pointer Masking
 
 [[t-SmnpmH-coverpoints]]
 .SmnpmH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/SmnpmH.csv[]
+//include::{testplansdir}/SmnpmH.csv[]
 ,===

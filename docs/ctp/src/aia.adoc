@@ -10,7 +10,7 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Smaia.csv[]
+//include::{testplansdir}/Smaia.csv[]
 ,===
 
 ==== Ssaia Supervisor-Mode Advanced Interrupt Architecture
@@ -20,5 +20,5 @@ include::{testplansdir}/Smaia.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Ssaia.csv[]
+//include::{testplansdir}/Ssaia.csv[]
 ,===

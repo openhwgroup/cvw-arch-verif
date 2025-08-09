@@ -1,9 +1,9 @@
 
 === Interrupts
 
-Interrupt tests are organized according to the privilege mode or extension supported. 
+Interrupt tests are organized according to the privilege mode or extension supported.
 
-==== InterruptsM
+==== InterruptsM Machine-Mode Interrupts
 
 These tests are run on any configuration with machine mode that supports interrupts.
 
@@ -12,10 +12,10 @@ These tests are run on any configuration with machine mode that supports interru
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/InterruptsM.csv[]
+//include::{testplansdir}/InterruptsM.csv[]
 ,===
 
-==== InterruptsS
+==== InterruptsS Supervisor-Mode Interrupts
 
 These tests are run on any configuration with supervisor mode that supports interrupts. Note that they include tests in other modes, such as interrupts from user mode delegated to supervisor mode.
 
@@ -24,22 +24,22 @@ These tests are run on any configuration with supervisor mode that supports inte
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/InterruptsS.csv[]
+//include::{testplansdir}/InterruptsS.csv[]
 ,===
 
-==== InterruptsU
+==== InterruptsU User-Mode Interrupts
 
-These tests are run on any configuration with user mode that supports interrupts. 
+These tests are run on any configuration with user mode that supports interrupts.
 
 [[t-InterruptsU-coverpoints]]
 .InterruptsU Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/InterruptsU.csv[]
+//include::{testplansdir}/InterruptsU.csv[]
 ,===
 
-==== InterruptsSstc
+==== InterruptsSstc Supervisor Timer Compare Interrupts
 
 These tests are run when the Sstc supervisor timer compare extension is supported.
 
@@ -48,5 +48,5 @@ These tests are run when the Sstc supervisor timer compare extension is supporte
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/InterruptsSstc.csv[]
+//include::{testplansdir}/InterruptsSstc.csv[]
 ,===

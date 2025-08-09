@@ -3,48 +3,44 @@
 
 ==== Zacas Atomic Compare and Swap
 
-Atomic compare and swap.
-
 [[t-Zacas-coverpoints]]
 .Zacas Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zacas.csv[]
+//include::{testplansdir}/Zacas.csv[]
 ,===
 
-==== Zabha
-
-Subword atomics.
+==== Zabha Subword Atomics
 
 [[t-Zabha-coverpoints]]
 .Zabha Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zabha.csv[]
+//include::{testplansdir}/Zabha.csv[]
 ,===
 
-==== Zimop
+==== Zimop Maybe-Ops
 
-Maybe-ops.  Should write 0 to rd unless implemented.
+Should write 0 to rd unless implemented.
 
 [[t-Zimop-coverpoints]]
 .Zimop Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zimop.csv[]
+//include::{testplansdir}/Zimop.csv[]
 ,===
 
-==== Zcmop
+==== Zcmop Compressed Maybe-Ops
 
-Compressed maybe-ops.  Should write 0 to rd unless implemented.
+Should write 0 to rd unless implemented.
 
 [[t-Zcmop-coverpoints]]
 .Zcmop Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/Zcmop.csv[]
+//include::{testplansdir}/Zcmop.csv[]
 ,===
