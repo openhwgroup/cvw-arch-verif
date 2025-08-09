@@ -43,3 +43,73 @@ include::{testplansdir}/Zicond.csv[]
 ,===
 include::{testplansdir}/Zihintpause.csv[]
 ,===
+
+==== Zihintntl Non-temporal Locality Hint
+
+[[t-Zihintntl-coverpoints]]
+.Zihintntl Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zihintntl.csv[]
+,===
+
+==== ZihintntlZca Compressed Non-temporal Locality Hint
+
+[[t-ZihintntlZca-coverpoints]]
+.ZihintntlZca Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zihintpause.csv[]
+,===
+
+==== Zicbom Cache Block Flush/Invalidate
+
+[[t-Zicbom-coverpoints]]
+.Zicbom Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicbom.csv[]
+,===
+
+==== Zicboz Cache Block Zero
+
+[[t-Zicboz-coverpoints]]
+.Zicboz Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicboz.csv[]
+,===
+
+==== Zicbop Cache Block Prefetch
+
+[[t-Zicbop-coverpoints]]
+.Zicbop Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicbop.csv[]
+,===
+
+==== Za64rs Max 64B Reservation Set
+
+[[t-Za64rs-coverpoints]]
+.Za64rs Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Za64rs.csv[]
+,===
+
+==== Zic64bZicboz 64B Cache Block Zero
+
+[[t-Zic64bZicboz-coverpoints]]
+.Zic64bZicboz Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zic64bZicboz.csv[]
+,===

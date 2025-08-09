@@ -1,0 +1,76 @@
+
+=== Miscellaneous Privileged Extensions
+
+==== Sscofpmf
+
+Counter filtering.
+
+[[t-Sscofpmf-coverpoints]]
+.Sscofpmf Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sscofpmf.csv[]
+,===
+
+==== Smstateen
+
+[[t-Smstateen-coverpoints]]
+.Smstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Smstateen.csv[]
+,===
+
+==== Ssstateen
+
+[[t-Ssstateen-coverpoints]]
+.Ssstateen Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssstateen.csv[]
+,===
+
+==== Ssu64xl
+
+RV64 only: User-mode XLEN = 64 supported
+
+[[t-Ssu64xl-coverpoints]]
+.Ssu64xl Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Ssu64xl.csv[]
+,===
+
+==== Sscounterenw
+
+[[t-Sscounterenw-coverpoints]]
+.Sscounterenw Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sscounterenw.csv[]
+,===
+
+==== Sstvecd
+
+[[t-Sstvecd-coverpoints]]
+.Sstvecd Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sstvecd.csv[]
+,===
+
+==== Sstvala
+
+[[t-Sstvala-coverpoints]]
+.Sstvala Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Sstvala.csv[]
+,===

@@ -22,7 +22,7 @@ The A extension is subdivided into Zaamo and Zalrsc.
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zaamo.csv[]
+include::{testplansdir}/Zaamo.csv[]
 ,===
 
 [[t-Zaamo-normative-statements]]
@@ -41,7 +41,7 @@ include::../../testplans/Zaamo.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::../../testplans/Zalrsc.csv[]
+include::{testplansdir}/Zalrsc.csv[]
 ,===
 
 [[t-Zalrsc-normative-statements]]

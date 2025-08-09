@@ -1,12 +1,140 @@
 
 === Sv* Virtual Memory
 
+==== Svbare
+
+Virtual memory can be turned off.
+
+[[t-Svbare-coverpoints]]
+.Svbare Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svbare.csv[]
+,===
+
 ==== RV32VM
+
+*** Can this be renamed Sv32?
+
+[[t-RV32VM-coverpoints]]
+.RV32VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32VM.csv[]
+,===
 
 ==== RV32VM_PMP
 
+[[t-RV32VM_PMP-coverpoints]]
+.RV32VM_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32VM_PMP.csv[]
+,===
+
+==== RV32CBO_VM
+
+[[t-RV32CBO_VM-coverpoints]]
+.RV32CBO_VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32CBO_VM.csv[]
+,===
+
 ==== RV64VM
+
+*** can/should this be renamed Sv39, Sv48, Sv57?
+
+[[t-RV64VM-coverpoints]]
+.RV64VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64VM.csv[]
+,===
 
 ==== RV64VM_PMP
 
+[[t-RV64VM_PMP-coverpoints]]
+.RV64VM_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64VM_PMP.csv[]
+,===
+
+==== RV64CBO_VM
+
+[[t-RV64CBO_VM-coverpoints]]
+.RV64CBO_VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64CBO_VM.csv[]
+,===
+
 ==== Svinval
+
+The Svinval extension defines instructions to update memory management tables for virtual memory and optionally for PMP. Their effect is system-dependent, so these tests simply check that the instructions run.
+
+[[t-Svinval-coverpoints]]
+.Svinval Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svinval.csv[]
+,===
+
+==== Svade
+
+Throw a page fault exception when the A/D bits need updating.
+
+[[t-Svade-coverpoints]]
+.Svade Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svade.csv[]
+,===
+
+==== Svadu
+
+Hardware page table walker updates A/D bits without a page fault.
+
+[[t-Svadu-coverpoints]]
+.Svadu Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svadu.csv[]
+,===
+
+==== Svpbmt
+
+Page-based memory types.
+
+[[t-Svpbmt-coverpoints]]
+.Svpbmt Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svpbmt.csv[]
+,===
+
+==== Svnapot
+
+Normally-aligned power-of-two pages sizes.
+
+[[t-Svnapot-coverpoints]]
+.Svnapot Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Svnapot.csv[]
+,===
+
+

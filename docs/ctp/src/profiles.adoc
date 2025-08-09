@@ -4,15 +4,15 @@
 
 This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification objectives, including the following ratified and unratified profiles:
 
-* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified)
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified): Phase 0
 ** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
-* Microcontroller Profile (Not Ratified, but market demand)
+* Microcontroller Profile (Not Ratified, but market demand): Phase 1
 ** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
-* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified)
+* https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified): Phase 1.5, stepping stone to phase 2
 ** Application processor without vector, hypervisor, and other newer extensions
-* https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified)
+* https://github.com/riscv/riscv-profiles/blob/main/src/rvb23-profile.adoc#rvb23s64-profile[RVB23S64 Profile] (Ratified): Phase 1.8, stepping stone to phase 2
 ** RVA23 less vector and hypervisor
-* https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified)
+* https://github.com/riscv/riscv-profiles/blob/main/src/rva23-profile.adoc#rva23s64-profile[RVA23S64 Profile] (Ratified): Phase 2
 
 <<t-profiles>> summarizes the coverage files applicable to each profile. x indicates a mandatory extension, and o indicates an optional extension.  The certification test plan handles all mandatory and optional extensions.
 
@@ -70,7 +70,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Zicbom|Cache Block Flush/Inval|<<t-Zicbom-coverpoints>>|||x|x|x
 |Zicboz|Cache Block Zero|<<t-Zicboz-coverpoints>>|||x|x|x
 |Zicbop|Cache Block Prefetch|<<t-Zicbop-coverpoints>>|||x|x|x
-|Zkr|Entropy CSR|<<t-Zkr-coverpoints>>|||o|o|o
 |Za64rs|Max 64B Reservation Sets|<<t-Za64rs-coverpoints>>|||x|x|x
 |Zic64bZicboz|64B Cache Blocks|<<t-Zic64bZicboz-coverpoints>>|||x|x|x
 8+^|Privileged
@@ -79,6 +78,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZicsrU|User CSRs|<<t-ZicsrU-coverpoints>>||x|x|x|x
 |ZicsrF|Float CSRs|<<t-ZicsrF-coverpoints>>|o||x|x|x
 |ZicsrUF|User Float CSRs|<<t-ZicsrUF-coverpoints>>|||x|x|x
+|ZicsrZkr|Entropy CSR|<<t-ZicsrZkr-coverpoints>>|||o|o|o
 |ExceptionsM|Machine Exceptions|<<t-ExceptionsM-coverpoints>>||x|x|x|x
 |ExceptionsS|Supervisor Exceptions|<<t-ExceptionsS-coverpoints>>|||x|x|x
 |ExceptionsU|User Exceptions|<<t-ExceptionsU-coverpoints>>||x|x|x|x
@@ -91,6 +91,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ExceptionsVM|Virt Mem Exceptions|<<t-ExceptionsVM-coverpoints>>|||x|x|x
 |ExceptionsVMZalrsc|Virt Mem LR/SC Exceptions|<<t-ExceptionsVMZalrsc-coverpoints>>|||x|x|x
 |ExceptionsVMZaamo|Virt Mem AMO Exceptions|<<t-ExceptionsVMZaamo-coverpoints>>|||x|x|x
+|Zicclsm|Misaligned Loads / Stores|<<t-Zicclsm-coverpoints>>|||x|x|x
 |InterruptsM|Machine Interrupts|<<t-InterruptsM-coverpoints>>||x|x|x|x
 |InterruptsS|Supervisor Interrupts|<<t-InterruptsS-coverpoints>>|||x|x|x
 |InterruptsU|User Interrupts|<<t-InterruptsU-coverpoints>>||x|x|x|x
@@ -101,6 +102,11 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZihpmM|Machine Performance Monitors|<<t-ZihpmM-coverpoints>>|o|x|x|x|x
 |ZihpmS|Machine Performance Monitors|<<t-ZihpmS-coverpoints>>|||x|x|x
 |ZihpmU|Machine Performance Monitors|<<t-ZihpmU-coverpoints>>||x|x|x|x
+|EndianM|Machine Endian|<<t-EndianM-coverpoints>>|||||
+|EndianS|Supervisor Endian|<<t-EndianS-coverpoints>>|||||
+|EndianU|User Endian|<<t-EndianU-coverpoints>>|||||
+|EndianZaamo|AMO Endian|<<t-EndianZaamo-coverpoints>>|||||
+|EndianZalrsc|LR/SC Endian|<<t-EndianZalrsc-coverpoints>>|||||
 |PMPM|Machine PMP|<<t-PMPM-coverpoints>>||x|x|x|x
 |PMPS|Supervisor PMP|<<t-PMPS-coverpoints>>|||x|x|x
 |PMPU|User PMP|<<t-PMPU-coverpoints>>||x|x|x|x
@@ -121,94 +127,91 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |RV64CBO_PMP|CBO + PMP|<<t-RV64CBO_PMP-coverpoints>>|||x|x|x
 |Svinval|TLB Invalidation|<<t-Svinval-coverpoints>>|||x|x|x
 |Svade|Page Table A/D Exceptions|<<t-Svade-coverpoints>>|||x|x|x
+|Svadu|Page Table Update|<<t-Svadu-coverpoints>>||||o|o
 |Svpbmt|Page-based Memory Types|<<t-Svpbmt-coverpoints>>|||x|x|x
 |Svnapot|Naturally Aligned Pages|<<t-Svnapot-coverpoints>>|||o|x|x
 |Sscofpmf|Counter Filtering|<<t-Sscofpmf-coverpoints>>|||o|x|x
+|Smstateen|Machine State Enable|<<t-Smstateen-coverpoints>>|||||
+|Ssstateen|Supervisor State Enable|<<t-Ssstateen-coverpoints>>|||o||x
 |Ssu64xl|64-bit UXL|<<t-Ssu64xl-coverpoints>>|||o|x|x
 |Sscounterenw|Counter Enables Writable|<<t-Sscounterenw-coverpoints>>|||x|x|x
 |Sstvecd|Direct Vector|<<t-Sstvecd-coverpoints>>|||x|x|x
 |Sstvala|stval Addresses|<<t-Sstvala-coverpoints>>|||x|x|x
-|Zicclsm|Misaligned Loads / Stores|<<t-Zicclsm-coverpoints>>|||x|x|x
-|Smstateen|Machine State Enable|<<t-Smstateen-coverpoints>>|||||
-|Ssstateen|Supervisor State Enable|<<t-Ssstateen-coverpoints>>|||o||x
-|EndianM|Machine Endian|<<t-EndianM-coverpoints>>|||||
-|EndianS|Supervisor Endian|<<t-EndianS-coverpoints>>|||||
-|EndianU|User Endian|<<t-EndianU-coverpoints>>|||||
-|EndianZaamo|AMO Endian|<<t-EndianZaamo-coverpoints>>|||||
-|EndianZalrsc|LR/SC Endian|<<t-EndianZalrsc-coverpoints>>|||||
 8+^|Strict
 |SsstrictM|Machine Strict (unratified)|<<t-SsstrictM-coverpoints>>|||o|o|o
 |SsstrictS|Superisor Strict|<<t-SsstrictS-coverpoints>>|||o|o|o
 8+^|Vector
-|Vx8|Vector Integer 8-bit|<<t-Vx8-coverpoints>>|||o|o|x
-|Vx16|Vector Integer 16-bit|<<t-Vx16-coverpoints>>|||o|o|x
-|Vx32|Vector Integer 32-bit|<<t-Vx32-coverpoints>>|||o|o|x
-|Vx64|Vector Integer 64-bit|<<t-Vx64-coverpoints>>|||o|o|x
-|Vls8|Vector Load/Store 8-bit|<<t-Vls8-coverpoints>>|||o|o|x
-|Vls16|Vector Load/Store 16-bit|<<t-Vls16-coverpoints>>|||o|o|x
-|Vls32|Vector Load/Store 32-bit|<<t-Vls32-coverpoints>>|||o|o|x
-|Vls64|Vector Load/Store 64-bit|<<t-Vls64-coverpoints>>|||o|o|x
-|Vf16 (Zvfh)|Vector Float 16-bit|<<t-Vf16_coverpoints>>||||o|o
-|Vf32|Vector Float 32-bit|<<t-Vf32_coverpoints>>|||o|o|x
-|Vf64|Vector Float 64-bit|<<t-Vf64_coverpoints>>|||o|o|x
-|Zvbb8|Vector Bit Manip 8-bit|<<t-Zvbb8_coverpoints>>||||o|x
-|Zvbb16|Vector Bit Manip 16-bit|<<t-Zvbb16_coverpoints>>||||o|x
-|Zvbb32|Vector Bit Manip 32-bit|<<t-Zvbb32_coverpoints>>||||o|x
-|Zvbb64|Vector Bit Manip 64-bit|<<t-Zvbb64_coverpoints>>||||o|x
-|Zvkb8|Vector Crypto Bit Manip 8-bit|<<t-Zvkb8_coverpoints>>||||o|o
-|Zvkb16|Vector Crypto Bit Manip 16-bit|<<t-Zvkb16_coverpoints>>||||o|o
-|Zvkb32|Vector Crypto Bit Manip 32-bit|<<t-Zvkb32_coverpoints>>||||o|o
-|Zvkb64|Vector Crypto Bit Manip 64-bit|<<t-Zvkb64_coverpoints>>||||o|o
-|Zvbc64|Vector Carryless Mult|<<t-Zvbc64_coverpoints>>||||o|o
-|Zvg32|Vector GCM|<<t-Zvg32_coverpoints>>||||o|o
-|Zvkned32|Vector Crypt|<<t-Zvkned32_coverpoints>>||||o|o
-|Zvknha32|Vector Hash 32-bit|<<t-Zvknha32_coverpoints>>|||||
-|Zvknhb64|Vector Hash 64-bit|<<t-Zvknhb64_coverpoints>>||||o|o
-|Zvfbmin|Vector BF16 Convert|<<t-Zvfbmin_coverpoints>>||||o|o
-|Zvfbwma|Vector BF16 MAC|<<t-Zvfbwma_coverpoints>>||||o|o
-|ZfaZvfh|fli for Vector Half|<<t-ZfaZvfh_coverpoints>>||||o|o
+|Vx8|Vector Integer 8-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx16|Vector Integer 16-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx32|Vector Integer 32-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vx64|Vector Integer 64-bit|<<t-Vx-coverpoints>>|||o|o|x
+|Vls8|Vector Load/Store 8-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls16|Vector Load/Store 16-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls32|Vector Load/Store 32-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vls64|Vector Load/Store 64-bit|<<t-Vls-coverpoints>>|||o|o|x
+|Vf16 (Zvfh)|Vector Float 16-bit|<<t-Vf-coverpoints>>||||o|o
+|Vf32|Vector Float 32-bit|<<t-Vf-coverpoints>>|||o|o|x
+|Vf64|Vector Float 64-bit|<<t-Vf-coverpoints>>|||o|o|x
+|Zvfhmin|Vector half conversions|<<t-Zvfhmin-coverpoints>>||||o|o
+|Zvfbfmin|Vector BF16 Convert|<<t-Zvfbfmin-coverpoints>>||||o|o
+|Zvfbfwma|Vector BF16 MAC|<<t-Zvfbfwma-coverpoints>>||||o|o
+|Zvfhmin|Vector half conversions|<<t-Zvfhmin-coverpoints>>||||o|o
+|ZfaZvfh|fli for Vector Half|<<t-ZfaZvfh-coverpoints>>||||o|o
+|Zvbb8|Vector Bit Manip 8-bit|<<t-Zvbb-coverpoints>>||||o|x
+|Zvbb16|Vector Bit Manip 16-bit|<<t-Zvbb-coverpoints>>||||o|x
+|Zvbb32|Vector Bit Manip 32-bit|<<t-Zvbb-coverpoints>>||||o|x
+|Zvbb64|Vector Bit Manip 64-bit|<<t-Zvbb-coverpoints>>||||o|x
+|Zvkb8|Vector Crypto Bit Manip 8-bit|<<t-Zvkb-coverpoints>>||||o|o
+|Zvkb16|Vector Crypto Bit Manip 16-bit|<<t-Zvkb-coverpoints>>||||o|o
+|Zvkb32|Vector Crypto Bit Manip 32-bit|<<t-Zvkb-coverpoints>>||||o|o
+|Zvkb64|Vector Crypto Bit Manip 64-bit|<<t-Zvkb-coverpoints>>||||o|o
+|Zvbc64|Vector Carryless Mult|<<t-Zvbc-coverpoints>>||||o|o
+|Zvkg32|Vector GCM|<<t-Zvkg-coverpoints>>||||o|o
+|Zvkned32|Vector Crypt|<<t-Zvkned-coverpoints>>||||o|o
+|Zvknha32|Vector Hash 32-bit|<<t-Zvknh-coverpoints>>|||||
+|Zvknhb64|Vector Hash 64-bit|<<t-Zvknh-coverpoints>>||||o|o
 8+^|Vector Privileged
-|ExceptionsV|Vector Exceptions|<<t-ExceptionsV_coverpoints>>|||o|o|x
-|ZicsrV|Vector CSRs|<<t-ZicsrV_coverpoints>>|||o|o|x
-|ZicsrUV|User Vector CSRs|<<t-ZicsrUV_coverpoints>>|||o|o|x
-|SsstrictV|Vector Strict|<<t-SsstrictV_coverpoints>>|||o|o|o
+|ExceptionsV|Vector Exceptions|<<t-ExceptionsV-coverpoints>>|||o|o|x
+|ZicsrV|Vector CSRs|<<t-ZicsrV-coverpoints>>|||o|o|x
+|ZicsrUV|User Vector CSRs|<<t-ZicsrUV-coverpoints>>|||o|o|x
+|SsstrictV|Vector Strict|<<t-SsstrictV-coverpoints>>|||o|o|o
 8+^|Hypervisor
-|H|Hypervisor Instructions|<<t-H_coverpoints>>|||o|o|x
-|ZicsrH|Hypervisor CSRs|<<t-ZicsrH_coverpoints>>|||o|o|x
-|ZicsrHF|Hypervisor Float CSRs|<<t-ZicsrHF_coverpoints>>|||o|o|x
-|ZicsrHV|Hypervisor Vector CSRs|<<t-ZicsrHV_coverpoints>>|||o|o|x
-|ExceptionsH|Hypervisor Exceptions|<<t-ExceptionsH_coverpoints>>|||o|o|x
-|ExceptionsHV|Hypervisor Vector Exceptions|<<t-ExceptionsHV_coverpoints>>|||o|o|x
-|InterruptsH|Hypervisor Interrupts|<<t-InterruptsH_coverpoints>>|||o|o|x
-|EndianH|Hypervisor Endian|<<t-EndianH_coverpoints>>|||o|o|x
-|ZicntrH|Hypervisor Counters|<<t-ZicntrH_coverpoints>>|||o|o|x
-|ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH_coverpoints>>|||o|o|x
-|PMPH|Hypervisor PMP|<<t-PMPH_coverpoints>>|||o|o|x
-|RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH_coverpoints>>|||o|o|x
-|RV32VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMHCBO_coverpoints>>|||o|o|x
-|RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH_coverpoints>>|||o|o|x
-|RV64VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMHCBO_coverpoints>>|||o|o|x
-|SsstrictH|Hypervisor Strict|<<t-SsstrictH_coverpoints>>|||o|o|x
-|Shcounterenw|Counter Enables|<<t-Shcounterenw_coverpoints>>|||o|o|x
-|Shvsatpa|VM Modes Supported|<<t-Shvsatpa_coverpoints>>|||o|o|x
-|Shgatpa|VM x4 Modes Supported|<<t-Shgatpa_coverpoints>>|||o|o|x
-|Shvstvecd|Direct Vectoring|<<t-Shvstvecd_coverpoints>>|||o|o|x
-|Shvstvala|vstval Addresses|<<t-Shvstvala_coverpoints>>|||o|o|x
-|Shtvala|htval Addresses|<<t-Shtvala_coverpoints>>|||o|o|x
-|Shlcofideleg|Counter Overflow Delegation|<<t-Shlcofideleg_coverpoints>>|||o|o|x
-|ZkrH|Hypervisor Entropy|<<t-ZkrH_coverpoints>>|||o|o|x
-|SstcH|Hypervisor Supervisor Timer|<<t-SstcH_coverpoints>>|||o|o|x
-|SsstateenH|Hypervisor State Enable|<<t-SsstateenH_coverpoints>>|||o|o|x
-|SscrindH|Hypervisor Indirect CSR|<<t-SscrindH_coverpoints>>|||o|o|x
-|SscfgH|Hypervisor Counter Delegation|<<t-SscfgH_coverpoints>>|||o|o|x
-|SmctrH|Hypervisor Control Transfer Records|<<t-SmctrH_coverpoints>>|||o|o|x
-|SvinvalH|Hypervisor TLB Inval|<<t-SvinvalH_coverpoints>>|||o|o|o
-|SvaduH|Hypervisor TLB Update|<<t-SvaduH_coverpoints>>|||o|o|o
-|ZicfilpH|Hypervisor Landing Pad|<<t-ZicfilpH_coverpoints>>|||o|o|o
-|ZicfissH|Hypervisor Shadow Stack|<<t-ZicfissH_coverpoints>>|||o|o|o
-|SsdbltrpH|Double Trap|<<t-SsdbltrpH_coverpoints>>|||o|o|o
-|SsnpmH|Pointer Masking|<<t-SsnpmH_coverpoints>>|||o|o|o
-|SmnpmH|Pointer Masking|<<t-SmnpmH_coverpoints>>|||o|o|o
+|H|Hypervisor Instructions|<<t-H-coverpoints>>|||o|o|x
+|ZicsrH|Hypervisor CSRs|<<t-ZicsrH-coverpoints>>|||o|o|x
+|ZicsrHF|Hypervisor Float CSRs|<<t-ZicsrHF-coverpoints>>|||o|o|x
+|ZicsrHV|Hypervisor Vector CSRs|<<t-ZicsrHV-coverpoints>>|||o|o|x
+|ExceptionsH|Hypervisor Exceptions|<<t-ExceptionsH-coverpoints>>|||o|o|x
+|ExceptionsHV|Hypervisor Vector Exceptions|<<t-ExceptionsHV-coverpoints>>|||o|o|x
+|InterruptsH|Hypervisor Interrupts|<<t-InterruptsH-coverpoints>>|||o|o|x
+|EndianH|Hypervisor Endian|<<t-EndianH-coverpoints>>|||o|o|x
+|ZicntrH|Hypervisor Counters|<<t-ZicntrH-coverpoints>>|||o|o|x
+|ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH-coverpoints>>|||o|o|x
+|PMPH|Hypervisor PMP|<<t-PMPH-coverpoints>>|||o|o|x
+|RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH-coverpoints>>|||o|o|x
+|RV32VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMH_CBO-coverpoints>>|||o|o|x
+|RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH-coverpoints>>|||o|o|x
+|RV64VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMH_CBO-coverpoints>>|||o|o|x
+|SsstrictH|Hypervisor Strict|<<t-SsstrictH-coverpoints>>|||o|o|x
+|Shcounterenw|Counter Enables|<<t-Shcounterenw-coverpoints>>|||o|o|x
+|Shvsatpa|VM Modes Supported|<<t-Shvsatpa-coverpoints>>|||o|o|x
+|Shgatpa|VM x4 Modes Supported|<<t-Shgatpa-coverpoints>>|||o|o|x
+|Shvstvecd|Direct Vectoring|<<t-Shvstvecd-coverpoints>>|||o|o|x
+|Shvstvala|vstval Addresses|<<t-Shvstvala-coverpoints>>|||o|o|x
+|Shtvala|htval Addresses|<<t-Shtvala-coverpoints>>|||o|o|x
+|Shlcofideleg|Counter Overflow Delegation|<<t-Shlcofideleg-coverpoints>>|||o|o|x
+|ZkrH|Hypervisor Entropy|<<t-ZkrH-coverpoints>>|||o|o|x
+|SstcH|Hypervisor Supervisor Timer|<<t-SstcH-coverpoints>>|||o|o|x
+|SsstateenH|Hypervisor State Enable|<<t-SsstateenH-coverpoints>>|||o|o|x
+|SscrindH|Hypervisor Indirect CSR|<<t-SscrindH-coverpoints>>|||o|o|x
+|SscfgH|Hypervisor Counter Delegation|<<t-SscfgH-coverpoints>>|||o|o|x
+|SmctrH|Hypervisor Control Transfer Records|<<t-SmctrH-coverpoints>>|||o|o|x
+|SvinvalH|Hypervisor TLB Inval|<<t-SvinvalH-coverpoints>>|||o|o|o
+|SvaduH|Hypervisor TLB Update|<<t-SvaduH-coverpoints>>|||o|o|o
+|ZicfilpH|Hypervisor Landing Pad|<<t-ZicfilpH-coverpoints>>|||o|o|o
+|ZicfissH|Hypervisor Shadow Stack|<<t-ZicfissH-coverpoints>>|||o|o|o
+|SsdbltrpH|Double Trap|<<t-SsdbltrpH-coverpoints>>|||o|o|o
+|SsnpmH|Pointer Masking|<<t-SsnpmH-coverpoints>>|||o|o|o
+|SmnpmH|Pointer Masking|<<t-SmnpmH-coverpoints>>|||o|o|o
 8+^|Miscellaneous RV{A/B}23 Extensions
 |Sm1p13|Machine 1p13|<<t-Sm1p13-coverpoints>>||||x|x
 |Ss1p13|Supervisor 1p13|<<t-Ss1p13-coverpoints>>||||x|x
@@ -223,7 +226,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Zimop|Maybe-Ops|<<t-Zimop-coverpoints>>||||x|x
 |Zcmop|Compressed Maybe-Ops|<<t-Zcmop-coverpoints>>||||x|x
 |Zawrs|Wait on Reservation Set|<<t-Zawrs-coverpoints>>||||x|x
-|Svadu|Page Table Update|<<t-Svadu-coverpoints>>||||o|o
 |Sdtrig|Debug Triggers|<<t-Sdtrig-coverpoints>>||||o|o
 8+^|Other Recent Extensions
 |Zfinx|Float in Int Regs|<<t-Zfinx-coverpoints>>|||||

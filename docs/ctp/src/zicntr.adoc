@@ -1,10 +1,36 @@
 
 === Zicntr
 
-counters and hpms
+These tests exercise the mtime, mcycle, and minstret counters and related registers.
+
+*** edit coverpoints to pull out hpm
 
 ==== ZicntrM
 
+[[t-ZicntrM-coverpoints]]
+.ZicntrM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicntrM.csv[]
+,===
+
 ==== ZicntrS
 
+[[t-ZicntrS-coverpoints]]
+.ZicntrS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicntrS.csv[]
+,===
+
 ==== ZicntrU
+
+[[t-ZicntrU-coverpoints]]
+.ZicntrU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicntrU.csv[]
+,===

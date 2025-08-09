@@ -3,14 +3,94 @@
 
 ==== PMPM
 
+[[t-PMPM-coverpoints]]
+.PMPM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPM.csv[]
+,===
+
 ==== PMPS
+
+[[t-PMPS-coverpoints]]
+.PMPS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPS.csv[]
+,===
 
 ==== PMPU
 
+[[t-PMPU-coverpoints]]
+.PMPU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPU.csv[]
+,===
+
 ==== PMPZca
+
+[[t-PMPZca-coverpoints]]
+.PMPZca Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZca.csv[]
+,===
 
 ==== PMPZicbo
 
+[[t-PMPZicbo-coverpoints]]
+.PMPZicbo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZicbo.csv[]
+,===
+
 ==== PMPZaamo
 
+[[t-PMPZaamo-coverpoints]]
+.PMPZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZaamo.csv[]
+,===
+
 ==== PMPZalrsc
+
+[[t-PMPZalrsc-coverpoints]]
+.PMPZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/PMPZalrsc.csv[]
+,===
+
+==== RV32CBO_PMP
+
+*** try to get rid of RV64 part
+
+[[t-RV32CBO_PMP-coverpoints]]
+.RV32CBO_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32CBO_PMP.csv[]
+,===
+
+==== RV64CBO_PMP
+
+*** try to get rid of RV64 part
+
+[[t-RV64CBO_PMP-coverpoints]]
+.RV64CBO_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64CBO_PMP.csv[]
+,===
