@@ -995,6 +995,8 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 
 ==== H
 
+Instructions introduced by Hypervisor extension.
+
 [[t-H-coverpoints]]
 .H Coverpoints
 [options=header]
@@ -1004,6 +1006,8 @@ include::{testplansdir}/H.csv[]
 ,===
 
 ==== ZicsrH
+
+CSRs introduced by Hypervisor extension.
 
 [[t-ZicsrH-coverpoints]]
 .ZicsrH Coverpoints
@@ -1015,6 +1019,8 @@ include::{testplansdir}/ZicsrH.csv[]
 
 ==== ZicsrHF
 
+Floating-point CSR behavior introduced by Hypervisor extension.
+
 [[t-ZicsrHF-coverpoints]]
 .ZicsrHF Coverpoints
 [options=header]
@@ -1024,6 +1030,8 @@ include::{testplansdir}/ZicsrHF.csv[]
 ,===
 
 ==== ZicsrHV
+
+Vector CSR behavior introduced by Hypervisor extension.
 
 [[t-ZicsrHV-coverpoints]]
 .ZicsrHV Coverpoints
@@ -1035,6 +1043,8 @@ include::{testplansdir}/ZicsrHV.csv[]
 
 ==== ExceptionsH
 
+Exceptions introduced by Hypervisor extension.
+
 [[t-ExceptionsH-coverpoints]]
 .ExceptionsH Coverpoints
 [options=header]
@@ -1044,6 +1054,8 @@ include::{testplansdir}/ExceptionsH.csv[]
 ,===
 
 ==== ExceptionsHV
+
+Vector exceptions introduced by Hypervisor extension.
 
 [[t-ExceptionsHV-coverpoints]]
 .ExceptionsHV Coverpoints
@@ -1055,6 +1067,8 @@ include::{testplansdir}/ExceptionsHV.csv[]
 
 ==== InterruptsH
 
+Interrupts introduced by Hypervisor extension.
+
 [[t-InterruptsH-coverpoints]]
 .InterruptsH Coverpoints
 [options=header]
@@ -1065,6 +1079,8 @@ include::{testplansdir}/InterruptsH.csv[]
 
 ==== EndianH
 
+Endianness introduced by Hypervisor extension.
+
 [[t-EndianH-coverpoints]]
 .EndianH Coverpoints
 [options=header]
@@ -1073,27 +1089,57 @@ include::{testplansdir}/InterruptsH.csv[]
 include::{testplansdir}/EndianH.csv[]
 ,===
 
-==== RV32VM_H
+==== RV32VMH
 
-[[t-RV32VM_H-coverpoints]]
-.RV32VM_H Coverpoints
+Virtual memory behavior introduced by Hypervisor extension.
+
+[[t-RV32VMH-coverpoints]]
+.RV32VMH Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV32VM_H.csv[]
+include::{testplansdir}/RV32VMH.csv[]
 ,===
 
-==== RV64VM_H
+==== RV32VMH_CBO
 
-[[t-RV64VM_H-coverpoints]]
-.RV64VM_H Coverpoints
+Virtual memory / CBO behavior introduced by Hypervisor extension.
+
+[[t-RV32VMH_CBO-coverpoints]]
+.RV32VMH_CBO Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/RV64VM_H.csv[]
+include::{testplansdir}/RV32VMH_CBO.csv[]
+,===
+
+==== RV64VMH
+
+Virtual memory behavior introduced by Hypervisor extension.
+
+[[t-RV64VMH-coverpoints]]
+.RV64VMH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64VMH.csv[]
+,===
+
+==== RV64VMH_CBO
+
+Virtual memory / CBO behavior introduced by Hypervisor extension.
+
+[[t-RV64VMH_CBO-coverpoints]]
+.RV64VMH_CBO Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64VMH_CBO.csv[]
 ,===
 
 ==== SsstrictH
+
+Strict behavior introduced by Hypervisor extension.
 
 [[t-SsstrictH-coverpoints]]
 .SsstrictH Coverpoints
@@ -1103,32 +1149,243 @@ include::{testplansdir}/RV64VM_H.csv[]
 include::{testplansdir}/SsstrictH.csv[]
 ,===
 
-|EndianH|Hypervisor Endian|<<t-EndianH_coverpoints>>|||o|o|x
-|ZicntrH|Hypervisor Counters|<<t-ZicntrH_coverpoints>>|||o|o|x
-|ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH_coverpoints>>|||o|o|x
-|PMPH|Hypervisor PMP|<<t-PMPH_coverpoints>>|||o|o|x
-|RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH_coverpoints>>|||o|o|x
-|RV32VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMHCBO_coverpoints>>|||o|o|x
-|RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH_coverpoints>>|||o|o|x
-|RV64VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMHCBO_coverpoints>>|||o|o|x
-|SsstrictH|Hypervisor Strict|<<t-SsstrictH_coverpoints>>|||o|o|x
-|Shcounterenw|Counter Enables|<<t-Shcounterenw_coverpoints>>|||o|o|x
-|Shvsatpa|VM Modes Supported|<<t-Shvsatpa_coverpoints>>|||o|o|x
-|Shgatpa|VM x4 Modes Supported|<<t-Shgatpa_coverpoints>>|||o|o|x
-|Shvstvecd|Direct Vectoring|<<t-Shvstvecd_coverpoints>>|||o|o|x
-|Shvstvala|vstval Addresses|<<t-Shvstvala_coverpoints>>|||o|o|x
-|Shtvala|htval Addresses|<<t-Shtvala_coverpoints>>|||o|o|x
-|Shlcofideleg|Counter Overflow Delegation|<<t-Shlcofideleg_coverpoints>>|||o|o|x
-|ZkrH|Hypervisor Entropy|<<t-ZkrH_coverpoints>>|||o|o|x
-|SstcH|Hypervisor Supervisor Timer|<<t-SstcH_coverpoints>>|||o|o|x
-|SsstateenH|Hypervisor State Enable|<<t-SsstateenH_coverpoints>>|||o|o|x
-|SscrindH|Hypervisor Indirect CSR|<<t-SscrindH_coverpoints>>|||o|o|x
-|SscfgH|Hypervisor Counter Delegation|<<t-SscfgH_coverpoints>>|||o|o|x
-|SmctrH|Hypervisor Control Transfer Records|<<t-SmctrH_coverpoints>>|||o|o|x
-|SvinvalH|Hypervisor TLB Inval|<<t-SvinvalH_coverpoints>>|||o|o|o
-|SvaduH|Hypervisor TLB Update|<<t-SvaduH_coverpoints>>|||o|o|o
-|ZicfilpH|Hypervisor Landing Pad|<<t-ZicfilpH_coverpoints>>|||o|o|o
-|ZicfissH|Hypervisor Shadow Stack|<<t-ZicfissH_coverpoints>>|||o|o|o
-|SsdbltrpH|Double Trap|<<t-SsdbltrpH_coverpoints>>|||o|o|o
-|SsnpmH|Pointer Masking|<<t-SsnpmH_coverpoints>>|||o|o|o
-|SmnpmH|Pointer Masking|<<t-SmnpmH_coverpoints>>|||o|o|o
+==== Shcounterenw
+
+Writable counter enables.
+
+[[t-Shcounterenw-coverpoints]]
+.SsstrictH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shcounterenw.csv[]
+,===
+
+==== Shvsatpa
+
+VM modes supported.
+
+[[t-Shvsatpa-coverpoints]]
+.Shvsatpa Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shvsatpa.csv[]
+,===
+
+==== Shgatpa
+
+VM x4 modes supported.
+
+[[t-Shgatpa-coverpoints]]
+.Shgatpa Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shgatpa.csv[]
+,===
+
+==== Shvstvecd
+
+VS-mode direct vector.
+
+[[t-Shvstvecd-coverpoints]]
+.Shvstvecd Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shvstvecd.csv[]
+,===
+
+==== Shvstvala
+
+VS-mode stval address.
+
+[[t-Shvstvala-coverpoints]]
+.Shvstvala Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shvstvala.csv[]
+,===
+
+==== Shtvala
+
+HS-mode htval address.
+
+
+[[t-Shtvala-coverpoints]]
+.Shtvala Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shtvala.csv[]
+,===
+
+==== Shlcofideleg
+
+Hypervisor counter overflow delegation.
+
+[[t-Shlcofideleg-coverpoints]]
+.Shlcofideleg Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Shlcofideleg.csv[]
+,===
+
+==== ZkrH
+
+Hypervisor entropy register.
+
+[[t-ZkrH-coverpoints]]
+.ZkrH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZkrH.csv[]
+,===
+
+==== SstcH
+
+Hypervisor timer compare.
+
+[[t-SstcH-coverpoints]]
+.SstcH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SstcH.csv[]
+,===
+
+==== SsstateenH
+
+Hypervisor state enable.
+
+[[t-SsstateenH-coverpoints]]
+.SsstateenH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsstateenH.csv[]
+,===
+
+==== SscrindH
+
+Hypervisor indirect CSR access.
+
+[[t-SscrindH-coverpoints]]
+.SscrindH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SscrindH.csv[]
+,===
+
+==== SscfgH
+
+Hypervisor counter delegation.
+
+[[t-SscfgH-coverpoints]]
+.SscfgH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SscfgH.csv[]
+,===
+
+==== SmctrH
+
+Hypervisor control transfer records.
+
+[[t-SmctrH-coverpoints]]
+.SmctrH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SmctrH.csv[]
+,===
+
+==== SvinvalH
+
+Hypervisor memory management table invalidation.
+
+[[t-SvinvalH-coverpoints]]
+.SvinvalH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SvinvalH.csv[]
+,===
+
+==== SvaduH
+
+Hypervisor hardware page table A/D updates.
+
+[[t-SvaduH-coverpoints]]
+.SvaduH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SvaduH.csv[]
+,===
+
+==== ZicfilpH
+
+Hypervisor landing pads.
+
+[[t-ZicfilpH-coverpoints]]
+.ZicfilpH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicfilpH.csv[]
+,===
+
+==== ZicfissH
+
+Hypervisor shadow stack.
+
+[[t-ZicfissH-coverpoints]]
+.ZicfissH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/ZicfissH.csv[]
+,===
+
+==== SsdbltrpH
+
+Hypervisor double trap.
+
+[[t-SsdbltrpH-coverpoints]]
+.SsdbltrpH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsdbltrpH.csv[]
+,===
+
+==== SsnpmH
+
+Hypervisor pointer masking.
+
+[[t-SsnpmH-coverpoints]]
+.SsnpmH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SsnpmH.csv[]
+,===
+
+==== SmnpmH
+
+Hypervisor poitner masking.
+
+[[t-SmnpmH-coverpoints]]
+.SmnpmH Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/SmnpmH.csv[]
+,===

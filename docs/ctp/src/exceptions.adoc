@@ -75,16 +75,16 @@ These additional exception tests are run on configurations with the Zalrsc exten
 include::{testplansdir}/ExceptionsZalrsc.csv[]
 ,===
 
-==== ExceptionsZaammo
+==== ExceptionsZaamo
 
 These additional exception tests are run on configurations with the Zaamo extension.
 
-[[t-ExceptionsZaammo-coverpoints]]
-.ExceptionsZaammo Coverpoints
+[[t-ExceptionsZaamo-coverpoints]]
+.ExceptionsZaamo Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
-include::{testplansdir}/ExceptionsZaammo.csv[]
+include::{testplansdir}/ExceptionsZaamo.csv[]
 ,===
 
 ==== ExceptionsZc

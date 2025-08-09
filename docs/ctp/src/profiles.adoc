@@ -185,9 +185,9 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH_coverpoints>>|||o|o|x
 |PMPH|Hypervisor PMP|<<t-PMPH_coverpoints>>|||o|o|x
 |RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH_coverpoints>>|||o|o|x
-|RV32VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMHCBO_coverpoints>>|||o|o|x
+|RV32VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMH_CBO_coverpoints>>|||o|o|x
 |RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH_coverpoints>>|||o|o|x
-|RV64VMHCBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMHCBO_coverpoints>>|||o|o|x
+|RV64VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMH_CBO_coverpoints>>|||o|o|x
 |SsstrictH|Hypervisor Strict|<<t-SsstrictH_coverpoints>>|||o|o|x
 |Shcounterenw|Counter Enables|<<t-Shcounterenw_coverpoints>>|||o|o|x
 |Shvsatpa|VM Modes Supported|<<t-Shvsatpa_coverpoints>>|||o|o|x
