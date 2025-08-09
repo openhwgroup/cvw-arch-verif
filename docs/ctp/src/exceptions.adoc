@@ -158,3 +158,16 @@ These additional exception tests are run on configurations with virtual memory a
 ,===
 include::{testplansdir}/ExceptionsVMZaamo.csv[]
 ,===
+
+==== Zicclsm
+
+Misaligned loads/stores handled in hardware.
+
+[[t-Zicclsm-coverpoints]]
+.Zicclsm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zicclsm.csv[]
+,===
+

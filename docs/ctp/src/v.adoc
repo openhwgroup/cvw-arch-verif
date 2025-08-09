@@ -207,7 +207,6 @@ include::{testplansdir}/Vls.csv[]
 ,===
 
 ==== Vf
-
 [[t-Vf-coverpoints]]
 .Vf Instruction Coverpoints
 [options=header]
@@ -216,16 +215,15 @@ include::{testplansdir}/Vls.csv[]
 include::{testplansdir}/Vf.csv[]
 ,===
 
-=== Zvfh* Vector Half-Precision Floating-Point Extension
+==== Zvfh Vector Half-Precision Floating-Point Extension
 
-Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, Zvfh tests are in the same directory structure as V, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16.  
+Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions, not the base V extension.  Nevertheless, Zvfh tests are in the same directory structure as V, under Vf16. Zvfh uses Vf16 <<t-Vf-coverpoints>> to exercise all floating-point instructions with SEW=16. 
 
-==== Zvfhmin Half-Precision Load Immediate
+==== Zvfhmin Half-Precision Conversions
 
 Zvfhmin only exercises the widening and narrowing conversions: `vfwcvt.f.f.v` and `vfncvt.f.f.w`.
-
-[[t-Zfvhmin-coverpoints]]
-.Zffvhmin Instruction Coverpoints
+[[t-Zvfhmin-coverpoints]]
+.Zvfhmin Instruction Coverpoints
 [options=header]
 [%AUTOWIDTH]
 ,===
@@ -244,12 +242,31 @@ When Zfa and Zvfh are both implemented, RISC-V provides a `fli.h` instruction (<
 include::{testplansdir}/ZfaZvfh.csv[]
 ,===
 
+==== Zvfbfmin BF16 Conversions
+
+[[t-Zvfbfmin-coverpoints]]
+.Zvfbfmin Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zvfbfmin.csv[]
+,===
+
+==== Zvfbfwma BF16 MAC
+
+[[t-Zvfbfwma-coverpoints]]
+.Zvfbfwma Instruction Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/Zvfbfwma.csv[]
+,===
+
 === Zvb* Vector Bit Manipulation Extension
 
 Vector bit manipulation extensions include Zvbb and Zvbc.
 
 ==== Zvbb Vector Basic Bit Manipulation Extension
-
 [[t-Zvbb-coverpoints]]
 .Zvbb Instruction Coverpoints
 [options=header]

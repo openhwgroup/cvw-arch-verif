@@ -70,3 +70,27 @@ include::{testplansdir}/PMPZaamo.csv[]
 ,===
 include::{testplansdir}/PMPZalrsc.csv[]
 ,===
+
+==== RV32CBO_PMP
+
+*** try to get rid of RV64 part
+
+[[t-RV32CBO_PMP-coverpoints]]
+.RV32CBO_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV32CBO_PMP.csv[]
+,===
+
+==== RV64CBO_PMP
+
+*** try to get rid of RV64 part
+
+[[t-RV64CBO_PMP-coverpoints]]
+.RV64CBO_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/RV64CBO_PMP.csv[]
+,===

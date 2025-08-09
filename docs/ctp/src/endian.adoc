@@ -3,10 +3,49 @@
 
 ==== EndianM
 
+[[t-EndianM-coverpoints]]
+.EndianM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianM.csv[]
+,===
+
 ==== EndianS
+
+[[t-EndianS-coverpoints]]
+.EndianS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianS.csv[]
+,===
 
 ==== EndianU
 
+[[t-EndianU-coverpoints]]
+.EndianU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianU.csv[]
+,===
+
 ==== EndianZaamo
 
+[[t-EndianZaamo-coverpoints]]
+.EndianZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianZaamo.csv[]
+,===
+
 ==== EndianZalrsc
+[[t-EndianZalrsc-coverpoints]]
+.EndianZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+include::{testplansdir}/EndianZalrsc.csv[]
+,===
