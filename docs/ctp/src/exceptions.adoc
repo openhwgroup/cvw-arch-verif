@@ -1,28 +1,173 @@
 
 === Exceptions
 
-==== ExceptionsM
+Exception tests are organized according to the privilege mode or extension supported.  For example, a configuration with Machine, Supervisor, User, and Floating-Point supported should run ExceptionsM, ExceptionsS, ExceptionsU, and ExceptionsF.
 
-==== ExceptionsS
+==== ExceptionsM Machine-Mode Exceptions
 
-==== ExceptionsU
+These tests are run on any configuration with machine mode that supports exceptions.
 
-==== ExceptionsF
+[[t-ExceptionsM-coverpoints]]
+.ExceptionsM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsM.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1987812700#gid=1987812700[Google Sheet Testplan]
 
-==== ExceptionsV
+==== ExceptionsS Supervisor-Mode Exceptions
 
-==== ExceptionsZalrsc
+These additional exception tests are run on configurations with supervisor mode.
 
-==== ExceptionsZaammo
+[[t-ExceptionsS-coverpoints]]
+.ExceptionsS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsS.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2127390256#gid=2127390256[Google Sheet Testplan]
 
-==== ExceptionsZc
+==== ExceptionsU User-Mode Exceptions
 
-==== ExceptionsZicboS
+These additional exception tests are run on configurations with user mode.
 
-==== ExceptionsZicboU
+[[t-ExceptionsU-coverpoints]]
+.ExceptionsU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsU.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=593261374#gid=593261374[Google Sheet Testplan]
 
-==== ExceptionsVM
+==== ExceptionsF Floating-Point Exceptions
 
-==== ExceptionsVMZalrsc
+These additional exception tests are run on configurations with floating-point (at least the F extension).
 
-==== ExceptionsVMZaamo
+[[t-ExceptionsF-coverpoints]]
+.ExceptionsF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsF.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1241522932#gid=1241522932[Google Sheet Testplan]
+
+==== ExceptionsV Vector Exceptions
+
+These additional exception tests are run on configurations with vector (V extension or subsets thereof that rely on mstatus.VS).
+
+[[t-ExceptionsV-coverpoints]]
+.ExceptionsV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsV.csv[]
+,===
+
+*** add link
+
+==== ExceptionsZalrsc Atomic LR/SC Exceptions
+
+[[t-ExceptionsZalrsc-coverpoints]]
+.ExceptionsZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZalrsc.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=891200072#gid=891200072[Google Sheet Testplan]
+
+==== ExceptionsZaamo Atomic Memory Operation Exceptions
+
+[[t-ExceptionsZaamo-coverpoints]]
+.ExceptionsZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZaamo.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2143559149#gid=2143559149[Google Sheet Testplan]
+
+==== ExceptionsZc Compressed Instruction Exceptions
+
+These additional exception tests are run on configurations with compressed instructions (C, Zca, Zcb, etc.).  They attempt to test all compressed loads and stores, but may throw an illegal instruction fault on compressed subword load/store if Zcb is not supported.
+
+[[t-ExceptionsZc-coverpoints]]
+.ExceptionsZc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZc.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=538759067#gid=538759067[Google Sheet Testplan]
+
+==== ExceptionsZicboS Supervisor-Mode CBO Exceptions
+
+[[t-ExceptionsZicboS-coverpoints]]
+.ExceptionsZicboS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZicboS.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=927893239#gid=927893239[Google Sheet Testplan]
+
+==== ExceptionsZicboU User-Mode CBO Exceptions
+
+[[t-ExceptionsZicboU-coverpoints]]
+.ExceptionsZicboU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsZicboU.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1054505393#gid=1054505393[Google Sheet Testplan]
+
+==== ExceptionsVM Virtual Memory Exceptions
+
+[[t-ExceptionsVM-coverpoints]]
+.ExceptionsVM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVM.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=270777025#gid=270777025[Google Sheet Testplan]
+
+==== ExceptionsVMZalrsc  Virtual Memory LR/SC Exceptions
+
+[[t-ExceptionsVMZalrsc-coverpoints]]
+.ExceptionsVMZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVMZalrsc.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=287426144#gid=287426144[Google Sheet Testplan]
+
+==== ExceptionsVMZaamo Virtual Memory AMO Exceptions
+
+[[t-ExceptionsVMZaamo-coverpoints]]
+.ExceptionsM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ExceptionsVMZaamo.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1747092954#gid=1747092954[Google Sheet Testplan]
+
+==== Zicclsm Misaligned Loads/Stores
+
+Misaligned loads/stores handled in hardware.
+
+[[t-Zicclsm-coverpoints]]
+.Zicclsm Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Zicclsm.csv[]
+,===
+*** need to create this

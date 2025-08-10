@@ -1,8 +1,0 @@
-
-=== CBO
-
-*** why RV64CBO?
-
-==== RV64CBO_VM
-
-==== RV64CBO_PMP

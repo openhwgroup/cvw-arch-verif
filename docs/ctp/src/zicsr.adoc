@@ -12,19 +12,109 @@ Zicsr does not test reserved or custom instructions or CSRs because their behavi
 Reserved instructions and CSRs are tested in the <<Ssstrict>> Ssstrict tests,
 where they should throw an Illegal Instruction exception if not implemented.
 
-==== ZicsrM
+==== ZicsrM Machine-Mode CSRs
+
+These test CSRs that exist in machine mode.
+
+[[t-ZicsrM-coverpoints]]
+.ZicsrM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrM.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1563313604#gid=1563313604[Google Sheet Testplan]
 
 *** find all WPRI and WLRL fields.  Don't look at WPRI results.  Only test legal values of WLRL.
-==== ZicsrS
-
-==== ZicsrU
-
-==== ZicsrF
-
-==== ZicsrV
-
-==== ZicsrUF
-
-==== ZicsrUV
-
   TODO check WARL, WLRL, WPRI behaviors
+
+
+==== ZicsrS Supervisor-Mode CSRs
+
+These test additional CSRs that exist in supervisor mode.
+
+[[t-ZicsrS-coverpoints]]
+.ZicsrS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrS.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=335048477#gid=335048477[Google Sheet Testplan]
+
+==== ZicsrU User-Mode CSRs
+
+These test additional CSRs that exist in user mode.
+
+[[t-ZicsrU-coverpoints]]
+.ZicsrU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrU.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1720466356#gid=1720466356[Google Sheet Testplan]
+
+==== ZicsrF Floating-Point CSRs
+
+These test additional CSRs that exist when floating-point is supported.
+
+[[t-ZicsrF-coverpoints]]
+.ZicsrF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrF.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=29805079#gid=29805079[Google Sheet Testplan]
+
+==== ZicsrV Vector CSRs
+
+These test additional CSRs that exist when vector is supported.
+
+[[t-ZicsrV-coverpoints]]
+.ZicsrV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrV.csv[]
+,===
+*** need link
+
+==== ZicsrUF Unprivileged Floating-Point CSRs
+
+These test additional CSR scenarios that exist when floating-point and user mode are supported.
+
+[[t-ZicsrUF-coverpoints]]
+.ZicsrUF Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrUF.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=242878857#gid=242878857[Google Sheet Testplan]
+
+==== ZicsrUV Unprivileged Vector CSRs
+
+These test additional CSR scenarios that exist when vector and user mode are supported.
+
+[[t-ZicsrUV-coverpoints]]
+.ZicsrUV Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrUV.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1488477674#gid=1488477674[Google Sheet Testplan]
+
+==== ZicsrZkr Entropy CSR
+
+These test CSRs when the Zkr entropy extension is supported.
+
+[[t-ZicsrZkr-coverpoints]]
+.ZicsrZkr Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicsrZkr.csv[]
+,===

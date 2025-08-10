@@ -1,12 +1,129 @@
 
 === Sv* Virtual Memory
 
-==== RV32VM
+==== Svbare Virtual Memory Off
 
-==== RV32VM_PMP
+[[t-Svbare-coverpoints]]
+.Svbare Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svbare.csv[]
+,===
 
-==== RV64VM
+==== RV32VM Sv32
 
-==== RV64VM_PMP
+*** Can this be renamed Sv32?
 
-==== Svinval
+[[t-RV32VM-coverpoints]]
+.RV32VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV32VM.csv[]
+,===
+
+==== RV32VM_PMP Sv32 + PMP
+
+[[t-RV32VM_PMP-coverpoints]]
+.RV32VM_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV32VM_PMP.csv[]
+,===
+
+==== RV32CBO_VM Sv32 + CBO
+
+[[t-RV32CBO_VM-coverpoints]]
+.RV32CBO_VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV32CBO_VM.csv[]
+,===
+
+==== RV64VM Sv39/48
+
+*** can/should this be renamed Sv39, Sv48, Sv57?
+
+[[t-RV64VM-coverpoints]]
+.RV64VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV64VM.csv[]
+,===
+
+==== RV64VM_PMP Sv39/48 + PMP
+
+[[t-RV64VM_PMP-coverpoints]]
+.RV64VM_PMP Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV64VM_PMP.csv[]
+,===
+
+==== RV64CBO_VM Sv39/48 + CBO
+
+[[t-RV64CBO_VM-coverpoints]]
+.RV64CBO_VM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/RV64CBO_VM.csv[]
+,===
+
+==== Svinval Memory Management Unit Table Invalidation
+
+The Svinval extension defines instructions to update memory management tables for virtual memory and optionally for PMP. Their effect is system-dependent, so these tests simply check that the instructions run.
+
+[[t-Svinval-coverpoints]]
+.Svinval Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svinval.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1M78FrWvnva08vg-_5ejIkTZBhW1z5mW7NkYjl5lXH5g/edit?gid=1987812700#gid=1987812700[Google Sheet Testplan]
+
+==== Svade A/D Bit Page Fault Exception
+
+[[t-Svade-coverpoints]]
+.Svade Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svade.csv[]
+,===
+
+==== Svadu A/D Bit Hardware Update
+
+[[t-Svadu-coverpoints]]
+.Svadu Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svadu.csv[]
+,===
+
+==== Svpbmt Page-Based Memory Types
+
+[[t-Svpbmt-coverpoints]]
+.Svpbmt Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svpbmt.csv[]
+,===
+
+==== Svnapot Naturally-Aligned Power-of-Two Page Sizes
+
+[[t-Svnapot-coverpoints]]
+.Svnapot Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/Svnapot.csv[]
+,===

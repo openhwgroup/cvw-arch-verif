@@ -1,10 +1,39 @@
 
 === Zicntr
 
-counters and hpms
+These tests exercise the mtime, mcycle, and minstret counters and related registers (time, cycle, instret).
 
-==== ZicntrM
+*** edit coverpoints to pull out hpm
 
-==== ZicntrS
+==== ZicntrM Machine-Mode Counters
 
-==== ZicntrU
+[[t-ZicntrM-coverpoints]]
+.ZicntrM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicntrM.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=0#gid=0[Google Sheet Testplan]
+
+==== ZicntrS Supervisor-Mode Counters
+
+[[t-ZicntrS-coverpoints]]
+.ZicntrS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicntrS.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=521853953#gid=521853953[Google Sheet Testplan]
+
+==== ZicntrU User-Mode Counters
+
+[[t-ZicntrU-coverpoints]]
+.ZicntrU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/ZicntrU.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=516633595#gid=516633595[Google Sheet Testplan]

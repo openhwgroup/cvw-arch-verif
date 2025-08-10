@@ -1,12 +1,57 @@
 
 === Endian
 
-==== EndianM
+==== EndianM Machine-Mode Endianness
 
-==== EndianS
+[[t-EndianM-coverpoints]]
+.EndianM Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/EndianM.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=220856688#gid=220856688[Google Sheet Testplan]
 
-==== EndianU
+==== EndianS Supervisor-Mode Endianness
 
-==== EndianZaamo
+[[t-EndianS-coverpoints]]
+.EndianS Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/EndianS.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=561554401#gid=561554401[Google Sheet Testplan]
 
-==== EndianZalrsc
+==== EndianU User-Mode Endianness
+
+[[t-EndianU-coverpoints]]
+.EndianU Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/EndianU.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=0#gid=0[Google Sheet Testplan]
+
+==== EndianZaamo Endianness for AMOs
+
+[[t-EndianZaamo-coverpoints]]
+.EndianZaamo Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/EndianZaamo.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=470611865#gid=470611865[Google Sheet Testplan]
+
+==== EndianZalrsc Endianness for LR/SC
+
+[[t-EndianZalrsc-coverpoints]]
+.EndianZalrsc Coverpoints
+[options=header]
+[%AUTOWIDTH]
+,===
+//include::{testplansdir}/EndianZalrsc.csv[]
+,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=1511292549#gid=1511292549[Google Sheet Testplan]
