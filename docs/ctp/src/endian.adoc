@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//////include::{testplansdir}/EndianM.csv[]
+//include::{testplansdir}/EndianM.csv[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=220856688#gid=220856688[Google Sheet Testplan]
 
