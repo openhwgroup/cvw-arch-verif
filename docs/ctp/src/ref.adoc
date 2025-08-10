@@ -24,7 +24,7 @@ Nevertheless, Sail is making rapid progress and is aiming to fully implement the
 For each supported profile, the certification tests will be qualified on at least one DUT configuration.  This configuration should be one supported by Spike and as many other simulators as possible.  Qualification involves running the same compiled tests on many RISC-V simulators and having them all pass.  Preferred simulators include:
 
 * Sail (required, golden reference)
-* Spike 
+* Spike
 * ImperasFPM (license required)
 * QEMU
 * Whisper
@@ -60,4 +60,4 @@ Tests can receive a qualification waiver if they fail in certain simulators for 
 
 === List of Theoretically Nondeterministic Behaviors with Configurable Deterministic Implementations
 
-* CSR WARL Fields: any legal value could be read, and the value is theoretically nondeterministic and could change from one write to another.  UDB will define configurations with a single sensible behavior (such as all 0s), and we may limit certification to DUTs who implement a reasonable configuration
+* CSR WARL Fields: any legal value could be read, and the value is theoretically nondeterministic and could change from one write to another.  UDB will define configurations with a single sensible behavior (such as all 0s), and we may limit certification to DUTs that implement a reasonable configuration.
