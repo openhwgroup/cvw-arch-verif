@@ -14,6 +14,7 @@ These tests are run on any configuration with machine mode that supports excepti
 ,===
 //include::{testplansdir}/ExceptionsM.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1987812700#gid=1987812700[Google Sheet Testplan]
 
 ==== ExceptionsS Supervisor-Mode Exceptions
 
@@ -26,6 +27,7 @@ These additional exception tests are run on configurations with supervisor mode.
 ,===
 //include::{testplansdir}/ExceptionsS.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2127390256#gid=2127390256[Google Sheet Testplan]
 
 ==== ExceptionsU User-Mode Exceptions
 
@@ -38,6 +40,7 @@ These additional exception tests are run on configurations with user mode.
 ,===
 //include::{testplansdir}/ExceptionsU.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=593261374#gid=593261374[Google Sheet Testplan]
 
 ==== ExceptionsF Floating-Point Exceptions
 
@@ -50,6 +53,7 @@ These additional exception tests are run on configurations with floating-point (
 ,===
 //include::{testplansdir}/ExceptionsF.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1241522932#gid=1241522932[Google Sheet Testplan]
 
 ==== ExceptionsV Vector Exceptions
 
@@ -63,6 +67,8 @@ These additional exception tests are run on configurations with vector (V extens
 //include::{testplansdir}/ExceptionsV.csv[]
 ,===
 
+*** add link
+
 ==== ExceptionsZalrsc Atomic LR/SC Exceptions
 
 [[t-ExceptionsZalrsc-coverpoints]]
@@ -72,6 +78,7 @@ These additional exception tests are run on configurations with vector (V extens
 ,===
 //include::{testplansdir}/ExceptionsZalrsc.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=891200072#gid=891200072[Google Sheet Testplan]
 
 ==== ExceptionsZaamo Atomic Memory Operation Exceptions
 
@@ -82,6 +89,7 @@ These additional exception tests are run on configurations with vector (V extens
 ,===
 //include::{testplansdir}/ExceptionsZaamo.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2143559149#gid=2143559149[Google Sheet Testplan]
 
 ==== ExceptionsZc Compressed Instruction Exceptions
 
@@ -94,6 +102,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsZc.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=538759067#gid=538759067[Google Sheet Testplan]
 
 ==== ExceptionsZicboS Supervisor-Mode CBO Exceptions
 
@@ -104,6 +113,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsZicboS.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=927893239#gid=927893239[Google Sheet Testplan]
 
 ==== ExceptionsZicboU User-Mode CBO Exceptions
 
@@ -114,6 +124,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsZicboU.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1054505393#gid=1054505393[Google Sheet Testplan]
 
 ==== ExceptionsVM Virtual Memory Exceptions
 
@@ -124,6 +135,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsVM.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=270777025#gid=270777025[Google Sheet Testplan]
 
 ==== ExceptionsVMZalrsc  Virtual Memory LR/SC Exceptions
 
@@ -134,6 +146,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsVMZalrsc.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=287426144#gid=287426144[Google Sheet Testplan]
 
 ==== ExceptionsVMZaamo Virtual Memory AMO Exceptions
 
@@ -144,6 +157,7 @@ These additional exception tests are run on configurations with compressed instr
 ,===
 //include::{testplansdir}/ExceptionsVMZaamo.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1747092954#gid=1747092954[Google Sheet Testplan]
 
 ==== Zicclsm Misaligned Loads/Stores
 
@@ -156,3 +170,4 @@ Misaligned loads/stores handled in hardware.
 ,===
 //include::{testplansdir}/Zicclsm.csv[]
 ,===
+*** need to create this

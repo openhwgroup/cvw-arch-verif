@@ -5,7 +5,7 @@
 This test plan addresses Phase 0, Phase 1, and Phase 2 RISC-V certification objectives, including the following ratified and unratified profiles:
 
 * https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVI20 Profile] (Ratified): Phase 0
-** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode
+** RV{32/64}IMAFDC_Zifencei_Zicntr_Zihpm with machine mode, no PMP
 * Microcontroller Profile (Not Ratified, but market demand): Phase 1
 ** RV{32/64}IMZca_Zcb_Zifencei_Zicsr_Zicntr with machine mode, user mode, interrupts, PMP16 footnote:[Tentative; may need updating based on the MRD Market Requirements Document]
 * https://drive.google.com/file/d/1Kg7Ner5ZlxFDclf92-9Tz88JvmZWt5Wb/view[RVA22S64 Profile] (Ratified): Phase 1.5, stepping stone to phase 2
@@ -112,6 +112,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |PMPM|Machine PMP|<<t-PMPM-coverpoints>>||x|x|x|x
 |PMPS|Supervisor PMP|<<t-PMPS-coverpoints>>|||x|x|x
 |PMPU|User PMP|<<t-PMPU-coverpoints>>||x|x|x|x
+|PMPF|Float PMP|<<t-PMPF-coverpoints>>|||x|x|x
 |PMPZca|Compressed PMP|<<t-PMPZca-coverpoints>>|||x|x|x
 |PMPZicbo|CBO PMP|<<t-PMPZicbo-coverpoints>>|||x|x|x
 |PMPZaamo|AMO PMP|<<t-PMPZaamo-coverpoints>>|||x|x|x

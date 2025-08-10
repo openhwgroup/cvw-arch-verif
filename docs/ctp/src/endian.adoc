@@ -10,6 +10,7 @@
 ,===
 //////include::{testplansdir}/EndianM.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=220856688#gid=220856688[Google Sheet Testplan]
 
 ==== EndianS Supervisor-Mode Endianness
 
@@ -20,6 +21,7 @@
 ,===
 //include::{testplansdir}/EndianS.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=561554401#gid=561554401[Google Sheet Testplan]
 
 ==== EndianU User-Mode Endianness
 
@@ -30,6 +32,7 @@
 ,===
 //include::{testplansdir}/EndianU.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=0#gid=0[Google Sheet Testplan]
 
 ==== EndianZaamo Endianness for AMOs
 
@@ -40,6 +43,7 @@
 ,===
 //include::{testplansdir}/EndianZaamo.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=470611865#gid=470611865[Google Sheet Testplan]
 
 ==== EndianZalrsc Endianness for LR/SC
 
@@ -50,3 +54,4 @@
 ,===
 //include::{testplansdir}/EndianZalrsc.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=1511292549#gid=1511292549[Google Sheet Testplan]

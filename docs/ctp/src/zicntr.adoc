@@ -14,6 +14,7 @@ These tests exercise the mtime, mcycle, and minstret counters and related regist
 ,===
 //include::{testplansdir}/ZicntrM.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=0#gid=0[Google Sheet Testplan]
 
 ==== ZicntrS Supervisor-Mode Counters
 
@@ -24,6 +25,7 @@ These tests exercise the mtime, mcycle, and minstret counters and related regist
 ,===
 //include::{testplansdir}/ZicntrS.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=521853953#gid=521853953[Google Sheet Testplan]
 
 ==== ZicntrU User-Mode Counters
 
@@ -34,3 +36,4 @@ These tests exercise the mtime, mcycle, and minstret counters and related regist
 ,===
 //include::{testplansdir}/ZicntrU.csv[]
 ,===
+https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=516633595#gid=516633595[Google Sheet Testplan]
