@@ -97,13 +97,17 @@ build-no-container:
 docker-pull-latest:
 	${DOCKER_BIN} pull ${DOCKER_IMG}
 
+# Make CSV testplans into more readable asciidoc tables by
+# transposing them to one instruction per column, separating
+# into at most 10 instructions per page, and trimming unused
+# coverpoints
 TESTPLANS := $(wildcard ../../testplans/*)
 testplans: $(TESTPLANS)
 	@echo "Copying test plans..."
 	@if [ -d ../../testplans ]; then \
 		mkdir -p $(BUILD_DIR); \
 		rm -rf $(BUILD_DIR)/testplans; \
-		cp -r ../../testplans $(BUILD_DIR)/testplans; \
+		../../bin/transpose_csv.py ../../testplans $(BUILD_DIR)/testplans 10 \
 	else \
 		echo "No test plans directory found in source."; \
 	fi
