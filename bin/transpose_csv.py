@@ -54,6 +54,7 @@ def write_asciidoc(filepath, tables):
     with open(filepath, 'w', encoding='utf-8') as f:
         for table in tables:
             f.write("[options=header]\n")
+            f.write("[%autofit]\n")
             f.write(",===\n")
             for row in table:
                 # Escape commas in cells if needed; here simply join by comma
