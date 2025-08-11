@@ -41,3 +41,8 @@ include::{testplansdir}/Zalrsc.adoc[]
 [cols="1, 4, 2" options=header]
 |===
 |===
+
+***
+On implementations that support the C extension, compressed forms of the
+I instructions permitted inside constrained LR/SC sequences, as
+described in <<sec:lrscseq>>, are also perm
