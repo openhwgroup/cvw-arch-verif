@@ -1095,6 +1095,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [NOTE]
 ====
 ZicntrH exercises hcounteren for all 32 counters, so no separate ZihpmH suite is needed.
+====
 
 ==== PMPH Hypervisor Physical Memory Protection
 
