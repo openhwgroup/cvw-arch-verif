@@ -7,8 +7,6 @@ This section describes debug-related extensions not required in RVA23.
 
 [[t-DM-coverpoints]]
 .DM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/DM.adoc[]
 ,===
@@ -17,8 +15,6 @@ This section describes debug-related extensions not required in RVA23.
 
 [[t-DTM-coverpoints]]
 .DTM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/DTM.adoc[]
 ,===
@@ -27,8 +23,6 @@ This section describes debug-related extensions not required in RVA23.
 
 [[t-Sdext-coverpoints]]
 .Sdext Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Sdext.adoc[]
 ,===

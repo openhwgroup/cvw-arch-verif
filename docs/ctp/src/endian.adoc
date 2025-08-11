@@ -5,8 +5,6 @@
 
 [[t-EndianM-coverpoints]]
 .EndianM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianM.adoc[]
 ,===
@@ -16,8 +14,6 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianS-coverpoints]]
 .EndianS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianS.adoc[]
 ,===
@@ -27,8 +23,6 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianU-coverpoints]]
 .EndianU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianU.adoc[]
 ,===
@@ -38,8 +32,6 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianZaamo-coverpoints]]
 .EndianZaamo Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianZaamo.adoc[]
 ,===
@@ -49,8 +41,6 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianZalrsc-coverpoints]]
 .EndianZalrsc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianZalrsc.adoc[]
 ,===

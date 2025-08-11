@@ -5,8 +5,6 @@
 
 [[t-PMPM-coverpoints]]
 .PMPM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPM.adoc[]
 ,===
@@ -16,8 +14,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPS-coverpoints]]
 .PMPS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPS.adoc[]
 ,===
@@ -27,8 +23,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPU-coverpoints]]
 .PMPU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPU.adoc[]
 ,===
@@ -38,8 +32,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPF-coverpoints]]
 .PMPF Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPF.adoc[]
 ,===
@@ -49,8 +41,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPZca-coverpoints]]
 .PMPZca Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPZca.adoc[]
 ,===
@@ -60,8 +50,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPZicbo-coverpoints]]
 .PMPZicbo Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPZicbo.adoc[]
 ,===
@@ -71,8 +59,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPZaamo-coverpoints]]
 .PMPZaamo Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPZaamo.adoc[]
 ,===
@@ -82,8 +68,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-PMPZalrsc-coverpoints]]
 .PMPZalrsc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPZalrsc.adoc[]
 ,===
@@ -95,8 +79,6 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 
 [[t-RV32CBO_PMP-coverpoints]]
 .RV32CBO_PMP Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32CBO_PMP.adoc[]
 ,===
@@ -110,8 +92,6 @@ because they depend on the PTE.  Maybe these should move to the VM section?
 
 [[t-RV64CBO_PMP-coverpoints]]
 .RV64CBO_PMP Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64CBO_PMP.adoc[]
 ,===

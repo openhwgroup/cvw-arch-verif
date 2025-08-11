@@ -78,8 +78,6 @@ include::{testplansdir}/ZfaZfhD.adoc[]
 
 [[t-Zfbfmin-coverpoints]]
 .Zfbfmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zfbfmin.adoc[]
 ,===

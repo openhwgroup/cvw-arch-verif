@@ -5,8 +5,6 @@
 
 [[t-Zacas-coverpoints]]
 .Zacas Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zacas.adoc[]
 ,===
@@ -15,8 +13,6 @@
 
 [[t-Zabha-coverpoints]]
 .Zabha Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zabha.adoc[]
 ,===
@@ -27,8 +23,6 @@ Should write 0 to rd unless implemented.
 
 [[t-Zimop-coverpoints]]
 .Zimop Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zimop.adoc[]
 ,===
@@ -39,8 +33,6 @@ Should write 0 to rd unless implemented.
 
 [[t-Zcmop-coverpoints]]
 .Zcmop Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zcmop.adoc[]
 ,===

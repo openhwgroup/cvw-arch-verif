@@ -7,8 +7,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zfinx-coverpoints]]
 .Zfinx Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zfinx.adoc[]
 ,===
@@ -17,8 +15,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zdinx-coverpoints]]
 .Zdinx Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zdinx.adoc[]
 ,===
@@ -27,8 +23,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zhinx-coverpoints]]
 .Zhinx Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zhinx.adoc[]
 ,===
@@ -37,8 +31,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zhinxmin-coverpoints]]
 .Zhinxmin Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zhinxmin.adoc[]
 ,===
@@ -47,8 +39,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zcmp-coverpoints]]
 .Zcmp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zcmp.adoc[]
 ,===
@@ -57,8 +47,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zcmt-coverpoints]]
 .Zcmt Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zcmt.adoc[]
 ,===
@@ -67,8 +55,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zilsd-coverpoints]]
 .Zilsd Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zilsd.adoc[]
 ,===
@@ -77,8 +63,6 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 
 [[t-Zclsd-coverpoints]]
 .Zclsd Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zclsd.adoc[]
 ,===

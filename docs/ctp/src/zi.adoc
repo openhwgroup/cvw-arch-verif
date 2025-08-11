@@ -32,8 +32,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Zihintntl-coverpoints]]
 .Zihintntl Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zihintntl.adoc[]
 ,===
@@ -42,8 +40,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-ZihintntlZca-coverpoints]]
 .ZihintntlZca Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZihintntlZca.adoc[]
 ,===
@@ -52,8 +48,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Zicbom-coverpoints]]
 .Zicbom Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zicbom.adoc[]
 ,===
@@ -62,8 +56,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Zicboz-coverpoints]]
 .Zicboz Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zicboz.adoc[]
 ,===
@@ -72,8 +64,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Zicbop-coverpoints]]
 .Zicbop Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zicbop.adoc[]
 ,===
@@ -82,8 +72,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Za64rs-coverpoints]]
 .Za64rs Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Za64rs.adoc[]
 ,===
@@ -92,8 +80,6 @@ include::{testplansdir}/Zihintpause.adoc[]
 
 [[t-Zic64bZicboz-coverpoints]]
 .Zic64bZicboz Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zic64bZicboz.adoc[]
 ,===

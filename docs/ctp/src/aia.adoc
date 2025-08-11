@@ -7,8 +7,6 @@ This section describes AIA extension test plans.
 
 [[t-Smaia-coverpoints]]
 .Smaia Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smaia.adoc[]
 ,===
@@ -17,8 +15,6 @@ This section describes AIA extension test plans.
 
 [[t-Ssaia-coverpoints]]
 .Ssaia Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Ssaia.adoc[]
 ,===
@@ -27,8 +23,6 @@ This section describes AIA extension test plans.
 
 [[t-imsic-coverpoints]]
 .IMSIC Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/imsic.adoc[]
 ,===
@@ -37,8 +31,6 @@ This section describes AIA extension test plans.
 
 [[t-aplic-coverpoints]]
 .APLIC Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/aplic.adoc[]
 ,===
@@ -47,8 +39,6 @@ This section describes AIA extension test plans.
 
 [[t-iommu-coverpoints]]
 .IOMMU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/iommu.adoc[]
 ,===

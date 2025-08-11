@@ -5,8 +5,6 @@
 
 [[t-Sm1p13-coverpoints]]
 .Sm1p13 Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Sm1p13.adoc[]
 ,===
@@ -15,8 +13,6 @@
 
 [[t-Smstateen-coverpoints]]
 .Smstateen Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smstateen.adoc[]
 ,===
@@ -25,8 +21,6 @@
 
 [[t-Smcsrind-coverpoints]]
 .Smcsrind Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smcsrind.adoc[]
 ,===
@@ -35,8 +29,6 @@
 
 [[t-Sscsrind-coverpoints]]
 .Sscsrind Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Sscsrind.adoc[]
 ,===
@@ -45,8 +37,6 @@
 
 [[t-Smepmp-coverpoints]]
 .Smepmp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smepmp.adoc[]
 ,===
@@ -55,8 +45,6 @@
 
 [[t-Smrnmi-coverpoints]]
 .Smrnmi Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smrnmi.adoc[]
 ,===
@@ -65,8 +53,6 @@
 
 [[t-Ssrnmi-coverpoints]]
 .Ssrnmi Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Ssrnmi.adoc[]
 ,===
@@ -75,8 +61,6 @@
 
 [[t-Smcntrpmf-coverpoints]]
 .Smcntrpmf Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smcntrpmf.adoc[]
 ,===
@@ -85,8 +69,6 @@
 
 [[t-Smcdeleg-coverpoints]]
 .Smcdeleg Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smcdeleg.adoc[]
 ,===
@@ -95,8 +77,6 @@
 
 [[t-Ssccfg-coverpoints]]
 .Ssccfg Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Ssccfg.adoc[]
 ,===
@@ -105,8 +85,6 @@
 
 [[t-Smdbltrp-coverpoints]]
 .Smdbltrp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smdbltrp.adoc[]
 ,===
@@ -115,8 +93,6 @@
 
 [[t-Ssdbltrp-coverpoints]]
 .Ssdbltrp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Ssdbltrp.adoc[]
 ,===
@@ -125,8 +101,6 @@
 
 [[t-Smctr-coverpoints]]
 .Smctr Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Smctr.adoc[]
 ,===
@@ -135,8 +109,6 @@
 
 [[t-Ssqosid-coverpoints]]
 .Ssqosid Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Ssqosid.adoc[]
 ,===

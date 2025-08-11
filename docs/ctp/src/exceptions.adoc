@@ -9,8 +9,6 @@ These tests are run on any configuration with machine mode that supports excepti
 
 [[t-ExceptionsM-coverpoints]]
 .ExceptionsM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsM.adoc[]
 ,===
@@ -22,8 +20,6 @@ These additional exception tests are run on configurations with supervisor mode.
 
 [[t-ExceptionsS-coverpoints]]
 .ExceptionsS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsS.adoc[]
 ,===
@@ -35,8 +31,6 @@ These additional exception tests are run on configurations with user mode.
 
 [[t-ExceptionsU-coverpoints]]
 .ExceptionsU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsU.adoc[]
 ,===
@@ -48,8 +42,6 @@ These additional exception tests are run on configurations with floating-point (
 
 [[t-ExceptionsF-coverpoints]]
 .ExceptionsF Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsF.adoc[]
 ,===
@@ -61,8 +53,6 @@ These additional exception tests are run on configurations with vector (V extens
 
 [[t-ExceptionsV-coverpoints]]
 .ExceptionsV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsV.adoc[]
 ,===
@@ -73,8 +63,6 @@ These additional exception tests are run on configurations with vector (V extens
 
 [[t-ExceptionsZalrsc-coverpoints]]
 .ExceptionsZalrsc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsZalrsc.adoc[]
 ,===
@@ -84,8 +72,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsZaamo-coverpoints]]
 .ExceptionsZaamo Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsZaamo.adoc[]
 ,===
@@ -97,8 +83,6 @@ These additional exception tests are run on configurations with compressed instr
 
 [[t-ExceptionsZc-coverpoints]]
 .ExceptionsZc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsZc.adoc[]
 ,===
@@ -108,8 +92,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsZicboS-coverpoints]]
 .ExceptionsZicboS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsZicboS.adoc[]
 ,===
@@ -119,8 +101,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsZicboU-coverpoints]]
 .ExceptionsZicboU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsZicboU.adoc[]
 ,===
@@ -130,8 +110,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsVM-coverpoints]]
 .ExceptionsVM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsVM.adoc[]
 ,===
@@ -141,8 +119,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsVMZalrsc-coverpoints]]
 .ExceptionsVMZalrsc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsVMZalrsc.adoc[]
 ,===
@@ -152,8 +128,6 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 
 [[t-ExceptionsVMZaamo-coverpoints]]
 .ExceptionsM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsVMZaamo.adoc[]
 ,===
@@ -165,8 +139,6 @@ Misaligned loads/stores handled in hardware.
 
 [[t-Zicclsm-coverpoints]]
 .Zicclsm Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zicclsm.adoc[]
 ,===

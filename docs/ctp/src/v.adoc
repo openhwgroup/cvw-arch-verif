@@ -212,8 +212,6 @@ Half-precision vector floating-point is part of the Zvfh and Zvfhmin extensions,
 Zvfhmin only exercises the widening and narrowing conversions: `vfwcvt.f.f.v` and `vfncvt.f.f.w`.
 [[t-Zvfhmin-coverpoints]]
 .Zvfhmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zvfhmin.adoc[]
 ,===
@@ -230,8 +228,6 @@ include::{testplansdir}/ZfaZvfh.adoc[]
 
 [[t-Zvfbfmin-coverpoints]]
 .Zvfbfmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zvfbfmin.adoc[]
 ,===
@@ -240,8 +236,6 @@ include::{testplansdir}/ZfaZvfh.adoc[]
 
 [[t-Zvfbfwma-coverpoints]]
 .Zvfbfwma Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zvfbfwma.adoc[]
 ,===
@@ -253,8 +247,6 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 ==== Zvbb Vector Basic Bit Manipulation Extension
 [[t-Zvbb-coverpoints]]
 .Zvbb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvbb.adoc[]
 ,===
@@ -263,8 +255,6 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 
 [[t-Zvbc-coverpoints]]
 .Zvbc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvbc.adoc[]
 ,===
@@ -277,8 +267,6 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 [[t-Zvkb-coverpoints]]
 .Zvkb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvkb.adoc[]
 ,===
@@ -287,8 +275,6 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 [[t-Zvkg-coverpoints]]
 .Zvkg Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvkg.adoc[]
 ,===
@@ -298,8 +284,6 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 [[t-Zvkned-coverpoints]]
 .Zvkned Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvkned.adoc[]
 ,===
@@ -311,8 +295,6 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 
 [[t-Zvknh-coverpoints]]
 .Zvknh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 // include::{testplansdir}/Zvknh.adoc[]
 ,===

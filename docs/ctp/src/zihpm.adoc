@@ -7,8 +7,6 @@ set of writable bits match the reference model.
 
 [[t-Zihpm-coverpoints]]
 .Zihpm Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Zihpm.adoc[]
 ,===

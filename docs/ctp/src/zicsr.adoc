@@ -18,8 +18,6 @@ These test CSRs that exist in machine mode.
 
 [[t-ZicsrM-coverpoints]]
 .ZicsrM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrM.adoc[]
 ,===
@@ -35,8 +33,6 @@ These test additional CSRs that exist in supervisor mode.
 
 [[t-ZicsrS-coverpoints]]
 .ZicsrS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrS.adoc[]
 ,===
@@ -48,8 +44,6 @@ These test additional CSRs that exist in user mode.
 
 [[t-ZicsrU-coverpoints]]
 .ZicsrU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrU.adoc[]
 ,===
@@ -61,8 +55,6 @@ These test additional CSRs that exist when floating-point is supported.
 
 [[t-ZicsrF-coverpoints]]
 .ZicsrF Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrF.adoc[]
 ,===
@@ -74,8 +66,6 @@ These test additional CSRs that exist when vector is supported.
 
 [[t-ZicsrV-coverpoints]]
 .ZicsrV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrV.adoc[]
 ,===
@@ -87,8 +77,6 @@ These test additional CSR scenarios that exist when floating-point and user mode
 
 [[t-ZicsrUF-coverpoints]]
 .ZicsrUF Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrUF.adoc[]
 ,===
@@ -100,8 +88,6 @@ These test additional CSR scenarios that exist when vector and user mode are sup
 
 [[t-ZicsrUV-coverpoints]]
 .ZicsrUV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrUV.adoc[]
 ,===
@@ -113,8 +99,6 @@ These test CSRs when the Zkr entropy extension is supported.
 
 [[t-ZicsrZkr-coverpoints]]
 .ZicsrZkr Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrZkr.adoc[]
 ,===

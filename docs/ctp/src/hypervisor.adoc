@@ -997,8 +997,6 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 
 [[t-H-coverpoints]]
 .H Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/H.adoc[]
 ,===
@@ -1008,8 +1006,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicsrH-coverpoints]]
 .ZicsrH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrH.adoc[]
 ,===
@@ -1019,8 +1015,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicsrHF-coverpoints]]
 .ZicsrHF Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrHF.adoc[]
 ,===
@@ -1030,8 +1024,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicsrHV-coverpoints]]
 .ZicsrHV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicsrHV.adoc[]
 ,===
@@ -1041,8 +1033,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ExceptionsH-coverpoints]]
 .ExceptionsH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsH.adoc[]
 ,===
@@ -1052,8 +1042,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ExceptionsHV-coverpoints]]
 .ExceptionsHV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ExceptionsHV.adoc[]
 ,===
@@ -1063,8 +1051,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-InterruptsH-coverpoints]]
 .InterruptsH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/InterruptsH.adoc[]
 ,===
@@ -1074,8 +1060,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-EndianH-coverpoints]]
 .EndianH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/EndianH.adoc[]
 ,===
@@ -1085,8 +1069,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicntrH-coverpoints]]
 .ZicntrH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicntrH.adoc[]
 ,===
@@ -1101,8 +1083,6 @@ ZicntrH exercises hcounteren for all 32 counters, so no separate ZihpmH suite is
 
 [[t-PMPH-coverpoints]]
 .PMPH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/PMPH.adoc[]
 ,===
@@ -1112,8 +1092,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-RV32VMH-coverpoints]]
 .RV32VMH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32VMH.adoc[]
 ,===
@@ -1123,8 +1101,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-RV32VMH_CBO-coverpoints]]
 .RV32VMH_CBO Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32VMH_CBO.adoc[]
 ,===
@@ -1136,8 +1112,6 @@ Virtual memory behavior introduced by Hypervisor extension.
 
 [[t-RV64VMH-coverpoints]]
 .RV64VMH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64VMH.adoc[]
 ,===
@@ -1149,8 +1123,6 @@ Virtual memory / CBO behavior introduced by Hypervisor extension.
 
 [[t-RV64VMH_CBO-coverpoints]]
 .RV64VMH_CBO Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64VMH_CBO.adoc[]
 ,===
@@ -1160,8 +1132,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SsstrictH-coverpoints]]
 .SsstrictH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SsstrictH.adoc[]
 ,===
@@ -1171,8 +1141,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shcounterenw-coverpoints]]
 .SsstrictH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shcounterenw.adoc[]
 ,===
@@ -1182,8 +1150,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shvsatpa-coverpoints]]
 .Shvsatpa Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shvsatpa.adoc[]
 ,===
@@ -1193,8 +1159,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shgatpa-coverpoints]]
 .Shgatpa Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shgatpa.adoc[]
 ,===
@@ -1204,8 +1168,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shvstvecd-coverpoints]]
 .Shvstvecd Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shvstvecd.adoc[]
 ,===
@@ -1215,8 +1177,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shvstvala-coverpoints]]
 .Shvstvala Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shvstvala.adoc[]
 ,===
@@ -1226,8 +1186,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shtvala-coverpoints]]
 .Shtvala Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shtvala.adoc[]
 ,===
@@ -1237,8 +1195,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-Shlcofideleg-coverpoints]]
 .Shlcofideleg Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Shlcofideleg.adoc[]
 ,===
@@ -1248,8 +1204,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZkrH-coverpoints]]
 .ZkrH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZkrH.adoc[]
 ,===
@@ -1259,8 +1213,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SstcH-coverpoints]]
 .SstcH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SstcH.adoc[]
 ,===
@@ -1270,8 +1222,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SsstateenH-coverpoints]]
 .SsstateenH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SsstateenH.adoc[]
 ,===
@@ -1283,8 +1233,6 @@ Hypervisor indirect CSR access.
 
 [[t-SscrindH-coverpoints]]
 .SscrindH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SscrindH.adoc[]
 ,===
@@ -1294,8 +1242,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SscfgH-coverpoints]]
 .SscfgH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SscfgH.adoc[]
 ,===
@@ -1305,8 +1251,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SmctrH-coverpoints]]
 .SmctrH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SmctrH.adoc[]
 ,===
@@ -1316,8 +1260,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SvinvalH-coverpoints]]
 .SvinvalH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SvinvalH.adoc[]
 ,===
@@ -1327,8 +1269,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SvaduH-coverpoints]]
 .SvaduH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SvaduH.adoc[]
 ,===
@@ -1338,8 +1278,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicfilpH-coverpoints]]
 .ZicfilpH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicfilpH.adoc[]
 ,===
@@ -1349,8 +1287,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-ZicfissH-coverpoints]]
 .ZicfissH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/ZicfissH.adoc[]
 ,===
@@ -1360,8 +1296,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SsdbltrpH-coverpoints]]
 .SsdbltrpH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SsdbltrpH.adoc[]
 ,===
@@ -1371,8 +1305,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SsnpmH-coverpoints]]
 .SsnpmH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SsnpmH.adoc[]
 ,===
@@ -1382,8 +1314,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 
 [[t-SmnpmH-coverpoints]]
 .SmnpmH Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/SmnpmH.adoc[]
 ,===

@@ -9,8 +9,6 @@ These tests are run on any configuration with machine mode that supports interru
 
 [[t-InterruptsM-coverpoints]]
 .InterruptsM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/InterruptsM.adoc[]
 ,===
@@ -22,8 +20,6 @@ These tests are run on any configuration with supervisor mode that supports inte
 
 [[t-InterruptsS-coverpoints]]
 .InterruptsS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/InterruptsS.adoc[]
 ,===
@@ -35,8 +31,6 @@ These tests are run on any configuration with user mode that supports interrupts
 
 [[t-InterruptsU-coverpoints]]
 .InterruptsU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/InterruptsU.adoc[]
 ,===
@@ -48,8 +42,6 @@ These tests are run when the Sstc supervisor timer compare extension is supporte
 
 [[t-InterruptsSstc-coverpoints]]
 .InterruptsSstc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/InterruptsSstc.adoc[]
 ,===

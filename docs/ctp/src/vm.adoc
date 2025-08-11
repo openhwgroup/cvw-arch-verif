@@ -5,8 +5,6 @@
 
 [[t-Svbare-coverpoints]]
 .Svbare Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svbare.adoc[]
 ,===
@@ -17,8 +15,6 @@
 
 [[t-RV32VM-coverpoints]]
 .RV32VM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32VM.adoc[]
 ,===
@@ -27,8 +23,6 @@
 
 [[t-RV32VM_PMP-coverpoints]]
 .RV32VM_PMP Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32VM_PMP.adoc[]
 ,===
@@ -37,8 +31,6 @@
 
 [[t-RV32CBO_VM-coverpoints]]
 .RV32CBO_VM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV32CBO_VM.adoc[]
 ,===
@@ -49,8 +41,6 @@
 
 [[t-RV64VM-coverpoints]]
 .RV64VM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64VM.adoc[]
 ,===
@@ -59,8 +49,6 @@
 
 [[t-RV64VM_PMP-coverpoints]]
 .RV64VM_PMP Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64VM_PMP.adoc[]
 ,===
@@ -69,8 +57,6 @@
 
 [[t-RV64CBO_VM-coverpoints]]
 .RV64CBO_VM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/RV64CBO_VM.adoc[]
 ,===
@@ -81,8 +67,6 @@ The Svinval extension defines instructions to update memory management tables fo
 
 [[t-Svinval-coverpoints]]
 .Svinval Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svinval.adoc[]
 ,===
@@ -92,8 +76,6 @@ https://docs.google.com/spreadsheets/d/1M78FrWvnva08vg-_5ejIkTZBhW1z5mW7NkYjl5lX
 
 [[t-Svade-coverpoints]]
 .Svade Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svade.adoc[]
 ,===
@@ -102,8 +84,6 @@ https://docs.google.com/spreadsheets/d/1M78FrWvnva08vg-_5ejIkTZBhW1z5mW7NkYjl5lX
 
 [[t-Svadu-coverpoints]]
 .Svadu Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svadu.adoc[]
 ,===
@@ -112,8 +92,6 @@ https://docs.google.com/spreadsheets/d/1M78FrWvnva08vg-_5ejIkTZBhW1z5mW7NkYjl5lX
 
 [[t-Svpbmt-coverpoints]]
 .Svpbmt Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svpbmt.adoc[]
 ,===
@@ -122,8 +100,6 @@ https://docs.google.com/spreadsheets/d/1M78FrWvnva08vg-_5ejIkTZBhW1z5mW7NkYjl5lX
 
 [[t-Svnapot-coverpoints]]
 .Svnapot Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
 //include::{testplansdir}/Svnapot.adoc[]
 ,===
