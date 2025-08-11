@@ -7,72 +7,44 @@
 
 [[t-Zba-coverpoints]]
 .Zba Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zba.csv[]
-,===
+include::{testplansdir}/Zba.adoc[]
 
 ==== Zbb Basic Bit-Manipulation
 
 [[t-Zbb-coverpoints]]
 .Zbb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbb.csv[]
-,===
+include::{testplansdir}/Zbb.adoc[]
 
 ==== Zbc Carry-less Multiplication
 
 [[t-Zbc-coverpoints]]
 .Zbc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbc.csv[]
-,===
+include::{testplansdir}/Zbc.adoc[]
 
 
 ==== Zbs Single-Bit Manipulation
 
 [[t-Zbs-coverpoints]]
 .Zbs Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbs.csv[]
-,===
+include::{testplansdir}/Zbs.adoc[]
 
 
 ==== Zbkb Bit-Manipulation for Cryptography
 
 [[t-Zbkb-coverpoints]]
 .Zbkb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbkb.csv[]
-,===
+include::{testplansdir}/Zbkb.adoc[]
 
 
 ==== Zbkc Carry-less Multiplication for Cryptography
 
 [[t-Zbkc-coverpoints]]
 .Zbkc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbkc.csv[]
-,===
+include::{testplansdir}/Zbkc.adoc[]
 
 
 ==== Zbkx Permutation
 
 [[t-Zbkx-coverpoints]]
 .Zbkx Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zbkx.csv[]
-,===
+include::{testplansdir}/Zbkx.adoc[]

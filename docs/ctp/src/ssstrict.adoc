@@ -14,10 +14,8 @@ RISC-V does not have a ratified equivalent of Ssstrict for machine mode, but thi
 
 [[t-SsstrictM-coverpoints]]
 .SsstrictM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsstrictM.csv[]
+//include::{testplansdir}/SsstrictM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1qJsCYdDPaSxNE1R56jsAUyoAiu4OhMlwwAvGysgx790/edit?gid=1987812700#gid=1987812700[Google Sheet Testplan]
 
@@ -31,10 +29,8 @@ According to the RVA23 profile spec, the illegal instruction should be cause a t
 
 [[t-SsstrictS-coverpoints]]
 .SsstrictS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsstrictS.csv[]
+//include::{testplansdir}/SsstrictS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1qJsCYdDPaSxNE1R56jsAUyoAiu4OhMlwwAvGysgx790/edit?gid=593261374#gid=593261374[Google Sheet Testplan]
 
@@ -44,10 +40,8 @@ Test that all behaviors called out as "reserved" in the vector specification cau
 
 [[t-SsstrictV-coverpoints]]
 .SsstrictV Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsstrictV.csv[]
+//include::{testplansdir}/SsstrictV.adoc[]
 ,===
 
 *** need link

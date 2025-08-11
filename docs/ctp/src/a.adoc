@@ -19,11 +19,7 @@ The A extension is subdivided into Zaamo and Zalrsc.
 
 [[t-Zaamo-coverpoints]]
 .Zaamo Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zaamo.csv[]
-,===
+include::{testplansdir}/Zaamo.adoc[]
 
 [[t-Zaamo-normative-statements]]
 .Zaamo Normative Statements
@@ -38,14 +34,15 @@ include::{testplansdir}/Zaamo.csv[]
 
 [[t-Zalrsc-coverpoints]]
 .Zalrsc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zalrsc.csv[]
-,===
+include::{testplansdir}/Zalrsc.adoc[]
 
 [[t-Zalrsc-normative-statements]]
 .Zalrsc Normative Statements
 [cols="1, 4, 2" options=header]
 |===
 |===
+
+***
+On implementations that support the C extension, compressed forms of the
+I instructions permitted inside constrained LR/SC sequences, as
+described in <<sec:lrscseq>>, are also perm

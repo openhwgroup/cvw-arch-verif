@@ -5,10 +5,8 @@
 
 [[t-EndianM-coverpoints]]
 .EndianM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianM.csv[]
+//include::{testplansdir}/EndianM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=220856688#gid=220856688[Google Sheet Testplan]
 
@@ -16,10 +14,8 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianS-coverpoints]]
 .EndianS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianS.csv[]
+//include::{testplansdir}/EndianS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=561554401#gid=561554401[Google Sheet Testplan]
 
@@ -27,10 +23,8 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianU-coverpoints]]
 .EndianU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianU.csv[]
+//include::{testplansdir}/EndianU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=0#gid=0[Google Sheet Testplan]
 
@@ -38,10 +32,8 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianZaamo-coverpoints]]
 .EndianZaamo Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianZaamo.csv[]
+//include::{testplansdir}/EndianZaamo.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=470611865#gid=470611865[Google Sheet Testplan]
 
@@ -49,9 +41,7 @@ https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn7
 
 [[t-EndianZalrsc-coverpoints]]
 .EndianZalrsc Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianZalrsc.csv[]
+//include::{testplansdir}/EndianZalrsc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1PtTkGAMFFWfY1mPLnSyZFYkNMGCV6DqEAxtEDrn74kA/edit?gid=1511292549#gid=1511292549[Google Sheet Testplan]

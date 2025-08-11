@@ -7,119 +7,77 @@ Supporting floating-point involves enabling at least the F extension.  Other ext
 
 [[t-F-coverpoints]]
 .F Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/F.csv[]
-,===
+include::{testplansdir}/F.adoc[]
 
 
 ==== D Double-Precision FP
 
 [[t-D-coverpoints]]
 .D Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/D.csv[]
-,===
+include::{testplansdir}/D.adoc[]
 
 
 ==== Zfh Half-Precision FP
 
 [[t-Zfh-coverpoints]]
 .Zfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zfh.csv[]
-,===
+include::{testplansdir}/Zfh.adoc[]
 
 
 ===== ZfhD
 
 [[t-ZfhD-coverpoints]]
 .ZfhD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfhD.csv[]
-,===
+include::{testplansdir}/ZfhD.adoc[]
 
 
 ===== Zfhmin
 
 [[t-Zfhmin-coverpoints]]
 .Zfhmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zfhmin.csv[]
-,===
+include::{testplansdir}/Zfhmin.adoc[]
 
 
 ===== ZfhminD
 
 [[t-ZfhminD-coverpoints]]
 .ZfhminD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfhminD.csv[]
-,===
-å
+include::{testplansdir}/ZfhminD.adoc[]
 
 ==== Zfa Additional FP
 
-*** called ZfaF
+Tests for Zfa for single-precision floating-point are called ZfaF.
 
 [[t-ZfaF-coverpoints]]
 .ZfaF Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaF.csv[]
-,===
-
-
+include::{testplansdir}/ZfaF.adoc[]
 
 ===== ZfaD
 
 [[t-ZfaD-coverpoints]]
 .ZfaD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaD.csv[]
-,===
+include::{testplansdir}/ZfaD.adoc[]
 
 
 ===== ZfaZfh
 
 [[t-ZfaZfh-coverpoints]]
 .ZfaZfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZfh.csv[]
-,===
+include::{testplansdir}/ZfaZfh.adoc[]
 
 ===== ZfaZfhD
 
+When Zfa is supported with both Zfh and D, there are additional
+NAN-Boxing tests for 16-bit values in 64-bit registers.
+
 [[t-ZfaZfhD-coverpoints]]
 .ZfaZfhD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZfhD.csv[]
-,===
+include::{testplansdir}/ZfaZfhD.adoc[]
 
 ===== Zfbfmin Scalar BF16 Converts
 
 [[t-Zfbfmin-coverpoints]]
 .Zfbfmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zfbfmin.csv[]
+//include::{testplansdir}/Zfbfmin.adoc[]
 ,===

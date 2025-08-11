@@ -5,138 +5,110 @@
 
 [[t-Sm1p13-coverpoints]]
 .Sm1p13 Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sm1p13.csv[]
+//include::{testplansdir}/Sm1p13.adoc[]
 ,===
 
 ==== Smstateen Machine State Enable
 
 [[t-Smstateen-coverpoints]]
 .Smstateen Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smstateen.csv[]
+//include::{testplansdir}/Smstateen.adoc[]
 ,===
 
 ==== Smcsrind Machine-Mode Indirect CSR Access
 
 [[t-Smcsrind-coverpoints]]
 .Smcsrind Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcsrind.csv[]
+//include::{testplansdir}/Smcsrind.adoc[]
 ,===
 
 ==== Sscsrind Supervisor-Mode Indirect CSR Access
 
 [[t-Sscsrind-coverpoints]]
 .Sscsrind Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sscsrind.csv[]
+//include::{testplansdir}/Sscsrind.adoc[]
 ,===
 
 ==== Smepmp Enhanced PMP
 
 [[t-Smepmp-coverpoints]]
 .Smepmp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-/include::{testplansdir}/Smepmp.csv[]
+//include::{testplansdir}/Smepmp.adoc[]
 ,===
 
 ==== Smrnmi Machine-Mode Resumable Non-Maskable Interrupts
 
 [[t-Smrnmi-coverpoints]]
 .Smrnmi Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smrnmi.csv[]
+//include::{testplansdir}/Smrnmi.adoc[]
 ,===
 
 ==== Ssrnmi Supervisor-Mode Resumable Non-Maskable Interrupts
 
 [[t-Ssrnmi-coverpoints]]
 .Ssrnmi Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssrnmi.csv[]
+//include::{testplansdir}/Ssrnmi.adoc[]
 ,===
 
 ==== Smcntrpmf Counter Privilege Mode Filtering
 
 [[t-Smcntrpmf-coverpoints]]
 .Smcntrpmf Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcntrpmf.csv[]
+//include::{testplansdir}/Smcntrpmf.adoc[]
 ,===
 
 ==== Smcdeleg Counter Delegation
 
 [[t-Smcdeleg-coverpoints]]
 .Smcdeleg Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcdeleg.csv[]
+//include::{testplansdir}/Smcdeleg.adoc[]
 ,===
 
 ==== Ssccfg Counter Delegation
 
 [[t-Ssccfg-coverpoints]]
 .Ssccfg Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssccfg.csv[]
+//include::{testplansdir}/Ssccfg.adoc[]
 ,===
 
 ==== Smdbltrp Machine Double Traps
 
 [[t-Smdbltrp-coverpoints]]
 .Smdbltrp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smdbltrp.csv[]
+//include::{testplansdir}/Smdbltrp.adoc[]
 ,===
 
 ==== Ssdbltrp Supervisor Double Traps
 
 [[t-Ssdbltrp-coverpoints]]
 .Ssdbltrp Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssdbltrp.csv[]
+//include::{testplansdir}/Ssdbltrp.adoc[]
 ,===
 
 ==== Smctr Control Transer Records
 
 [[t-Smctr-coverpoints]]
 .Smctr Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smctr.csv[]
+//include::{testplansdir}/Smctr.adoc[]
 ,===
 
 ==== Ssqosid Quality-of-Service ID
 
 [[t-Ssqosid-coverpoints]]
 .Ssqosid Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssqosid.csv[]
+//include::{testplansdir}/Ssqosid.adoc[]
 ,===

@@ -40,11 +40,7 @@ implementations that ignore them.|Hints are not tested
 
 [[t-Zca-coverpoints]]
 .Zca Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zca.csv[]
-,===
+include::{testplansdir}/Zca.adoc[]
 
 [[t-Zca-normative-statements]]
 .Zca Normative Statements
@@ -201,11 +197,7 @@ performance counters. `C.NOP` expands to `nop`.|c.nop/{cp_asm_count}
 
 [[t-Zcf-coverpoints]]
 .Zcf Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zcf.csv[]
-,===
+include::{testplansdir}/Zcf.adoc[]
 
 [[t-Zcf-normative-statements]]
 .Zcf Normative Statements
@@ -240,11 +232,7 @@ offset, scaled by 4, to the base address in register
 
 [[t-Zcd-coverpoints]]
 .Zcd Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zcd.csv[]
-,===
+include::{testplansdir}/Zcd.adoc[]
 
 [[t-Zcd-normative-statements]]
 .Zcd Normative Statements
@@ -277,11 +265,7 @@ register `_rs1′_`. It expands to
 
 [[t-Zcb-coverpoints]]
 .Zcb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zcb.csv[]
-,===
+include::{testplansdir}/Zcb.adoc[]
 
 [[t-Zcb-normative-statements]]
 .Zcb Normative Statements
@@ -305,11 +289,7 @@ When both Zcb and M are supported, add the instruction in <<t-ZcbM-coverpoints>>
 
 [[t-ZcbM-coverpoints]]
 .ZcbM Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZcbM.csv[]
-,===
+include::{testplansdir}/ZcbM.adoc[]
 
 [[t-ZcbM-normative-statements]]
 .ZcbM Normative Statements
@@ -325,11 +305,7 @@ When both Zcb and Zba are supported, add the instruction in <<t-ZcbZba-coverpoin
 
 [[t-ZcbZba-coverpoints]]
 .ZcbZba Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZcbZba.csv[]
-,===
+include::{testplansdir}/ZcbZba.adoc[]
 
 [[t-ZcbZba-normative-statements]]
 .ZcbZba Normative Statements
@@ -346,11 +322,7 @@ When both Zcb and Zbb are supported, add the instructions in <<t-ZcbZbb-coverpoi
 
 [[t-ZcbZbb-coverpoints]]
 .ZcbZbb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZcbZbb.csv[]
-,===
+include::{testplansdir}/ZcbZbb.adoc[]
 
 [[t-ZcbZbb-normative-statements]]
 .ZcbZbb Normative Statements

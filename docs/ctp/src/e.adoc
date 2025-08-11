@@ -3,6 +3,8 @@
 
 The E extension is a variant of I with 16 general purpose registers.  This test plan also includes tests restricted to these 16 registers for simple extensions most likely to be implemented on an enbedded core.
 
+The test plans are identical to the integer equivalents.  For example, E and I are the same, and EM is the same as M.  The coverpoints and tests are almost identical but use 16 instead of 32 registers.
+
 [[t-E-normative-statements]]
 .E Normative Statements
 [cols="1, 4, 2" options=header]
@@ -10,120 +12,59 @@ The E extension is a variant of I with 16 general purpose registers.  This test 
 |Unpriv Section|Normative Statement|Coverpoints
 |===
 
-<<t-E-coverpoints>> summarizes the coverpoints for the E extension.
-
 [[t-E-coverpoints]]
 .E Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/E.csv[]
-,===
+See <<t-I-coverpoints>>
 
 ==== EM Embedded + Multiply/Divide
 
-<<t-EM-coverpoints>> summarizes the coverpoints for the the M multiply/divide extension running on an E hart.
-
 [[t-EM-coverpoints]]
 .EM Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EM.csv[]
-,===
+See <<t-M-coverpoints>>
 
 ==== EZmmul Embedded + Multiply
 
-<<t-EZmmul-coverpoints>> summarizes the coverpoints for the the Zmmul multiply-only extension running on an E hart.
-
 [[t-EZmmul-coverpoints]]
-.EZmmul Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZmmul.csv[]
-,===
+See <<t-Zmmul-coverpoints>>
 
 ==== EZca Embedded + Compressed
 
-<<t-EZca-coverpoints>> summarizes the coverpoints for the the Zca compressed extension running on an E hart.
-
 [[t-EZca-coverpoints]]
 .EZca Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZca.csv[]
-,===
+See <<t-Zca-coverpoints>>
 
 ==== EZcb Embedded + More Compressed
 
-<<t-EZcb-coverpoints>> summarizes the coverpoints for the the Zcb compressed extension running on an E hart.
-
 [[t-EZcb-coverpoints]]
 .EZcb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZcb.csv[]
-,===
+See <<t-Zcb-coverpoints>>
 
 ==== EZcmp Embedded + Compressed Push/Pop
 
-<<t-EZcmp-coverpoints>> summarizes the coverpoints for the the Zcmp comparison extension running on an E hart.
-
 [[t-EZcmp-coverpoints]]
 .EZcmp Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZcmp.csv[]
-,===
+See <<t-Zcmp-coverpoints>>
 
 ==== EZcmt Embedded + Jump Tables
 
-<<t-EZcmt-coverpoints>> summarizes the coverpoints for the the Zcmt custom extension running on an E hart.
-
 [[t-EZcmt-coverpoints]]
 .EZcmt Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZcmt.csv[]
-,===
+See <<t-Zcmt-coverpoints>>
 
 ==== EZba Embedded + Address Generation
 
-<<t-EZba-coverpoints>> summarizes the coverpoints for the the Zba address generation extension running on an E hart.
-
 [[t-EZba-coverpoints]]
 .EZba Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZba.csv[]
-,===
+See <<t-Zba-coverpoints>>
 
 ==== EZbb Embedded + Basic Bit Manipulation
 
-<<t-EZbb-coverpoints>> summarizes the coverpoints for the the Zbb bit manipulation extension running on an E hart.
-
 [[t-EZbb-coverpoints]]
 .EZbb Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZbb.csv[]
-,===
+See <<t-Zbb-coverpoints>>
 
 ==== EZbs Embedded + Single-Bit Manipulation
 
-<<t-EZbs-coverpoints>> summarizes the coverpoints for the the Zbs single-bit extension running on an E hart.
-
 [[t-EZbs-coverpoints]]
 .EZbs Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/EZbs.csv[]
-,===
+See <<t-Zbs-coverpoints>>

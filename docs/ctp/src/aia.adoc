@@ -7,48 +7,38 @@ This section describes AIA extension test plans.
 
 [[t-Smaia-coverpoints]]
 .Smaia Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smaia.csv[]
+//include::{testplansdir}/Smaia.adoc[]
 ,===
 
 ==== Ssaia Supervisor-Mode Advanced Interrupt Architecture
 
 [[t-Ssaia-coverpoints]]
 .Ssaia Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssaia.csv[]
+//include::{testplansdir}/Ssaia.adoc[]
 ,===
 
 ==== IMSIC Incoming MSI Controller
 
 [[t-imsic-coverpoints]]
 .IMSIC Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/imsic.csv[]
+//include::{testplansdir}/imsic.adoc[]
 ,===
 
 ==== APLIC Advanced Platform-Level Interrupt Controller
 
 [[t-aplic-coverpoints]]
 .APLIC Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/aplic.csv[]
+//include::{testplansdir}/aplic.adoc[]
 ,===
 
 ==== IOMMU I/O Memory Management Unit
 
 [[t-iommu-coverpoints]]
 .IOMMU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/iommu.csv[]
+//include::{testplansdir}/iommu.adoc[]
 ,===

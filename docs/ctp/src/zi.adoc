@@ -6,110 +6,80 @@
 
 [[t-Zicsr-coverpoints]]
 .Zicsr Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zicsr.csv[]
-,===
+include::{testplansdir}/Zicsr.adoc[]
 
 
 ==== Zifencei Instruction-Fetch Fence
 
 [[t-Zifencei-coverpoints]]
 .Zifencei Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zifencei.csv[]
-,===
+include::{testplansdir}/Zifencei.adoc[]
 
 
 ==== Zicond Conditional Instructions
 
 [[t-Zicond-coverpoints]]
 .Zicond Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zicond.csv[]
-,===
+include::{testplansdir}/Zicond.adoc[]
 
 ==== Zihintpause Pause Hint
 
 [[t-Zihintpause-coverpoints]]
 .Zihintpause Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zihintpause.csv[]
-,===
+include::{testplansdir}/Zihintpause.adoc[]
 
 ==== Zihintntl Non-temporal Locality Hint
 
 [[t-Zihintntl-coverpoints]]
 .Zihintntl Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zihintntl.csv[]
+//include::{testplansdir}/Zihintntl.adoc[]
 ,===
 
 ==== ZihintntlZca Compressed Non-temporal Locality Hint
 
 [[t-ZihintntlZca-coverpoints]]
 .ZihintntlZca Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/.ZihintntlZca.csv[]
+//include::{testplansdir}/ZihintntlZca.adoc[]
 ,===
 
 ==== Zicbom Cache Block Flush/Invalidate
 
 [[t-Zicbom-coverpoints]]
 .Zicbom Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicbom.csv[]
+//include::{testplansdir}/Zicbom.adoc[]
 ,===
 
 ==== Zicboz Cache Block Zero
 
 [[t-Zicboz-coverpoints]]
 .Zicboz Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicboz.csv[]
+//include::{testplansdir}/Zicboz.adoc[]
 ,===
 
 ==== Zicbop Cache Block Prefetch
 
 [[t-Zicbop-coverpoints]]
 .Zicbop Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicbop.csv[]
+//include::{testplansdir}/Zicbop.adoc[]
 ,===
 
 ==== Za64rs Max 64B Reservation Set
 
 [[t-Za64rs-coverpoints]]
 .Za64rs Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Za64rs.csv[]
+//include::{testplansdir}/Za64rs.adoc[]
 ,===
 
 ==== Zic64bZicboz 64B Cache Block Zero
 
 [[t-Zic64bZicboz-coverpoints]]
 .Zic64bZicboz Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zic64bZicboz.csv[]
+//include::{testplansdir}/Zic64bZicboz.adoc[]
 ,===

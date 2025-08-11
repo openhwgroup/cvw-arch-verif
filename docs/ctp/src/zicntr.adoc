@@ -9,10 +9,8 @@ These tests exercise the mtime, mcycle, and minstret counters and related regist
 
 [[t-ZicntrM-coverpoints]]
 .ZicntrM Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicntrM.csv[]
+//include::{testplansdir}/ZicntrM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=0#gid=0[Google Sheet Testplan]
 
@@ -20,10 +18,8 @@ https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q
 
 [[t-ZicntrS-coverpoints]]
 .ZicntrS Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicntrS.csv[]
+//include::{testplansdir}/ZicntrS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=521853953#gid=521853953[Google Sheet Testplan]
 
@@ -31,9 +27,7 @@ https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q
 
 [[t-ZicntrU-coverpoints]]
 .ZicntrU Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicntrU.csv[]
+//include::{testplansdir}/ZicntrU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1wfMzXqXOjg_ND9BhFxChQCi9s4BwsZREPtGS8O1q4tM/edit?gid=516633595#gid=516633595[Google Sheet Testplan]

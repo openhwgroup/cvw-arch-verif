@@ -101,9 +101,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |ZicntrM|Machine Counters|<<t-ZicntrM-coverpoints>>|o|x|x|x|x
 |ZicntrS|Supervisor Counters|<<t-ZicntrS-coverpoints>>|||x|x|x
 |ZicntrU|User Counters|<<t-ZicntrU-coverpoints>>||x|x|x|x
-|ZihpmM|Machine Performance Monitors|<<t-ZihpmM-coverpoints>>|o|x|x|x|x
-|ZihpmS|Machine Performance Monitors|<<t-ZihpmS-coverpoints>>|||x|x|x
-|ZihpmU|Machine Performance Monitors|<<t-ZihpmU-coverpoints>>||x|x|x|x
+|Zihpm|Hardware Performance Monitors|<<t-Zihpm-coverpoints>>|o|x|x|x|x
 |EndianM|Machine Endian|<<t-EndianM-coverpoints>>|||||
 |EndianS|Supervisor Endian|<<t-EndianS-coverpoints>>|||||
 |EndianU|User Endian|<<t-EndianU-coverpoints>>|||||
@@ -187,7 +185,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |InterruptsH|Hypervisor Interrupts|<<t-InterruptsH-coverpoints>>|||o|o|x
 |EndianH|Hypervisor Endian|<<t-EndianH-coverpoints>>|||o|o|x
 |ZicntrH|Hypervisor Counters|<<t-ZicntrH-coverpoints>>|||o|o|x
-|ZihpmH|Hypervisor Performance Monitors|<<t-ZihpmH-coverpoints>>|||o|o|x
 |PMPH|Hypervisor PMP|<<t-PMPH-coverpoints>>|||o|o|x
 |RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH-coverpoints>>|||o|o|x
 |RV32VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMH_CBO-coverpoints>>|||o|o|x

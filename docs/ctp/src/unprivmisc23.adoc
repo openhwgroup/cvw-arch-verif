@@ -5,20 +5,16 @@
 
 [[t-Zacas-coverpoints]]
 .Zacas Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zacas.csv[]
+//include::{testplansdir}/Zacas.adoc[]
 ,===
 
 ==== Zabha Subword Atomics
 
 [[t-Zabha-coverpoints]]
 .Zabha Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zabha.csv[]
+//include::{testplansdir}/Zabha.adoc[]
 ,===
 
 ==== Zimop Maybe-Ops
@@ -27,10 +23,8 @@ Should write 0 to rd unless implemented.
 
 [[t-Zimop-coverpoints]]
 .Zimop Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zimop.csv[]
+//include::{testplansdir}/Zimop.adoc[]
 ,===
 
 ==== Zcmop Compressed Maybe-Ops
@@ -39,8 +33,6 @@ Should write 0 to rd unless implemented.
 
 [[t-Zcmop-coverpoints]]
 .Zcmop Coverpoints
-[options=header]
-[%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zcmop.csv[]
+//include::{testplansdir}/Zcmop.adoc[]
 ,===
