@@ -7,66 +7,42 @@ Supporting floating-point involves enabling at least the F extension.  Other ext
 
 [[t-F-coverpoints]]
 .F Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/F.csv[]
-,===
+include::{testplansdir}/F.adoc[]
 
 
 ==== D Double-Precision FP
 
 [[t-D-coverpoints]]
 .D Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/D.csv[]
-,===
+include::{testplansdir}/D.adoc[]
 
 
 ==== Zfh Half-Precision FP
 
 [[t-Zfh-coverpoints]]
 .Zfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zfh.csv[]
-,===
+include::{testplansdir}/Zfh.adoc[]
 
 
 ===== ZfhD
 
 [[t-ZfhD-coverpoints]]
 .ZfhD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfhD.csv[]
-,===
+include::{testplansdir}/ZfhD.adoc[]
 
 
 ===== Zfhmin
 
 [[t-Zfhmin-coverpoints]]
 .Zfhmin Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zfhmin.csv[]
-,===
+include::{testplansdir}/Zfhmin.adoc[]
 
 
 ===== ZfhminD
 
 [[t-ZfhminD-coverpoints]]
 .ZfhminD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfhminD.csv[]
-,===
+include::{testplansdir}/ZfhminD.adoc[]
 å
 
 ==== Zfa Additional FP
@@ -75,11 +51,7 @@ include::{testplansdir}/ZfhminD.csv[]
 
 [[t-ZfaF-coverpoints]]
 .ZfaF Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaF.csv[]
-,===
+include::{testplansdir}/ZfaF.adoc[]
 
 
 
@@ -87,32 +59,20 @@ include::{testplansdir}/ZfaF.csv[]
 
 [[t-ZfaD-coverpoints]]
 .ZfaD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaD.csv[]
-,===
+include::{testplansdir}/ZfaD.adoc[]
 
 
 ===== ZfaZfh
 
 [[t-ZfaZfh-coverpoints]]
 .ZfaZfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZfh.csv[]
-,===
+include::{testplansdir}/ZfaZfh.adoc[]
 
 ===== ZfaZfhD
 
 [[t-ZfaZfhD-coverpoints]]
 .ZfaZfhD Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZfhD.csv[]
-,===
+include::{testplansdir}/ZfaZfhD.adoc[]
 
 ===== Zfbfmin Scalar BF16 Converts
 
@@ -121,5 +81,5 @@ include::{testplansdir}/ZfaZfhD.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zfbfmin.csv[]
+//include::{testplansdir}/Zfbfmin.adoc[]
 ,===

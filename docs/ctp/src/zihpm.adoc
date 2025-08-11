@@ -10,7 +10,7 @@ These tests exercise the custom hardware performance monitor CSRs.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZihpmM.csv[]
+//include::{testplansdir}/ZihpmM.adoc[]
 ,===
 
 ==== ZihpmS Supervisor-Mode Hardware Performance Monitors
@@ -20,7 +20,7 @@ These tests exercise the custom hardware performance monitor CSRs.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZihpmS.csv[]
+//include::{testplansdir}/ZihpmS.adoc[]
 ,===
 
 ==== ZihpmU User-Mode Hardware Performance Monitors
@@ -30,5 +30,5 @@ These tests exercise the custom hardware performance monitor CSRs.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZihpmU.csv[]
+//include::{testplansdir}/ZihpmU.adoc[]
 ,===

@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zacas.csv[]
+//include::{testplansdir}/Zacas.adoc[]
 ,===
 
 ==== Zabha Subword Atomics
@@ -18,7 +18,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zabha.csv[]
+//include::{testplansdir}/Zabha.adoc[]
 ,===
 
 ==== Zimop Maybe-Ops
@@ -30,7 +30,7 @@ Should write 0 to rd unless implemented.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zimop.csv[]
+//include::{testplansdir}/Zimop.adoc[]
 ,===
 
 ==== Zcmop Compressed Maybe-Ops
@@ -42,5 +42,5 @@ Should write 0 to rd unless implemented.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zcmop.csv[]
+//include::{testplansdir}/Zcmop.adoc[]
 ,===

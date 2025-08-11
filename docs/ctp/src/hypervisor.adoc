@@ -1000,7 +1000,7 @@ to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.|
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/H.csv[]
+//include::{testplansdir}/H.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2001628267#gid=2001628267[Google Sheet Testplan]
 
@@ -1011,7 +1011,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrH.csv[]
+//include::{testplansdir}/ZicsrH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=262865576#gid=262865576[Google Sheet Testplan]
 
@@ -1022,7 +1022,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrHF.csv[]
+//include::{testplansdir}/ZicsrHF.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1275031964#gid=1275031964[Google Sheet Testplan]
 
@@ -1033,7 +1033,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrHV.csv[]
+//include::{testplansdir}/ZicsrHV.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=760254169#gid=760254169[Google Sheet Testplan]
 
@@ -1044,7 +1044,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsH.csv[]
+//include::{testplansdir}/ExceptionsH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1980169189#gid=1980169189[Google Sheet Testplan]
 
@@ -1055,7 +1055,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsHV.csv[]
+//include::{testplansdir}/ExceptionsHV.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=552219666#gid=552219666[Google Sheet Testplan]
 
@@ -1066,7 +1066,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/InterruptsH.csv[]
+//include::{testplansdir}/InterruptsH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=552831967#gid=552831967[Google Sheet Testplan]
 
@@ -1077,7 +1077,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/EndianH.csv[]
+//include::{testplansdir}/EndianH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=923631685#gid=923631685[Google Sheet Testplan]
 
@@ -1088,7 +1088,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicntrH.csv[]
+//include::{testplansdir}/ZicntrH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2079344243#gid=2079344243[Google Sheet Testplan]
 
@@ -1099,7 +1099,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZihpmH.csv[]
+//include::{testplansdir}/ZihpmH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1963232706#gid=1963232706[Google Sheet Testplan]
 
@@ -1110,7 +1110,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPH.csv[]
+//include::{testplansdir}/PMPH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=161540329#gid=161540329[Google Sheet Testplan]
 
@@ -1121,7 +1121,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV32VMH.csv[]
+//include::{testplansdir}/RV32VMH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=747120884#gid=747120884[Google Sheet Testplan]
 
@@ -1132,7 +1132,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV32VMH_CBO.csv[]
+//include::{testplansdir}/RV32VMH_CBO.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2005939128#gid=2005939128[Google Sheet Testplan]
 
@@ -1145,7 +1145,7 @@ Virtual memory behavior introduced by Hypervisor extension.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV64VMH.csv[]
+//include::{testplansdir}/RV64VMH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1056442231#gid=1056442231[Google Sheet Testplan]
 
@@ -1158,7 +1158,7 @@ Virtual memory / CBO behavior introduced by Hypervisor extension.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV64VMH_CBO.csv[]
+//include::{testplansdir}/RV64VMH_CBO.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=216799752#gid=216799752[Google Sheet Testplan]
 
@@ -1169,7 +1169,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsstrictH.csv[]
+//include::{testplansdir}/SsstrictH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2068022675#gid=2068022675[Google Sheet Testplan]
 
@@ -1180,7 +1180,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shcounterenw.csv[]
+//include::{testplansdir}/Shcounterenw.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=359491363#gid=359491363[Google Sheet Testplan]
 
@@ -1191,7 +1191,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shvsatpa.csv[]
+//include::{testplansdir}/Shvsatpa.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1777147736#gid=1777147736[Google Sheet Testplan]
 
@@ -1202,7 +1202,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shgatpa.csv[]
+//include::{testplansdir}/Shgatpa.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=262220701#gid=262220701[Google Sheet Testplan]
 
@@ -1213,7 +1213,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shvstvecd.csv[]
+//include::{testplansdir}/Shvstvecd.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1109621355#gid=1109621355[Google Sheet Testplan]
 
@@ -1224,7 +1224,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shvstvala.csv[]
+//include::{testplansdir}/Shvstvala.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=970539312#gid=970539312[Google Sheet Testplan]
 
@@ -1235,7 +1235,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shtvala.csv[]
+//include::{testplansdir}/Shtvala.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1365004927#gid=1365004927[Google Sheet Testplan]
 
@@ -1246,7 +1246,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Shlcofideleg.csv[]
+//include::{testplansdir}/Shlcofideleg.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=820648507#gid=820648507[Google Sheet Testplan]
 
@@ -1257,7 +1257,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZkrH.csv[]
+//include::{testplansdir}/ZkrH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=443731814#gid=443731814[Google Sheet Testplan]
 
@@ -1268,7 +1268,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SstcH.csv[]
+//include::{testplansdir}/SstcH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1537373133#gid=1537373133[Google Sheet Testplan]
 
@@ -1279,7 +1279,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsstateenH.csv[]
+//include::{testplansdir}/SsstateenH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=311784014#gid=311784014[Google Sheet Testplan]
 
@@ -1292,7 +1292,7 @@ Hypervisor indirect CSR access.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SscrindH.csv[]
+//include::{testplansdir}/SscrindH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=886109861#gid=886109861[Google Sheet Testplan]
 
@@ -1303,7 +1303,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SscfgH.csv[]
+//include::{testplansdir}/SscfgH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2089644586#gid=2089644586[Google Sheet Testplan]
 
@@ -1314,7 +1314,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SmctrH.csv[]
+//include::{testplansdir}/SmctrH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=858128446#gid=858128446[Google Sheet Testplan]
 
@@ -1325,7 +1325,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SvinvalH.csv[]
+//include::{testplansdir}/SvinvalH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=292965592#gid=292965592[Google Sheet Testplan]
 
@@ -1336,7 +1336,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SvaduH.csv[]
+//include::{testplansdir}/SvaduH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=530717859#gid=530717859[Google Sheet Testplan]
 
@@ -1347,7 +1347,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicfilpH.csv[]
+//include::{testplansdir}/ZicfilpH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1214579712#gid=1214579712[Google Sheet Testplan]
 
@@ -1358,7 +1358,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//..include::{testplansdir}/ZicfissH.csv[]
+//..include::{testplansdir}/ZicfissH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=890828729#gid=890828729[Google Sheet Testplan]
 
@@ -1369,7 +1369,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsdbltrpH.csv[]
+//include::{testplansdir}/SsdbltrpH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1156592509#gid=1156592509[Google Sheet Testplan]
 
@@ -1380,7 +1380,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SsnpmH.csv[]
+//include::{testplansdir}/SsnpmH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=669410459#gid=669410459[Google Sheet Testplan]
 
@@ -1391,6 +1391,6 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/SmnpmH.csv[]
+//include::{testplansdir}/SmnpmH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1162472491#gid=1162472491[Google Sheet Testplan]

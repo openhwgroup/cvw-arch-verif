@@ -19,11 +19,7 @@ The A extension is subdivided into Zaamo and Zalrsc.
 
 [[t-Zaamo-coverpoints]]
 .Zaamo Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zaamo.csv[]
-,===
+include::{testplansdir}/Zaamo.adoc[]
 
 [[t-Zaamo-normative-statements]]
 .Zaamo Normative Statements
@@ -38,11 +34,7 @@ include::{testplansdir}/Zaamo.csv[]
 
 [[t-Zalrsc-coverpoints]]
 .Zalrsc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zalrsc.csv[]
-,===
+include::{testplansdir}/Zalrsc.adoc[]
 
 [[t-Zalrsc-normative-statements]]
 .Zalrsc Normative Statements

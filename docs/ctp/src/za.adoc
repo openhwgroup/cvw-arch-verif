@@ -6,11 +6,7 @@
 
 [[t-Zaamo-coverpoints]]
 .Zaamo Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zaamo.csv[]
-,===
+include::{testplansdir}/Zaamo.adoc[]
 
 
 ==== Zalrsc Load-Reserved / Store Conditional
@@ -24,8 +20,4 @@ inside constrained LR/SC sequences.
 
 [[t-Zalrsc-coverpoints]]
 .Zalrsc Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zalrsc.csv[]
-,===
+include::{testplansdir}/Zalrsc.adoc[]

@@ -5,11 +5,7 @@
 
 [[t-M-coverpoints]]
 .M Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/M.csv[]
-,===
+include::{testplansdir}/M.adoc[]
 
 [[t-M-normative-statements]]
 .M Normative Statements
@@ -55,11 +51,7 @@ The Zmmul extension is a subset of the M extension that includes only the multip
 
 [[t-Zmmul-coverpoints]]
 .Zmmul Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zmmul.csv[]
-,===
+include::{testplansdir}/Zmmul.adoc[]
 
 [[t-Zmmul-normative-statements]]
 .Zmmul Normative Statements

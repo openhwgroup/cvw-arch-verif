@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sscofpmf.csv[]
+//include::{testplansdir}/Sscofpmf.adoc[]
 ,===
 
 ==== Ssstateen Supervisor State Enable
@@ -18,7 +18,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssstateen.csv[]
+//include::{testplansdir}/Ssstateen.adoc[]
 ,===
 
 ==== Ssu64xl 64-bit User Mode
@@ -30,7 +30,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssu64xl.csv[]
+//include::{testplansdir}/Ssu64xl.adoc[]
 ,===
 
 ==== Sscounterenw Writable Counter Enables
@@ -40,7 +40,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sscounterenw.csv[]
+//include::{testplansdir}/Sscounterenw.adoc[]
 ,===
 
 ==== Sstvecd Direct Trap Vector
@@ -50,7 +50,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sstvecd.csv[]
+//include::{testplansdir}/Sstvecd.adoc[]
 ,===
 
 ==== Sstvala Trap Address
@@ -60,7 +60,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sstvala.csv[]
+//include::{testplansdir}/Sstvala.adoc[]
 ,===
 
 ==== Ss1p13 Supervisor Mode 1.13
@@ -70,7 +70,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ss1p13.csv[]
+//include::{testplansdir}/Ss1p13.adoc[]
 ,===
 
 ==== Ssnpm Pointer Masking
@@ -80,7 +80,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssnpm.csv[]
+//include::{testplansdir}/Ssnpm.adoc[]
 ,===
 
 ==== Smnpm Pointer Masking
@@ -90,7 +90,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smnpm.csv[]
+//include::{testplansdir}/Smnpm.adoc[]
 ,===
 
 ==== Smmpm Pointer Masking
@@ -100,7 +100,7 @@ RV64 only
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smmpm.csv[]
+//include::{testplansdir}/Smmpm.adoc[]
 ,===
 
 ==== Zicfilp Landing Pads
@@ -112,7 +112,7 @@ In Privileged section because it has both unpriv and privileged behaviors.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicfilp.csv[]
+//include::{testplansdir}/Zicfilp.adoc[]
 ,===
 
 ==== Zicfiss Shadow Stack
@@ -124,7 +124,7 @@ In Privileged section because it has both unpriv and privileged behaviors.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicfiss.csv[]
+//include::{testplansdir}/Zicfiss.adoc[]
 ,===
 
 ==== Zawrs Wait on Reservation Set
@@ -136,7 +136,7 @@ Waits until timeout on a single hart that cannot modify the reservation set.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zawrs.csv[]
+//include::{testplansdir}/Zawrs.adoc[]
 ,===
 
 ==== Sdtrig Debug Triggers
@@ -148,7 +148,7 @@ Located here because it is part of RVA23 even though it is not very interesting 
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sdtrig.csv[]
+//include::{testplansdir}/Sdtrig.adoc[]
 ,===
 
 *** also check the value written to stval and vstval.  Should be the VA of the breakpoint when Sstvala and Shvstvala are supported.  This is automatically checked against the reference model, so there is no need for additional SdtrigSstvala and SdtrigShvstvala test suites.

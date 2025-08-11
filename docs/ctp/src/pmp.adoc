@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPM.csv[]
+//include::{testplansdir}/PMPM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=1474055416#gid=1474055416[Google Sheet Testplan]
 
@@ -19,7 +19,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPS.csv[]
+//include::{testplansdir}/PMPS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=1908943019#gid=1908943019[Google Sheet Testplan]
 
@@ -30,7 +30,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPU.csv[]
+//include::{testplansdir}/PMPU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=2072825600#gid=2072825600[Google Sheet Testplan]
 
@@ -41,7 +41,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPF.csv[]
+//include::{testplansdir}/PMPF.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=1472001893#gid=1472001893[Google Sheet Testplan]
 
@@ -52,7 +52,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPZca.csv[]
+//include::{testplansdir}/PMPZca.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=1336315481#gid=1336315481[Google Sheet Testplan]
 
@@ -63,7 +63,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPZicbo.csv[]
+//include::{testplansdir}/PMPZicbo.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=1958410505#gid=1958410505[Google Sheet Testplan]
 
@@ -74,7 +74,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPZaamo.csv[]
+//include::{testplansdir}/PMPZaamo.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=343093009#gid=343093009[Google Sheet Testplan]
 
@@ -85,7 +85,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/PMPZalrsc.csv[]
+//include::{testplansdir}/PMPZalrsc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=613653829#gid=613653829[Google Sheet Testplan]
 
@@ -98,7 +98,7 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV32CBO_PMP.csv[]
+//include::{testplansdir}/RV32CBO_PMP.adoc[]
 ,===
 
 *** are these needed?  Seems like they should have VM in the name as well
@@ -113,7 +113,7 @@ because they depend on the PTE.  Maybe these should move to the VM section?
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/RV64CBO_PMP.csv[]
+//include::{testplansdir}/RV64CBO_PMP.adoc[]
 ,===
 
 *** are these needed?  Seems like they should have VM in the name as well

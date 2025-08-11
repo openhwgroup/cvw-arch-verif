@@ -190,30 +190,18 @@ The Vx testplan is the same for SEW={8, 16, 32, 64}.  Each SEW has its own cover
 
 [[t-Vx-coverpoints]]
 .Vx Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Vx.csv[]
-,===
+include::{testplansdir}/Vx.adoc[]
 
 ==== Vls
 
 [[t-Vls-coverpoints]]
 .Vls Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Vls.csv[]
-,===
+include::{testplansdir}/Vls.adoc[]
 
 ==== Vf
 [[t-Vf-coverpoints]]
 .Vf Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Vf.csv[]
-,===
+include::{testplansdir}/Vf.adoc[]
 
 ==== Zvfh Vector Half-Precision Floating-Point Extension
 
@@ -227,7 +215,7 @@ Zvfhmin only exercises the widening and narrowing conversions: `vfwcvt.f.f.v` an
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zvfhmin.csv[]
+//include::{testplansdir}/Zvfhmin.adoc[]
 ,===
 
 ==== ZfaZvfh Half-Precision Load Immediate
@@ -236,11 +224,7 @@ When Zfa and Zvfh are both implemented, RISC-V provides a `fli.h` instruction (<
 
 [[t-ZfaZvfh-coverpoints]]
 .ZfaZvfh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/ZfaZvfh.csv[]
-,===
+include::{testplansdir}/ZfaZvfh.adoc[]
 
 ==== Zvfbfmin BF16 Conversions
 
@@ -249,7 +233,7 @@ include::{testplansdir}/ZfaZvfh.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zvfbfmin.csv[]
+//include::{testplansdir}/Zvfbfmin.adoc[]
 ,===
 
 ==== Zvfbfwma BF16 MAC
@@ -259,7 +243,7 @@ include::{testplansdir}/ZfaZvfh.csv[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zvfbfwma.csv[]
+//include::{testplansdir}/Zvfbfwma.adoc[]
 ,===
 
 === Zvb* Vector Bit Manipulation Extension
@@ -272,7 +256,7 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvbb.csv[]
+// include::{testplansdir}/Zvbb.adoc[]
 ,===
 
 ==== Zvbc Vector Caryless Multiplication Extension
@@ -282,7 +266,7 @@ Vector bit manipulation extensions include Zvbb and Zvbc.
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvbc.csv[]
+// include::{testplansdir}/Zvbc.adoc[]
 ,===
 
 === Zvk* Vector Cryptography Extension
@@ -296,7 +280,7 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvkb.csv[]
+// include::{testplansdir}/Zvkb.adoc[]
 ,===
 
 ==== Zvkg Vector Crypto Galois Field Extension
@@ -306,7 +290,7 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvkg.csv[]
+// include::{testplansdir}/Zvkg.adoc[]
 ,===
 
 
@@ -317,7 +301,7 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvkned.csv[]
+// include::{testplansdir}/Zvkned.adoc[]
 ,===
 
 
@@ -330,5 +314,5 @@ There are several Zvk* vector cryptography extensions.  Zvks ShangMi extensions 
 [options=header]
 [%AUTOWIDTH]
 ,===
-// include::{testplansdir}/Zvknh.csv[]
+// include::{testplansdir}/Zvknh.adoc[]
 ,===

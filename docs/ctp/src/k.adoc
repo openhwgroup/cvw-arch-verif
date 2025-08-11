@@ -5,30 +5,18 @@
 
 [[t-Zkne-coverpoints]]
 .Zkne Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zkne.csv[]
-,===
+include::{testplansdir}/Zkne.adoc[]
 
 
 ==== Zknd NIST AES Decryption
 
 [[t-Zknd-coverpoints]]
 .Zknd Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zknd.csv[]
-,===
+include::{testplansdir}/Zknd.adoc[]
 
 
 ==== Zknh NIST SHA2 Hashing
 
 [[t-Zknh-coverpoints]]
 .Zknh Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/Zknh.csv[]
-,===
+include::{testplansdir}/Zknh.adoc[]

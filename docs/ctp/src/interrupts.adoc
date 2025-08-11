@@ -12,7 +12,7 @@ These tests are run on any configuration with machine mode that supports interru
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/InterruptsM.csv[]
+//include::{testplansdir}/InterruptsM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/18S2xJ6lxXhe2X9N9zcahoPMdvrqEnBFKdldi1fc7fOA/edit?gid=399538825#gid=399538825[Google Sheet Testplan]
 
@@ -25,7 +25,7 @@ These tests are run on any configuration with supervisor mode that supports inte
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/InterruptsS.csv[]
+//include::{testplansdir}/InterruptsS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/18S2xJ6lxXhe2X9N9zcahoPMdvrqEnBFKdldi1fc7fOA/edit?gid=664673151#gid=664673151[Google Sheet Testplan]
 
@@ -38,7 +38,7 @@ These tests are run on any configuration with user mode that supports interrupts
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/InterruptsU.csv[]
+//include::{testplansdir}/InterruptsU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/18S2xJ6lxXhe2X9N9zcahoPMdvrqEnBFKdldi1fc7fOA/edit?gid=1458360883#gid=1458360883[Google Sheet Testplan]
 
@@ -51,6 +51,6 @@ These tests are run when the Sstc supervisor timer compare extension is supporte
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/InterruptsSstc.csv[]
+//include::{testplansdir}/InterruptsSstc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/18S2xJ6lxXhe2X9N9zcahoPMdvrqEnBFKdldi1fc7fOA/edit?gid=347804969#gid=347804969[Google Sheet Testplan]

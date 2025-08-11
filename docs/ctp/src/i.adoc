@@ -5,13 +5,7 @@
 
 [[t-I-coverpoints]]
 .I Instruction Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-include::{testplansdir}/I.csv[]
-,===
-
-<<t-I-coverpoints>> uses the following coverpoint modifiers:
+include::{testplansdir}/I.adoc[]
 
 [[t-I-modified-coverpoints]]
 .I Modified Coverpoints

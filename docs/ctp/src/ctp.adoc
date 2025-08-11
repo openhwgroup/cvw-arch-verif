@@ -39,7 +39,7 @@ endif::[]
 :ne: &#8800;
 :approx: &#8776;
 :inf: &#8734;
-:testplansdir: {docdir}/../build/testplans
+:testplansdir: {docdir}/../tps
 
 // :autofit-option:
 // :base-font-size-min: 0

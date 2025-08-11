@@ -8,7 +8,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sm1p13.csv[]
+//include::{testplansdir}/Sm1p13.adoc[]
 ,===
 
 ==== Smstateen Machine State Enable
@@ -18,7 +18,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smstateen.csv[]
+//include::{testplansdir}/Smstateen.adoc[]
 ,===
 
 ==== Smcsrind Machine-Mode Indirect CSR Access
@@ -28,7 +28,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcsrind.csv[]
+//include::{testplansdir}/Smcsrind.adoc[]
 ,===
 
 ==== Sscsrind Supervisor-Mode Indirect CSR Access
@@ -38,7 +38,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Sscsrind.csv[]
+//include::{testplansdir}/Sscsrind.adoc[]
 ,===
 
 ==== Smepmp Enhanced PMP
@@ -48,7 +48,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-/include::{testplansdir}/Smepmp.csv[]
+/include::{testplansdir}/Smepmp.adoc[]
 ,===
 
 ==== Smrnmi Machine-Mode Resumable Non-Maskable Interrupts
@@ -58,7 +58,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smrnmi.csv[]
+//include::{testplansdir}/Smrnmi.adoc[]
 ,===
 
 ==== Ssrnmi Supervisor-Mode Resumable Non-Maskable Interrupts
@@ -68,7 +68,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssrnmi.csv[]
+//include::{testplansdir}/Ssrnmi.adoc[]
 ,===
 
 ==== Smcntrpmf Counter Privilege Mode Filtering
@@ -78,7 +78,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcntrpmf.csv[]
+//include::{testplansdir}/Smcntrpmf.adoc[]
 ,===
 
 ==== Smcdeleg Counter Delegation
@@ -88,7 +88,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smcdeleg.csv[]
+//include::{testplansdir}/Smcdeleg.adoc[]
 ,===
 
 ==== Ssccfg Counter Delegation
@@ -98,7 +98,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssccfg.csv[]
+//include::{testplansdir}/Ssccfg.adoc[]
 ,===
 
 ==== Smdbltrp Machine Double Traps
@@ -108,7 +108,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smdbltrp.csv[]
+//include::{testplansdir}/Smdbltrp.adoc[]
 ,===
 
 ==== Ssdbltrp Supervisor Double Traps
@@ -118,7 +118,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssdbltrp.csv[]
+//include::{testplansdir}/Ssdbltrp.adoc[]
 ,===
 
 ==== Smctr Control Transer Records
@@ -128,7 +128,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smctr.csv[]
+//include::{testplansdir}/Smctr.adoc[]
 ,===
 
 ==== Ssqosid Quality-of-Service ID
@@ -138,5 +138,5 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssqosid.csv[]
+//include::{testplansdir}/Ssqosid.adoc[]
 ,===

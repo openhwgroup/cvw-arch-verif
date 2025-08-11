@@ -21,7 +21,7 @@ These test CSRs that exist in machine mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrM.csv[]
+//include::{testplansdir}/ZicsrM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1563313604#gid=1563313604[Google Sheet Testplan]
 
@@ -38,7 +38,7 @@ These test additional CSRs that exist in supervisor mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrS.csv[]
+//include::{testplansdir}/ZicsrS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=335048477#gid=335048477[Google Sheet Testplan]
 
@@ -51,7 +51,7 @@ These test additional CSRs that exist in user mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrU.csv[]
+//include::{testplansdir}/ZicsrU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1720466356#gid=1720466356[Google Sheet Testplan]
 
@@ -64,7 +64,7 @@ These test additional CSRs that exist when floating-point is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrF.csv[]
+//include::{testplansdir}/ZicsrF.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=29805079#gid=29805079[Google Sheet Testplan]
 
@@ -77,7 +77,7 @@ These test additional CSRs that exist when vector is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrV.csv[]
+//include::{testplansdir}/ZicsrV.adoc[]
 ,===
 *** need link
 
@@ -90,7 +90,7 @@ These test additional CSR scenarios that exist when floating-point and user mode
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrUF.csv[]
+//include::{testplansdir}/ZicsrUF.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=242878857#gid=242878857[Google Sheet Testplan]
 
@@ -103,7 +103,7 @@ These test additional CSR scenarios that exist when vector and user mode are sup
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrUV.csv[]
+//include::{testplansdir}/ZicsrUV.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1LEkptHit5Hs1UVtTlHc7nL0zl1ThB9_EPRIZVjQ6WdQ/edit?gid=1488477674#gid=1488477674[Google Sheet Testplan]
 
@@ -116,5 +116,5 @@ These test CSRs when the Zkr entropy extension is supported.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ZicsrZkr.csv[]
+//include::{testplansdir}/ZicsrZkr.adoc[]
 ,===

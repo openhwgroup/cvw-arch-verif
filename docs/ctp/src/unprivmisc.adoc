@@ -10,7 +10,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zfinx.csv[]
+//include::{testplansdir}/Zfinx.adoc[]
 ,===
 
 ==== Zdinx Double in Integer Regs
@@ -20,7 +20,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zdinx.csv[]
+//include::{testplansdir}/Zdinx.adoc[]
 ,===
 
 ==== Zhinx Half in Integer Regs
@@ -30,7 +30,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zhinx.csv[]
+//include::{testplansdir}/Zhinx.adoc[]
 ,===
 
 ==== Zhinxmin Half Converts in Integer Regs
@@ -40,7 +40,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zhinxmin.csv[]
+//include::{testplansdir}/Zhinxmin.adoc[]
 ,===
 
 ==== Zcmp Compressed Push/Pop
@@ -50,7 +50,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zcmp.csv[]
+//include::{testplansdir}/Zcmp.adoc[]
 ,===
 
 ==== Zcmt Compressed Jump Tables
@@ -60,7 +60,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zcmt.csv[]
+//include::{testplansdir}/Zcmt.adoc[]
 ,===
 
 ==== Zilsd Load/Store Double
@@ -70,7 +70,7 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zilsd.csv[]
+//include::{testplansdir}/Zilsd.adoc[]
 ,===
 
 ==== Zclsd Compressed Load/Store Double
@@ -80,5 +80,5 @@ Zfinx replaces the F extension with a similar set of instructions that operate o
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zclsd.csv[]
+//include::{testplansdir}/Zclsd.adoc[]
 ,===

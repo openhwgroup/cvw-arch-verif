@@ -12,7 +12,7 @@ These tests are run on any configuration with machine mode that supports excepti
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsM.csv[]
+//include::{testplansdir}/ExceptionsM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1987812700#gid=1987812700[Google Sheet Testplan]
 
@@ -25,7 +25,7 @@ These additional exception tests are run on configurations with supervisor mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsS.csv[]
+//include::{testplansdir}/ExceptionsS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2127390256#gid=2127390256[Google Sheet Testplan]
 
@@ -38,7 +38,7 @@ These additional exception tests are run on configurations with user mode.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsU.csv[]
+//include::{testplansdir}/ExceptionsU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=593261374#gid=593261374[Google Sheet Testplan]
 
@@ -51,7 +51,7 @@ These additional exception tests are run on configurations with floating-point (
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsF.csv[]
+//include::{testplansdir}/ExceptionsF.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1241522932#gid=1241522932[Google Sheet Testplan]
 
@@ -64,7 +64,7 @@ These additional exception tests are run on configurations with vector (V extens
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsV.csv[]
+//include::{testplansdir}/ExceptionsV.adoc[]
 ,===
 
 *** add link
@@ -76,7 +76,7 @@ These additional exception tests are run on configurations with vector (V extens
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsZalrsc.csv[]
+//include::{testplansdir}/ExceptionsZalrsc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=891200072#gid=891200072[Google Sheet Testplan]
 
@@ -87,7 +87,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsZaamo.csv[]
+//include::{testplansdir}/ExceptionsZaamo.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=2143559149#gid=2143559149[Google Sheet Testplan]
 
@@ -100,7 +100,7 @@ These additional exception tests are run on configurations with compressed instr
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsZc.csv[]
+//include::{testplansdir}/ExceptionsZc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=538759067#gid=538759067[Google Sheet Testplan]
 
@@ -111,7 +111,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsZicboS.csv[]
+//include::{testplansdir}/ExceptionsZicboS.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=927893239#gid=927893239[Google Sheet Testplan]
 
@@ -122,7 +122,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsZicboU.csv[]
+//include::{testplansdir}/ExceptionsZicboU.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1054505393#gid=1054505393[Google Sheet Testplan]
 
@@ -133,7 +133,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsVM.csv[]
+//include::{testplansdir}/ExceptionsVM.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=270777025#gid=270777025[Google Sheet Testplan]
 
@@ -144,7 +144,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsVMZalrsc.csv[]
+//include::{testplansdir}/ExceptionsVMZalrsc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=287426144#gid=287426144[Google Sheet Testplan]
 
@@ -155,7 +155,7 @@ https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXP
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/ExceptionsVMZaamo.csv[]
+//include::{testplansdir}/ExceptionsVMZaamo.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1W95I4jPbuQBnXzDdIZtOG4kae8vi7djpKtJXWCXPxMU/edit?gid=1747092954#gid=1747092954[Google Sheet Testplan]
 
@@ -168,6 +168,6 @@ Misaligned loads/stores handled in hardware.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Zicclsm.csv[]
+//include::{testplansdir}/Zicclsm.adoc[]
 ,===
 *** need to create this

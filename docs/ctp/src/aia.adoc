@@ -10,7 +10,7 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Smaia.csv[]
+//include::{testplansdir}/Smaia.adoc[]
 ,===
 
 ==== Ssaia Supervisor-Mode Advanced Interrupt Architecture
@@ -20,7 +20,7 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/Ssaia.csv[]
+//include::{testplansdir}/Ssaia.adoc[]
 ,===
 
 ==== IMSIC Incoming MSI Controller
@@ -30,7 +30,7 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/imsic.csv[]
+//include::{testplansdir}/imsic.adoc[]
 ,===
 
 ==== APLIC Advanced Platform-Level Interrupt Controller
@@ -40,7 +40,7 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/aplic.csv[]
+//include::{testplansdir}/aplic.adoc[]
 ,===
 
 ==== IOMMU I/O Memory Management Unit
@@ -50,5 +50,5 @@ This section describes AIA extension test plans.
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/iommu.csv[]
+//include::{testplansdir}/iommu.adoc[]
 ,===
