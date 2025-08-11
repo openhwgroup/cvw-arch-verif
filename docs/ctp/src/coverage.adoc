@@ -118,7 +118,7 @@ Our riscvISACOV implementation uses a SystemVerilog disassmbler in fcov/disassem
 
 === Sail Trace Coverage Flow
 
-Coverage is measured by running tests on Sail and generating a trace file, then passing this trace file to an RVVI agent in a SystemVerilog testbench that checks coverage.
+Coverage is measured by running tests on Sail and generating a RVVI-Trace file, then passing this  file to an RVVI agent in a SystemVerilog testbench that checks coverage.
 
 [NOTE]
 ====
