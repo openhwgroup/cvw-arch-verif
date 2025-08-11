@@ -1092,16 +1092,9 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=2079344243#gid=2079344243[Google Sheet Testplan]
 
-==== ZihpmH Hypervisor Hardware Performance Monitors
-
-[[t-ZihpmH-coverpoints]]
-.ZihpmH Coverpoints
-[options=header]
-[%AUTOWIDTH]
-,===
-//include::{testplansdir}/ZihpmH.adoc[]
-,===
-https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=1963232706#gid=1963232706[Google Sheet Testplan]
+[NOTE]
+====
+ZicntrH exercises hcounteren for all 32 counters, so no separate ZihpmH suite is needed.
 
 ==== PMPH Hypervisor Physical Memory Protection
 
