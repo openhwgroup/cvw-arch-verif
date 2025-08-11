@@ -45,7 +45,7 @@ include::{testplansdir}/Zihintpause.adoc[]
 [options=header]
 [%AUTOWIDTH]
 ,===
-//include::{testplansdir}/.ZihintntlZca.adoc[]
+//include::{testplansdir}/ZihintntlZca.adoc[]
 ,===
 
 ==== Zicbom Cache Block Flush/Invalidate

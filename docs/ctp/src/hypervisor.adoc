@@ -1358,7 +1358,7 @@ https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59
 [options=header]
 [%AUTOWIDTH]
 ,===
-//..include::{testplansdir}/ZicfissH.adoc[]
+//include::{testplansdir}/ZicfissH.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1DWBEoprndjQzLTXQTzPI8jW1HydtkYRR3tg58q59fdk/edit?gid=890828729#gid=890828729[Google Sheet Testplan]
 

@@ -48,7 +48,7 @@
 [options=header]
 [%AUTOWIDTH]
 ,===
-/include::{testplansdir}/Smepmp.adoc[]
+//include::{testplansdir}/Smepmp.adoc[]
 ,===
 
 ==== Smrnmi Machine-Mode Resumable Non-Maskable Interrupts
