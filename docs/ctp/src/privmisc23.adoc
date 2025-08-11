@@ -150,3 +150,5 @@ Located here because it is part of RVA23 even though it is not very interesting 
 ,===
 //include::{testplansdir}/Sdtrig.csv[]
 ,===
+
+*** also check the value written to stval and vstval.  Should be the VA of the breakpoint when Sstvala and Shvstvala are supported.  This is automatically checked against the reference model, so there is no need for additional SdtrigSstvala and SdtrigShvstvala test suites.
