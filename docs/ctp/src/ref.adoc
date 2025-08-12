@@ -40,7 +40,7 @@ The configuration includes
 ** RVMODEL_HALT using HTIF write_tohost followed by a infinite loop jump to self
 ** Empty RVMODEL_BOOT macro (no boot code required)
 
-*** will describe such UDB configurations for each certifciation profile.
+*** will describe such UDB configurations for each certification profile.
 
 Tests can receive a qualification waiver if they fail in certain simulators for the following reasons:
 
