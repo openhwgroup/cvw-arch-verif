@@ -1842,7 +1842,7 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					ins.current.csr[12'h3AC][23],
 					ins.current.csr[12'h3AC][15],
 					ins.current.csr[12'h3AC][7],
-					ins.current.csr[12'h3AA][63]
+					ins.current.csr[12'h3AA][63],
 					ins.current.csr[12'h3AA][55],
 					ins.current.csr[12'h3AA][47],
 					ins.current.csr[12'h3AA][39],
@@ -1858,7 +1858,7 @@ function void pmpm_sample(int hart, int issue, ins_t ins);
 					ins.current.csr[12'h3A8][23],
 					ins.current.csr[12'h3A8][15],
 					ins.current.csr[12'h3A8][7],
-					ins.current.csr[12'h3A6][63]
+					ins.current.csr[12'h3A6][63],
 					ins.current.csr[12'h3A6][55],
 					ins.current.csr[12'h3A6][47],
 					ins.current.csr[12'h3A6][39],
