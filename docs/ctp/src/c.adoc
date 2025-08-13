@@ -13,10 +13,10 @@ The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations suppor
 any 16-bit boundary, i.e., IALIGN=16.|***
 |27.1|The compressed instruction encodings are mostly common across RV32C and
 RV64C, but as shown in <<rvc-instr-table0, Table 34>>, a few opcodes are used for
-different purposes depending on base ISA.|Run relevant test suites.
+different purposes depending on base ISA.|Run relevant test suites. ***drop
 |27.1|If the C extension is implemented, the appropriate compressed
 floating-point load and store instructions must be provided whenever the relevant standard floating-
-point extension (F and/or D) is also implemented.|Run relevant test suites.
+point extension (F and/or D) is also implemented.|Run relevant test suites. ***drop
 |27.2|CR, CI, and CSS can use any of the 32 RVI registers, but CIW,
 CL, CS, CA, and CB are limited to just 8 of them.|cp_rs1p, cp_rs2p, cp_rdp
 |27.2|Compressed register-based floating-point loads and stores also use the
@@ -272,7 +272,7 @@ include::{testplansdir}/Zcb.adoc[]
 [cols="1, 4, 2" options=header]
 |===
 |Unpriv Section|Normative Statement|Coverpoints
-|28.12.1|c.lbu lloads a byte from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting byte is zero extended to XLEN bits and is written to _rd'_.|c.lbu/{}
+|28.12.1|c.lbu loads a byte from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting byte is zero extended to XLEN bits and is written to _rd'_.|c.lbu/{}
 |28.12.2|c.lhu loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is zero extended to XLEN bits and is written to _rd'_.|c.lhu/{}
 |28.12.3|c.lh loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is sign extended to XLEN bits and is written to _rd'_.|c.lh/{}
 |28.12.4|c.sb stores the least significant byte of _rs2'_ to the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_.|c.sb/{}
