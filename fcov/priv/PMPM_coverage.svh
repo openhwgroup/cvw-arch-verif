@@ -391,7 +391,7 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 
 	pmpcfg_for_tor0: coverpoint {pmpcfg[0]} {
-		wildcard bins pmp0cfg_xwr000  = {8'b10001111}; //L=1,A=TOR,XWR=000
+		wildcard bins pmp0cfg_xwr000  = {8'b10001111}; //L=1,A=TOR,XWR=111
 	}
 
 	pmpcfg_tor_bot_L0: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
