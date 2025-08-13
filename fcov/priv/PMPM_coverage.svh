@@ -391,7 +391,7 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 
 	pmpcfg_for_tor0: coverpoint {pmpcfg[0]} {
-		wildcard bins pmp0cfg_xwr000  = {8'b10001000}; //L=1,A=TOR,XWR=000
+		wildcard bins pmp0cfg_xwr000  = {8'b10001111}; //L=1,A=TOR,XWR=000
 	}
 
 	pmpcfg_tor_bot_L0: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
@@ -1048,9 +1048,9 @@ covergroup PMPM_cg with function sample(
 	cp_cfg_A_tor_r : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, read_instr_lw;
 	cp_cfg_A_tor_w : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, write_instr_sw;
 
-	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, read_instr_lw ;
-	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, write_instr_sw ;
-	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0, exec_instr;
+	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0,pmpcfg_for_tor0, read_instr_lw ;
+	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0,pmpcfg_for_tor0, write_instr_sw ;
+	cp_cfg_A_tor0_x: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0,pmpcfg_for_tor0, exec_instr;
 
 	cp_cfg_A_tor_all0: cross priv_mode_m, addr_for_tor_all_region0, pmpaddr_for_tor_region0, RWXL_i111_pmp0cfg, read_instr_lw;
 	cp_cfg_A_tor_all1: cross priv_mode_m, addr_for_tor_all_region1, pmpaddr_for_tor_region1, RWXL_i001_pmp1cfg, read_instr_lw;
