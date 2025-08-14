@@ -1,13 +1,13 @@
 
 === M Multiply Extension
 
-<<t-M-coverpoints>> summarizes the coverpoints for the M extension. <<t-M-normative-statements>> summarizes the relevant normative rules.
+<<t-M-coverpoints>> summarizes the coverpoints for the M extension. <<t-M-normative-rules>> summarizes the relevant normative rules.
 
 [[t-M-coverpoints]]
 .M Instruction Coverpoints
 include::{testplansdir}/M.adoc[]
 
-[[t-M-normative-statements]]
+[[t-M-normative-rules]]
 .M Normative Rules
 [cols="1, 4, 2" options=header]
 |===
@@ -53,7 +53,7 @@ The Zmmul extension is a subset of the M extension that includes only the multip
 .Zmmul Instruction Coverpoints
 include::{testplansdir}/Zmmul.adoc[]
 
-[[t-Zmmul-normative-statements]]
+[[t-Zmmul-normative-rules]]
 .Zmmul Normative Rules
 [cols="1, 4, 2" options=header]
 |===

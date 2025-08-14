@@ -25,14 +25,14 @@ include::{testplansdir}/I.adoc[]
 |cp_custom_fence|3|Test that fence, fence rw,rw, and fence.tso all execute without trapping.
 |===
 
-<<t-I-normative-statements>> summarizes the normative rules in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>. Note that the testplans always test the following fundamental capabilities, even if no normative rule is cited:
+<<t-I-normative-rules>> summarizes the normative rules in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>. Note that the testplans always test the following fundamental capabilities, even if no normative rule is cited:
 
 * Opcodes (cp_asm_count)
 * All Source and Destination Registers (cp_rs1, cp_rs2, cp_rd)
 * Edge values (cp_rs1_edges, cp_rs2_edges, cp_imm_edges, cr_rs1_rs2_edges, cr_rs1_imm_edges)
 * All other bitfields in the instruction
 
-[[t-I-normative-statements]]
+[[t-I-normative-rules]]
 .I Normative Rules
 [cols="1, 4, 2" options=header]
 |===

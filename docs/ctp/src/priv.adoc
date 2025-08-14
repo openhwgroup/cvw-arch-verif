@@ -3,7 +3,7 @@
 
 Privileged https://drive.google.com/drive/folders/11hTR2Yl48kOMODxhwrSsC-eXYtM_rJJE?usp=share_link:[test plan spreadsheets] are available.  They need to be edited into a more standarized format. Each test plan spreadsheet contains multiple columns for the applicable configurations.  For example, ZicsrM applies to any configuration with machine mode, ZicsrS applies to any configuration with supervisor mode, and ZicsrF applies to any configuration with floating-point.
 
-[[t-I-priv-normative-statements]]
+[[t-I-priv-normative-rules]]
 .I Privileged Normative Rules
 [cols="1, 4, 2" options=header]
 |===
@@ -41,7 +41,7 @@ environment.|
 environment.|
 |===
 
-[[t-C-priv-normative-statements]]
+[[t-C-priv-normative-rules]]
 .C Privileged Normative Rules
 [cols="1, 4, 2" options=header]
 |===
