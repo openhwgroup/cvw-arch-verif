@@ -1,13 +1,13 @@
 
 === C Compressed Extension
 
-The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions. <<t-C-normative-statements>> lists the normative statements in the RV{32/64}C specification applicable to all instructions, and the unprivileged coverpoints that exercise them.
+The C extension is subdivided into Zca, Zcf, and Zcd.  All configurations supporting C contain Zca.  RV32CF configurations also contain Zcf, and RV{32/64}CD configurations also contain Zcd.  A configuration supporting C should test all of the applicable Zc* extensions. <<t-C-normative-statements>> lists the normative rules in the RV{32/64}C specification applicable to all instructions, and the unprivileged coverpoints that exercise them.
 
 [[t-C-normative-statements]]
-.C Normative Statements
+.C Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |27.1|The C extension allows
 16-bit instructions to be freely intermixed with 32-bit instructions, with the latter now able to start on
 any 16-bit boundary, i.e., IALIGN=16.|***
@@ -32,7 +32,7 @@ applicable performance counters. HINTs are executed as no-ops on
 implementations that ignore them.|Hints are not tested
 |===
 
-<<t-C-priv-normative-statements>> summarizes normative statements relating to compressed instructions affecting privileged behavior.
+<<t-C-priv-normative-statements>> summarizes normative rules relating to compressed instructions affecting privileged behavior.
 
 ==== Zca Compressed Extension
 
@@ -43,10 +43,10 @@ implementations that ignore them.|Hints are not tested
 include::{testplansdir}/Zca.adoc[]
 
 [[t-Zca-normative-statements]]
-.Zca Normative Statements
+.Zca Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |27.3.1|C.LWSP loads a 32-bit value from memory into register rd. It computes an effective address by adding
 the zero-extended offset, scaled by 4, to the stack pointer, x2. It expands to lw rd, offset(x2). C.LWSP
 is valid only when rd≠x0; the code points with rd=x0 are reserved.|c.lwsp/{cp_imm_mul_4sp, rd_nx0}
@@ -200,10 +200,10 @@ performance counters. `C.NOP` expands to `nop`.|c.nop/{cp_asm_count}
 include::{testplansdir}/Zcf.adoc[]
 
 [[t-Zcf-normative-statements]]
-.Zcf Normative Statements
+.Zcf Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |27.3.1|C.FLWSP is an RV32FC-only instruction that loads a single-precision floating-point value from memory
 into floating-point register rd. It computes its effective address by adding the zero-extended offset,
 scaled by 4, to the stack pointer, x2. It expands to flw rd, offset(x2).|c.flwsp/***
@@ -235,10 +235,10 @@ offset, scaled by 4, to the base address in register
 include::{testplansdir}/Zcd.adoc[]
 
 [[t-Zcd-normative-statements]]
-.Zcd Normative Statements
+.Zcd Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |27.3.1|C.FLDSP is an RV32DC/RV64DC-only instruction that loads a double-precision floating-point value
 from memory into floating-point register rd. It computes its effective address by adding the zero
 -extended offset, scaled by 8, to the stack pointer, x2. It expands to fld rd, offset(x2).|c.fldsp/***
@@ -268,10 +268,10 @@ register `_rs1′_`. It expands to
 include::{testplansdir}/Zcb.adoc[]
 
 [[t-Zcb-normative-statements]]
-.Zcb Normative Statements
+.Zcb Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |28.12.1|c.lbu loads a byte from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting byte is zero extended to XLEN bits and is written to _rd'_.|c.lbu/{}
 |28.12.2|c.lhu loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is zero extended to XLEN bits and is written to _rd'_.|c.lhu/{}
 |28.12.3|c.lh loads a halfword from the memory address formed by adding _rs1'_ to the zero extended immediate _uimm_. The resulting halfword is sign extended to XLEN bits and is written to _rd'_.|c.lh/{}
@@ -292,10 +292,10 @@ When both Zcb and M are supported, add the instruction in <<t-ZcbM-coverpoints>>
 include::{testplansdir}/ZcbM.adoc[]
 
 [[t-ZcbM-normative-statements]]
-.ZcbM Normative Statements
+.ZcbM Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |28.12.12|c.mul multiplies XLEN bits of the source operands from _rsd'_ and _rs2'_ and writes the lowest XLEN bits of the result to _rsd'_.|c.mul/{}
 |===
 
@@ -308,10 +308,10 @@ When both Zcb and Zba are supported, add the instruction in <<t-ZcbZba-coverpoin
 include::{testplansdir}/ZcbZba.adoc[]
 
 [[t-ZcbZba-normative-statements]]
-.ZcbZba Normative Statements
+.ZcbZba Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |28.12.10|c.zext.w takes a single source/destination operand.
 It zero-extends the least-significant word of the operand to XLEN bits by inserting zeros into all of
 the bits more significant than 31.|c.zext.w/{}
@@ -325,10 +325,10 @@ When both Zcb and Zbb are supported, add the instructions in <<t-ZcbZbb-coverpoi
 include::{testplansdir}/ZcbZbb.adoc[]
 
 [[t-ZcbZbb-normative-statements]]
-.ZcbZbb Normative Statements
+.ZcbZbb Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |28.12.7|c.sext.b takes a single source/destination operand. It sign-extends the least-significant byte in
 the operand to XLEN bits by copying the most-significant bit in the byte (i.e., bit 7) to all of the more-
 significant bits.|c.sext.b/{}

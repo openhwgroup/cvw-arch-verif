@@ -25,7 +25,7 @@ include::{testplansdir}/I.adoc[]
 |cp_custom_fence|3|Test that fence, fence rw,rw, and fence.tso all execute without trapping.
 |===
 
-<<t-I-normative-statements>> summarizes the normative statements in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>. Note that the testplans always test the following fundamental capabilities, even if no normative statement is cited:
+<<t-I-normative-statements>> summarizes the normative rules in the RV{32/64}I specification and the unprivileged coverpoints that exercise them.  Privileged coverpoints related to integer instructions are described in the relevent parts of <<Privileged Test Plan>>. Note that the testplans always test the following fundamental capabilities, even if no normative rule is cited:
 
 * Opcodes (cp_asm_count)
 * All Source and Destination Registers (cp_rs1, cp_rs2, cp_rd)
@@ -33,10 +33,10 @@ include::{testplansdir}/I.adoc[]
 * All other bitfields in the instruction
 
 [[t-I-normative-statements]]
-.I Normative Statements
+.I Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |2.1|For RV32I, the 32 `x` registers are each 32 bits wide, i.e., `XLEN=32`.| cp_rs1, cp_rs2, cp_rd, cp_rs1_edges
 |2.1|Register `x0` is hardwired with all bits equal to 0.|cp_rs1, cp_rs2, cp_rd
 |2.2|In the base RV32I ISA, there are four core instruction formats (R/I/S/U)|cp_asm_count
@@ -196,7 +196,7 @@ standard and custom HINT encoding spaces.|untestable
 .I Reserved Behavior
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |4.2.1|SLLIW, SRLIW, and SRAIW encodings with
 _imm[5] &#8800; 0_ are reserved.|cp_uimm_5.
 See also Ssstrict in <<Ssstrict>>
