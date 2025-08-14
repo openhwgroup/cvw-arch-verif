@@ -1,27 +1,71 @@
 
 == General Test Plan Strategy
 
-Coverpoints are written with one file that covers both RV32 and RV64, to reduce the duplication and risk of becoming out of sync.  When a coverage file contains coverpoints that apply only to one XLEN or the other (e.g. 32 or 64-bit edge values), they are separated by ``ifdef XLEN32` or `XLEN64` directives.
-
-Privileged tests are mostly written by hand and share a single .S file that can be compiled for either RV32 or RV64, again with `ifdef` directives to separate the two.  Unprivileged tests are generated from a template using a Python script, and are divided into RV32 and RV64 directories because the random values differ with XLEN.
+This CTP describes tests for all supported RISC-V profiles, but the tests run on a specific DUT.
+The DUT configuration is described with RISC-V Unified Database, and supplementary files such as
+simulator configuration files are automatically generated from the UDB so there is a single
+configuration file to maintain.  The UDB describes the supported extensions, and also has parameters
+defining optional behaviors of those extensions.  If a behavior is UNSPECIFIED in the specification,
+it is not tested because there are no wrong answers.  A common purpose of parameters is to define the
+behavior of WARL fields in CSRs.
 
 === Configuration
 
-* UDB
-* Profiles, options, configuration parameters
-* Other parameters: PMP entries, PMP granularity
+The DUT is described with a https://github.com/riscv-software-src/riscv-unified-db[Unified Database] (UDB) YAML file.
+This file lists:
+
+* all of the supported extensions
+* all of the parameters required to describe the behavior of the extensions
+
+The DUT also needs to know how to boot the core, terminate a test with a success code, send a message to a console, and cause interrupts.  These DUT-specific behaviors are described by a <<Trick Box, Trick Box>>, which is an assembly-language library implementing an API using DUT-specific hardware.
+
+*** is a linker script really needed?  For PMP?
+
+=== Unified Database
+
+Unified Database allows _partially-_ and _fully-configured descriptions_.  A profile is an example of a partially configured description because it has a mix of required and optional extensions, and does not specify parameter values for most of the extensions.  A DUT needs to have a fully configured description including precisely which versions of which extensions are supported and what parameter values are implemented, so that a simulator can exactly match its behavior.
+
+*** check use of "partially and fully configured, descriptions"
+
+The <<Framework,certification framework>> requires a fully-configured UDB description of the DUT and a trick box for the DUT.
+It uses UDB to produce supplementary configuration files including:
+
+* Sail JSON file configuring reference model to match DUT
+* Configuration files for other optional simulators, such as Spike, ImperasFPM
+* SystemVerilog coverage.svh file describing which coverage files and parameter values to use for coverage measurement
+* Optional DUT configuration files providing parameter values to configurable RTL
+
+==== Configuration Parameters
+
+The UDB parameters for each extension are defined in:
+
+https://github.com/riscv-software-src/riscv-unified-db/tree/main/spec/std/isa/ext
+
+*** The CSC Tests and Models working group developed the following list of configuration parameters.
+Need to check if they match the parameters in UDB extensions.
+
+https://docs.google.com/spreadsheets/d/1tFGLbocTp1YNn11aN8JTmvxL_23e7x8SlBNJfOPRmAE/edit?gid=0#gid=0
+
+A partially-configured UDB description of each profile is given in:
+
+* https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVI20U32.yaml[RVI20U32]
+* https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVI20U64.yaml[RVI20U64]
+* https://github.com/riscv-software-src/riscv-unified-db/blob/main/cfgs/mc100-32-full-example.yaml[MC100]
+* https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVA22S64.yaml[RVA22S64]
+* https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVB23S64.yaml[RVB23S64]
+* https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVA23S64.yaml[RVA23S64]
 
 === Unspecified and Reserved Behaviors
 
-Some RISC-V behaviors are UNSPECIFIED, which means an implementation can do anything. These behaviors are not tested because there is no wrong answer. <<t-behavior-normative-statements>> summarizes the normative statements regarding reserved behaviors.
+Some RISC-V behaviors are UNSPECIFIED, which means an implementation can do anything. These behaviors are not tested because there is no wrong answer. <<t-behavior-normative-rules>> summarizes the normative rules regarding reserved behaviors.
 
 Unimplemented opcodes (except in the custom space) and instructions accessing non-existent CSRs are reserved.  The behavior of reserved instructions is UNSPECIFIED, so they should not be tested by most testplans.  However, when the Ssstrict extension is enabled, reserved instructions raise an illegal instruction exception that results in a contained trap to the supervisor-mode trap handler.  This is tested by the Ssstrict test plan.
 
-[[t-behavior-normative-statements]]
-.I Normative Statements Regarding Behaviors
+[[t-behavior-normative-rules]]
+.I Normative Rules Regarding Behaviors
 [cols="1, 4" options=header]
 |===
-|Spec Section|Normative Statement
+|Spec Section|Normative Rule
 |Unpriv 1.7|The term UNSPECIFIED refers to a behavior or value that is intentionally unconstrained.
 |Unpriv 2.2|For this purpose, we divide each RISC-V
 instruction-set encoding space (and related encoding spaces such as the CSRs) into three disjoint
@@ -36,13 +80,13 @@ CSR fields can be Write Preserves, Read Ignores (WPRI), Write Legal, Read Legal 
 
 WPRI fields are not tested. WLRL fields are tested with all legal values but no illegal values.   WARL fields are tested by trying all possible values of the field.  CSR tests (<<Zicsr>>) generally involve setting all bits to 1, setting all to 0, and writing walking 1s.   Therefore, they inherently exercise all possible values of 1 and 2-bit WARL fields.  Longer fields can be tested exhaustively if the number of possibilities is small (such as `satp.MODE`), or just with walking 1s if the number of possibilities is too large (such as `misa.EXTENSIONS`).
 
-<<t-bitfield-normative-statements>> summarizes the normative statements regarding CSR bitfields.
+<<t-bitfield-normative-rules>> summarizes the normative rules regarding CSR bitfields.
 
-[[t-bitfield-normative-statements]]
-.I Normative Statements Regarding Bitfields
+[[t-bitfield-normative-rules]]
+.I Normative Rules Regarding Bitfields
 [cols="1, 4" options=header]
 |===
-|Spec Section|Normative Statement
+|Spec Section|Normative Rule
 |Privileged 2.3|Some whole read/write fields are reserved for future use. Software should ignore the values read from
 these fields, and should preserve the values held in these fields when writing values to other fields of
 the same register. For forward compatibility, implementations that do not furnish these fields must
@@ -66,3 +110,56 @@ Implementations can return any legal value on the read of a *WARL* field when th
 illegal value, but the legal value returned should deterministically depend on the illegal written value
 and the architectural state of the hart.
 |===
+
+*** should there be a parameter about WLRL fields throwing illegal instruction when an illegal value is written?
+
+=== Normative Rules
+
+The testplan for each extension contains a list of normative rules applicable to that extension.
+Normative rules are generally direct quotations from a ratified RISC-V specification describing a single certifiable feature.  They are associated
+with an https://docs.asciidoctor.org/asciidoc/latest/attributes/id/[ID anchor] in the ASCIIDoc source of the spec.
+Normative rules only apply to statements that could be measured by a test.  In particular, introductory overview and
+non-normative explanatory text is not quoted as a normative rule.  For brevity, there are no normative rules
+associated with instruction opcodes, CSR numbers, or similar encodings; these are tested when the instruction is
+executed or CSR is accessed.
+
+[NOTE]
+====
+Occasionally, the
+rule is implicit in the specification, such as the artwork of a figure or the logical interaction of
+multiple quotations from a spec.  Such rules are fabricated in this test plan, and supported by
+references to figures or by a combination of quotations and some logical reasoning. *** link to an example where this is needed, if needed
+====
+
+=== Normative Rule IDs
+
+*** in debate.
+https://github.com/riscv-software-src/riscv-unified-db/blob/884-add-normative-rules-for-i-extension/tools/ruby-gems/udb/lib/udb/doc_link.rb[James proposal]
+
+ have been thinking of tags such as
+
+norm:I:add:op
+norm:I:add:regs
+norm:Zca:c.lw
+norm:Zca:c.beq-c.bne
+norm:Sstc:stimecmp
+norm:sstc:sti
+
+while this naming scheme looks like it would use
+
+norm:inst:add:op
+norm:inst:add:regs
+norm:inst:c.lw:op
+norm:insts:c.beq-c.bne:op
+norm:csr:stimecmp::op
+norm:ext:Sstc:sti
+
+=== Coverpoints
+
+Coverpoints are written with one file that covers both RV32 and RV64, to reduce the duplication and risk of becoming out of sync.  When a coverage file contains coverpoints that apply only to one XLEN or the other (e.g. 32 or 64-bit edge values), they are separated by ``ifdef XLEN32` or `XLEN64` directives. Similarly, when a coverpoint applies only to a certain parameter value (PMP NA4 regions are not supported for granularity coarser than 4 bytes), they uses ``ifdef`` to exclude tests based on the parameter value.
+
+=== Tests
+
+Privileged tests are mostly written by hand and share a single .S file that can be compiled for either RV32 or RV64, again with `ifdef` directives to separate the two.  Unprivileged tests are generated from a template using a Python script, and are divided into RV32 and RV64 directories because the random values differ with XLEN.
+
+*** no loops - each test should have a unique PC?

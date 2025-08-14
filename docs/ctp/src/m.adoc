@@ -1,17 +1,17 @@
 
 === M Multiply Extension
 
-<<t-M-coverpoints>> summarizes the coverpoints for the M extension. <<t-M-normative-statements>> summarizes the relevant normative statements.
+<<t-M-coverpoints>> summarizes the coverpoints for the M extension. <<t-M-normative-rules>> summarizes the relevant normative rules.
 
 [[t-M-coverpoints]]
 .M Instruction Coverpoints
 include::{testplansdir}/M.adoc[]
 
-[[t-M-normative-statements]]
-.M Normative Statements
+[[t-M-normative-rules]]
+.M Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |12.1|MUL performs an XLEN-bit×XLEN-bit multiplication of
 `rs1` by `rs2` and places the lower XLEN bits in the destination
 register. |mul/{cp_rs1, cp_rs2, cp_rd, cr_rs1_rs2_edges}
@@ -53,11 +53,11 @@ The Zmmul extension is a subset of the M extension that includes only the multip
 .Zmmul Instruction Coverpoints
 include::{testplansdir}/Zmmul.adoc[]
 
-[[t-Zmmul-normative-statements]]
-.Zmmul Normative Statements
+[[t-Zmmul-normative-rules]]
+.Zmmul Normative Rules
 [cols="1, 4, 2" options=header]
 |===
-|Unpriv Section|Normative Statement|Coverpoints
+|Unpriv Section|Normative Rule|Coverpoints
 |12.3|The `Zmmul` extension implements the multiplication subset of the M
 extension. It adds all of the instructions defined in
 <<Multiplication Operations>>, namely: MUL, MULH, MULHU,

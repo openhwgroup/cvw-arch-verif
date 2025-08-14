@@ -3,9 +3,7 @@
 
 Certification relies on a reference model (simulator) to compute the expected results of a test, such as sum of two numbers in an `add` instruction or the answer for a `fsqrt.d` instruction.  Self-checking tests compare the result from the DUT against the expected result that was precomputed by the reference model and flag mismatches.
 
-RISC-V International has blessed Sail as the golden RISC-V model, so Sail is used as the reference model.
-
-***hyperlink to Sail
+RISC-V International has blessed https://github.com/riscv/sail-riscv[Sail] as the golden RISC-V model, so Sail is used as the reference model.
 
 === Deterministic, Nondeterministic, and Unspecified Behaviors
 
@@ -40,7 +38,7 @@ The configuration includes
 ** RVMODEL_HALT using HTIF write_tohost followed by a infinite loop jump to self
 ** Empty RVMODEL_BOOT macro (no boot code required)
 
-*** will describe such UDB configurations for each certifciation profile.
+*** will describe such UDB configurations for each certification profile.
 
 Tests can receive a qualification waiver if they fail in certain simulators for the following reasons:
 
