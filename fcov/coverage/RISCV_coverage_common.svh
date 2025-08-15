@@ -53,6 +53,10 @@
 // NAPOT region: add trailing 1s per `k` to form mask
 `define STANDARD_REGION      ((`REGIONSTART >> 2) | ((2 ** `k) - 1)) // NAPOT format: yyyyy...0111
 
+// XLEN64 -> [53:0] & XLEN32 -> [31:0]
+`define EFFECTIVE_PMPADDR (`ifdef XLEN64 53 `else 31 `endif)
+
+
 // -----------------------------------------------------------------------------
 //                         XLEN FLEN VLEN Macros
 // -----------------------------------------------------------------------------
