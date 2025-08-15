@@ -17,7 +17,9 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
 `define sv48
+`define sv39
 `define COVER_RV64CBO_VM
 covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     option.per_instance = 0;
