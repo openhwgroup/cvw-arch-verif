@@ -178,8 +178,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 8+^|Hypervisor
 |H|Hypervisor Instructions|<<t-H-coverpoints>>|||o|o|x
 |ZicsrH|Hypervisor CSRs|<<t-ZicsrH-coverpoints>>|||o|o|x
-|ZicsrHF|Hypervisor Float CSRs|<<t-ZicsrHF-coverpoints>>|||o|o|x
-|ZicsrHV|Hypervisor Vector CSRs|<<t-ZicsrHV-coverpoints>>|||o|o|x
 |ExceptionsH|Hypervisor Exceptions|<<t-ExceptionsH-coverpoints>>|||o|o|x
 |ExceptionsHV|Hypervisor Vector Exceptions|<<t-ExceptionsHV-coverpoints>>|||o|o|x
 |InterruptsH|Hypervisor Interrupts|<<t-InterruptsH-coverpoints>>|||o|o|x
@@ -190,7 +188,6 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |RV32VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMH_CBO-coverpoints>>|||o|o|x
 |RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH-coverpoints>>|||o|o|x
 |RV64VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMH_CBO-coverpoints>>|||o|o|x
-|SsstrictH|Hypervisor Strict|<<t-SsstrictH-coverpoints>>|||o|o|x
 |Shcounterenw|Counter Enables|<<t-Shcounterenw-coverpoints>>|||o|o|x
 |Shvsatpa|VM Modes Supported|<<t-Shvsatpa-coverpoints>>|||o|o|x
 |Shgatpa|VM x4 Modes Supported|<<t-Shgatpa-coverpoints>>|||o|o|x
@@ -292,6 +289,14 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Svvptc|Valid PTEs appear within bounded time without fence||||x|x
 |===
 
-=== Conforming M-Mode Requirement
+=== Certification Requirements
+
+Certification places basic requirements on the DUT.
+
+==== Conforming M-Mode
 
 The privileged testplan relies on a machine mode conforming to Sm1p12 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
+
+==== Consistent XLEN and Endianness
+
+The test plan requires that after the boot process, XLEN and endianness are the same in all privilege modes.  Specifically, MXLEN = SXLEN = UXLEN = HSXLEN = VSXLEN and MBE = SBE = UBE = VSBE.  If this is not the reset state of the DUT, the <<t-trickbox, RVMODEL_BOOT trick box macro>> may be able to place it in that state before testing.  If the DUT cannot be placed in this state, it cannot be certified because the tests assume XLEN and endianness do not change with privilege mode unless specifcially modified by a test. For example, a machine hardwired to 64-bit machine mode and 32-bit user mode is not certifiable. (Presently, only endian changes are tested; certifying multiple XLEN is not a priority.)

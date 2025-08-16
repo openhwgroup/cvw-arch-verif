@@ -55,6 +55,8 @@ A partially-configured UDB description of each profile is given in:
 * https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVB23S64.yaml[RVB23S64]
 * https://riscv-software-src.github.io/riscv-unified-db/resolved_arch/profile/RVA23S64.yaml[RVA23S64]
 
+*** add minimal and maximal fully configured flavors of these profiles in riscv-arch-test, with no and all optional features, and suitable parameters.
+
 === Unspecified and Reserved Behaviors
 
 Some RISC-V behaviors are UNSPECIFIED, which means an implementation can do anything. These behaviors are not tested because there is no wrong answer. <<t-behavior-normative-rules>> summarizes the normative rules regarding reserved behaviors.
