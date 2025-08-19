@@ -73,28 +73,12 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=613653829#gid=613653829[Google Sheet Testplan]
 
-==== RV32CBO_PMP
+==== CBOPMP
 
-*** try to get rid of RV64 part
+*** migrating away from RV32/64 prefix.  coverpoints and tests need updating 8/18/25 UET
 
-[[t-RV32CBO_PMP-coverpoints]]
-.RV32CBO_PMP Coverpoints
+[[t-CBOPMP-coverpoints]]
+.CBOPMP Coverpoints
 ,===
-//include::{testplansdir}/RV32CBO_PMP.adoc[]
+//include::{testplansdir}/CBO_PMP.adoc[]
 ,===
-
-*** are these needed?  Seems like they should have VM in the name as well
-because they depend on the PTE.  Maybe these should move to the VM section?
-
-==== RV64CBO_PMP
-
-*** try to get rid of RV64 part
-
-[[t-RV64CBO_PMP-coverpoints]]
-.RV64CBO_PMP Coverpoints
-,===
-//include::{testplansdir}/RV64CBO_PMP.adoc[]
-,===
-
-*** are these needed?  Seems like they should have VM in the name as well
-because they depend on the PTE.  Maybe thse should move to the VM section?

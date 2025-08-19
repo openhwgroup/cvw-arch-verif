@@ -4,8 +4,8 @@ Extract normative rules from all .adoc files.
 
 This script finds all .adoc files in the riscv-isa-manual directory and extracts
 normative rules that are marked with special tags:
-1. Block-level format: [[norm:left/norm:right]]
-2. Inline format: [#left/right]#rule_text#
+1. Block-level format: [[norm:identifier]]
+2. Inline format: [#norm:identifier]#rule_text#
 
 For each .adoc file, it generates:
 - A CSV file with extracted rules
@@ -51,7 +51,7 @@ def clean_asciidoc_markup(text):
 
 def extract_block_level_rules(content):
     """
-    Extract block-level normative rules with format [[norm:left/norm:right]].
+    Extract block-level normative rules with format [[norm:identifier]].
 
     Args:
         content (str): File content
@@ -61,20 +61,13 @@ def extract_block_level_rules(content):
     """
     rules = []
 
-    # Pattern for complete and incomplete block-level tags
-    # Handles: [[norm:left/norm:right]], [[norm:left/norm:right], [[norm:left/norm:right
-    # Also handles: [[norm:left]] (without right identifier)
+    # Pattern for block-level tags - simple identifier extraction
     patterns = [
-        # Complete block pattern with closing ]] and both left/right identifiers
-        r'\[\[(norm:[^/\]]+)/(norm:[^\]]*)\]\]',
-        # Block pattern with only left identifier (no /norm:right part)
-        r'\[\[(norm:[^\]/]+)\]\]',
-        # Incomplete patterns missing one or both closing ] with both identifiers
-        r'\[\[(norm:[^/\]]+)/(norm:[^\]]*)\](?!\])',
-        r'\[\[(norm:[^/\]]+)/(norm:[^\]]*?)(?=\s*\n|\s*$)',
-        # Incomplete patterns with only left identifier
-        r'\[\[(norm:[^\]/]+)\](?!\])',
-        r'\[\[(norm:[^\]/]+)(?=\s*\n|\s*$)',
+        # Complete block pattern with closing ]]
+        r'\[\[(norm:[^\]]+)\]\]',
+        # Incomplete patterns missing closing ]
+        r'\[\[(norm:[^\]]+)\](?!\])',
+        r'\[\[(norm:[^\]]+)(?=\s*\n|\s*$)',
     ]
 
     captured_positions = set()
@@ -87,18 +80,14 @@ def extract_block_level_rules(content):
             if any(abs(start_pos - pos) < 10 for pos in captured_positions):
                 continue
 
-            left_id = match.group(1).strip()
-            right_id = ""
-            if match.lastindex >= 2 and match.group(2):
-                right_id = match.group(2).strip()
+            identifier = match.group(1).strip()
 
             # Extract the following paragraph as the rule text
             rule_text = extract_following_paragraph(content, match.end())
             rule_text = clean_asciidoc_markup(rule_text)
 
             rules.append({
-                'left_identifier': left_id,
-                'right_identifier': right_id,
+                'identifier': identifier,
                 'rule_text': rule_text,
                 'position': start_pos,
                 'type': 'block'
@@ -110,7 +99,7 @@ def extract_block_level_rules(content):
 
 def extract_inline_rules(content):
     """
-    Extract inline normative rules with format [#left/right]#rule_text#.
+    Extract inline normative rules with format [#norm:identifier]#rule_text#.
 
     Args:
         content (str): File content
@@ -120,55 +109,32 @@ def extract_inline_rules(content):
     """
     rules = []
 
-    # Pattern for inline tags - handle various formats including multi-line patterns
+    # Pattern for inline tags - simple identifier extraction
     patterns = [
-        # Standard format with both left/right identifiers: [#norm:left/norm:right]#rule_text#
-        (r'\[#(norm:[^/\]]+)/(norm:[^\]]*)\]#([^#]*?)#', 0),
-        # Format with only left identifier: [#norm:left]#rule_text#
-        (r'\[#(norm:[^\]/]+)\]#([^#]*?)#', 0),
+        # Standard format: [#norm:identifier]#rule_text#
+        (r'\[#(norm:[^\]]+)\]#([^#]*?)#', 0),
         # Multi-line format with re.DOTALL - handles cases where closing # is on different line
-        (r'\[#(norm:[^/\]]+)/(norm:[^\]]*)\]\s*\n?#(.*?)#', re.DOTALL | re.MULTILINE),
-        (r'\[#(norm:[^\]/]+)\]\s*\n?#(.*?)#', re.DOTALL | re.MULTILINE),
+        (r'\[#(norm:[^\]]+)\]\s*\n?#(.*?)#', re.DOTALL | re.MULTILINE),
         # Multi-line format starting with # on same line
-        (r'\[#(norm:[^/\]]+)/(norm:[^\]]*)\]#(.*?)#', re.DOTALL | re.MULTILINE),
-        (r'\[#(norm:[^\]/]+)\]#(.*?)#', re.DOTALL | re.MULTILINE),
+        (r'\[#(norm:[^\]]+)\]#(.*?)#', re.DOTALL | re.MULTILINE),
         # Handle cases where the opening tag is on one line and content starts on next line
-        (r'\[#(norm:[^/\]]+)/(norm:[^\]]*)\]\s*\n#(.*?)#', re.DOTALL | re.MULTILINE),
-        (r'\[#(norm:[^\]/]+)\]\s*\n#(.*?)#', re.DOTALL | re.MULTILINE),
+        (r'\[#(norm:[^\]]+)\]\s*\n#(.*?)#', re.DOTALL | re.MULTILINE),
         # Cases where tag has no closing ]# but has content following
-        (r'\[#(norm:[^/\]]+)/(norm:[^\]]*)\]\s*\n([^#\[]*?)(?=\n\[|\n==|\ninclude::|$)', re.DOTALL | re.MULTILINE),
-        (r'\[#(norm:[^\]/]+)\]\s*\n([^#\[]*?)(?=\n\[|\n==|\ninclude::|$)', re.DOTALL | re.MULTILINE)
+        (r'\[#(norm:[^\]]+)\]\s*\n([^#\[]*?)(?=\n\[|\n==|\ninclude::|$)', re.DOTALL | re.MULTILINE)
     ]
 
     for pattern, flags in patterns:
         for match in re.finditer(pattern, content, flags):
             start_pos = match.start()
-            left_id = match.group(1).strip()
-
-            # Handle different group structures based on pattern
-            if match.lastindex == 4:  # Pattern with both left/right and rule text
-                right_id = match.group(2).strip() if match.group(2) else ""
-                rule_text = match.group(3).strip()
-            elif match.lastindex == 3:  # Could be left/right/rule or left/rule/empty
-                if '/' in pattern and match.group(2) and match.group(2).startswith('norm:'):
-                    # This is left/right/rule pattern
-                    right_id = match.group(2).strip()
-                    rule_text = match.group(3).strip()
-                else:
-                    # This is left/rule pattern (no right identifier)
-                    right_id = ""
-                    rule_text = match.group(2).strip()
-            else:  # match.lastindex == 2, left/rule pattern
-                right_id = ""
-                rule_text = match.group(2).strip()
+            identifier = match.group(1).strip()
+            rule_text = match.group(2).strip()
 
             rule_text = clean_asciidoc_markup(rule_text)
 
             # Skip if this rule was already captured by a previous pattern
             if not any(abs(r['position'] - start_pos) < 20 for r in rules):
                 rules.append({
-                    'left_identifier': left_id,
-                    'right_identifier': right_id,
+                    'identifier': identifier,
                     'rule_text': rule_text,
                     'position': start_pos,
                     'type': 'inline'
@@ -251,19 +217,18 @@ def create_asciidoc_table(rules, output_path):
         rules (list): List of normative rules
         output_path (str): Path to output .adoc file
     """
-    content = """[cols="1,1,4", options="header"]
+    content = """[cols="1,4", options="header"]
 |===
-|Left Identifier |Right Identifier |Rule Text
+|Identifier |Rule Text
 
 """
 
     for rule in rules:
         # Escape pipe characters in table cells
-        left_id = rule['left_identifier'].replace('|', '\\|')
-        right_id = rule['right_identifier'].replace('|', '\\|') if rule['right_identifier'] else ""
+        identifier = rule['identifier'].replace('|', '\\|')
         rule_text = rule['rule_text'].replace('|', '\\|')
 
-        content += f"|{left_id} |{right_id} |{rule_text}\n\n"
+        content += f"|{identifier} |{rule_text}\n\n"
 
     content += "|===\n"
 
@@ -309,14 +274,13 @@ def process_adoc_file(file_path, output_dir):
     # Write CSV file
     try:
         with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['left_identifier', 'right_identifier', 'rule_text']
+            fieldnames = ['identifier', 'rule_text']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writeheader()
             for rule in rules:
                 writer.writerow({
-                    'left_identifier': rule['left_identifier'],
-                    'right_identifier': rule['right_identifier'],
+                    'identifier': rule['identifier'],
                     'rule_text': rule['rule_text']
                 })
 
