@@ -161,7 +161,9 @@ in some endianness, then a byte-sized load from that address in any
 endianness returns the stored value.
 ```
 
-Alternatively, they can be applied to a portion of a paragraph with a ` #[#norm:...]#tagged text.## ` ID.
+Alternatively, they can be applied to a portion of a paragraph:
+[literal]
+#[#norm:...]#tagged text#
 
 ```
 [#norm:inst:add:operation]#ADD performs the addition of _rs1_ and
