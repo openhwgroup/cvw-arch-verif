@@ -25,15 +25,13 @@ The DUT also needs to know how to boot the core, terminate a test with a success
 
 Unified Database allows _partially-_ and _fully-configured descriptions_.  A profile is an example of a partially configured description because it has a mix of required and optional extensions, and does not specify parameter values for most of the extensions.  A DUT needs to have a fully configured description including precisely which versions of which extensions are supported and what parameter values are implemented, so that a simulator can exactly match its behavior.
 
-*** check use of "partially and fully configured, descriptions"
-
 The <<Framework,certification framework>> requires a fully-configured UDB description of the DUT and a trick box for the DUT.
 It uses UDB to produce supplementary configuration files including:
 
 * Sail JSON file configuring reference model to match DUT
-* Configuration files for other optional simulators, such as Spike, ImperasFPM
+* Configuration files for other optional simulators, such as Spike, https://github.com/openhwgroup/cvw/blob/main/config/rv64gc/imperas.ic[ImperasFPM]
 * SystemVerilog coverage.svh file describing which coverage files and parameter values to use for coverage measurement
-* Optional DUT configuration files providing parameter values to configurable RTL
+* Optional DUT configuration files https://github.com/openhwgroup/cvw/blob/main/config/rv64gc/coverage.svh[(CORE-V Wally Example)] providing parameter values to configurable RTL
 
 ==== Configuration Parameters
 
@@ -135,26 +133,43 @@ references to figures or by a combination of quotations and some logical reasoni
 
 === Normative Rule IDs
 
-*** in debate.
-https://github.com/riscv-software-src/riscv-unified-db/blob/884-add-normative-rules-for-i-extension/tools/ruby-gems/udb/lib/udb/doc_link.rb[James proposal]
+Normative rule IDs follow the format defined in https://github.com/riscv-software-src/riscv-unified-db/blob/884-add-normative-rules-for-i-extension/tools/ruby-gems/udb/lib/udb/doc_link.rb[the UDB documentation]. <<t-normative-rules-ids>> provides examples
 
- have been thinking of tags such as
+[[t-normative-rules-ids]]
+.Normative Rule ID Examples
+[cols="1, 1, 2" options=header]
+|===
+|Scenario|Example|Rule
+|Instruction|`norm:inst:add:operation`|ADD performs the addition of _rs1_ and _rs2_.
+|Several Instructions|`norm:insts:slt_sltu:operation`|SLT and SLTU perform signed and unsigned compares respectively, writing 1 to _rd_ if
+_rs1_ < _rs2_, 0 otherwise.
+|CSR|`norm:csr:hstatus:reg`|The hstatus register is an HSXLEN-bit read/write register formatted as shown in when HSXLEN=32 and when HSXLEN=64. The hstatus register provides facilities analogous to the mstatus register for tracking and controlling the exception behavior of a VS-mode guest.
+|Several CSRs|`norm:csrs:sie_hip_hie:mutex`|For each writable bit in sie, the corresponding bit shall be read-only zero in both hip and hie. Hence, the nonzero bits in sie and hie are always mutually exclusive, and likewise for sip and hip.
+|CSR bitfield|`norm:csrfld:hstatus:vsxl:op`|The VSXL field controls the effective XLEN for VS-mode (known as VSXLEN), which may differ from the XLEN for HS-mode (HSXLEN). When HSXLEN=32, the VSXL field does not exist, and VSXLEN=32. When HSXLEN=64, VSXL is a WARL field that is encoded the same as the MXL field of misa, shown in . In particular, an implementation may make VSXL be a read-only field whose value always ensures that VSXLEN=HSXLEN.
+|Other behaviors not in the schema|`norm:ext:H:vscsrs-vs-perm`|When V=1, an attempt to read or write a VS CSR directly by its own separate CSR address causes a virtual-instruction exception.
+|===
 
-norm:I:add:op
-norm:I:add:regs
-norm:Zca:c.lw
-norm:Zca:c.beq-c.bne
-norm:Sstc:stimecmp
-norm:sstc:sti
+The following code snippets show how to tag the https://github.com/riscv/riscv-isa-manual/blob/main/src/rv32.adoc[spec].
 
-while this naming scheme looks like it would use
+Normative rule IDs can be applied to an entire paragraph with a `[[norm:...]]` ID.
 
-norm:inst:add:op
-norm:inst:add:regs
-norm:inst:c.lw:op
-norm:insts:c.beq-c.bne:op
-norm:csr:stimecmp::op
-norm:ext:Sstc:sti
+```
+[[norm:instgrp:load_store:endian_byte_operation]]
+In a system for which endianness is byte-address invariant, the
+following property holds: if a byte is stored to memory at some address
+in some endianness, then a byte-sized load from that address in any
+endianness returns the stored value.
+```
+
+Alternatively, they can be applied to a portion of a paragraph with a ` #[#norm:...]#tagged text.## ` ID.
+
+```
+[#norm:inst:add:operation]#ADD performs the addition of _rs1_ and
+_rs2_.#[#norm:inst:sub:operation]#SUB performs the subtraction of _rs2_ from _rs1_.#[#norm:insts:add_sub:overflow]#Overflows are ignored and the low XLEN bits of results are written to the destination _rd_.#
+```
+
+*** need to choose operation vs. op
+*** level of detail: regularly subtag sentences or subsentence in a paragraph
 
 === Coverpoints
 
