@@ -30,11 +30,11 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 	}
 
 	addr_offset_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins at_base	  = {`REGIONSTART};			 // Access exactly at the region base
-		bins below_base	  = {`REGIONSTART - 4};		 // Access 4 bytes below the region
-		bins just_inside  = {`REGIONSTART + 4};		 // Access 4 bytes into the region
-		bins highest_word = {`REGIONSTART + `g - 4}; // Access at the last word in region
-		bins just_beyond  = {`REGIONSTART + `g};	 // Access exactly at the end of the region
+		bins at_base	  = {`REGIONSTART};			       // Access exactly at the region base
+		bins below_base	  = {`REGIONSTART - 4};		       // Access 4 bytes below the region
+		bins just_inside  = {`REGIONSTART + 4};		       // Access 4 bytes into the region
+		bins highest_word = {`REGIONSTART + `g_napot - 4}; // Access at the last word in region
+		bins just_beyond  = {`REGIONSTART + `g_napot};	   // Access exactly at the end of the region
 	}
 
 	addr_offset_na4: coverpoint (ins.current.rs1_val + ins.current.imm) {
@@ -45,10 +45,10 @@ covergroup PMPS_cg with function sample(ins_t ins, logic [16*XLEN-1:0] pack_pmpa
 
 	// if range is from `REGIONSTART to `REGIONSTART + `g
 	addr_offset_tor: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins at_base	  = {`REGIONSTART};			 // Access exactly at the region base
-		bins below_base	  = {`REGIONSTART - 4};		 // Access 4 bytes below the base
-		bins at_top		  = {`REGIONSTART + `g}; 	 // Access exactly at top of range
-		bins highest_word = {`REGIONSTART + `g - 4}; // Access at the last word in region
+		bins at_base	  = {`REGIONSTART};			 	 // Access exactly at the region base
+		bins below_base	  = {`REGIONSTART - 4};		 	 // Access 4 bytes below the base
+		bins at_top		  = {`REGIONSTART + `g_tor}; 	 // Access exactly at top of range
+		bins highest_word = {`REGIONSTART + `g_tor - 4}; // Access at the last word in region
 	}
 
 	exec_instr: coverpoint ins.current.insn {
