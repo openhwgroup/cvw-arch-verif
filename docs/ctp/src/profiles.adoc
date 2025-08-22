@@ -122,8 +122,7 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Sv57|Sv39/48/57 Virtual Memory|<<t-Sv57-coverpoints>>|||o|o|o
 |Svinval|TLB Invalidation|<<t-Svinval-coverpoints>>|||x|x|x
 |VMPMP|VM + PMP|<<t-VMPMP-coverpoints>>|||x|x|x
-|CBOVM|VM + CBO|<<t-CBOVM-coverpoints>>|||x|x|x
-|CBOPMP|CBO + PMP|<<t-CBOPMP-coverpoints>>|||x|x|x
+|VMCBO|VM + CBO|<<t-VMCBO-coverpoints>>|||x|x|x
 |Svade|Page Table A/D Exceptions|<<t-Svade-coverpoints>>|||x|x|x
 |Svadu|Page Table Update|<<t-Svadu-coverpoints>>||||o|o
 |Svpbmt|Page-based Memory Types|<<t-Svpbmt-coverpoints>>|||x|x|x

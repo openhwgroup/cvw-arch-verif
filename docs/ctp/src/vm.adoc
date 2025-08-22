@@ -49,14 +49,6 @@
 //include::{testplansdir}/VMPMP.adoc[]
 ,===
 
-==== CBOVM VM + CBO
-
-[[t-CB_VM-coverpoints]]
-.CBOVM Coverpoints
-,===
-//include::{testplansdir}/CBOVM.adoc[]
-,===
-
 ==== Svinval Memory Management Unit Table Invalidation
 
 The Svinval extension defines instructions to update memory management tables for virtual memory and optionally for PMP. Their effect is system-dependent, so these tests simply check that the instructions run.
