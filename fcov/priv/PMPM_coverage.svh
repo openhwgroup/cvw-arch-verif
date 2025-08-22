@@ -47,15 +47,23 @@ covergroup PMPM_cg with function sample(
 	addr_offset_cp_cfg_A_napot_all: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins at_base      = {`REGIONSTART};
 		bins below_base   = {`REGIONSTART-4};
-		bins just_beyond  = {`REGIONSTART+`g};
+		bins just_beyond  = {`REGIONSTART+`g_napot};
 	}
 
-	address_offsets: coverpoint (ins.current.rs1_val + ins.current.imm) {
+	address_offsets_tor: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins at_base      = {`REGIONSTART};
 		bins below_base   = {`REGIONSTART-4};
 		bins above_base   = {`REGIONSTART+4};
-		bins just_beyond  = {`REGIONSTART+`g};
-		bins highest_word  = {`REGIONSTART +`g-4};
+		bins just_beyond  = {`REGIONSTART+`g_tor};
+		bins highest_word  = {`REGIONSTART +`g_tor-4};
+	}
+
+	address_offsets_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins at_base      = {`REGIONSTART};
+		bins below_base   = {`REGIONSTART-4};
+		bins above_base   = {`REGIONSTART+4};
+		bins just_beyond  = {`REGIONSTART+`g_napot};
+		bins highest_word  = {`REGIONSTART +`g_napot-4};
 	}
 
 	`ifdef G_IS_0
@@ -143,89 +151,89 @@ covergroup PMPM_cg with function sample(
 		bins address = {(`REGIONSTART)};
 	}
 	addr_for_tor_all_region2: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + `g)};
+		bins address = {(`REGIONSTART + `g_tor)};
 	}
 	addr_for_tor_all_region3: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 3*`g)};
+		bins address = {(`REGIONSTART + 3*`g_tor)};
 	}
 	addr_for_tor_all_region4: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 6*`g)};
+		bins address = {(`REGIONSTART + 6*`g_tor)};
 	}
 	addr_for_tor_all_region5: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 10*`g)};
+		bins address = {(`REGIONSTART + 10*`g_tor)};
 	}
 	addr_for_tor_all_region6: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 15*`g)};
+		bins address = {(`REGIONSTART + 15*`g_tor)};
 	}
 	addr_for_tor_all_region7: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 21*`g)};
+		bins address = {(`REGIONSTART + 21*`g_tor)};
 	}
 	addr_for_tor_all_region8: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 28*`g)};
+		bins address = {(`REGIONSTART + 28*`g_tor)};
 	}
 	addr_for_tor_all_region9: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 36*`g)};
+		bins address = {(`REGIONSTART + 36*`g_tor)};
 	}
 	addr_for_tor_all_region10: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 45*`g)};
+		bins address = {(`REGIONSTART + 45*`g_tor)};
 	}
 	addr_for_tor_all_region11: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 55*`g)};
+		bins address = {(`REGIONSTART + 55*`g_tor)};
 	}
 	addr_for_tor_all_region12: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 66*`g)};
+		bins address = {(`REGIONSTART + 66*`g_tor)};
 	}
 	addr_for_tor_all_region13: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 78*`g)};
+		bins address = {(`REGIONSTART + 78*`g_tor)};
 	}
 	addr_for_tor_all_region14: coverpoint(ins.current.rs1_val+ ins.current.imm){
-		bins address = {(`REGIONSTART + 91*`g)};
+		bins address = {(`REGIONSTART + 91*`g_tor)};
 	}
 
 	// TOR regions increasing size by g*i
 	pmpaddr_for_tor_region0: coverpoint (pmpaddr[0]==(`REGIONSTART >> 2))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region1: coverpoint ((pmpaddr[1]==((`REGIONSTART + 1*`g) >> 2)) && (pmpaddr[0]==(`REGIONSTART >> 2)))  {
+	pmpaddr_for_tor_region1: coverpoint ((pmpaddr[1]==((`REGIONSTART + 1*`g_tor) >> 2)) && (pmpaddr[0]==(`REGIONSTART >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region2: coverpoint ((pmpaddr[2]==((`REGIONSTART + 3*`g) >> 2)) && (pmpaddr[1]==((`REGIONSTART + 1*`g) >> 2)))  {
+	pmpaddr_for_tor_region2: coverpoint ((pmpaddr[2]==((`REGIONSTART + 3*`g_tor) >> 2)) && (pmpaddr[1]==((`REGIONSTART + 1*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region3: coverpoint ((pmpaddr[3]==((`REGIONSTART + 6*`g) >> 2)) && (pmpaddr[2]==((`REGIONSTART + 3*`g) >> 2)))  {
+	pmpaddr_for_tor_region3: coverpoint ((pmpaddr[3]==((`REGIONSTART + 6*`g_tor) >> 2)) && (pmpaddr[2]==((`REGIONSTART + 3*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region4: coverpoint ((pmpaddr[4]==((`REGIONSTART + 10*`g) >> 2)) && (pmpaddr[3]==((`REGIONSTART + 6*`g) >> 2))) {
+	pmpaddr_for_tor_region4: coverpoint ((pmpaddr[4]==((`REGIONSTART + 10*`g_tor) >> 2)) && (pmpaddr[3]==((`REGIONSTART + 6*`g_tor) >> 2))) {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region5: coverpoint ((pmpaddr[5]==((`REGIONSTART + 15*`g) >> 2)) && (pmpaddr[4]==((`REGIONSTART + 10*`g) >> 2)))  {
+	pmpaddr_for_tor_region5: coverpoint ((pmpaddr[5]==((`REGIONSTART + 15*`g_tor) >> 2)) && (pmpaddr[4]==((`REGIONSTART + 10*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region6: coverpoint ((pmpaddr[6]==((`REGIONSTART + 21*`g) >> 2)) && (pmpaddr[5]==((`REGIONSTART + 15*`g) >> 2)))  {
+	pmpaddr_for_tor_region6: coverpoint ((pmpaddr[6]==((`REGIONSTART + 21*`g_tor) >> 2)) && (pmpaddr[5]==((`REGIONSTART + 15*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region7: coverpoint ((pmpaddr[7]==((`REGIONSTART + 28*`g) >> 2)) && (pmpaddr[6]==((`REGIONSTART + 21*`g) >> 2)))  {
+	pmpaddr_for_tor_region7: coverpoint ((pmpaddr[7]==((`REGIONSTART + 28*`g_tor) >> 2)) && (pmpaddr[6]==((`REGIONSTART + 21*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region8: coverpoint ((pmpaddr[8]==((`REGIONSTART + 36*`g) >> 2)) && (pmpaddr[7]==((`REGIONSTART + 28*`g) >> 2)))  {
+	pmpaddr_for_tor_region8: coverpoint ((pmpaddr[8]==((`REGIONSTART + 36*`g_tor) >> 2)) && (pmpaddr[7]==((`REGIONSTART + 28*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region9: coverpoint ((pmpaddr[9]==((`REGIONSTART + 45*`g) >> 2)) && (pmpaddr[8]==((`REGIONSTART + 36*`g) >> 2)))  {
+	pmpaddr_for_tor_region9: coverpoint ((pmpaddr[9]==((`REGIONSTART + 45*`g_tor) >> 2)) && (pmpaddr[8]==((`REGIONSTART + 36*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region10: coverpoint ((pmpaddr[10]==((`REGIONSTART + 55*`g) >> 2)) && (pmpaddr[9]==((`REGIONSTART + 45*`g) >> 2)))  {
+	pmpaddr_for_tor_region10: coverpoint ((pmpaddr[10]==((`REGIONSTART + 55*`g_tor) >> 2)) && (pmpaddr[9]==((`REGIONSTART + 45*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region11: coverpoint ((pmpaddr[11]==((`REGIONSTART + 66*`g) >> 2)) && (pmpaddr[10]==((`REGIONSTART + 55*`g) >> 2)))  {
+	pmpaddr_for_tor_region11: coverpoint ((pmpaddr[11]==((`REGIONSTART + 66*`g_tor) >> 2)) && (pmpaddr[10]==((`REGIONSTART + 55*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region12: coverpoint ((pmpaddr[12]==((`REGIONSTART + 78*`g) >> 2)) && (pmpaddr[11]==((`REGIONSTART + 66*`g) >> 2)))  {
+	pmpaddr_for_tor_region12: coverpoint ((pmpaddr[12]==((`REGIONSTART + 78*`g_tor) >> 2)) && (pmpaddr[11]==((`REGIONSTART + 66*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region13: coverpoint ((pmpaddr[13]==((`REGIONSTART + 91*`g) >> 2)) && (pmpaddr[12]==((`REGIONSTART + 78*`g) >> 2)))  {
+	pmpaddr_for_tor_region13: coverpoint ((pmpaddr[13]==((`REGIONSTART + 91*`g_tor) >> 2)) && (pmpaddr[12]==((`REGIONSTART + 78*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
-	pmpaddr_for_tor_region14: coverpoint ((pmpaddr[14]==((`REGIONSTART + 105*`g) >> 2)) && (pmpaddr[13]==((`REGIONSTART + 91*`g) >> 2)))  {
+	pmpaddr_for_tor_region14: coverpoint ((pmpaddr[14]==((`REGIONSTART + 105*`g_tor) >> 2)) && (pmpaddr[13]==((`REGIONSTART + 91*`g_tor) >> 2)))  {
 		bins region_setup  = {1};
  	}
 
@@ -391,7 +399,7 @@ covergroup PMPM_cg with function sample(
 //-------------------------------------------------------
 
 	pmpcfg_for_tor0: coverpoint {pmpcfg[0]} {
-		wildcard bins pmp0cfg_xwr000  = {8'b10001111}; //L=1,A=TOR,XWR=111
+		wildcard bins pmp0cfg_xwr111  = {8'b10001111}; //L=1,A=TOR,XWR=111
 	}
 
 	pmpcfg_tor_bot_L0: coverpoint ({pmpcfg[1],pmpcfg[0]}) {
@@ -403,10 +411,10 @@ covergroup PMPM_cg with function sample(
 	}
 
 	pmp_addr_for_tor: coverpoint {pmpaddr[1],pmpaddr[0]} {
-		bins range = {`NON_STANDARD_REGION+`g,`NON_STANDARD_REGION};
+		bins range = {`NON_STANDARD_REGION+`g_tor,`NON_STANDARD_REGION};
 	}
 
-	pmp_addr_for_tor_bot: coverpoint ({pmpaddr[1],pmpaddr[0]} == {(`REGIONSTART+`g)>>2,`REGIONSTART>>2})  {  //pmpaddr0 = pmpaddr1-g
+	pmp_addr_for_tor_bot: coverpoint ({pmpaddr[1],pmpaddr[0]} == {(`REGIONSTART+`g_tor)>>2,`REGIONSTART>>2})  {  //pmpaddr0 = pmpaddr1-g
 		bins range = {1};
 	}
 
@@ -416,16 +424,16 @@ covergroup PMPM_cg with function sample(
 
 	addr_for_tor_bot: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins pmpaddr0_4 = {((`NON_STANDARD_REGION)<<2)-4}; //pmpaddr0-4
-		bins pmpaddr0 = {(`NON_STANDARD_REGION)<<2}; //pmpaddr0
-		bins pmpaddr1_4 = {(`REGIONSTART+`g)-4}; //pmpaddr1-4 NOTE: REGIONSTART>>2 => NON_STANDARD_REGION (pmp encoded address)
-		bins pmpaddr1 = {`REGIONSTART+`g};
+		bins pmpaddr0   = {(`NON_STANDARD_REGION)<<2}; //pmpaddr0
+		bins pmpaddr1_4 = {(`REGIONSTART+`g_tor)-4}; //pmpaddr1-4 NOTE: REGIONSTART>>2 => NON_STANDARD_REGION (pmp encoded address)
+		bins pmpaddr1   = {`REGIONSTART+`g_tor};
 	}
 
 	pmp_addr_for_tor_nonoverlap1: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, `REGIONSTART>>2}) { // pmpaddr0 >= pmpaddr1.
   		bins range1 = {1};
  	}
 
-	pmp_addr_for_tor_nonoverlap2: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, (`REGIONSTART+`g)>>2}) { // pmpaddr0 >= pmpaddr1.
+	pmp_addr_for_tor_nonoverlap2: coverpoint ({pmpaddr[1], pmpaddr[0]}=={`REGIONSTART>>2, (`REGIONSTART+`g_tor)>>2}) { // pmpaddr0 >= pmpaddr1.
 		bins range2 = {1};
  	}
 
@@ -469,7 +477,7 @@ covergroup PMPM_cg with function sample(
 		bins addr1 = {`REGIONSTART+3}; //for 3 byte outside the region
 	}
 
-	pmpaddr_for_tor_misaligned: coverpoint ({pmpaddr[3],pmpaddr[2]}=={(`REGIONSTART+`g)>>2,`REGIONSTART>>2}) {
+	pmpaddr_for_tor_misaligned: coverpoint ({pmpaddr[3],pmpaddr[2]}=={(`REGIONSTART+`g_tor)>>2,`REGIONSTART>>2}) {
 		bins pmpaddr = {1};
 	}
 
@@ -483,7 +491,7 @@ covergroup PMPM_cg with function sample(
 	}
 
 	addr_for_misaligned_straddling_end: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins addr1 = {(`REGIONSTART+`g)-1};
+		bins addr1 = {(`REGIONSTART+`g_tor)-1};
 	}
 
 	pmpcfg_for_off_misaligned: coverpoint {ins.current.csr[12'h3A0][7:0]} {
@@ -959,19 +967,19 @@ covergroup PMPM_cg with function sample(
 	}
 
 	overlapping_regions: coverpoint (
-									 pmpaddr[13] == ((`REGIONSTART + 7*`g) >> 2) &&
+									 pmpaddr[13] == ((`REGIONSTART + 7*`g_tor) >> 2) &&
 									 pmpaddr[12] == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[11] == ((`REGIONSTART + 6*`g) >> 2) &&
+									 pmpaddr[11] == ((`REGIONSTART + 6*`g_tor) >> 2) &&
 									 pmpaddr[10] == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[9]  == ((`REGIONSTART + 5*`g) >> 2) &&
+									 pmpaddr[9]  == ((`REGIONSTART + 5*`g_tor) >> 2) &&
 									 pmpaddr[8]  == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[7]  == ((`REGIONSTART + 4*`g) >> 2) &&
+									 pmpaddr[7]  == ((`REGIONSTART + 4*`g_tor) >> 2) &&
 									 pmpaddr[6]  == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[5]  == ((`REGIONSTART + 3*`g) >> 2) &&
+									 pmpaddr[5]  == ((`REGIONSTART + 3*`g_tor) >> 2) &&
 									 pmpaddr[4]  == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[3]  == ((`REGIONSTART + 2*`g) >> 2) &&
+									 pmpaddr[3]  == ((`REGIONSTART + 2*`g_tor) >> 2) &&
 									 pmpaddr[2]  == (`REGIONSTART  >> 2)		 &&
-									 pmpaddr[1]  == ((`REGIONSTART + 1*`g) >> 2) &&
+									 pmpaddr[1]  == ((`REGIONSTART + 1*`g_tor) >> 2) &&
 									 pmpaddr[0]  == (`REGIONSTART  >> 2)
 									 ) {
 		bins tor_regions = {1};	// Set 1 when overlapping tor regions set up.
@@ -979,13 +987,13 @@ covergroup PMPM_cg with function sample(
 
 	// Address at the end of the overlapping regions
 	addr_offset_for_priority_check: coverpoint (ins.current.rs1_val+ins.current.imm) {
-		bins at_end_of_region13 = {`REGIONSTART + 7*`g - 4};
-		bins at_end_of_region11 = {`REGIONSTART + 6*`g - 4};
-		bins at_end_of_region9  = {`REGIONSTART + 5*`g - 4};
-		bins at_end_of_region7  = {`REGIONSTART + 4*`g - 4};
-		bins at_end_of_region5  = {`REGIONSTART + 3*`g - 4};
-		bins at_end_of_region3  = {`REGIONSTART + 2*`g - 4};
-		bins at_end_of_region1  = {`REGIONSTART + 1*`g - 4};
+		bins at_end_of_region13 = {`REGIONSTART + 7*`g_tor - 4};
+		bins at_end_of_region11 = {`REGIONSTART + 6*`g_tor - 4};
+		bins at_end_of_region9  = {`REGIONSTART + 5*`g_tor - 4};
+		bins at_end_of_region7  = {`REGIONSTART + 4*`g_tor - 4};
+		bins at_end_of_region5  = {`REGIONSTART + 3*`g_tor - 4};
+		bins at_end_of_region3  = {`REGIONSTART + 2*`g_tor - 4};
+		bins at_end_of_region1  = {`REGIONSTART + 1*`g_tor - 4};
 	}
 
 //-------------------------------------------------------
@@ -996,9 +1004,9 @@ covergroup PMPM_cg with function sample(
 	}
 
 	first_four_pmp_entries: coverpoint (pmpaddr[0]==((`REGIONSTART)	   >> 2) &&
-										pmpaddr[1]==((`REGIONSTART+`g) >> 2) &&
+										pmpaddr[1]==((`REGIONSTART+`g_tor) >> 2) &&
 										pmpaddr[2]==((`REGIONSTART)	   >> 2) &&
-										pmpaddr[3]==((`REGIONSTART+`g) >> 2)
+										pmpaddr[3]==((`REGIONSTART+`g_tor) >> 2)
 										) {
 		bins pmp_entries = {1};
 	}
@@ -1047,9 +1055,9 @@ covergroup PMPM_cg with function sample(
 
 	cp_cfg_A_napot_all: cross priv_mode_m, pmpcfgA_NAPOT, read_instr_lw, addr_offset_cp_cfg_A_napot_all;
 
-	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, exec_instr;
-	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, read_instr_lw;
-	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets, write_instr_sw;
+	cp_cfg_A_napot_x : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets_napot, exec_instr;
+	cp_cfg_A_napot_r : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets_napot, read_instr_lw;
+	cp_cfg_A_napot_w : cross priv_mode_m, legal_RWX_L_NAPOT, address_offsets_napot, write_instr_sw;
 
 	`ifdef G_IS_0
 		cp_cfg_A_NA4_all: cross priv_mode_m, pmpcfgA_NA4, read_instr_lw, addr_offset_cp_cfg_A_na4 ;
@@ -1059,9 +1067,9 @@ covergroup PMPM_cg with function sample(
 		cp_cfg_A_na4_w : cross priv_mode_m, legal_RWX_L_NA4, addr_offset_cp_cfg_A_na4, write_instr_sw ;
 	`endif
 
-	cp_cfg_A_tor_x : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, exec_instr;
-	cp_cfg_A_tor_r : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, read_instr_lw;
-	cp_cfg_A_tor_w : cross priv_mode_m, legal_RWX_L_TOR, address_offsets, write_instr_sw;
+	cp_cfg_A_tor_x : cross priv_mode_m, legal_RWX_L_TOR, address_offsets_tor, exec_instr;
+	cp_cfg_A_tor_r : cross priv_mode_m, legal_RWX_L_TOR, address_offsets_tor, read_instr_lw;
+	cp_cfg_A_tor_w : cross priv_mode_m, legal_RWX_L_TOR, address_offsets_tor, write_instr_sw;
 
 	cp_cfg_A_tor0_r: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0,pmpcfg_for_tor0, read_instr_lw ;
 	cp_cfg_A_tor0_w: cross priv_mode_m, addr_offset_cp_cfg_A_tor0, pmp_addr_for_tor0,pmpcfg_for_tor0, write_instr_sw ;

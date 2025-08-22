@@ -95,9 +95,16 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 
 	addr_in_consecutive_regions: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins inside_first_region   = {`REGIONSTART};
-		bins straddle_first_second = {`REGIONSTART + `g - 2};
-		bins inside_second_region  = {`REGIONSTART + `g};
-		bins straddle_second_third = {`REGIONSTART + 2*`g - 2 };
+		bins straddle_first_second = {`REGIONSTART + `g_tor - 2};
+		bins inside_second_region  = {`REGIONSTART + `g_tor};
+		bins straddle_second_third = {`REGIONSTART + 2*`g_tor - 2 };
+	}
+
+	addr_in_consecutive_regions_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins inside_first_region   = {`REGIONSTART};
+		bins straddle_first_second = {`REGIONSTART + `g_napot - 2};
+		bins inside_second_region  = {`REGIONSTART + `g_napot};
+		bins straddle_second_third = {`REGIONSTART + 2*`g_napot - 2 };
 	}
 
 	`ifdef G_IS_0
@@ -107,11 +114,18 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 		}
 	`endif
 
-	addr_adjacent_to_pmp_boundary: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins just_below_pmp = {`REGIONSTART - 2};        // 2 bytes before region start (possible straddle)
-		bins at_start_pmp   = {`REGIONSTART};            // aligned to start of region
-		bins at_end_pmp     = {`REGIONSTART + `g - 2};   // 2 bytes before end → straddles out
-		bins just_above_pmp = {`REGIONSTART + `g};       // just outside region
+	addr_adjacent_to_pmp_boundary_tor: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins just_below_pmp = {`REGIONSTART - 2};       	 // 2 bytes before region start (possible straddle)
+		bins at_start_pmp   = {`REGIONSTART};           	 // aligned to start of region
+		bins at_end_pmp     = {`REGIONSTART + `g_tor - 2};   // 2 bytes before end → straddles out
+		bins just_above_pmp = {`REGIONSTART + `g_tor};       // just outside region
+	}
+
+	addr_adjacent_to_pmp_boundary_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins just_below_pmp = {`REGIONSTART - 2};       	 // 2 bytes before region start (possible straddle)
+		bins at_start_pmp   = {`REGIONSTART};           	 // aligned to start of region
+		bins at_end_pmp     = {`REGIONSTART + `g_napot - 2}; // 2 bytes before end → straddles out
+		bins just_above_pmp = {`REGIONSTART + `g_napot};     // just outside region
 	}
 
 	`ifdef G_IS_0
@@ -148,11 +162,11 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 	// - Region 1: start at `REGIONSTART + `g`, end at `REGIONSTART + 2*`g` (pmpaddr1)
 	// - Region 2: start at `REGIONSTART + 2*`g`, end at `REGIONSTART + 3*`g` (pmpaddr2)
 	pmpaddr_consecutive_tor: coverpoint ({ins.current.csr[12'h3B2], ins.current.csr[12'h3B1], ins.current.csr[12'h3B0]}) {
-		bins first_three_regions = {{(`REGIONSTART + 3*`g) >> 2, (`REGIONSTART + 2*`g) >> 2, (`REGIONSTART + `g) >> 2}};
+		bins first_three_regions = {{(`REGIONSTART + 3*`g_tor) >> 2, (`REGIONSTART + 2*`g_tor) >> 2, (`REGIONSTART + `g_tor) >> 2}};
 	}
 
 	tor_region_setup: coverpoint ({ins.current.csr[12'h3B1],ins.current.csr[12'h3B0],ins.current.csr[12'h3A0][7:0]}) {
-		bins tor_lxwr = {(`REGIONSTART + `g) >> 2,(`REGIONSTART >> 2), 8'b10001111}; // TOR region with LXWR 1111
+		bins tor_lxwr = {(`REGIONSTART + `g_tor) >> 2,(`REGIONSTART >> 2), 8'b10001111}; // TOR region with LXWR 1111
 	}
 
 	`ifdef G_IS_0
@@ -177,11 +191,11 @@ covergroup PMPZca_cg with function sample(ins_t ins);
 	cp_cfg_R: cross priv_mode_m, legal_lxwr, standard_region, addr_in_region, read_c_instr;
 	cp_cfg_W: cross priv_mode_m, legal_lxwr, standard_region, addr_in_region, write_c_instr;
 
-	cp_misaligned_napot: cross priv_mode_m, cfg_consecutive_napot, pmpaddr_consecutive_napot, addr_in_consecutive_regions, uncompressed_jalr;
-	cp_cret_napot: cross priv_mode_m, napot_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary;
+	cp_misaligned_napot: cross priv_mode_m, cfg_consecutive_napot, pmpaddr_consecutive_napot, addr_in_consecutive_regions_napot, uncompressed_jalr;
+	cp_cret_napot: cross priv_mode_m, napot_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary_napot;
 
 	cp_misaligned_tor: cross priv_mode_m, cfg_consecutive_tor, pmpaddr_consecutive_tor, addr_in_consecutive_regions, uncompressed_jalr;
-	cp_cret_tor: cross priv_mode_m, tor_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary;
+	cp_cret_tor: cross priv_mode_m, tor_region_setup, exec_c_instr, addr_adjacent_to_pmp_boundary_tor;
 
 	`ifdef G_IS_0
 		cp_misaligned_na4: cross priv_mode_m, cfg_consecutive_na4, pmpaddr_consecutive_na4, addr_in_consecutive_na4, uncompressed_jalr;
