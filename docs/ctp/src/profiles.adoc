@@ -120,10 +120,10 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Sv39|Sv39/48/57 Virtual Memory|<<t-Sv39-coverpoints>>|||x|x|x
 |Sv48|Sv39/48/57 Virtual Memory|<<t-Sv48-coverpoints>>|||o|o|o
 |Sv57|Sv39/48/57 Virtual Memory|<<t-Sv57-coverpoints>>|||o|o|o
-|VMPMP|VM + PMP|<<t-VMPMP-coverpoints>>|||||
-|CBOVM|VM + CBO|<<t-CBOVM-coverpoints>>|||||
-|CBOPMP|CBO + PMP|<<t-CBOPMP-coverpoints>>|||||
-|VM_PMP|VM + PMP||Svinval|TLB Invalidation|<<t-Svinval-coverpoints>>|||x|x|x
+|Svinval|TLB Invalidation|<<t-Svinval-coverpoints>>|||x|x|x
+|VMPMP|VM + PMP|<<t-VMPMP-coverpoints>>|||x|x|x
+|CBOVM|VM + CBO|<<t-CBOVM-coverpoints>>|||x|x|x
+|CBOPMP|CBO + PMP|<<t-CBOPMP-coverpoints>>|||x|x|x
 |Svade|Page Table A/D Exceptions|<<t-Svade-coverpoints>>|||x|x|x
 |Svadu|Page Table Update|<<t-Svadu-coverpoints>>||||o|o
 |Svpbmt|Page-based Memory Types|<<t-Svpbmt-coverpoints>>|||x|x|x
@@ -297,4 +297,4 @@ The privileged testplan relies on a machine mode conforming to Sm1p12 machine ar
 
 ==== Consistent XLEN and Endianness
 
-The test plan requires that after the boot process, XLEN and endianness are the same in all privilege modes.  Specifically, MXLEN = SXLEN = UXLEN = HSXLEN = VSXLEN and MBE = SBE = UBE = VSBE.  If this is not the reset state of the DUT, the <<t-trickbox, RVMODEL_BOOT trick box macro>> may be able to place it in that state before testing.  If the DUT cannot be placed in this state, it cannot be certified because the tests assume XLEN and endianness do not change with privilege mode unless specifcially modified by a test. For example, a machine hardwired to 64-bit machine mode and 32-bit user mode is not certifiable. (Presently, only endian changes are tested; certifying multiple XLEN is not a priority.)
+The test plan requires that after the boot process, XLEN and endianness are the same in all privilege modes.  Specifically, MXLEN = SXLEN = UXLEN = HSXLEN = VSXLEN and MBE = SBE = UBE = VSBE.  If this is not the reset state of the DUT, the <<t-trickbox, `RVMODEL_BOOT` trick box macro>> may be able to place it in that state before testing.  If the DUT cannot be placed in this state, it cannot be certified because the tests assume XLEN and endianness do not change with privilege mode unless specifcially modified by a test. For example, a machine hardwired to 64-bit machine mode and 32-bit user mode is not certifiable. (Presently, only endian changes are tested; certifying multiple XLEN is not a priority.)
