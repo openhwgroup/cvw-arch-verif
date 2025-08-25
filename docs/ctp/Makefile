@@ -54,7 +54,7 @@ else
         cd build &&
 endif
 
-WORKDIR_TEARDOWN = mv build/$@ $@ && rm -rf build/build build/docs-resources build/src
+ARTIFACT_CLEANUP = mv build/$@ $@
 
 SRC_DIR := src
 BUILD_DIR := build
@@ -95,16 +95,17 @@ build-pdf: $(DOCS_PDF)
 build-html: $(DOCS_HTML)
 
 build: build-pdf build-html
+	rm -rf build/build build/docs-resources build/src
 
 ALL_SRCS := $(shell git ls-files $(SRC_DIR))
 
 $(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS) testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
-	$(WORKDIR_TEARDOWN)
+	$(ARTIFACT_CLEANUP)
 
 $(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS) testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
-	$(WORKDIR_TEARDOWN)
+	$(ARTIFACT_CLEANUP)
 
 # Make CSV testplans into more readable asciidoc tables by
 # transposing them to one instruction per column, separating
