@@ -223,6 +223,15 @@ Mend_PMP:                                    ;\
 	add t2, t1, t0                                              ;\
 	SREG t2, _REG_NAME##_bgn_off+1*sv_area_sz(sp)               ;\
 
+#define PTE_SETUP_SV32(_PAR, _PR, _TR0, _TR1, _VAR, level)  	  ;\
+    .if (level==1)                                                ;\
+        LA(_TR1, rvtest_Sroot_pg_tbl)                             ;\
+    .endif                                                        ;\
+    .if (level==0)                                                ;\
+        LA(_TR1, rvtest_slvl1_pg_tbl)                             ;\
+    .endif                                                        ;\
+    PTE_SETUP_COMMON(_PAR, _PR, _TR0, _TR1, _VAR, level)
+
 #define PTE_SETUP_SV39(_PAR, _PR, _TR0, _TR1, _VAR, level)  	  ;\
     .if (level==2)                                                ;\
         LA(_TR1, rvtest_Sroot_pg_tbl)                             ;\
@@ -440,7 +449,7 @@ Mend_PMP:                                    ;\
  clrov
 
 /* RVTEST_SIGBASE(reg, label) initializes to label and clears offset */
-#define RVTEST_SIGBASE(_R,_TAG)			\
+#define RVTEST_SIGBASE(_R,_TAG)			;\
   LA(_R,_TAG)					;\
   .set offset,0
 
@@ -458,48 +467,76 @@ Mend_PMP:                                    ;\
     sub  _AREG, _AREG, _TREG /* undo modification */ ;\
  .endif
   /* this function ensures individual sig stores don't exceed offset limits  */
-  /* if they would, update the base and reduce offset by 2048 - _SZ	     */
+  /* if they would, update the base by 2032 and reset the offset     */
+  /* exceed offset limit is 16 below Breg-add # to allow for allignment across different register sizes */
+  /* 2032 as Breg add amount to avoid max 2048 add*/
   /* an option is to pre-incr offset if there was a previous signature store */
-#define CHK_OFFSET(_BREG, _SZ, _PRE_INC)		\
-//   .if (_PRE_INC!=0)					;\ -> COMMENT FOR LOCKSTEP
-//     .set offset, offset+_SZ				;\
-//   .endif						;\
-//   .if offset >= 2048					;\
-//      addi   _BREG,  _BREG,   (2048 - _SZ)		;\
-//      .set   offset, offset - (2048 - _SZ)		;\
-//   .endif
+#ifdef LOCKSTEP
+  #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)
+#else
+  #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)		;\
+    .if (_PRE_INC!=0)					;\
+      .set offset, offset+_SZ				;\
+    .endif						;\
+    .if offset >= 2016					;\
+      addi   _BREG,  _BREG,   2032 		;\
+      .set   offset, 0		;\
+    .endif
+    // TODO: Original version is as follows. Why was this change necessary?
+    /*
+    #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)		;\
+    .if (_PRE_INC!=0)					;\
+      .set offset, offset+_SZ				;\
+    .endif						;\
+    .if offset >= 2048					;\
+      addi   _BREG,  _BREG,   (2048 - _SZ)		;\
+      .set   offset, offset - (2048 - _SZ)		;\
+    .endif
+    */
+#endif
 
  /* automatically adjust base and offset if offset gets too big, resetting offset				 */
  /* RVTEST_SIGUPD(basereg, sigreg)	  stores sigreg at offset(basereg) and updates offset by regwidth	 */
  /* RVTEST_SIGUPD(basereg, sigreg,newoff) stores sigreg at newoff(basereg) and updates offset to regwidth+newoff */
-#define RVTEST_SIGUPD(_BR,_R,...)			\
-//   .if NARG(__VA_ARGS__) == 1				;\ > COMMENT OUT FOR LOCKSTEP
-// 	.set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
-//   .endif						;\
-//   CHK_OFFSET(_BR, REGWIDTH,0)				;\
-//   SREG _R,offset(_BR)					;\
-//   .set offset,offset+REGWIDTH
 
+#ifdef LOCKSTEP
+    #define RVTEST_SIGUPD(_BR, _R, ...) \
+        nop;
+#else
+    #define RVTEST_SIGUPD(_BR, _R, ...)                \
+        .if NARG(__VA_ARGS__) == 1				;\
+          .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
+        .endif						;\
+        CHK_OFFSET(_BR, REGWIDTH,0)				;\
+        SREG _R,offset(_BR)					;\
+        .set offset,offset+REGWIDTH
+#endif
 /* RVTEST_SIGUPD_F(basereg, sigreg,flagreg,newoff)			 */
 /* This macro is used to store the signature values of (32 & 64) F and D */
 /* teats which use TEST_(FPSR_OP, FPIO_OP, FPRR_OP, FPR4_OP) opcodes	 */
 /* It stores both an Xreg and an Freg, first adjusting base & offset to	 */
 /* to keep offset < 2048. SIGALIGN is set to the max(FREGWIDTH, REGWIDTH)*/
 /* _BR - Base Reg, _R - FReg, _F - Fstatus Xreg				 */
-#define RVTEST_SIGUPD_F(_BR,_R,_F,...)			;\
-//   .if NARG(__VA_ARGS__) == 1				;\
-//      .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
-//   .endif						;\
-//   .if (offset&(SIGALIGN-1))!=0				;\
-// /* Throw warnings then modify offset to target */	;\
-//      .warning "Incorrect signature Offset Alignment."	;\
-//      .set offset, offset&(SIGALIGN-1)+SIGALIGN		;\
-//   .endif						;\
-//   CHK_OFFSET(_BR, SIGALIGN, 0)				;\
-//   FSREG _R,offset(_BR)					;\
-//   CHK_OFFSET(_BR, SIGALIGN, 1)				;\
-//   SREG _F,offset(_BR)					;\
-//   .set offset,offset+SIGALIGN
+#ifdef LOCKSTEP
+  #define RVTEST_SIGUPD_F(_BR,_R,_F,...)
+#else
+  #define RVTEST_SIGUPD_F(_BR,_R,_F,...)			;\
+    .if NARG(__VA_ARGS__) == 1				;\
+      .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
+    .endif						;\
+    .if (offset&(SIGALIGN-1))!=0				;\
+  /* Throw warnings then modify offset to target */	;\
+      .warning "Incorrect signature Offset Alignment."	;\
+      .set offset, (offset&~(SIGALIGN-1))+SIGALIGN		;\
+      //  TODO: Original version follows. Why was this change necessary?
+      //  .set offset, offset&(SIGALIGN-1)+SIGALIGN		;\
+    .endif						;\
+    CHK_OFFSET(_BR, SIGALIGN, 0)				;\
+    FSREG _R,offset(_BR)					;\
+    CHK_OFFSET(_BR, SIGALIGN, 1)				;\
+    SREG _F,offset(_BR)					;\
+    .set offset,offset+SIGALIGN
+#endif
 
 /* RVTEST_SIGUPD_FID(basereg, sigreg,flagreg,newoff)			*/
 /* This macro stores the signature values of (32 & 64) F & D insts	*/
@@ -567,10 +604,24 @@ Mend_PMP:                                    ;\
       SREG _F,offset(_BR)					;\
       .set offset,offset+(REGWIDTH)
 
+// TODO: Are these new RVTEST_SIGWRITE macros really needed?
+/* Stores register into signature region and increment the signature pointer*/
+ /* RVTEST_SIGUPD does not properly handle code that jumps over macros due to garbling the offset.*/
+ /* Do not mix RVTEST_SIGWRITE and RVTEST_SIGUPD in the same program */
+ /* RVTEST_SIGWRITE(basereg, sigreg) stores sigreg at 0(basereg) and increments basereg by regwidth  */
+ #define RVTEST_SIGWRITE(_BR,_R)            ;\
+      SREG _R, 0(_BR)                   ;\
+      addi _BR, _BR, REGWIDTH
 
-// Updates signature with contents of vector register
-// #define RVTEST_SIGUPD_V(_BR,_R,_F,...)			;\
-
+ /* Stores register into signature region and increment the signature pointer*/
+ /* RVTEST_SIGUPD_F does not properly handle code that jumps over macros due to garbling the offset.*/
+ /* Do not mix RVTEST_SIGWRITE_F and RVTEST_SIGUPD_F in the same program */
+ /* RVTEST_SIGWRITE_F(basereg, sigreg, flagreg) stores sigreg at 0(basereg) and increments basereg by sigalign   */
+ /* SIGALIGN is set to the max(FREGWIDTH, REGWIDTH)*/
+#define RVTEST_SIGWRITE_F(_BR,_R,_f)        ;\
+      FSREG _R, 0(_BR)                  ;\
+      SREG _F, SIGALIGN(_BR)                    ;\
+      addi _BR, _BR, 2*SIGALIGN
 
   /* DEPRECATE this is redundant with RVTEST_BASEUPD(BR,_NR),	*/
   /* except it doesn't correct for offset overflow while moving */
@@ -1365,30 +1416,46 @@ ADDI(swreg, swreg, RVMODEL_CBZ_BLOCKSIZE)
 //--------------------------------- Migration aliases ------------------------------------------
 #ifdef RV_COMPLIANCE_RV32M
   #warning "RV_COMPLIANCE_RV32M macro will be deprecated."
-  #define RVMODEL_BOOT	 \
-    //RVTEST_IO_INIT	;\
-    //RV_COMPLIANCE_RV32M ;\
-    //RV_COMPLIANCE_CODE_BEGIN -> COMMENT FOR LOCKSTEP TO WORK
+  #ifdef LOCKSTEP
+    #define RVMODEL_BOOT
+  #else
+    #define RVMODEL_BOOT	 \
+      RVTEST_IO_INIT	;\
+      RV_COMPLIANCE_RV32M ;\
+      RV_COMPLIANCE_CODE_BEGIN
+  #endif
 #endif
 
 #define SWSIG(a, b)
 
 #ifdef RV_COMPLIANCE_DATA_BEGIN
   #warning "RV_COMPLIANCE_DATA_BEGIN macro deprecated in v0.2. Please use RVMODEL_DATA_BEGIN instead"
-  #define RVMODEL_DATA_BEGIN \
-    //RV_COMPLIANCE_DATA_BEGIN
+  #ifdef LOCKSTEP
+    #define RVMODEL_DATA_BEGIN
+  #else
+    #define RVMODEL_DATA_BEGIN \
+      RV_COMPLIANCE_DATA_BEGIN
+  #endif
 #endif
 
 #ifdef RV_COMPLIANCE_DATA_END
   #warning "RV_COMPLIANCE_DATA_END macro deprecated in v0.2. Please use RVMODEL_DATA_END instead"
-  #define RVMODEL_DATA_END \
-    //RV_COMPLIANCE_DATA_END
+  #ifdef LOCKSTEP
+    #define RVMODEL_DATA_END
+  #else
+    #define RVMODEL_DATA_END \
+      RV_COMPLIANCE_DATA_END
+  #endif
 #endif
 
 #ifdef RV_COMPLIANCE_HALT
   #warning "RV_COMPLIANCE_HALT macro deprecated in v0.2. Please use RVMODEL_HALT instead"
-  #define RVMODEL_HALT \
-   // RV_COMPLIANCE_HALT
+  #ifdef LOCKSTEP
+    #define RVMODEL_HALT
+  #else
+    #define RVMODEL_HALT \
+      RV_COMPLIANCE_HALT
+  #endif
 #endif
 
 #ifdef RVTEST_IO_ASSERT_GPR_EQ
