@@ -16,6 +16,7 @@
 *.vsif
 *.sve
 *.sdb
+*.make
 __pycache__
 *.swp
 .dvt/
