@@ -103,6 +103,10 @@ module testbench;
     end
     while($fgets(line, traceFileListHandler)) begin
       if (line != "" && line != "\n") begin
+        // Strip newline character from the end of the line
+        if (line[line.len()-1] == "\n") begin
+          line = line.substr(0, line.len()-2);
+        end
         traceFiles.push_back(line);
       end
     end
@@ -120,11 +124,8 @@ module testbench;
   // Sample an instruction from the trace file on each clock edge
   // Moves through full list of trace files
   always_ff @(posedge clk) begin
-    $display("traceFileHandler = %0d", traceFileHandler);
-    $finish;
     // Open trace file if needed
-    if(traceFileHandler == 0) begin
-      $display("Opening first trace file");
+    if(traceFileHandler === 'x) begin
       fileNum = 0;
       traceFile = traceFiles[fileNum];
       traceFileHandler = $fopen(traceFile, "r");
@@ -133,7 +134,8 @@ module testbench;
         $finish;
       end
     end else if($feof(traceFileHandler)) begin
-      if(fileNum < traceFiles.size) begin
+      $fclose(traceFileHandler);
+      if(fileNum < traceFiles.size - 1) begin
         fileNum++;
         traceFile = traceFiles[fileNum];
         traceFileHandler = $fopen(traceFile, "r");
