@@ -188,7 +188,7 @@ module testbench;
             val = words.pop_front();
             num = $sscanf(val, "%h", xRegVal);
             csr[regNum] = xRegVal;
-            csr_wb |= (1 << regNum);
+            csr_wb[regNum] =1'b1;
           end
           default: begin
             $display("Unknown key: %s", key);
