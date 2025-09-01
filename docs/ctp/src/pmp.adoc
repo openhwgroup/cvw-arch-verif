@@ -72,13 +72,3 @@ https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1Ohd
 //include::{testplansdir}/PMPZalrsc.adoc[]
 ,===
 https://docs.google.com/spreadsheets/d/1jvJCSf9vdZ23PEaaYETLxfwZoyq_PzpyJzIB1OhdhcQ/edit?gid=613653829#gid=613653829[Google Sheet Testplan]
-
-==== CBOPMP
-
-*** migrating away from RV32/64 prefix.  coverpoints and tests need updating 8/18/25 UET
-
-[[t-CBOPMP-coverpoints]]
-.CBOPMP Coverpoints
-,===
-//include::{testplansdir}/CBO_PMP.adoc[]
-,===

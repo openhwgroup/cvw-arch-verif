@@ -9,37 +9,16 @@
 //include::{testplansdir}/Svbare.adoc[]
 ,===
 
-==== Sv32
+==== Sv
 
-[[t-Sv32-coverpoints]]
-.Sv32 Coverpoints
+*** config file determines whether to run SV32/39/48/57
+
+[[t-Sv-coverpoints]]
+.Sv Coverpoints
 ,===
 //include::{testplansdir}/Sv32.adoc[]
 ,===
 
-==== Sv39
-
-[[t-Sv39-coverpoints]]
-.Sv39 Coverpoints
-,===
-//include::{testplansdir}/Sv39.adoc[]
-,===
-
-==== Sv48
-
-[[t-Sv48-coverpoints]]
-.Sv48 Coverpoints
-,===
-//include::{testplansdir}/Sv48.adoc[]
-,===
-
-==== Sv57
-
-[[t-Sv57-coverpoints]]
-.Sv57 Coverpoints
-,===
-//include::{testplansdir}/Sv57.adoc[]
-,===
 
 ==== VMPMP VM + PMP
 
@@ -48,6 +27,27 @@
 ,===
 //include::{testplansdir}/VMPMP.adoc[]
 ,===
+
+==== VMZicbo VM + CBOM/CBOZ
+
+*** config file determines whether to run cbom/cboz/both
+[[t-VMZicbo-coverpoints]]
+.VMZicbo Coverpoints
+,===
+//include::{testplansdir}/VMZicbo.adoc[]
+,===
+
+==== VMPMPZicbo VM + PMP + CBOM/CBOZ
+
+*** config file determines whether to run cbom/cboz/both
+
+[[t-VMZicbo-coverpoints]]
+.VMZicbo Coverpoints
+,===
+//include::{testplansdir}/VMZicbo.adoc[]
+,===
+
+
 
 ==== Svinval Memory Management Unit Table Invalidation
 
