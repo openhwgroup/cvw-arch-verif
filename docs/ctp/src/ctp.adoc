@@ -6,6 +6,7 @@ include::../docs-resources/global-config.adoc[]
 :colophon:
 :preface-title: Preamble
 :appendix-caption: Appendix
+:imagesoutdir: {docdir}/../build/images-out
 :imagesdir: ../docs-resources/images
 :title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
 ifdef::draft-watermark[]

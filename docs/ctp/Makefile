@@ -12,7 +12,7 @@
 # This Makefile is designed to automate the process of building and packaging
 # the Doc Template for RISC-V Extensions.
 
-DOCS := ctp.adoc
+DOCS := ctp
 
 DATE ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.0.0
@@ -20,26 +20,47 @@ REVMARK ?= Draft
 DOCKER_IMG := docker.io/riscvintl/riscv-docs-base-container-image:latest
 DOCKER_BIN ?= docker
 ifneq ($(SKIP_DOCKER),true)
-	DOCKER_IS_PODMAN = \
-		$(shell ! ${DOCKER_BIN} -v 2>&1 | grep podman >/dev/null ; echo $$?)
-	ifeq "$(DOCKER_IS_PODMAN)" "1"
-		DOCKER_VOL_SUFFIX = :z
-	endif
+    DOCKER_IS_PODMAN = \
+      $(shell ! ${DOCKER_BIN}  -v | grep podman >/dev/null ; echo $$?)
+    ifeq "$(DOCKER_IS_PODMAN)" "1"
+        # Modify the SELinux label for the host directory to indicate
+        # that it can be shared with multiple containers. This is apparently
+        # only required for Podman, though it is also supported by Docker.
+        DOCKER_VOL_SUFFIX = :z
+        DOCKER_EXTRA_VOL_SUFFIX = ,z
+    else
+        DOCKER_IS_ROOTLESS = \
+            $(shell ! ${DOCKER_BIN} info -f '{{println .SecurityOptions}}' | grep rootless >/dev/null ; echo $$?)
+        ifneq "$(DOCKER_IS_ROOTLESS)" "1"
+            # Rooted Docker requires this flag so that the files it creates are
+            # owned by the current user instead of root. Rootless docker does not
+            # require it, and Podman doesn't either since it is always rootless.
+            DOCKER_USER_ARG := --user $(shell id -u)
+        endif
+    endif
 
-	DOCKER_CMD := \
-		${DOCKER_BIN} run --rm \
-			-v ${PWD}:/build${DOCKER_VOL_SUFFIX} \
-			-w /build \
-			${DOCKER_IMG} \
-			/bin/sh -c
-	DOCKER_QUOTE := "
+    DOCKER_CMD := \
+        ${DOCKER_BIN} run --rm \
+            -v ${PWD}/build:/build${DOCKER_VOL_SUFFIX} \
+            -v ${PWD}/src:/build/src:ro${DOCKER_EXTRA_VOL_SUFFIX} \
+            -v ${PWD}/docs-resources:/build/docs-resources:ro${DOCKER_EXTRA_VOL_SUFFIX} \
+            -w /build \
+						${DOCKER_USER_ARG} \
+            ${DOCKER_IMG} \
+            /bin/sh -c
+    DOCKER_QUOTE := "
+else
+    DOCKER_CMD = \
+        cd build &&
 endif
+
+ARTIFACT_CLEANUP = mv build/$@ $@
 
 SRC_DIR := src
 BUILD_DIR := build
 
-DOCS_PDF := $(DOCS:%.adoc=%.pdf)
-DOCS_HTML := $(DOCS:%.adoc=%.html)
+DOCS_PDF := $(addprefix $(BUILD_DIR)/, $(addsuffix .pdf, $(DOCS)))
+DOCS_HTML := $(addprefix $(BUILD_DIR)/, $(addsuffix .html, $(DOCS)))
 
 XTRA_ADOC_OPTS :=
 ASCIIDOCTOR_PDF := asciidoctor-pdf
@@ -53,8 +74,8 @@ OPTIONS := --trace \
            -a pdf-fontsdir=docs-resources/fonts \
            -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
            $(XTRA_ADOC_OPTS) \
-		   -D build \
-#            --failure-level=ERROR
+		   		 -D build \
+           --failure-level=ERROR
 REQUIRES := --require=asciidoctor-diagram \
 						--require=asciidoctor-lists \
             --require=asciidoctor-mathematical
@@ -63,39 +84,28 @@ REQUIRES := --require=asciidoctor-diagram \
 
 all: build
 
-build-docs: $(DOCS_PDF) $(DOCS_HTML)
+# Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
+ifeq ("$(wildcard docs-resources/global-config.adoc)","")
+  $(warning You must clone with --recurse-submodules to automatically populate the submodule 'docs-resources'.")
+  $(warning Checking out submodules for you via 'git submodule update --init --recurse'...)
+  $(shell git submodule update --init --recursive)
+endif
 
-vpath %.adoc $(SRC_DIR)
+build-pdf: $(DOCS_PDF)
+build-html: $(DOCS_HTML)
 
-%.pdf: %.adoc testplans
+build: build-pdf build-html
+	rm -rf build/build build/docs-resources build/src
+
+ALL_SRCS := $(shell git ls-files $(SRC_DIR))
+
+$(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS) testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(ARTIFACT_CLEANUP)
 
-%.html: %.adoc testplans
+$(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS) testplans
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
-
-build:
-	@echo "Checking if Docker is available..."
-	@if command -v ${DOCKER_BIN} >/dev/null 2>&1 ; then \
-		echo "Docker is available, building inside Docker container..."; \
-		$(MAKE) build-container; \
-	else \
-		echo "Docker is not available, building without Docker..."; \
-		$(MAKE) build-no-container; \
-	fi
-
-build-container:
-	@echo "Starting build inside Docker container..."
-	$(MAKE) build-docs
-	@echo "Build completed successfully inside Docker container."
-
-build-no-container:
-	@echo "Starting build..."
-	$(MAKE) SKIP_DOCKER=true build-docs
-	@echo "Build completed successfully."
-
-# Update docker image to latest
-docker-pull-latest:
-	${DOCKER_BIN} pull ${DOCKER_IMG}
+	$(ARTIFACT_CLEANUP)
 
 # Make CSV testplans into more readable asciidoc tables by
 # transposing them to one instruction per column, separating
@@ -112,6 +122,10 @@ testplans: $(TESTPLANS)
 		echo "No test plans directory found in source."; \
 	fi
 	@echo "Test plans copied to build directory."
+
+# Update docker image to latest
+docker-pull-latest:
+	${DOCKER_BIN} pull ${DOCKER_IMG}
 
 clean:
 	@echo "Cleaning up generated files..."

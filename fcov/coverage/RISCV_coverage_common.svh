@@ -40,7 +40,8 @@
 `define REGIONSTART        `SAFE_REGION_START
 
 // Calculate region size g in bytes.
-`define g ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)) )
+`define g_tor       (2 ** (`G + 2))
+`define g_napot     ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)))
 
 // Calculate k = G - 1 trailing ones in NAPOT encoding.
 `define k  ((`G > 1) ? (`G - 1) : 0)
