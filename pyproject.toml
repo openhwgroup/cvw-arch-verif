@@ -11,9 +11,13 @@ dependencies = [
     "pyyaml>=6.0.2",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.12.11",
+]
 
-# [project.scripts]
-# cvw-arch-verif = "cvw_arch_verif:main"
+[project.scripts]
+parse-test-constraints = "framework.parse_test_constraints:main"
 
 [build-system]
 requires = ["uv_build>=0.8.14,<0.9.0"]
@@ -24,9 +28,6 @@ module-root = ""
 module-name = "framework"
 
 [tool.ruff]
-# Target oldest version of Python used (Python 3.9 for Ubuntu 20.04 LTS)
-# target-version = "py312"
-
 line-length = 120
 
 [tool.ruff.lint]

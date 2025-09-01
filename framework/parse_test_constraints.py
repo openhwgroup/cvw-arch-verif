@@ -46,6 +46,19 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
     except yaml.YAMLError as e:
         raise ValueError(f"Invalid YAML in config section: {e}")
 
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: parse-test-constraints <file_path>", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        config = extract_yaml_config(Path(sys.argv[1]))
+        print(yaml.dump(config, default_flow_style=False))
+    except (ValueError, FileNotFoundError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    config = extract_yaml_config(Path(sys.argv[1]))
-    print(config)
+    main()
