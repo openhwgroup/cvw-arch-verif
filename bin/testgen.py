@@ -33,10 +33,6 @@ def insertTemplate(name, is_custom=False):
         ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
         ext_parts_no_I = ['M']+ext_parts_no_I
-    if 'Zalrsc' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
-        ext_parts_no_I = ['A']#+ext_parts_no_I
-    if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
-        ext_parts_no_I = ['A']#+ext_parts_no_I
     if 'F' in ext_parts_no_I or any('f' in ext for ext in ext_parts_no_I):
         ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
@@ -49,9 +45,10 @@ def insertTemplate(name, is_custom=False):
     if "I" not in ext_parts_no_I and "E" not in ext_parts_no_I:
         ext_parts_no_I = ['I'] + ext_parts_no_I
     march = f"rv{xlen}{"_".join(ext_parts_no_I).lower()}"
+    march = march.replace("zaamo", "a").replace("zalrsc", "a") # gcc 14 does not accept Zaamo/Zalrsc
     # Replace placeholders
-    template.replace("@EXTENSION_LIST@", f"{ext_parts_no_I}")
-    template.replace("@MARCH@", march)
+    template = template.replace("@EXTENSION_LIST@", f"{ext_parts_no_I}")
+    template = template.replace("@MARCH@", march)
     template = template.replace("sigupd_count", str(signatureWords))
 
     if is_custom:
