@@ -9,11 +9,12 @@
 ##################################
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 
-def extract_yaml_config(file: Path) -> dict[str, any]:
+def extract_yaml_config(file: Path) -> dict[str, Any]:
     """Extract YAML configuration from a test file between START_TEST_CONFIG and END_TEST_CONFIG markers."""
     content = file.read_text()
 
