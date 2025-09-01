@@ -8,6 +8,7 @@
 # Parse YAML comment header from test files
 ##################################
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -44,3 +45,7 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
         return yaml.safe_load("\n".join(yaml_lines))
     except yaml.YAMLError as e:
         raise ValueError(f"Invalid YAML in config section: {e}")
+
+if __name__ == "__main__":
+    config = extract_yaml_config(Path(sys.argv[1]))
+    print(config)

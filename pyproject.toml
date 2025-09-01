@@ -19,7 +19,9 @@ dependencies = [
 requires = ["uv_build>=0.8.14,<0.9.0"]
 build-backend = "uv_build"
 
-
+[tool.uv.build-backend]
+module-root = ""
+module-name = "framework"
 
 [tool.ruff]
 # Target oldest version of Python used (Python 3.9 for Ubuntu 20.04 LTS)
