@@ -41,10 +41,10 @@
 
 *** config file determines whether to run cbom/cboz/both
 
-[[t-VMZicbo-coverpoints]]
-.VMZicbo Coverpoints
+[[t-VMPMPZicbo-coverpoints]]
+.VMPMPZicbo Coverpoints
 ,===
-//include::{testplansdir}/VMZicbo.adoc[]
+//include::{testplansdir}/VMPMPZicbo.adoc[]
 ,===
 
 

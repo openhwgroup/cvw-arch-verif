@@ -5,7 +5,7 @@ The Hypervisor Extension adds an H coverage file containing new Hypervisor instr
 
 [[t-H-normative-rules]]
 .Hypervisor Normative Rules
-include::{rulesdir}/hypervisor.adoc[]
+***
 
 ==== H Hypervisor Instructions
 
