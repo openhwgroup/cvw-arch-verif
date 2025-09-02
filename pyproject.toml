@@ -19,6 +19,8 @@ dev = [
 [project.scripts]
 parse-test-constraints = "framework.parse_test_constraints:main"
 
+##### BUILD #####
+
 [build-system]
 requires = ["uv_build>=0.8.14,<0.9.0"]
 build-backend = "uv_build"
@@ -26,6 +28,8 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-root = ""
 module-name = "framework"
+
+###### RUFF CONFIG #####
 
 [tool.ruff]
 line-length = 120
