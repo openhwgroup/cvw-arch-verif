@@ -44,7 +44,13 @@ def insertTemplate(name, is_custom=False):
             ext_parts_no_I = ext_parts_no_I[:-1]
     if "I" not in ext_parts_no_I and "E" not in ext_parts_no_I:
         ext_parts_no_I = ['I'] + ext_parts_no_I
-    march = f"rv{xlen}{"_".join(ext_parts_no_I).lower()}"
+    # Join single char items with no separator, multi-char items with underscore
+    ext_str = ""
+    for ext in ext_parts_no_I:
+        if len(ext) > 1:
+            ext_str += "_"
+        ext_str += ext
+    march = f"rv{xlen}{ext_str.lower()}"
     march = march.replace("zaamo", "a").replace("zalrsc", "a") # gcc 14 does not accept Zaamo/Zalrsc
     # Replace placeholders
     template = template.replace("@EXTENSION_LIST@", f"{ext_parts_no_I}")

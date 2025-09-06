@@ -27,7 +27,8 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
     end_pos = content.find(end_marker)
 
     if start_pos == -1 or end_pos == -1:
-        raise ValueError(f"Could not find YAML config section in {file}")
+        error_msg = f"Could not find YAML config section in {file}"
+        raise ValueError(error_msg)
 
     # Extract content between markers
     start_pos = content.find("\n", start_pos) + 1  # Skip to next line after start marker
@@ -47,17 +48,23 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
         raise ValueError(f"Invalid YAML in config section: {e}")
 
 
+def generate_test_dict(tests_dir: Path) -> dict[str, dict[str, Any]]:
+    """Generate a dictionary of tests with their corresponding metadata from the specified directory."""
+    test_list = {}
+    for test_file in tests_dir.rglob("*.S"):
+        config = extract_yaml_config(test_file)
+        test_list[test_file.name] = config
+    return test_list
+
+
 def main():
+    import json
     if len(sys.argv) != 2:
         print("Usage: parse-test-constraints <file_path>", file=sys.stderr)
         sys.exit(1)
 
-    try:
-        config = extract_yaml_config(Path(sys.argv[1]))
-        print(yaml.dump(config, default_flow_style=False))
-    except (ValueError, FileNotFoundError) as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+    test_configs = generate_test_dict(Path(sys.argv[1]))
+    print(json.dumps(dict(sorted(test_configs.items())), indent=2))
 
 
 if __name__ == "__main__":

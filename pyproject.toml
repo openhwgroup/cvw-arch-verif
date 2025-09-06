@@ -16,8 +16,7 @@ dev = [
     "ruff>=0.12.11",
 ]
 
-[project.scripts]
-parse-test-constraints = "framework.parse_test_constraints:main"
+# [project.scripts]
 
 ##### BUILD #####
 
