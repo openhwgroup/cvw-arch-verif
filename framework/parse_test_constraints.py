@@ -53,7 +53,8 @@ def generate_test_dict(tests_dir: Path) -> dict[str, dict[str, Any]]:
     test_list = {}
     for test_file in tests_dir.rglob("*.S"):
         config = extract_yaml_config(test_file)
-        test_list[test_file.name] = config
+        test_file_unique_name = str(test_file.relative_to(tests_dir))
+        test_list[test_file_unique_name] = config
     return test_list
 
 

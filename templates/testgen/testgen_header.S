@@ -6,6 +6,7 @@
 
 ##### START_TEST_CONFIG #####
 # EXTENSIONS: @EXTENSION_LIST@
+# XLEN: @XLEN@
 # MARCH: @MARCH@
 ##### END_TEST_CONFIG #####
 
