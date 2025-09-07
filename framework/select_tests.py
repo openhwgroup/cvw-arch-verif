@@ -29,8 +29,6 @@ def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any
                     param_match = False
             if param_match:
                 selected_tests[test_name] = test_metadata
-            else:
-                print(f"Skipping {test_name}: parameter mismatch")
     return selected_tests
 
 
