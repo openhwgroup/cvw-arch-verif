@@ -25,6 +25,7 @@ def parse_udb_config(udb_config_file: Path) -> dict[Any, Any]:
     except yaml.YAMLError as e:
         raise ValueError(f"Error parsing UDB configuration file: {e}")
 
+
 def get_implemented_extensions(udb_config: dict[Any, Any]) -> list[str]:
     """Extract the list of implemented extensions from the UDB configuration."""
     extensions = udb_config.get("implemented_extensions", [])
@@ -36,6 +37,7 @@ def main():
     config = parse_udb_config(udb_config_path)
     print(yaml.dump(config))
     print(get_implemented_extensions(config))
+
 
 if __name__ == "__main__":
     main()
