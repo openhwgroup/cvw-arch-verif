@@ -39,7 +39,7 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
     # Process lines to remove comment prefixes
     yaml_lines = []
     for line in yaml_section.split("\n"):
-        line = line.lstrip("#").strip()
+        line = line.lstrip("#")
         yaml_lines.append(line)
 
     try:
