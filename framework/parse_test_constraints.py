@@ -60,6 +60,7 @@ def generate_test_dict(tests_dir: Path) -> dict[str, dict[str, Any]]:
 
 def main():
     import json
+
     if len(sys.argv) != 2:
         print("Usage: parse-test-constraints <file_path>", file=sys.stderr)
         sys.exit(1)

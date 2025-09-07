@@ -13,10 +13,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff>=0.12.11",
+    "ruff>=0.12.12",
 ]
 
-# [project.scripts]
+[project.scripts]
+generate-test-dict = "framework.parse_test_constraints:main"
 
 ##### BUILD #####
 
