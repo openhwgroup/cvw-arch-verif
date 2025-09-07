@@ -2,7 +2,7 @@
 ##################################
 # parse_test_constraints.py
 #
-# jcarlin@hmc.edu 31 Aug 2025
+# jcarlin@hmc.edu 6 Sept 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
 # Parse YAML comment header from test files
