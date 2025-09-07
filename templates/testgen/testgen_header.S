@@ -5,8 +5,9 @@
 ///////////////////////////////////////////
 
 ##### START_TEST_CONFIG #####
-# EXTENSIONS: @EXTENSION_LIST@
-# XLEN: @XLEN@
+# implemented_extensions: @EXTENSION_LIST@
+# params:
+#   MXLEN: @XLEN@
 # MARCH: @MARCH@
 ##### END_TEST_CONFIG #####
 
