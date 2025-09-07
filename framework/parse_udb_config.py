@@ -15,7 +15,7 @@ from typing import Any
 import yaml
 
 
-def parse_udb_config(udb_config_file: Path) -> dict[Any, Any]:
+def parse_udb_config(udb_config_file: Path) -> dict[str, Any]:
     """Parse the UDB configuration YAML file and return its contents as a dictionary."""
     try:
         config = yaml.safe_load(udb_config_file.read_text())
@@ -26,7 +26,7 @@ def parse_udb_config(udb_config_file: Path) -> dict[Any, Any]:
         raise ValueError(f"Error parsing UDB configuration file: {e}")
 
 
-def get_implemented_extensions(udb_config: dict[Any, Any]) -> set[str]:
+def get_implemented_extensions(udb_config: dict[str, Any]) -> set[str]:
     """Extract the list of implemented extensions from the UDB configuration."""
     extensions = udb_config.get("implemented_extensions", [])
     return {ext["name"] for ext in extensions}
