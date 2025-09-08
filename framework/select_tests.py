@@ -19,11 +19,12 @@ def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any
     for test_name, test_metadata in test_dict.items():
         required_exts = set(test_metadata.get("implemented_extensions", []))
         # Check if all required extensions are implemented
+        required_exts = set(test_metadata["implemented_extensions"])
         if required_exts.issubset(implemented_extensions):
             # Check if all parameters match
             param_match = True
-            test_params = test_metadata.get("params", {})
-            config_params = udb_config.get("params", {})
+            test_params = test_metadata["params"]
+            config_params = udb_config["params"]
             for param, value in test_params.items():
                 if param not in config_params or config_params[param] != value:
                     param_match = False

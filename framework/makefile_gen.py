@@ -33,8 +33,8 @@ def generate_makefile(test_list: dict[str, dict[str, Any]], makefile_path: Path,
         makefile.write("\nall: $(TESTS)\n\n")
         # Individual test compilation targets
         for test_name, test_metadata in test_list.items():
-            march = test_metadata.get("MARCH")
-            flen = "64" if "D" in test_metadata.get("implemented_extensions") else "32"
+            march = test_metadata["MARCH"]
+            flen = "64" if "D" in test_metadata["implemented_extensions"] else "32"
             # Generate signature based ELF
             sig_elf = wkdir / test_name.replace(".S", "-sig.elf")
             makefile.write(f"{sig_elf}: tests/{test_name} | {sig_elf.parent}\n")
