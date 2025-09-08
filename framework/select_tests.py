@@ -13,16 +13,17 @@ from typing import Any
 from framework.parse_udb_config import get_implemented_extensions
 
 
-def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def select_tests(
+    test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any]
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     implemented_extensions = get_implemented_extensions(udb_config)
     selected_tests = {}
     common_tests = {}
     for test_name, test_metadata in test_dict.items():
         # Check if the test is config dependent
-        if (
-            test_metadata["CONFIG_DEPENDENT"] is False
-            and test_metadata["params"]["MXLEN"] == udb_config["params"]["MXLEN"]
-        ):
+        if test_metadata["CONFIG_DEPENDENT"] is False and test_metadata.get("params", {}).get(
+            "MXLEN"
+        ) == udb_config.get("params", {}).get("MXLEN"):
             common_tests[test_name] = test_metadata
 
         # Check if all required extensions are implemented
@@ -30,8 +31,8 @@ def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any
         if required_exts.issubset(implemented_extensions):
             # Check if all parameters match
             param_match = True
-            test_params = test_metadata["params"]
-            config_params = udb_config["params"]
+            test_params = test_metadata.get("params", {})
+            config_params = udb_config.get("params", {})
             for param, value in test_params.items():
                 if param not in config_params or config_params[param] != value:
                     param_match = False
