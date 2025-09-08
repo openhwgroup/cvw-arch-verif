@@ -56,3 +56,4 @@ fcov_ucdb
 
 *.trace
 *.tracelist
+*.mk
