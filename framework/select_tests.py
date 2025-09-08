@@ -16,8 +16,15 @@ from framework.parse_udb_config import get_implemented_extensions
 def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any]) -> dict[str, dict[str, Any]]:
     implemented_extensions = get_implemented_extensions(udb_config)
     selected_tests = {}
+    common_tests = {}
     for test_name, test_metadata in test_dict.items():
-        required_exts = set(test_metadata.get("implemented_extensions", []))
+        # Check if the test is config dependent
+        if (
+            test_metadata["CONFIG_DEPENDENT"] is False
+            and test_metadata["params"]["MXLEN"] == udb_config["params"]["MXLEN"]
+        ):
+            common_tests[test_name] = test_metadata
+
         # Check if all required extensions are implemented
         required_exts = set(test_metadata["implemented_extensions"])
         if required_exts.issubset(implemented_extensions):
@@ -30,7 +37,7 @@ def select_tests(test_dict: dict[str, dict[str, Any]], udb_config: dict[str, Any
                     param_match = False
             if param_match:
                 selected_tests[test_name] = test_metadata
-    return selected_tests
+    return selected_tests, common_tests
 
 
 def main():
@@ -51,9 +58,10 @@ def main():
     test_dict = generate_test_dict(tests_dir)
 
     # Select tests based on UDB config
-    selected_tests = select_tests(test_dict, udb_config)
+    selected_tests, common_tests = select_tests(test_dict, udb_config)
 
     pprint(list(selected_tests.keys()))
+    pprint(list(common_tests.keys()))
 
 
 if __name__ == "__main__":
