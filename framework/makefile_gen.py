@@ -52,11 +52,11 @@ def generate_makefile(
 
             # Generate signature file
             sig_file = wkdir / "common" / test_name.replace(".S", ".sig")
-            sig_log_file = wkdir / "common" / test_name.replace(".S", ".log")
+            sig_log_file = wkdir / "common" / test_name.replace(".S", "-sig.log")
             makefile.write(f"{sig_file}: {sig_elf}\n")
             makefile.write(f"\t@echo Generating signature for {sig_elf} to {sig_file}\n")
             makefile.write(
-                f"\tsail_riscv_sim --trace-all --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
+                f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
             )
 
             # Final ELF target
@@ -87,11 +87,11 @@ def generate_makefile(
 
                 # Generate signature file
                 sig_file = config_test_dir / test_name.replace(".S", ".sig")
-                sig_log_file = config_test_dir / test_name.replace(".S", ".log")
+                sig_log_file = config_test_dir / test_name.replace(".S", "-sig.log")
                 makefile.write(f"{sig_file}: {sig_elf}\n")
                 makefile.write(f"\t@echo Generating signature for {sig_elf} to {sig_file}\n")
                 makefile.write(
-                    f"\tsail_riscv_sim --trace-all --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
+                    f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
                 )
 
                 # Final ELF target
