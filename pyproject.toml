@@ -17,7 +17,7 @@ dev = [
 ]
 
 [project.scripts]
-generate-test-dict = "framework.parse_test_constraints:main"
+makefile_gen = "framework.makefile_gen:main"
 
 ##### BUILD #####
 

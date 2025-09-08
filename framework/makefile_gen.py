@@ -71,9 +71,9 @@ def main():
     import sys
     from pathlib import Path
 
-    from parse_test_constraints import generate_test_dict
-    from parse_udb_config import parse_udb_config
-    from select_tests import select_tests
+    from framework.parse_test_constraints import generate_test_dict
+    from framework.parse_udb_config import parse_udb_config
+    from framework.select_tests import select_tests
 
     tests_dir = Path(sys.argv[1])
     udb_config_path = Path(sys.argv[2])
