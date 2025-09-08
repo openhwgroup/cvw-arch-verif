@@ -9,6 +9,7 @@
 # params:
 #   MXLEN: @XLEN@
 # MARCH: @MARCH@
+# CONFIG_DEPENDENT: @CONFIG_DEPENDENT@
 ##### END_TEST_CONFIG #####
 
 #include "model_test.h"

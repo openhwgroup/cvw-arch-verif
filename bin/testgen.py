@@ -56,6 +56,7 @@ def insertTemplate(name, is_custom=False):
     template = template.replace("@EXTENSION_LIST@", f"{ext_parts_no_I}")
     template = template.replace("@MARCH@", march)
     template = template.replace("@XLEN@", str(xlen))
+    template = template.replace("@CONFIG_DEPENDENT@", "false") # TODO: Make this configurable for some tests (e.g. Zimop)
     template = template.replace("sigupd_count", str(signatureWords))
 
     if is_custom:

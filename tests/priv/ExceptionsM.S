@@ -13,6 +13,7 @@
 ##### START_TEST_CONFIG #####
 # implemented_extensions: [I, Zicsr]
 # MARCH: rv${XLEN}i_zicsr
+# CONFIG_DEPENDENT: true
 ##### END_TEST_CONFIG #####
 
 #define SKIP_MTVAL  # flags to skip mtval and mepc checks since we an Instruction Access Fault (IAF) test
