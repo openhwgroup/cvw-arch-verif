@@ -26,15 +26,15 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     `include  "coverage/RISCV_coverage_standard_coverpoints.svh"
     //pte permission for leaf PTEs
     PTE_d_inv: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_u_w = {8'b???1?110};
-        wildcard bins leaflvl_s_w = {8'b???0?110};
+        wildcard bins leaflvl_u_w = {8'b11?1?110};
+        wildcard bins leaflvl_s_w = {8'b11?0?110};
     }
 
     PTE_d_res_rwx: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_exec_u = {8'b???11101};
-        wildcard bins leaflvl_noexec_u = {8'b???10101};
-        wildcard bins leaflvl_exec_s = {8'b???01101};
-        wildcard bins leaflvl_noexec_s = {8'b???00101};
+        wildcard bins leaflvl_exec_u = {8'b11?11101};
+        wildcard bins leaflvl_noexec_u = {8'b11?10101};
+        wildcard bins leaflvl_exec_s = {8'b11?01101};
+        wildcard bins leaflvl_noexec_s = {8'b11?00101};
     }
 
     PTE_nonleaf_lvl0_d: coverpoint ins.current.pte_d[7:0] {
@@ -43,35 +43,35 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     }
 
     PTE_r_set_w_unset_spage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_r_s = {8'b???0?011};
+        wildcard bins leaflvl_r_s = {8'b11?0?011};
     }
 
     PTE_w_unset_spage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_w_0 = {8'b???0?0?1};
+        wildcard bins leaflvl_w_0 = {8'b11?0?0?1};
     }
 
     PTE_x_spage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_x_s = {8'b???01001};
+        wildcard bins leaflvl_x_s = {8'b11?01001};
     }
 
     PTE_spage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_s = {8'b???01111};
+        wildcard bins leaflvl_s = {8'b11?01111};
     }
 
     PTE_upage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_u = {8'b???11111};
+        wildcard bins leaflvl_u = {8'b11?11111};
     }
 
     PTE_r_set_w_unset_upage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_r_u = {8'b???1?011};
+        wildcard bins leaflvl_r_u = {8'b11?1?011};
     }
 
     PTE_w_unset_upage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_w_0 = {8'b???1?0?1};
+        wildcard bins leaflvl_w_0 = {8'b11?1?0?1};
     }
 
     PTE_x_upage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_x_u = {8'b???11001};
+        wildcard bins leaflvl_x_u = {8'b11?11001};
     }
 
     PTE_Abit_unset_d: coverpoint ins.current.pte_d[7:0] {
@@ -85,8 +85,8 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
     }
 
     PTE_RWX_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_u = {8'b???11111};
-        wildcard bins leaflvl_s = {8'b???01111};
+        wildcard bins leaflvl_u = {8'b11?11111};
+        wildcard bins leaflvl_s = {8'b11?01111};
     }
 
     pointer_PTE_d: coverpoint ins.current.pte_d[7:0] {
