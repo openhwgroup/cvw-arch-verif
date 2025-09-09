@@ -42,8 +42,12 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         wildcard bins lvl0_u = {8'b???10001};
     }
 
-    PTE_rw_spage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_w_0 = {8'b???0?0?1};
+    PTE_r_spage_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins leaflvl_w_0 = {8'b???0?011};
+    }
+
+    PTE_x_spage_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins leaflvl_x_s = {8'b???01001};
     }
 
     PTE_spage_d: coverpoint ins.current.pte_d[7:0] {
@@ -54,8 +58,12 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         wildcard bins leaflvl_u = {8'b???11111};
     }
 
-    PTE_rw_upage_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins leaflvl_w_0 = {8'b???1?0?1};
+    PTE_r_upage_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins leaflvl_w_0 = {8'b???1?011};
+    }
+
+    PTE_x_upage_d: coverpoint ins.current.pte_d[7:0] {
+        wildcard bins leaflvl_x_u = {8'b???11001};
     }
 
     PTE_Abit_unset_d: coverpoint ins.current.pte_d[7:0] {
@@ -168,7 +176,7 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         `endif
     }
 
-    spage_nowrite_s_d: cross PTE_rw_spage_d, PageType_d, mode, cbo_ins, priv_mode_s, sum_sstatus, priv_mode_s {
+    PTE_w_unset_s_d: cross PTE_r_spage_d, PageType_d, mode, cbo_ins, priv_mode_s, sum_sstatus {
         ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
@@ -181,7 +189,15 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    upage_umode_nowrite_u: cross PTE_rw_upage_d, PageType_d, mode, cbo_ins, priv_mode_u {
+    PTE_w_unset_u_d: cross PTE_r_upage_d, PageType_d, mode, cbo_ins, priv_mode_u {
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+
+    PTE_rw_unset_s_d: cross PTE_x_spage_d, PageType_d, mode, store_page_fault, cbo_ins, priv_mode_s {
+        ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
+    }
+
+    PTE_rw_unset_u_d: cross PTE_x_upage_d, PageType_d, mode, store_page_fault, cbo_ins, priv_mode_u {
         ignore_bins ig1 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
