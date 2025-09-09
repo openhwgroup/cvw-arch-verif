@@ -525,11 +525,11 @@ Mend_PMP:                                    ;\
       .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
     .endif						;\
     .if (offset&(SIGALIGN-1))!=0				;\
-  /* Throw warnings then modify offset to target */	;\
+    /* Throw warnings then modify offset to target */	;\
       .warning "Incorrect signature Offset Alignment."	;\
       .set offset, (offset&~(SIGALIGN-1))+SIGALIGN		;\
-      //  TODO: Original version follows. Why was this change necessary?
-      //  .set offset, offset&(SIGALIGN-1)+SIGALIGN		;\
+      /*  TODO: Original version follows. Why was this change necessary?\
+        .set offset, offset&(SIGALIGN-1)+SIGALIGN		*/;\
     .endif						;\
     CHK_OFFSET(_BR, SIGALIGN, 0)				;\
     FSREG _R,offset(_BR)					;\

@@ -117,7 +117,7 @@ testplans: $(TESTPLANS)
 	@if [ -d ../../testplans ]; then \
 		mkdir -p $(BUILD_DIR); \
 		rm -rf $(BUILD_DIR)/testplans; \
-		../../bin/transpose_csv.py ../../testplans $(BUILD_DIR)/testplans 10; \
+		./transpose_csv.py ../../testplans $(BUILD_DIR)/testplans 10; \
 	else \
 		echo "No test plans directory found in source."; \
 	fi
