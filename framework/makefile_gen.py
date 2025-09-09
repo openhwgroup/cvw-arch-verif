@@ -102,6 +102,18 @@ def generate_makefile(
                     f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' tests/{test_name}\n\n"
                 )
 
+            # Run test on Sail to generate log
+            sail_log = config_test_dir / test_name.replace(".S", ".log")
+            makefile.write(f"{sail_log}: {final_elf}\n")
+            makefile.write(f"\t@echo Running {final_elf} on Sail to generate log {sail_log}\n")
+            makefile.write(f"\tsail_riscv_sim --trace-all {final_elf} --trace-output {sail_log}\n\n")
+
+            # Generate RVVI trace
+            rvvi_trace = config_test_dir / test_name.replace(".S", ".rvvi")
+            makefile.write(f"{rvvi_trace}: {sail_log}\n")
+            makefile.write(f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}\n")
+            makefile.write(f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n")
+
         # Directory creation rules
         makefile.write(f"{wkdir}/%:\n")
         makefile.write("\tmkdir -p $@\n\n")
