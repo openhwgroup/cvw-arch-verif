@@ -36,7 +36,8 @@ def generate_makefile(
         # Top-level target to compile all tests
         makefile.write("TESTS = \\\n")
         for test_name in config_test_list.keys():
-            makefile.write(f"    {config_test_dir}/{test_name.replace('.S', '.elf')} \\\n")
+            elf_path = config_test_dir / test_name.replace('.S', '.elf')
+            makefile.write(f"    {elf_path} \\\n")
         makefile.write("\nall: $(TESTS)\n\n")
         # Common test compilation targets
         for test_name, test_metadata in common_test_list.items():
@@ -44,10 +45,11 @@ def generate_makefile(
             flen = "64" if "D" in test_metadata["implemented_extensions"] else "32"
             # Generate signature based ELF
             sig_elf = wkdir / "common" / test_name.replace(".S", "-sig.elf")
-            makefile.write(f"{sig_elf}: tests/{test_name} | {sig_elf.parent}\n")
+            test_path = Path("tests") / test_name
+            makefile.write(f"{sig_elf}: {test_path} | {sig_elf.parent}\n")
             makefile.write(f"\t@echo Compiling {test_name} to {sig_elf}\n")
             makefile.write(
-                f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} tests/{test_name}\n\n"
+                f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
             )
 
             # Generate signature file
@@ -64,7 +66,7 @@ def generate_makefile(
             makefile.write(f"{final_elf}: {sig_elf} {sig_file}\n")
             makefile.write(f"\t@echo Generating final ELF {final_elf}\n")
             makefile.write(
-                f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' tests/{test_name}\n\n"
+                f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
             )
         # Individual test compilation targets
         for test_name, test_metadata in config_test_list.items():
@@ -79,10 +81,11 @@ def generate_makefile(
                 flen = "64" if "D" in test_metadata["implemented_extensions"] else "32"
                 # Generate signature based ELF
                 sig_elf = config_test_dir / test_name.replace(".S", "-sig.elf")
-                makefile.write(f"{sig_elf}: tests/{test_name} | {sig_elf.parent}\n")
+                test_path = Path("tests") / test_name
+                makefile.write(f"{sig_elf}: {test_path} | {sig_elf.parent}\n")
                 makefile.write(f"\t@echo Compiling {test_name} to {sig_elf}\n")
                 makefile.write(
-                    f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} tests/{test_name}\n\n"
+                    f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
                 )
 
                 # Generate signature file
@@ -99,7 +102,7 @@ def generate_makefile(
                 makefile.write(f"{final_elf}: {sig_elf} {sig_file}\n")
                 makefile.write(f"\t@echo Generating final ELF {final_elf}\n")
                 makefile.write(
-                    f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' tests/{test_name}\n\n"
+                    f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
                 )
 
             # Run test on Sail to generate log
@@ -123,7 +126,7 @@ def generate_makefile(
         makefile.write(f"\trm -rf {wkdir}/*\n")
 
 
-def main():
+def main() -> None:
     import sys
     from pathlib import Path
 
