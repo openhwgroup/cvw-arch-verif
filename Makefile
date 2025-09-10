@@ -51,6 +51,9 @@ privheaders: bin/csrtests.py bin/illegalinstrtests.py
 	$(UV_RUN) bin/csrtests.py
 	$(UV_RUN) bin/illegalinstrtests.py
 
+.PHONY: tests
+tests: testgen privheaders
+
 .PHONY: clean-tests
 clean-tests:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32)
