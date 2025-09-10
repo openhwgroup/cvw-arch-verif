@@ -60,6 +60,7 @@ def generate_makefile(
     mabi = f"{'i' if xlen == 32 else ''}lp{xlen}"
     include_paths = "-Itests -Itests/env -Itests/priv/headers"
     linker_script = "tests/link.ld"
+    common_test_dir = wkdir / "common"
     config_test_dir = wkdir / config_name
 
     with makefile_path.open("w") as makefile:
@@ -72,19 +73,20 @@ def generate_makefile(
         )
 
         # Common test compilation targets
+        directory_set = {str(wkdir), str(config_test_dir), str(common_test_dir)}
         for test_name, test_metadata in common_test_list.items():
-            makefile.write(write_test_compilation_rules(test_name, test_metadata, wkdir / "common", xlen, mabi))
+            directory_set.add(str((common_test_dir / test_name).parent))
+            makefile.write(write_test_compilation_rules(test_name, test_metadata, common_test_dir, xlen, mabi))
         # Individual test compilation targets
         compile_all_target = "TESTS = \\\n"
-        directory_list = {wkdir}
         for test_name, test_metadata in config_test_list.items():
             final_elf = config_test_dir / test_name.replace(".S", ".elf")
             compile_all_target += f"    {final_elf} \\\n"
-            directory_list.add(final_elf.parent)
+            directory_set.add(str(final_elf.parent))
 
             # Symlink to common ELF if test is in common list, otherwise compile the test
             if test_name in common_test_list:
-                common_elf = wkdir / "common" / test_name.replace(".S", ".elf")
+                common_elf = common_test_dir / test_name.replace(".S", ".elf")
                 makefile.write(f"{final_elf}: {common_elf} | {final_elf.parent}\n")
                 makefile.write(f"\t@echo Using common ELF for {final_elf}\n")
                 makefile.write(f"\tln -sf {common_elf} {final_elf}\n\n")
@@ -108,7 +110,7 @@ def generate_makefile(
         makefile.write(compile_all_target)
 
         # Directory creation rules
-        makefile.write(f"{" ".join(directory_list)}:\n")
+        makefile.write(f"{" ".join(directory_set)}:\n")
         makefile.write("\tmkdir -p $@\n\n")
 
         # Clean target
