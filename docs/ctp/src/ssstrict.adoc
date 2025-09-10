@@ -25,7 +25,7 @@ Attempt to issue all flavors of 32-bit instructions in the standard and reserved
 
 According to the RVA23 profile spec, the illegal instruction should be cause a trap to the supervisor trap handler.  However, delegation is the business of the firmware, not the hardware.  These tests only check that a trap occurs and matches the reference model.
 
-*** for all mention of reserved in Zca, list normative statement here and give coverpoint
+*** for all mention of reserved in Zca, list normative rule here and give coverpoint
 
 [[t-SsstrictS-coverpoints]]
 .SsstrictS Coverpoints

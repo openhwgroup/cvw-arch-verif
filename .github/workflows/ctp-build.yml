@@ -37,7 +37,7 @@ jobs:
         run: docker pull riscvintl/riscv-docs-base-container-image:latest
 
       - name: Build
-        run: make -C docs/ctp -j2
+        run: cd  docs/ctp && make -j2
 
       - name: Make GitHub pages directory
         run: |

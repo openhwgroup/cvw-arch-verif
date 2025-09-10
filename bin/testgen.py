@@ -30,33 +30,34 @@ def insertTemplate(name, is_custom=False):
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
     ext_parts_no_I = [ext for ext in ext_parts if ext != "I"]
     if 'D' in ext_parts_no_I or 'Zcd' in ext_parts_no_I:
-      ext_parts_no_I = ['D']+ext_parts_no_I
+        ext_parts_no_I = ['D']+ext_parts_no_I
     if 'M' in ext_parts_no_I:
-      ext_parts_no_I = ['M']+ext_parts_no_I
-    if 'Zalrsc' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
-      ext_parts_no_I = ['A']#+ext_parts_no_I
-    if 'Zaamo' in ext_parts_no_I: #Adding this until gcc15 is updated bc currently no support for this extension
-      ext_parts_no_I = ['A']#+ext_parts_no_I
+        ext_parts_no_I = ['M']+ext_parts_no_I
     if 'F' in ext_parts_no_I or any('f' in ext for ext in ext_parts_no_I):
-      ext_parts_no_I = ['F']+ext_parts_no_I
+        ext_parts_no_I = ['F']+ext_parts_no_I
     if len(ext_parts_no_I) != 0:
-      if ext_parts_no_I[-1] == 'D':
-        ext_parts_no_I = ext_parts_no_I[:-1]
-      if ext_parts_no_I[-1] == 'M':
-        ext_parts_no_I = ext_parts_no_I[:-1]
-      if ext_parts_no_I[-1] == 'F':
-        ext_parts_no_I = ext_parts_no_I[:-1]
-    #ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
-    raw_ISAEXT = f"RV{xlen}I{''.join(ext_parts_no_I)}"
-    ISAEXT = insert_all_Z_underscores_after_first(raw_ISAEXT)
-    # Construct the regex part
-    ext_regex = ".*I.*" + "".join([f"{ext}.*" for ext in ext_parts_no_I])
-    test_case_line = f"//check ISA:=regex(.*{xlen}.*);check ISA:=regex({ext_regex});def TEST_CASE_1=True;"
+        if ext_parts_no_I[-1] == 'D':
+            ext_parts_no_I = ext_parts_no_I[:-1]
+        if ext_parts_no_I[-1] == 'M':
+            ext_parts_no_I = ext_parts_no_I[:-1]
+        if ext_parts_no_I[-1] == 'F':
+            ext_parts_no_I = ext_parts_no_I[:-1]
+    if "I" not in ext_parts_no_I and "E" not in ext_parts_no_I:
+        ext_parts_no_I = ['I'] + ext_parts_no_I
+    # Join single char items with no separator, multi-char items with underscore
+    ext_str = ""
+    for ext in ext_parts_no_I:
+        if len(ext) > 1:
+            ext_str += "_"
+        ext_str += ext
+    march = f"rv{xlen}{ext_str.lower()}"
+    march = march.replace("zaamo", "a").replace("zalrsc", "a") # gcc 14 does not accept Zaamo/Zalrsc
     # Replace placeholders
+    template = template.replace("@EXTENSION_LIST@", f"{ext_parts_no_I}")
+    template = template.replace("@MARCH@", march)
+    template = template.replace("@XLEN@", str(xlen))
+    template = template.replace("@CONFIG_DEPENDENT@", "false") # TODO: Make this configurable for some tests (e.g. Zimop)
     template = template.replace("sigupd_count", str(signatureWords))
-    template = template.replace("ISAEXT", ISAEXT)
-    template = template.replace("TestCase", test_case_line)
-    template = template.replace("Instruction", test)
 
     if is_custom:
       # Count SIGUPD macros

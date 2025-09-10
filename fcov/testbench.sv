@@ -25,17 +25,17 @@ module testbench;
   `include "coverage.svh"
 
   // Set up varialbe lengths
-`ifdef XLEN32
-  localparam XLEN = 32;
-`else
-  localparam XLEN = 64;
-`endif
+  `ifdef XLEN32
+    localparam XLEN = 32;
+  `else
+    localparam XLEN = 64;
+  `endif
 
-`ifdef D_COVERAGE
-  localparam FLEN = 64;
-`else
-  localparam FLEN = 32;
-`endif
+  `ifdef D_COVERAGE
+    localparam FLEN = 64;
+  `else
+    localparam FLEN = 32;
+  `endif
 
   localparam VLEN = 512; // TODO: Make configurable (maybe just use the macro directly)
 
@@ -43,11 +43,13 @@ module testbench;
   localparam PPN_BITS = (XLEN==32 ? 32'd22 : 32'd44);
 
   // Temporary signals for filling RVVI trace interface (file handling, string parsing, etc)
-  string  traceFile;
-  integer traceFileHandler, num;
+  string  traceFileList, traceFile;
+  integer traceFileListHandler, traceFileHandler, num;
   string  line;
   string  key, val;
   string  words[$];
+  string  traceFiles[$];
+  int     fileNum;
   int     order;
   int     regNum;
   logic [(XLEN-1):0] xRegVal;
@@ -88,18 +90,31 @@ module testbench;
     forever #5 clk = ~clk;
   end
 
-  // Load pre-formatted trace file from traceFile plusarg
+  // Load list of trace files from traceFileList plusarg
   initial begin
-    if (!$value$plusargs("traceFile=%s", traceFile)) begin
-      $display("Error: trace file not provided");
+    if (!$value$plusargs("traceFileList=%s", traceFileList)) begin
+      $display("Error: traceFileList not provided");
       $finish;
     end
-    traceFileHandler = $fopen(traceFile, "r");
-    if (traceFileHandler == 0) begin
-      $display("Error: Could not open trace file");
+    traceFileListHandler = $fopen(traceFileList, "r");
+    if (traceFileListHandler == 0) begin
+      $display("Error: Could not open trace file list");
       $finish;
     end
-    // TODO: Add check for correct format and exit if fails
+    while($fgets(line, traceFileListHandler)) begin
+      if (line != "" && line != "\n") begin
+        // Strip newline character from the end of the line
+        if (line[line.len()-1] == "\n") begin
+          line = line.substr(0, line.len()-2);
+        end
+        traceFiles.push_back(line);
+      end
+    end
+    if(traceFiles.size == 0) begin
+      $display("Error: No trace files found in trace file list");
+      $finish;
+    end
+    $fclose(traceFileListHandler);
   end
 
   // Load coverage model and connect to RVVI trace interface
@@ -107,7 +122,33 @@ module testbench;
   cvw_arch_verif cvw_arch_verif(rvvi);
 
   // Sample an instruction from the trace file on each clock edge
+  // Moves through full list of trace files
   always_ff @(posedge clk) begin
+    // Open trace file if needed
+    if(traceFileHandler === 'x) begin
+      fileNum = 0;
+      traceFile = traceFiles[fileNum];
+      traceFileHandler = $fopen(traceFile, "r");
+      if (traceFileHandler == 0) begin
+        $display("Error: Could not open trace file");
+        $finish;
+      end
+    end else if($feof(traceFileHandler)) begin
+      $fclose(traceFileHandler);
+      if(fileNum < traceFiles.size - 1) begin
+        fileNum++;
+        traceFile = traceFiles[fileNum];
+        traceFileHandler = $fopen(traceFile, "r");
+        if (traceFileHandler == 0) begin
+          $display("Error: Could not open trace file");
+          $finish;
+        end
+      end else begin
+        $display("All trace files completed");
+        $finish;
+      end
+    end
+
     // Reset all signals at the beginning of each iteration
     {valid, insn, trap, debug_mode, pc_rdata, mode,
     m_ext_intr, s_ext_intr, m_timer_intr, m_soft_intr,
@@ -115,13 +156,6 @@ module testbench;
     pte_i, pte_d, ppn_i, ppn_d, page_type_i, page_type_d,
     read_access, write_access, execute_access,
     x_wb, f_wb, v_wb, csr_wb, x_wdata, f_wdata, v_wdata} = 0;
-
-    // End simulation if end of trace file is reached
-    if ($feof(traceFileHandler)) begin
-      $display("Trace file finished");
-      $fclose(traceFileHandler);
-      $finish;
-    end
 
     // Get next line from trace file
     num = $fgets(line, traceFileHandler);
@@ -188,7 +222,7 @@ module testbench;
             val = words.pop_front();
             num = $sscanf(val, "%h", xRegVal);
             csr[regNum] = xRegVal;
-            csr_wb |= (1 << regNum);
+            csr_wb[regNum] =1'b1;
           end
           default: begin
             $display("Unknown key: %s", key);

@@ -1,6 +1,8 @@
 #ifndef _COMPLIANCE_MODEL_H
 #define _COMPLIANCE_MODEL_H
 
+#define ACCESS_FAULT_ADDRESS 0x00000000
+
 #define RVMODEL_DATA_SECTION \
         .pushsection .tohost,"aw",@progbits;                            \
         .align 8; .global tohost; tohost: .dword 0;                     \
@@ -14,9 +16,9 @@
 //RV_COMPLIANCE_HALT
 #define RVMODEL_HALT    \
   li x1, 1                ;\
-  1:                      ;\
-    sw x1, tohost, t2   ;\
-    j 1b                ;\
+  write_tohost:           ;\
+    sw x1, tohost, t0     ;\
+    j write_tohost        ;\
 
 #define RVMODEL_BOOT
 

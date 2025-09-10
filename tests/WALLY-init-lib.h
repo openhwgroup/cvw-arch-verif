@@ -27,6 +27,9 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "model_test.h"
+#include "arch_test.h"
+
 // load code to initalize stack, handle interrupts, terminate
 // The PMP tests are sensitive to the exact addresses in this code, so unfortunately
 // modifying anything breaks those tests.

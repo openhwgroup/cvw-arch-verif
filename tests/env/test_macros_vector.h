@@ -64,11 +64,14 @@
 // SEW defines the element size in bits (8, 16, 32, or 64)
 // VREG is a VR that holds the data
 // offset will be updated (to the next 8-byte boundary)
-#define RVTEST_SIGUPD_V(_BR, _TMPR, AVL, SEW, VREG)                                 \
-    CHK_OFFSET(_BR, REGWIDTH, 0) ;                                 \
-    addi _TMPR, _BR, offset ;                                 \
-    vse ## SEW ##.v VREG, (_TMPR) ;                                \
-    .set offset, offset + (AVL * SEW / 8) ;                             \
+#define RVTEST_SIGUPD_V(_BR, _TMPR, AVL, SEW, VREG)         \
+    .if (offset & 7) > 0 ;                                              \
+    .set offset, (offset + 8) & ~7 ;                                    \
+    .endif ;                                                            \
+    CHK_OFFSET(_BR, REGWIDTH, 0) ;                                           \
+    addi _TMPR, _BR, offset ;                                                     \
+    vse ## SEW ##.v VREG, (_TMPR) ;                                          \
+    .set offset, offset + (AVL * SEW / 8) + 4;                          \
     .if (offset & 7) > 0 ;                                              \
     .set offset, (offset + 8) & ~7 ;                                    \
     .endif ;

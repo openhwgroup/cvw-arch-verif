@@ -1,3 +1,4 @@
 [submodule "docs/ctp/docs-resources"]
 	path = docs/ctp/docs-resources
 	url = https://github.com/riscv/docs-resources
+	ignore = dirty

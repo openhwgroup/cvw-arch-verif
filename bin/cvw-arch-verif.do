@@ -23,11 +23,11 @@ onbreak {resume}
 onerror {quit -f}
 
 # Initialize variables
-set TESTDIR ${1}
-set TESTNAME ${2}
-set FCOVDIR ${3}
-set COVERAGEFILEDIR ${4}
-set TRACEFILE ${TESTDIR}/${TESTNAME}.trace
+set TESTDIR build
+set TESTNAME ${1}
+set FCOVDIR ${2}
+# set COVERAGEFILEDIR ${3}
+set TRACEFILELIST ${3}
 set UCDB ${TESTDIR}/${TESTNAME}.ucdb
 set WKDIR ${TESTDIR}/cov_work
 set TB ${FCOVDIR}/testbench.sv
@@ -39,13 +39,14 @@ if [file exists ${WKDIR}] {
 vlib ${WKDIR}
 
 # compile source files
-set INC_DIRS "+incdir+${COVERAGEFILEDIR}"
+set INC_DIRS ""
+# "+incdir+${COVERAGEFILEDIR}"
 set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
 vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} ${TB}
 
 # start and run simulation
 vopt ${WKDIR}.testbench -work ${WKDIR} -o testbenchopt
-vsim -lib ${WKDIR} testbenchopt +traceFile=${TRACEFILE} -fatal 7
+vsim -lib ${WKDIR} testbenchopt +traceFileList=${TRACEFILELIST} -fatal 7
 
 coverage save -onexit ${UCDB}
 

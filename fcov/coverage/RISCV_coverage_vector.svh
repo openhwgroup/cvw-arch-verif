@@ -353,6 +353,7 @@ function logic[63:0] get_vr_element_zero(int hart, int issue, `VLEN_BITS val);
       $fatal(1);
     end
   endcase
+  return 0;
 
 endfunction
 
