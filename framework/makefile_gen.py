@@ -70,6 +70,7 @@ def generate_makefile(
             f"INCLUDE_PATHS := {include_paths}\n"
             f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}\n"
             f"XLEN := {xlen}\n"
+            ".DEFAULT_GOAL := all\n\n"
         )
 
         # Common test compilation targets
