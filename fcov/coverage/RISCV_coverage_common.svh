@@ -56,6 +56,7 @@
 
 // XLEN64 -> [53:0] & XLEN32 -> [31:0]
 `define EFFECTIVE_PMPADDR (`ifdef XLEN64 53 `else 31 `endif)
+`define READ_ZERO_MASK   ~((1<<`G)-1)
 
 
 // -----------------------------------------------------------------------------
