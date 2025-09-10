@@ -2,7 +2,9 @@
 # Sept 10, 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
-# Directories
+# Directories and files
+CONFIG_FILE ?= cvw_config.yaml
+
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
 SRCDIR32       := $(TESTDIR)/rv32
@@ -10,7 +12,16 @@ PRIVDIR        := $(TESTDIR)/priv
 PRIVHEADERSDIR := $(PRIVDIR)/headers
 PRIVDIR64      := $(PRIVDIR)/rv64
 PRIVDIR32      := $(PRIVDIR)/rv32
-CONFIG_FILE	   := cvw_config.yaml
+
+TEMPLATEDIR       := templates
+TEST_TEMPLATE_DIR := $(TEMPLATEDIR)/testgen
+COV_TEMPLATE_DIR  := $(TEMPLATEDIR)/coverage
+TEST_TEMPLATES    := $(wildcard $(TEST_TEMPLATE_DIR)/*.S $(TEST_TEMPLATE_DIR)/**/*.S)
+COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**/*.txt)
+
+debug:
+# 	@echo "TEST_TEMPLATES: $(TEST_TEMPLATES)"
+	@echo "COV_TEMPLATES: $(COV_TEMPLATES)"
 
 # Check if UV is installed and set UV variable
 UV := $(shell command -v uv 2> /dev/null)
@@ -38,18 +49,27 @@ clean:
 
 # Test generation targets
 .PHONY: covergroupgen
-covergroupgen:
+covergroupgen: covergroupgen.stamp
+covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES)
 	$(UV_RUN) bin/covergroupgen.py
+	touch $@
 
 .PHONY: testgen
-testgen: covergroupgen
+testgen:  testgen.stamp
+testgen.stamp: covergroupgen.stamp bin/testgen.py $(TEST_TEMPLATES)
 	$(UV_RUN) bin/testgen.py
+	touch $@
 
 .PHONY: privheaders
-privheaders: bin/csrtests.py bin/illegalinstrtests.py
-	mkdir -p $(PRIVHEADERSDIR)
+privheaders: csrtests.stamp illegalinstrtests.stamp
+
+csrtests.stamp: bin/csrtests.py | $(PRIVHEADERSDIR)
 	$(UV_RUN) bin/csrtests.py
+	touch $@
+
+illegalinstrtests.stamp: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	$(UV_RUN) bin/illegalinstrtests.py
+	touch $@
 
 .PHONY: tests
 tests: testgen privheaders
@@ -58,6 +78,10 @@ tests: testgen privheaders
 clean-tests:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32)
 	rm -rf fcov/unpriv/*
+	rm -f *.stamp
+
+$(PRIVHEADERSDIR):
+	mkdir -p $@
 
 # TODO: Coverage targets
 
