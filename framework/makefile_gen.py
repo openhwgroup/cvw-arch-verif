@@ -12,6 +12,42 @@ from pathlib import Path
 from typing import Any
 
 
+def write_test_compilation_rules(
+    test_name: str,
+    test_metadata: dict[str, Any],
+    base_dir: Path,
+    xlen: int,
+    mabi: str,
+) -> str:
+    make_str = ""
+
+    # Extract metadata
+    march = test_metadata["MARCH"]
+    flen = "64" if "D" in test_metadata["implemented_extensions"] else "32" # TODO: Use implemented_extensions in header file so this doesn't have to be defined
+
+    # Generate signature based ELF
+    sig_elf = base_dir / test_name.replace(".S", "-sig.elf")
+    test_path = Path("tests") / test_name
+    make_str += f"{sig_elf}: {test_path} | {sig_elf.parent}\n"
+    make_str += f"\t@echo Compiling {test_name} to {sig_elf}\n"
+    make_str += f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
+
+    # Generate signature file
+    sig_file = base_dir / test_name.replace(".S", ".sig")
+    sig_log_file = base_dir / test_name.replace(".S", "-sig.log")
+    make_str += f"{sig_file}: {sig_elf}\n"
+    make_str += f"\t@echo Generating signature for {sig_elf} to {sig_file}\n"
+    make_str += f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
+
+    # Final ELF target
+    final_elf = base_dir / test_name.replace(".S", ".elf")
+    make_str += f"{final_elf}: {sig_elf} {sig_file}\n"
+    make_str += f"\t@echo Generating final ELF {final_elf}\n"
+    make_str += f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
+
+    return make_str
+
+
 def generate_makefile(
     common_test_list: dict[str, dict[str, Any]],
     config_test_list: dict[str, dict[str, Any]],
@@ -25,85 +61,35 @@ def generate_makefile(
     include_paths = "-Itests -Itests/env -Itests/priv/headers"
     linker_script = "tests/link.ld"
     config_test_dir = wkdir / config_name
+
     with makefile_path.open("w") as makefile:
         # General variables
         makefile.write(
-            f"XLEN := {xlen}\n"
             "CC := riscv64-unknown-elf-gcc\n"
             f"INCLUDE_PATHS := {include_paths}\n"
             f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}\n"
+            f"XLEN := {xlen}\n"
         )
-        # Top-level target to compile all tests
-        makefile.write("TESTS = \\\n")
-        for test_name in config_test_list.keys():
-            elf_path = config_test_dir / test_name.replace('.S', '.elf')
-            makefile.write(f"    {elf_path} \\\n")
-        makefile.write("\nall: $(TESTS)\n\n")
+
         # Common test compilation targets
         for test_name, test_metadata in common_test_list.items():
-            march = test_metadata["MARCH"]
-            flen = "64" if "D" in test_metadata["implemented_extensions"] else "32"
-            # Generate signature based ELF
-            sig_elf = wkdir / "common" / test_name.replace(".S", "-sig.elf")
-            test_path = Path("tests") / test_name
-            makefile.write(f"{sig_elf}: {test_path} | {sig_elf.parent}\n")
-            makefile.write(f"\t@echo Compiling {test_name} to {sig_elf}\n")
-            makefile.write(
-                f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
-            )
-
-            # Generate signature file
-            sig_file = wkdir / "common" / test_name.replace(".S", ".sig")
-            sig_log_file = wkdir / "common" / test_name.replace(".S", "-sig.log")
-            makefile.write(f"{sig_file}: {sig_elf}\n")
-            makefile.write(f"\t@echo Generating signature for {sig_elf} to {sig_file}\n")
-            makefile.write(
-                f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
-            )
-
-            # Final ELF target
-            final_elf = wkdir / "common" / test_name.replace(".S", ".elf")
-            makefile.write(f"{final_elf}: {sig_elf} {sig_file}\n")
-            makefile.write(f"\t@echo Generating final ELF {final_elf}\n")
-            makefile.write(
-                f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
-            )
+            makefile.write(write_test_compilation_rules(test_name, test_metadata, wkdir / "common", xlen, mabi))
         # Individual test compilation targets
+        compile_all_target = "TESTS = \\\n"
+        directory_list = {wkdir}
         for test_name, test_metadata in config_test_list.items():
+            final_elf = config_test_dir / test_name.replace(".S", ".elf")
+            compile_all_target += f"    {final_elf} \\\n"
+            directory_list.add(final_elf.parent)
+
+            # Symlink to common ELF if test is in common list, otherwise compile the test
             if test_name in common_test_list:
-                final_elf = config_test_dir / test_name.replace(".S", ".elf")
                 common_elf = wkdir / "common" / test_name.replace(".S", ".elf")
                 makefile.write(f"{final_elf}: {common_elf} | {final_elf.parent}\n")
                 makefile.write(f"\t@echo Using common ELF for {final_elf}\n")
                 makefile.write(f"\tln -sf {common_elf} {final_elf}\n\n")
             else:
-                march = test_metadata["MARCH"]
-                flen = "64" if "D" in test_metadata["implemented_extensions"] else "32"
-                # Generate signature based ELF
-                sig_elf = config_test_dir / test_name.replace(".S", "-sig.elf")
-                test_path = Path("tests") / test_name
-                makefile.write(f"{sig_elf}: {test_path} | {sig_elf.parent}\n")
-                makefile.write(f"\t@echo Compiling {test_name} to {sig_elf}\n")
-                makefile.write(
-                    f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
-                )
-
-                # Generate signature file
-                sig_file = config_test_dir / test_name.replace(".S", ".sig")
-                sig_log_file = config_test_dir / test_name.replace(".S", "-sig.log")
-                makefile.write(f"{sig_file}: {sig_elf}\n")
-                makefile.write(f"\t@echo Generating signature for {sig_elf} to {sig_file}\n")
-                makefile.write(
-                    f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
-                )
-
-                # Final ELF target
-                final_elf = config_test_dir / test_name.replace(".S", ".elf")
-                makefile.write(f"{final_elf}: {sig_elf} {sig_file}\n")
-                makefile.write(f"\t@echo Generating final ELF {final_elf}\n")
-                makefile.write(
-                    f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
-                )
+                makefile.write(write_test_compilation_rules(test_name, test_metadata, config_test_dir, xlen, mabi))
 
             # Run test on Sail to generate log
             sail_log = config_test_dir / test_name.replace(".S", ".log")
@@ -117,8 +103,12 @@ def generate_makefile(
             makefile.write(f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}\n")
             makefile.write(f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n")
 
+        # Top-level target to compile all tests
+        compile_all_target += "\nall: $(TESTS)\n\n"
+        makefile.write(compile_all_target)
+
         # Directory creation rules
-        makefile.write(f"{wkdir}/%:\n")
+        makefile.write(f"{" ".join(directory_list)}:\n")
         makefile.write("\tmkdir -p $@\n\n")
 
         # Clean target
