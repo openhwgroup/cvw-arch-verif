@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 
-def write_test_compilation_rules(
+def gen_compile_targets(
     test_name: str,
     test_metadata: dict[str, Any],
     base_dir: Path,
@@ -23,7 +23,9 @@ def write_test_compilation_rules(
 
     # Extract metadata
     march = test_metadata["MARCH"]
-    flen = "64" if "D" in test_metadata["implemented_extensions"] else "32" # TODO: Use implemented_extensions in header file so this doesn't have to be defined
+    flen = (
+        "64" if "D" in test_metadata["implemented_extensions"] else "32"
+    )  # TODO: Use implemented_extensions in header file so this doesn't have to be defined
 
     # Generate signature based ELF
     sig_elf = base_dir / test_name.replace(".S", "-sig.elf")
@@ -44,6 +46,24 @@ def write_test_compilation_rules(
     make_str += f"{final_elf}: {sig_elf} {sig_file}\n"
     make_str += f"\t@echo Generating final ELF {final_elf}\n"
     make_str += f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
+
+    return make_str
+
+
+def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
+    make_str = ""
+    # Run test on Sail to generate log
+    elf = base_dir / test_name.replace(".S", ".elf")
+    sail_log = base_dir / test_name.replace(".S", ".log")
+    make_str += f"{sail_log}: {elf}\n"
+    make_str += f"\t@echo Running {elf} on Sail to generate log {sail_log}\n"
+    make_str += f"\tsail_riscv_sim --trace-all {elf} --trace-output {sail_log}\n\n"
+
+    # Generate RVVI trace
+    rvvi_trace = base_dir / test_name.replace(".S", ".rvvi")
+    make_str += f"{rvvi_trace}: {sail_log}\n"
+    make_str += f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}\n"
+    make_str += f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n"
 
     return make_str
 
@@ -78,7 +98,8 @@ def generate_makefile(
         directory_set = {str(wkdir), str(config_test_dir), str(common_test_dir)}
         for test_name, test_metadata in common_test_list.items():
             directory_set.add(str((common_test_dir / test_name).parent))
-            makefile.write(write_test_compilation_rules(test_name, test_metadata, common_test_dir, xlen, mabi))
+            makefile.write(gen_compile_targets(test_name, test_metadata, common_test_dir, xlen, mabi))
+
         # Individual test compilation targets
         compile_all_target = "TESTS = \\\n"
         for test_name, test_metadata in config_test_list.items():
@@ -93,26 +114,17 @@ def generate_makefile(
                 makefile.write(f"\t@echo Using common ELF for {final_elf}\n")
                 makefile.write(f"\tln -sf {common_elf} {final_elf}\n\n")
             else:
-                makefile.write(write_test_compilation_rules(test_name, test_metadata, config_test_dir, xlen, mabi))
+                makefile.write(gen_compile_targets(test_name, test_metadata, config_test_dir, xlen, mabi))
 
-            # Run test on Sail to generate log
-            sail_log = config_test_dir / test_name.replace(".S", ".log")
-            makefile.write(f"{sail_log}: {final_elf}\n")
-            makefile.write(f"\t@echo Running {final_elf} on Sail to generate log {sail_log}\n")
-            makefile.write(f"\tsail_riscv_sim --trace-all {final_elf} --trace-output {sail_log}\n\n")
-
-            # Generate RVVI trace
-            rvvi_trace = config_test_dir / test_name.replace(".S", ".rvvi")
-            makefile.write(f"{rvvi_trace}: {sail_log}\n")
-            makefile.write(f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}\n")
-            makefile.write(f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n")
+            # Produce RVVI trace
+            makefile.write(gen_rvvi_targets(test_name, config_test_dir))
 
         # Top-level target to compile all tests
         compile_all_target += "\ncompile: $(TESTS)\n\n"
         makefile.write(compile_all_target)
 
         # Directory creation rules
-        makefile.write(f"{" ".join(directory_set)}:\n")
+        makefile.write(f"{' '.join(directory_set)}:\n")
         makefile.write("\tmkdir -p $@\n\n")
 
         # Clean target
