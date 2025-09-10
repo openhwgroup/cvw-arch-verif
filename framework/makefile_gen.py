@@ -69,8 +69,9 @@ def generate_makefile(
             "CC := riscv64-unknown-elf-gcc\n"
             f"INCLUDE_PATHS := {include_paths}\n"
             f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}\n"
-            f"XLEN := {xlen}\n"
-            ".DEFAULT_GOAL := all\n\n"
+            f"XLEN := {xlen}\n\n"
+            ".DEFAULT_GOAL := compile\n"
+            ".PHONY: compile coverage clean\n\n"
         )
 
         # Common test compilation targets
@@ -107,7 +108,7 @@ def generate_makefile(
             makefile.write(f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n")
 
         # Top-level target to compile all tests
-        compile_all_target += "\nall: $(TESTS)\n\n"
+        compile_all_target += "\ncompile: $(TESTS)\n\n"
         makefile.write(compile_all_target)
 
         # Directory creation rules
