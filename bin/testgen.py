@@ -19,6 +19,8 @@ import re
 import sys
 from random import randint, seed
 
+# Ignore Unpacked variable is never used until there is time for a full refactor
+# ruff: noqa: RUF059
 
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count

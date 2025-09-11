@@ -1647,7 +1647,7 @@ def writeTest(description, instruction, instruction_data,
                                                         rs1_reg = scalar_register_data['rs1']['reg'],
                                                         rs2_reg = scalar_register_data['rs2']['reg'])
 
-      [load_vector_register_data, load_scalar_register_data, load_floating_point_register_data, load_imm_val] = load_instruction_data
+      [load_vector_register_data, load_scalar_register_data, _load_floating_point_register_data, _load_imm_val] = load_instruction_data
       load_vd = load_vector_register_data['vd'] ['reg']
 
       load_testline = f"{load_instruction} v{load_vd}, (x{load_scalar_register_data['rs1']['reg']})"
