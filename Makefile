@@ -19,6 +19,8 @@ COV_TEMPLATE_DIR  := $(TEMPLATEDIR)/coverage
 TEST_TEMPLATES    := $(wildcard $(TEST_TEMPLATE_DIR)/*.S $(TEST_TEMPLATE_DIR)/**/*.S)
 COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**/*.txt)
 
+STAMP_DIR := stamps
+
 debug:
 # 	@echo "TEST_TEMPLATES: $(TEST_TEMPLATES)"
 	@echo "COV_TEMPLATES: $(COV_TEMPLATES)"
@@ -49,25 +51,25 @@ clean:
 
 # Test generation targets
 .PHONY: covergroupgen
-covergroupgen: covergroupgen.stamp
-covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES)
+covergroupgen: $(STAMP_DIR)/covergroupgen.stamp
+$(STAMP_DIR)/covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES) | $(STAMP_DIR)
 	$(UV_RUN) bin/covergroupgen.py
 	touch $@
 
 .PHONY: testgen
-testgen:  testgen.stamp
-testgen.stamp: covergroupgen.stamp bin/testgen.py $(TEST_TEMPLATES)
+testgen:  $(STAMP_DIR)/testgen.stamp
+$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp bin/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
 	$(UV_RUN) bin/testgen.py
 	touch $@
 
 .PHONY: privheaders
-privheaders: csrtests.stamp illegalinstrtests.stamp
+privheaders: $(STAMP_DIR)/csrtests.stamp $(STAMP_DIR)/illegalinstrtests.stamp
 
-csrtests.stamp: bin/csrtests.py | $(PRIVHEADERSDIR)
+$(STAMP_DIR)/csrtests.stamp: bin/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
 	$(UV_RUN) bin/csrtests.py
 	touch $@
 
-illegalinstrtests.stamp: bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
+$(STAMP_DIR)/illegalinstrtests.stamp: bin/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
 	$(UV_RUN) bin/illegalinstrtests.py
 	touch $@
 
@@ -78,9 +80,9 @@ tests: testgen privheaders
 clean-tests:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32)
 	rm -rf fcov/unpriv/*
-	rm -f *.stamp
+	rm -f $(STAMP_DIR)/*
 
-$(PRIVHEADERSDIR):
+$(PRIVHEADERSDIR) $(STAMP_DIR):
 	mkdir -p $@
 
 # TODO: Coverage targets
