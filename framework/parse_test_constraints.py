@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
+from ruamel.yaml import YAML
 
 
 def extract_yaml_config(file: Path) -> dict[str, Any]:
@@ -42,10 +42,8 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
         line = line.lstrip("#")
         yaml_lines.append(line)
 
-    try:
-        return yaml.safe_load("\n".join(yaml_lines))
-    except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML in config section: {e}")
+    yaml = YAML(typ="safe", pure=True)
+    return yaml.load("\n".join(yaml_lines))
 
 
 def generate_test_dict(tests_dir: Path) -> dict[str, dict[str, Any]]:

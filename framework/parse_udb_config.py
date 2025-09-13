@@ -12,18 +12,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
+from ruamel.yaml import YAML
 
 
 def parse_udb_config(udb_config_file: Path) -> dict[str, Any]:
     """Parse the UDB configuration YAML file and return its contents as a dictionary."""
     try:
-        config = yaml.safe_load(udb_config_file.read_text())
+        yaml = YAML(typ="safe", pure=True)
+        config = yaml.load(udb_config_file.read_text())
         return config
     except FileNotFoundError:
         raise FileNotFoundError(f"UDB configuration file not found: {udb_config_file}")
-    except yaml.YAMLError as e:
-        raise ValueError(f"Error parsing UDB configuration file: {e}")
 
 
 def get_implemented_extensions(udb_config: dict[str, Any]) -> set[str]:
@@ -35,7 +34,8 @@ def get_implemented_extensions(udb_config: dict[str, Any]) -> set[str]:
 def main():
     udb_config_path = Path(sys.argv[1])
     config = parse_udb_config(udb_config_path)
-    print(yaml.dump(config))
+    yaml = YAML()
+    yaml.dump(config, sys.stdout)
     print(get_implemented_extensions(config))
 
 
