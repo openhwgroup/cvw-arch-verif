@@ -18,6 +18,8 @@ TEST_TEMPLATE_DIR := $(TEMPLATEDIR)/testgen
 COV_TEMPLATE_DIR  := $(TEMPLATEDIR)/coverage
 TEST_TEMPLATES    := $(wildcard $(TEST_TEMPLATE_DIR)/*.S $(TEST_TEMPLATE_DIR)/**/*.S)
 COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**/*.txt)
+TESTPLANS_DIR		  := testplans
+TESTPLANS         := $(wildcard $(TESTPLANS_DIR)/*.csv $(TESTPLANS_DIR)/**/*.csv)
 
 STAMP_DIR := stamps
 
@@ -52,7 +54,7 @@ clean:
 # Test generation targets
 .PHONY: covergroupgen
 covergroupgen: $(STAMP_DIR)/covergroupgen.stamp
-$(STAMP_DIR)/covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES) | $(STAMP_DIR)
+$(STAMP_DIR)/covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
 	$(UV_RUN) bin/covergroupgen.py
 	touch $@
 
