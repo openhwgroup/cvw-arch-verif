@@ -19,7 +19,7 @@ def gen_compile_targets(
     xlen: int,
     mabi: str,
 ) -> str:
-    make_str = ""
+    make_lines = []
 
     # Extract metadata
     march = test_metadata["MARCH"]
@@ -27,45 +27,75 @@ def gen_compile_targets(
         "64" if "D" in test_metadata["implemented_extensions"] else "32"
     )  # TODO: Use implemented_extensions in header file so this doesn't have to be defined
 
-    # Generate signature based ELF
-    sig_elf = base_dir / test_name.replace(".S", "-sig.elf")
+    base_name = test_name.replace(".S", "")
+    sig_elf = base_dir / f"{base_name}-sig.elf"
+    sig_file = base_dir / f"{base_name}.sig"
+    sig_log_file = base_dir / f"{base_name}-sig.log"
+    final_elf = base_dir / f"{base_name}.elf"
     test_path = Path("tests") / test_name
-    make_str += f"{sig_elf}: {test_path} | {sig_elf.parent}\n"
-    make_str += f"\t@echo Compiling {test_name} to {sig_elf}\n"
-    make_str += f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}\n\n"
+
+    # Generate signature based ELF
+    make_lines.extend(
+        [
+            f"{sig_elf}: {test_path} | {sig_elf.parent}",
+            f"\t@echo Compiling {test_name} to {sig_elf}",
+            f"\t$(CC) $(CFLAGS) -o {sig_elf} -march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} {test_path}",
+            "",
+        ]
+    )
 
     # Generate signature file
-    sig_file = base_dir / test_name.replace(".S", ".sig")
-    sig_log_file = base_dir / test_name.replace(".S", "-sig.log")
-    make_str += f"{sig_file}: {sig_elf}\n"
-    make_str += f"\t@echo Generating signature for {sig_elf} to {sig_file}\n"
-    make_str += f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}\n\n"
+    make_lines.extend(
+        [
+            f"{sig_file}: {sig_elf}",
+            f"\t@echo Generating signature for {sig_elf} to {sig_file}",
+            f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}",
+            "",
+        ]
+    )
 
     # Final ELF target
-    final_elf = base_dir / test_name.replace(".S", ".elf")
-    make_str += f"{final_elf}: {sig_elf} {sig_file}\n"
-    make_str += f"\t@echo Generating final ELF {final_elf}\n"
-    make_str += f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}\n\n"
+    make_lines.extend(
+        [
+            f"{final_elf}: {sig_elf} {sig_file}",
+            f"\t@echo Generating final ELF {final_elf}",
+            f"\t$(CC) $(CFLAGS) -o {final_elf} -march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' {test_path}",
+            "",
+        ]
+    )
 
-    return make_str
+    return "\n".join(make_lines)
 
 
 def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
-    make_str = ""
+    make_lines = []
+
+    base_name = test_name.replace(".S", "")
+    elf = base_dir / f"{base_name}.elf"
+    sail_log = base_dir / f"{base_name}.log"
+    rvvi_trace = base_dir / f"{base_name}.rvvi"
+
     # Run test on Sail to generate log
-    elf = base_dir / test_name.replace(".S", ".elf")
-    sail_log = base_dir / test_name.replace(".S", ".log")
-    make_str += f"{sail_log}: {elf}\n"
-    make_str += f"\t@echo Running {elf} on Sail to generate log {sail_log}\n"
-    make_str += f"\tsail_riscv_sim --trace-all {elf} --trace-output {sail_log}\n\n"
+    make_lines.extend(
+        [
+            f"{sail_log}: {elf}",
+            f"\t@echo Running {elf} on Sail to generate log {sail_log}",
+            f"\tsail_riscv_sim --trace-all {elf} --trace-output {sail_log}",
+            "",
+        ]
+    )
 
     # Generate RVVI trace
-    rvvi_trace = base_dir / test_name.replace(".S", ".rvvi")
-    make_str += f"{rvvi_trace}: {sail_log}\n"
-    make_str += f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}\n"
-    make_str += f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}\n\n"
+    make_lines.extend(
+        [
+            f"{rvvi_trace}: {sail_log}",
+            f"\t@echo Generating RVVI trace {rvvi_trace} from log {sail_log}",
+            f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}",
+            "",
+        ]
+    )
 
-    return make_str
+    return "\n".join(make_lines)
 
 
 def generate_makefile(
@@ -83,53 +113,72 @@ def generate_makefile(
     common_test_dir = wkdir / "common"
     config_test_dir = wkdir / config_name
 
-    with makefile_path.open("w") as makefile:
-        # General variables
-        makefile.write(
-            "CC := riscv64-unknown-elf-gcc\n"
-            f"INCLUDE_PATHS := {include_paths}\n"
-            f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}\n"
-            f"XLEN := {xlen}\n\n"
-            ".DEFAULT_GOAL := compile\n"
-            ".PHONY: compile coverage clean\n\n"
-        )
+    makefile_lines = []
 
-        # Common test compilation targets
-        directory_set = {str(wkdir), str(config_test_dir), str(common_test_dir)}
-        for test_name, test_metadata in common_test_list.items():
-            directory_set.add(str((common_test_dir / test_name).parent))
-            makefile.write(gen_compile_targets(test_name, test_metadata, common_test_dir, xlen, mabi))
+    # General variables
+    makefile_lines.extend(
+        [
+            "CC := riscv64-unknown-elf-gcc",
+            f"INCLUDE_PATHS := {include_paths}",
+            f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}",
+            f"XLEN := {xlen}",
+            "",
+            ".DEFAULT_GOAL := compile",
+            ".PHONY: compile coverage clean",
+            "",
+        ]
+    )
 
-        # Individual test compilation targets
-        compile_all_target = "TESTS = \\\n"
-        for test_name, test_metadata in config_test_list.items():
-            final_elf = config_test_dir / test_name.replace(".S", ".elf")
-            compile_all_target += f"    {final_elf} \\\n"
-            directory_set.add(str(final_elf.parent))
+    directory_set = {str(wkdir), str(config_test_dir), str(common_test_dir)}
 
-            # Symlink to common ELF if test is in common list, otherwise compile the test
-            if test_name in common_test_list:
-                common_elf = common_test_dir / test_name.replace(".S", ".elf")
-                makefile.write(f"{final_elf}: {common_elf} | {final_elf.parent}\n")
-                makefile.write(f"\t@echo Using common ELF for {final_elf}\n")
-                makefile.write(f"\tln -sf {common_elf} {final_elf}\n\n")
-            else:
-                makefile.write(gen_compile_targets(test_name, test_metadata, config_test_dir, xlen, mabi))
+    # Common test compilation targets
+    for test_name, test_metadata in common_test_list.items():
+        directory_set.add(str((common_test_dir / test_name).parent))
+        makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_test_dir, xlen, mabi))
 
-            # Produce RVVI trace
-            makefile.write(gen_rvvi_targets(test_name, config_test_dir))
+    # Individual test compilation targets and TESTS variable
+    test_targets = []
+    individual_test_rules = []
 
-        # Top-level target to compile all tests
-        compile_all_target += "\ncompile: $(TESTS)\n\n"
-        makefile.write(compile_all_target)
+    for test_name, test_metadata in config_test_list.items():
+        base_name = test_name.replace(".S", "")
+        final_elf = config_test_dir / f"{base_name}.elf"
+        test_targets.append(f"    {final_elf} \\")
+        directory_set.add(str(final_elf.parent))
 
-        # Directory creation rules
-        makefile.write(f"{' '.join(directory_set)}:\n")
-        makefile.write("\tmkdir -p $@\n\n")
+        # Symlink to common ELF if test is in common list, otherwise compile the test
+        if test_name in common_test_list:
+            common_elf = common_test_dir / f"{base_name}.elf"
+            individual_test_rules.extend(
+                [
+                    f"{final_elf}: {common_elf} | {final_elf.parent}",
+                    f"\t@echo Using common ELF for {final_elf}",
+                    f"\tln -sf {common_elf} {final_elf}",
+                    "",
+                ]
+            )
+        else:
+            individual_test_rules.append(gen_compile_targets(test_name, test_metadata, config_test_dir, xlen, mabi))
 
-        # Clean target
-        makefile.write("clean:\n")
-        makefile.write(f"\trm -rf {wkdir}/*\n")
+        # Produce RVVI trace
+        individual_test_rules.append(gen_rvvi_targets(test_name, config_test_dir))
+
+    # Add TESTS variable and compile target
+    makefile_lines.append("TESTS = \\")
+    makefile_lines.extend(test_targets)
+    makefile_lines.extend(["", "compile: $(TESTS)", ""])
+
+    # Add individual test rules
+    makefile_lines.extend(individual_test_rules)
+
+    # Directory creation rules
+    makefile_lines.extend([f"{' '.join(sorted(directory_set))}:", "\tmkdir -p $@", ""])
+
+    # Clean target
+    makefile_lines.extend(["clean:", f"\trm -rf {wkdir}/*"])
+
+    # Write to Makefile
+    makefile_path.write_text("\n".join(makefile_lines))
 
 
 def main() -> None:
