@@ -11,29 +11,23 @@
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, StringConstraints
 from ruamel.yaml import YAML
+
+# Type alias for non-empty strings with whitespace trimming
+NonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 
 
 class Config(BaseModel):
     """Configuration for the RISC-V architecture verification framework."""
 
-    udb_config: Annotated[Path, Field(description="Path to UDB configuration file")]
-    linker_script: Annotated[Path, Field(description="Path to linker script")]
-    dut_include_dir: Annotated[Path, Field(description="Path to DUT include directory")]
-    compiler: Annotated[str, Field(min_length=1, description="RISC-V compiler name or path")]
-    sail_riscv_sim: Annotated[str, Field(min_length=1, description="SAIL executable name or path")]
+    udb_config: Path
+    linker_script: Path
+    dut_include_dir: Path
+    compiler: NonEmptyStr
+    sail_riscv_sim: NonEmptyStr
 
     model_config = {"frozen": True}
-
-    @field_validator("udb_config", "linker_script", "dut_include_dir", mode="before")
-    @classmethod
-    def convert_to_path(cls, v):
-        """Convert string paths to Path objects and make relative paths absolute."""
-        path = Path(v)
-        if not path.is_absolute():
-            path = Path.cwd() / path
-        return path
 
     def __str__(self) -> str:
         """Pretty print configuration."""
