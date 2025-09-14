@@ -11,7 +11,7 @@
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, DirectoryPath, FilePath, StringConstraints
 from ruamel.yaml import YAML
 
 # Type alias for non-empty strings with whitespace trimming
@@ -21,9 +21,9 @@ NonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=Tr
 class Config(BaseModel):
     """Configuration for the RISC-V architecture verification framework."""
 
-    udb_config: Path
-    linker_script: Path
-    dut_include_dir: Path
+    udb_config: FilePath
+    linker_script: FilePath
+    dut_include_dir: DirectoryPath
     compiler: NonEmptyStr
     sail_riscv_sim: NonEmptyStr
 
