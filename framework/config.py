@@ -9,6 +9,7 @@
 ##################################
 
 import shutil
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
@@ -19,6 +20,22 @@ from ruamel.yaml import YAML
 NonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 
 
+class RefModelType(str, Enum):
+    """Reference model types with their associated flags."""
+
+    SAIL = "sail"
+    SPIKE = "spike"
+
+    @property
+    def flags(self) -> str:
+        """Get the flags for this reference model."""
+        flags_map = {
+            RefModelType.SAIL: "--test-signature={sig_file} --signature-granularity {granularity}",
+            RefModelType.SPIKE: "+signature={sig_file} +signature-granularity={granularity}",
+        }
+        return flags_map[self]
+
+
 class Config(BaseModel):
     """Configuration for the RISC-V architecture verification framework."""
 
@@ -26,6 +43,7 @@ class Config(BaseModel):
     linker_script: FilePath
     dut_include_dir: DirectoryPath
     compiler_exe: Path
+    ref_model_type: RefModelType
     ref_model_exe: Path
 
     model_config = {"frozen": True}
@@ -76,6 +94,7 @@ def main():
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
