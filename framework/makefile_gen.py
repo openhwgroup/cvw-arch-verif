@@ -100,7 +100,6 @@ def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
 def generate_makefile(
     common_test_list: dict[str, TestMetadata],
     config_test_list: dict[str, TestMetadata],
-    makefile_path: Path,
     wkdir: Path,
     config_name: str,
 ) -> None:
@@ -177,6 +176,7 @@ def generate_makefile(
     makefile_lines.extend(["clean:", f"\trm -rf {wkdir}/*"])
 
     # Write to Makefile
+    makefile_path = Path("generated_makefile.mk")  # TODO: Put this in config specific workdir
     makefile_path.write_text("\n".join(makefile_lines))
 
 
@@ -190,7 +190,6 @@ def main() -> None:
 
     tests_dir = Path(sys.argv[1])
     udb_config_path = Path(sys.argv[2])
-    makefile_path = Path("generated_makefile.mk")
     wkdir = Path.cwd() / "workdir"
 
     # Parse UDB config and get implemented extensions
@@ -203,8 +202,7 @@ def main() -> None:
     selected_tests, common_tests = select_tests(test_dict, udb_config)
 
     # Generate Makefile
-    generate_makefile(common_tests, selected_tests, makefile_path, wkdir, udb_config_path.stem)
-    print(f"Makefile generated at {makefile_path}")
+    generate_makefile(common_tests, selected_tests, wkdir, udb_config_path.stem)
 
 
 if __name__ == "__main__":
