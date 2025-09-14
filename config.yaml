@@ -1,0 +1,5 @@
+compiler: /opt/riscv/bin/riscv64-unknown-elf-gcc
+udb_config: cvw_config.yaml
+linker_script: tests/link.ld
+dut_include_dir: tests
+sail_executable: sail_riscv_sim
