@@ -8,10 +8,11 @@
 # Parse test framework configuration files
 ##################################
 
+import shutil
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, DirectoryPath, FilePath, StringConstraints
+from pydantic import BaseModel, DirectoryPath, FilePath, StringConstraints, ValidationInfo, field_validator
 from ruamel.yaml import YAML
 
 # Type alias for non-empty strings with whitespace trimming
@@ -24,10 +25,19 @@ class Config(BaseModel):
     udb_config: FilePath
     linker_script: FilePath
     dut_include_dir: DirectoryPath
-    compiler: NonEmptyStr
-    sail_riscv_sim: NonEmptyStr
+    compiler_exe: Path
+    ref_model_exe: Path
 
     model_config = {"frozen": True}
+
+    @field_validator("compiler_exe", "ref_model_exe")
+    @classmethod
+    def validate_executable(cls, v: str, info: ValidationInfo) -> Path:
+        """Ensure the executable can be found."""
+        full_path = shutil.which(v)
+        if full_path is None:
+            raise FileNotFoundError(f"{info.field_name} executable not found: {v}")
+        return Path(full_path)
 
     def __str__(self) -> str:
         """Pretty print configuration."""
