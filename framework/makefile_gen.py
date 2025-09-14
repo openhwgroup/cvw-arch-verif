@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 ##################################
 # makefile_gen.py
 #

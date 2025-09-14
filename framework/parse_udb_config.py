@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 ##################################
 # parse_udb_config.py
 #
