@@ -11,13 +11,9 @@
 import shutil
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
 
-from pydantic import BaseModel, DirectoryPath, FilePath, StringConstraints, ValidationInfo, field_validator
+from pydantic import BaseModel, DirectoryPath, FilePath, ValidationInfo, field_validator
 from ruamel.yaml import YAML
-
-# Type alias for non-empty strings with whitespace trimming
-NonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 
 
 class RefModelType(str, Enum):

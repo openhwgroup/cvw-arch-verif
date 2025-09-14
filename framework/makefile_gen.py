@@ -9,23 +9,22 @@
 ##################################
 
 from pathlib import Path
-from typing import Any
+
+from framework.parse_test_constraints import TestMetadata
 
 
 def gen_compile_targets(
     test_name: str,
-    test_metadata: dict[str, Any],
+    test_metadata: TestMetadata,
     base_dir: Path,
     xlen: int,
     mabi: str,
 ) -> str:
     make_lines = []
 
-    # Extract metadata
-    march = test_metadata["MARCH"]
-    flen = (
-        "64" if "D" in test_metadata["implemented_extensions"] else "32"
-    )  # TODO: Use implemented_extensions in header file so this doesn't have to be defined
+    # Extract metadata using properties
+    march = test_metadata.march
+    flen = test_metadata.flen
 
     base_name = test_name.replace(".S", "")
     sig_elf = base_dir / f"{base_name}-sig.elf"
@@ -99,8 +98,8 @@ def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
 
 
 def generate_makefile(
-    common_test_list: dict[str, dict[str, Any]],
-    config_test_list: dict[str, dict[str, Any]],
+    common_test_list: dict[str, TestMetadata],
+    config_test_list: dict[str, TestMetadata],
     makefile_path: Path,
     wkdir: Path,
     config_name: str,

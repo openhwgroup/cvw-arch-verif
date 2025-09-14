@@ -12,10 +12,37 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from pydantic import BaseModel, Field
 from ruamel.yaml import YAML
 
 
-def extract_yaml_config(file: Path) -> dict[str, Any]:
+class TestMetadata(BaseModel):
+    """Metadata for a RISC-V test case extracted from YAML configuration."""
+
+    implemented_extensions: set[str] = Field(min_length=1, whitespace_strip=True)
+    march: str = Field(alias="MARCH", whitespace_strip=True, pattern=r"rv(?:32|64|\$\{XLEN\})[ieg].*")
+    config_dependent: bool = Field(alias="CONFIG_DEPENDENT")
+    params: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"extra": "forbid", "frozen": True}
+
+    @property
+    def mxlen(self) -> int | None:
+        """Get MXLEN parameter if present."""
+        return self.params.get("MXLEN")
+
+    @property
+    def has_double_precision(self) -> bool:
+        """Check if test requires double-precision floating point (D extension)."""
+        return "D" in self.implemented_extensions
+
+    @property
+    def flen(self) -> str:
+        """Get floating-point register length: '64' if D extension present, else '32'."""
+        return "64" if self.has_double_precision else "32"
+
+
+def extract_yaml_config(file: Path) -> TestMetadata:
     """Extract YAML configuration from a test file between START_TEST_CONFIG and END_TEST_CONFIG markers."""
     content = file.read_text()
 
@@ -27,8 +54,7 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
     end_pos = content.find(end_marker)
 
     if start_pos == -1 or end_pos == -1:
-        error_msg = f"Could not find YAML config section in {file}"
-        raise ValueError(error_msg)
+        raise ValueError(f"Could not find YAML config section in {file}")
 
     # Extract content between markers
     start_pos = content.find("\n", start_pos) + 1  # Skip to next line after start marker
@@ -43,28 +69,46 @@ def extract_yaml_config(file: Path) -> dict[str, Any]:
         yaml_lines.append(line)
 
     yaml = YAML(typ="safe", pure=True)
-    return yaml.load("\n".join(yaml_lines))
+    config_dict = yaml.load("\n".join(yaml_lines))
+    return TestMetadata.model_validate(config_dict)
 
 
-def generate_test_dict(tests_dir: Path) -> dict[str, dict[str, Any]]:
+def generate_test_dict(tests_dir: Path) -> dict[str, TestMetadata]:
     """Generate a dictionary of tests with their corresponding metadata from the specified directory."""
+    if not tests_dir.is_dir():
+        raise ValueError(f"tests_dir is not a directory: {tests_dir}")
+
     test_list = {}
+
     for test_file in tests_dir.rglob("*.S"):
         config = extract_yaml_config(test_file)
         test_file_unique_name = str(test_file.relative_to(tests_dir))
         test_list[test_file_unique_name] = config
+
     return test_list
 
 
 def main():
-    import json
+    from devtools import pprint
 
     if len(sys.argv) != 2:
-        print("Usage: parse-test-constraints <file_path>", file=sys.stderr)
+        print("Usage: parse-test-constraints <file_or_directory_path>", file=sys.stderr)
         sys.exit(1)
 
-    test_configs = generate_test_dict(Path(sys.argv[1]))
-    print(json.dumps(dict(sorted(test_configs.items())), indent=2))
+    path = Path(sys.argv[1])
+
+    if path.is_file():
+        # Single file mode - extract and display config
+        pprint(extract_yaml_config(path))
+    elif path.is_dir():
+        # Directory mode - process all .S files
+        test_configs = generate_test_dict(path)
+        pprint(test_configs)
+        # test_configs_dict = {name: config.model_dump() for name, config in test_configs.items()}
+        # pprint(test_configs_dict)
+    else:
+        print(f"Error: {path} is neither a file nor a directory", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
