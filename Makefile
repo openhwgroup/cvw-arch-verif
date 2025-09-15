@@ -40,10 +40,10 @@ endif
 
 # Test compilation targets
 .PHONY: elfs
-elfs: generated_makefile.mk
+elfs: generated_makefile
 	$(MAKE) -f generated_makefile.mk compile
 
-generated_makefile.mk: $(CONFIG_FILE)
+generated_makefile: # too many dependencies to track; always regenerate Makefile
 	$(UV_RUN) act --config $(CONFIG_FILE)
 
 .PHONY: clean

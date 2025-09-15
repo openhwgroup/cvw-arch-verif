@@ -73,7 +73,7 @@ params:
   # C params
   MUTABLE_MISA_C: false
   # B params
-  MUTABLE_MISA_B: false
+  MUTABLE_MISA_B: true
   # CBO params
   CACHE_BLOCK_SIZE: 64
   FORCE_UPGRADE_CBO_INVAL_TO_FLUSH: false
