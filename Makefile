@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 # Directories and files
-CONFIG_FILE ?= cvw_config.yaml
+CONFIG_FILE ?= config.yaml
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
@@ -43,8 +43,8 @@ endif
 elfs: generated_makefile.mk
 	$(MAKE) -f generated_makefile.mk compile
 
-generated_makefile.mk:
-	$(UV_RUN) makefile_gen $(TESTDIR) $(CONFIG_FILE)
+generated_makefile.mk: $(CONFIG_FILE)
+	$(UV_RUN) act --config $(CONFIG_FILE)
 
 .PHONY: clean
 clean:

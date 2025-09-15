@@ -9,6 +9,7 @@
 
 from pathlib import Path
 
+from framework.config import Config
 from framework.parse_test_constraints import TestMetadata
 
 
@@ -18,6 +19,7 @@ def gen_compile_targets(
     base_dir: Path,
     xlen: int,
     mabi: str,
+    config: Config,
 ) -> str:
     make_lines = []
 
@@ -43,11 +45,12 @@ def gen_compile_targets(
     )
 
     # Generate signature file
+    ref_model_flags = config.ref_model_type.flags.format(sig_file=sig_file, granularity=int(xlen / 8))
     make_lines.extend(
         [
             f"{sig_file}: {sig_elf}",
             f"\t@echo Generating signature for {sig_elf} to {sig_file}",
-            f"\tsail_riscv_sim --test-signature={sig_file} --signature-granularity {int(xlen / 8)} {sig_elf} > {sig_log_file}",
+            f"\t{config.ref_model_exe} {ref_model_flags} {sig_elf} > {sig_log_file}",
             "",
         ]
     )
@@ -65,7 +68,7 @@ def gen_compile_targets(
     return "\n".join(make_lines)
 
 
-def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
+def gen_rvvi_targets(test_name: str, base_dir: Path, config: Config) -> str:
     make_lines = []
 
     base_name = test_name.replace(".S", "")
@@ -77,8 +80,8 @@ def gen_rvvi_targets(test_name: str, base_dir: Path) -> str:
     make_lines.extend(
         [
             f"{sail_log}: {elf}",
-            f"\t@echo Running {elf} on Sail to generate log {sail_log}",
-            f"\tsail_riscv_sim --trace-all {elf} --trace-output {sail_log}",
+            f"\t@echo Running {elf} on {config.ref_model_type.name} to generate log {sail_log}",
+            f"\t{config.ref_model_exe} --trace-all {elf} --trace-output {sail_log}",
             "",
         ]
     )
@@ -101,12 +104,13 @@ def generate_makefile(
     config_test_list: dict[str, TestMetadata],
     wkdir: Path,
     config_name: str,
+    config: Config,
+    udb_config: dict[str, any],
 ) -> None:
     """Generate a Makefile to run the selected tests."""
-    xlen = 64  # TODO: Get from config
+    xlen = udb_config.get("params", {}).get("MXLEN", 64)
     mabi = f"{'i' if xlen == 32 else ''}lp{xlen}"
-    include_paths = "-Itests -Itests/env -Itests/priv/headers"
-    linker_script = "tests/link.ld"
+    include_paths = f"-I{config.dut_include_dir} -Itests -Itests/env -Itests/priv/headers"
     common_test_dir = wkdir / "common"
     config_test_dir = wkdir / config_name
 
@@ -115,9 +119,9 @@ def generate_makefile(
     # General variables
     makefile_lines.extend(
         [
-            "CC := riscv64-unknown-elf-gcc",
+            f"CC := {config.compiler_exe}",
             f"INCLUDE_PATHS := {include_paths}",
-            f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {linker_script} ${{INCLUDE_PATHS}}",
+            f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -T {config.linker_script} ${{INCLUDE_PATHS}}",
             f"XLEN := {xlen}",
             "",
             ".DEFAULT_GOAL := compile",
@@ -131,7 +135,7 @@ def generate_makefile(
     # Common test compilation targets
     for test_name, test_metadata in common_test_list.items():
         directory_set.add(str((common_test_dir / test_name).parent))
-        makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_test_dir, xlen, mabi))
+        makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_test_dir, xlen, mabi, config))
 
     # Individual test compilation targets and TESTS variable
     test_targets = []
@@ -155,10 +159,12 @@ def generate_makefile(
                 ]
             )
         else:
-            individual_test_rules.append(gen_compile_targets(test_name, test_metadata, config_test_dir, xlen, mabi))
+            individual_test_rules.append(
+                gen_compile_targets(test_name, test_metadata, config_test_dir, xlen, mabi, config)
+            )
 
         # Produce RVVI trace
-        individual_test_rules.append(gen_rvvi_targets(test_name, config_test_dir))
+        individual_test_rules.append(gen_rvvi_targets(test_name, config_test_dir, config))
 
     # Add TESTS variable and compile target
     makefile_lines.append("TESTS = \\")

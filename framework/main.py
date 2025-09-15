@@ -39,7 +39,7 @@ def main():
     selected_tests, common_tests = select_tests(full_test_dict, udb_config)
 
     # Generate Makefile
-    generate_makefile(common_tests, selected_tests, args.workdir, args.config.stem)
+    generate_makefile(common_tests, selected_tests, args.workdir, args.config.stem, config, udb_config)
     print(f"Makefile generated in {args.workdir}")
     print(f"Run make -f {args.workdir / 'generated_makefile.mk'} to build and run tests.")
 
