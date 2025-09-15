@@ -8,6 +8,7 @@
 ##################################
 
 import argparse
+import subprocess
 
 # from framework.select_tests import select_tests
 from pathlib import Path
@@ -29,7 +30,14 @@ def main():
     # Load configuration
     config = load_config(args.config)
 
-    # TODO: Validate UDB config
+    # TODO: Figure out a more robust way to handle UDB validation
+    # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
+    # TODO: Only run UDB validation if config file has changed. Currently the slowest part of the process.
+    udb_config_cp_cmd = ["cp", config.udb_config, f"./riscv-unified-db/cfgs/{config.udb_config.name}"]
+    validate_udb_config_cmd = ["./riscv-unified-db/bin/udb", "validate", "cfg", f"cfgs/{config.udb_config.name}"]
+    subprocess.run(udb_config_cp_cmd, check=True)
+    subprocess.run(validate_udb_config_cmd, check=True)
+
     udb_config = parse_udb_config(config.udb_config)
 
     # TODO: Generate DUT specific header file from UDB
