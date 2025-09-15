@@ -52,6 +52,11 @@ class Config(BaseModel):
             raise FileNotFoundError(f"{info.field_name} executable not found: {v}")
         return Path(full_path)
 
+    @property
+    def compiler_string(self) -> str:
+        """Get the compiler executable as a string with relevant flags."""
+        return f"{self.compiler_exe} -I{self.dut_include_dir.absolute()} -T{self.linker_script.absolute()}"
+
     def __str__(self) -> str:
         """Pretty print configuration."""
         lines = ["Configuration:"]

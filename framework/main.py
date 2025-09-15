@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 
 from framework.config import load_config
-from framework.makefile_gen import generate_makefile
+from framework.makefile_gen import generate_makefiles
 from framework.parse_test_constraints import generate_test_dict
 from framework.parse_udb_config import parse_udb_config
 from framework.select_tests import select_tests
@@ -47,7 +47,15 @@ def main():
     selected_tests, common_tests = select_tests(full_test_dict, udb_config)
 
     # Generate Makefile
-    generate_makefile(common_tests, selected_tests, args.workdir, args.config.stem, config, udb_config)
+    generate_makefiles(
+        common_tests,
+        selected_tests,
+        args.tests_dir.absolute(),
+        args.workdir.absolute(),
+        udb_config["name"],
+        config,
+        udb_config,
+    )
     print(f"Makefile generated in {args.workdir}")
     print(f"Run make -f {args.workdir / 'generated_makefile.mk'} to build and run tests.")
 

@@ -40,16 +40,15 @@ endif
 
 # Test compilation targets
 .PHONY: elfs
-elfs: generated_makefile
-	$(MAKE) -f generated_makefile.mk compile
+elfs: generate_makefiles
+	$(MAKE) -C workdir compile
 
-generated_makefile: # too many dependencies to track; always regenerate Makefile
+generate_makefiles: # too many dependencies to track; always regenerate Makefile
 	$(UV_RUN) act --config $(CONFIG_FILE)
 
 .PHONY: clean
 clean:
-	$(MAKE) -f generated_makefile.mk clean || true
-	rm -f generated_makefile.mk
+	rm -rf workdir
 
 # Test generation targets
 .PHONY: covergroupgen
