@@ -1,0 +1,3 @@
+[submodule "riscv-unified-db"]
+	path = riscv-unified-db
+	url = https://github.com/riscv-software-src/riscv-unified-db
