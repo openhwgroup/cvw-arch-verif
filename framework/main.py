@@ -8,11 +8,11 @@
 ##################################
 
 import argparse
-import filecmp
-import shutil
-import subprocess
 from pathlib import Path
 
+# import filecmp
+# import shutil
+# import subprocess
 from framework.config import load_config
 from framework.makefile_gen import generate_makefiles
 from framework.parse_test_constraints import generate_test_dict
@@ -32,11 +32,11 @@ def main():
 
     # TODO: Figure out a more robust way to handle UDB validation
     # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
-    copied_udb_config = Path(f"./riscv-unified-db/cfgs/{config.udb_config.name}")
-    if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
-        shutil.copy(config.udb_config, copied_udb_config)
-        validate_udb_config_cmd = ["./riscv-unified-db/bin/udb", "validate", "cfg", f"cfgs/{config.udb_config.name}"]
-        subprocess.run(validate_udb_config_cmd, check=True)
+    # copied_udb_config = Path(f"./riscv-unified-db/cfgs/{config.udb_config.name}")
+    # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
+    #     shutil.copy(config.udb_config, copied_udb_config)
+    #     validate_udb_config_cmd = ["./riscv-unified-db/bin/udb", "validate", "cfg", f"cfgs/{config.udb_config.name}"]
+    #     subprocess.run(validate_udb_config_cmd, check=True)
 
     udb_config = parse_udb_config(config.udb_config)
 

@@ -18,7 +18,7 @@ jobs:
     - name: Checkout UDB submodule only
       run: git submodule update --init riscv-unified-db
 
-    - name: Install the latest version of uv
+    - name: Install uv
       uses: astral-sh/setup-uv@v6
 
     - name: Install RISCV-GNU Toolchain
