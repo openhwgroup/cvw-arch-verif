@@ -12,8 +12,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
+
+    - name: Checkout UDB submodule only
+      run: git submodule update --init riscv-unified-db
 
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@v6
