@@ -42,6 +42,8 @@ def main():
 
     # TODO: Generate DUT specific header file from UDB
 
+    # TODO: Generate Sail config file from UDB
+
     # Generate test list
     full_test_dict = generate_test_dict(args.tests_dir)
     selected_tests, common_tests = select_tests(full_test_dict, udb_config)
