@@ -201,7 +201,7 @@ def generate_makefiles(
     makefile_lines.extend(
         [
             "# This Makefile is auto-generated. Do not edit directly.",
-            f"CFLAGS := -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir} -I{tests_dir}/env -I{tests_dir}/priv/headers",
+            f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
             f"XLEN := {xlen}",
             "",
             ".DEFAULT_GOAL := compile",
