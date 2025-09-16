@@ -26,7 +26,7 @@ def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
 
     # f.write(f"\n# {name}\n")      no longer desired to include header name
-    with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
+    with open(f"{ARCH_VERIF}/testgen/templates/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
