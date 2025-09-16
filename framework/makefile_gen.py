@@ -59,6 +59,7 @@ def gen_compile_targets(
         [
             f"{final_elf}: {sig_elf} {sig_file}",
             f"\t{config.compiler_string} $(CFLAGS) \\\n\t-o {final_elf} \\\n\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' \\\n\t{test_path}",
+            f"\t{config.objdump_exe} -S -M no-aliases {final_elf} > {final_elf}.objdump" if config.objdump_exe is not None else "# skipping objdump generation",
             "",
         ]
     )
@@ -158,6 +159,7 @@ def generate_config_makefile(
                 [
                     f"{final_elf}: {common_elf} | {final_elf.parent}",
                     f"\tln -sf {common_elf} {final_elf}",
+                    f"\tln -sf {common_elf}.objdump {final_elf}.objdump" if config.objdump_exe is not None else "# skipping objdump",
                     "",
                 ]
             )

@@ -38,19 +38,23 @@ class Config(BaseModel):
     linker_script: FilePath
     dut_include_dir: DirectoryPath
     compiler_exe: Path
+    objdump_exe: Path | None = None
     ref_model_type: RefModelType
     ref_model_exe: Path
 
     model_config = {"frozen": True}
 
-    @field_validator("compiler_exe", "ref_model_exe")
+    @field_validator("compiler_exe", "ref_model_exe", "objdump_exe")
     @classmethod
     def validate_executable(cls, v: str, info: ValidationInfo) -> Path:
         """Ensure the executable can be found."""
-        full_path = shutil.which(v)
-        if full_path is None:
-            raise FileNotFoundError(f"{info.field_name} executable not found: {v}")
-        return Path(full_path)
+        if v is not None:
+            full_path = shutil.which(v)
+            if full_path is None:
+                raise FileNotFoundError(f"{info.field_name} executable not found: {v}")
+            return Path(full_path)
+        else:
+            return v
 
     @property
     def compiler_string(self) -> str:
