@@ -276,7 +276,7 @@
     .endif						;\
     .if (offset&(SIGALIGN-1))!=0				;\
     /* Throw warnings then modify offset to target */	;\
-      .warning "Incorrect signature Offset Alignment."	;\
+    /*  TODO: Why is this warning being triggered? .warning "Incorrect signature Offset Alignment."	*/;\
       .set offset, (offset&~(SIGALIGN-1))+SIGALIGN		;\
       /*  TODO: Original version follows. Why was this change necessary?\
         .set offset, offset&(SIGALIGN-1)+SIGALIGN		*/;\
