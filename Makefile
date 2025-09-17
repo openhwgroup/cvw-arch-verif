@@ -14,8 +14,8 @@ PRIVDIR64      := $(PRIVDIR)/rv64
 PRIVDIR32      := $(PRIVDIR)/rv32
 
 TEMPLATEDIR       := templates
-TEST_TEMPLATE_DIR := $(TEMPLATEDIR)/testgen
-COV_TEMPLATE_DIR  := $(TEMPLATEDIR)/coverage
+TEST_TEMPLATE_DIR := testgen/templates
+COV_TEMPLATE_DIR  := covergroupgen/templates
 TEST_TEMPLATES    := $(wildcard $(TEST_TEMPLATE_DIR)/*.S $(TEST_TEMPLATE_DIR)/**/*.S)
 COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**/*.txt)
 TESTPLANS_DIR		  := testplans
@@ -53,25 +53,25 @@ clean:
 # Test generation targets
 .PHONY: covergroupgen
 covergroupgen: $(STAMP_DIR)/covergroupgen.stamp
-$(STAMP_DIR)/covergroupgen.stamp: bin/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
-	$(UV_RUN) bin/covergroupgen.py
+$(STAMP_DIR)/covergroupgen.stamp: covergroupgen/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
+	$(UV_RUN) covergroupgen/covergroupgen.py
 	touch $@
 
 .PHONY: testgen
 testgen:  $(STAMP_DIR)/testgen.stamp
-$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp bin/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
-	$(UV_RUN) bin/testgen.py
+$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp testgen/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
+	$(UV_RUN) testgen/testgen.py
 	touch $@
 
 .PHONY: privheaders
 privheaders: $(STAMP_DIR)/csrtests.stamp $(STAMP_DIR)/illegalinstrtests.stamp
 
-$(STAMP_DIR)/csrtests.stamp: bin/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) bin/csrtests.py
+$(STAMP_DIR)/csrtests.stamp: testgen/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) testgen/csrtests.py
 	touch $@
 
-$(STAMP_DIR)/illegalinstrtests.stamp: bin/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) bin/illegalinstrtests.py
+$(STAMP_DIR)/illegalinstrtests.stamp: testgen/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) testgen/illegalinstrtests.py
 	touch $@
 
 .PHONY: tests
@@ -81,7 +81,7 @@ tests: testgen privheaders
 clean-tests:
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32)
 	rm -rf fcov/unpriv/*
-	rm -f $(STAMP_DIR)/*
+	rm -rf $(STAMP_DIR)
 
 $(PRIVHEADERSDIR) $(STAMP_DIR):
 	mkdir -p $@
