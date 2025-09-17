@@ -45,11 +45,11 @@ def gen_compile_targets(
     )
 
     # Generate signature file
-    ref_model_flags = config.ref_model_type.flags.format(sig_file=sig_file, granularity=int(xlen / 8))
+    ref_model_sig_flags = config.ref_model_type.signature_flags.format(sig_file=sig_file, granularity=int(xlen / 8))
     make_lines.extend(
         [
             f"{sig_file}: {sig_elf}",
-            f"\t{config.ref_model_exe} {ref_model_flags} \\\n\t{sig_elf} > {sig_log_file}",
+            f"\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\\n\t{sig_elf} > {sig_log_file}", # TODO: don't hardcode sail config file
             "",
         ]
     )

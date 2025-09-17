@@ -22,7 +22,7 @@ class RefModelType(str, Enum):
     SPIKE = "spike"
 
     @property
-    def flags(self) -> str:
+    def signature_flags(self) -> str:
         """Get the flags for this reference model."""
         flags_map = {
             RefModelType.SAIL: "--test-signature={sig_file} --signature-granularity {granularity}",
