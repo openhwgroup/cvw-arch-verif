@@ -46,7 +46,7 @@ class Config(BaseModel):
 
     @field_validator("compiler_exe", "ref_model_exe", "objdump_exe")
     @classmethod
-    def validate_executable(cls, v: str, info: ValidationInfo) -> Path:
+    def validate_executable(cls, v: Path | None, info: ValidationInfo) -> Path | None:
         """Ensure the executable can be found."""
         if v is not None:
             full_path = shutil.which(v)
@@ -55,6 +55,21 @@ class Config(BaseModel):
             return Path(full_path)
         else:
             return v
+
+    @field_validator("udb_config", "linker_script", "dut_include_dir", mode="before")
+    @classmethod
+    def resolve_relative_paths(cls, v: str | None, info: ValidationInfo) -> Path | None:
+        """Resolve relative paths relative to config file."""
+        if v is None:
+            return v
+        path = Path(v)
+        if path.is_absolute():
+            return path
+        context = info.context
+        if context is None:
+            raise ValueError("Unable to resolve relative paths.")
+        config_file_dir: Path = context["config_file_dir"]
+        return config_file_dir.absolute() / path
 
     @property
     def compiler_string(self) -> str:
@@ -81,7 +96,7 @@ def load_config(config_file: Path) -> Config:
     if yaml_data is None:
         raise ValueError(f"Configuration file is empty: {config_file}")
 
-    return Config.model_validate(yaml_data)
+    return Config.model_validate(yaml_data, context={"config_file_dir": config_file.parent})
 
 
 def main():

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 # Directories and files
-CONFIG_FILE ?= config.yaml
+CONFIG_FILE ?= dut_examples/cvw-rv64gc/test_config.yaml
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
