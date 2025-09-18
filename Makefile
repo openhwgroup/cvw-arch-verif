@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 # Directories and files
-CONFIG_FILE ?= dut_examples/cvw-rv64gc/test_config.yaml
+CONFIG_FILE ?= configs/duts/cvw-rv64gc/test_config.yaml
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
@@ -14,14 +14,14 @@ PRIVDIR64      := $(PRIVDIR)/rv64
 PRIVDIR32      := $(PRIVDIR)/rv32
 
 TEMPLATEDIR       := templates
-TEST_TEMPLATE_DIR := testgen/templates
-COV_TEMPLATE_DIR  := covergroupgen/templates
+TEST_TEMPLATE_DIR := generators/tests/templates
+COV_TEMPLATE_DIR  := generators/coverage/templates
 TEST_TEMPLATES    := $(wildcard $(TEST_TEMPLATE_DIR)/*.S $(TEST_TEMPLATE_DIR)/**/*.S)
 COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**/*.txt)
 TESTPLANS_DIR		  := testplans
 TESTPLANS         := $(wildcard $(TESTPLANS_DIR)/*.csv $(TESTPLANS_DIR)/**/*.csv)
 
-STAMP_DIR := stamps
+STAMP_DIR := workdir/stamps
 
 debug:
 # 	@echo "TEST_TEMPLATES: $(TEST_TEMPLATES)"
@@ -53,26 +53,26 @@ clean:
 # Test generation targets
 .PHONY: covergroupgen
 covergroupgen: $(STAMP_DIR)/covergroupgen.stamp
-$(STAMP_DIR)/covergroupgen.stamp: covergroupgen/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
-	$(UV_RUN) covergroupgen/covergroupgen.py
+$(STAMP_DIR)/covergroupgen.stamp: generators/coverage/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
+	$(UV_RUN) generators/coverage/covergroupgen.py
 	touch $@
 
 .PHONY: testgen
 testgen:  $(STAMP_DIR)/testgen.stamp
-$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp testgen/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
-	$(UV_RUN) testgen/testgen.py
+$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp generators/tests/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
+	$(UV_RUN) generators/tests/testgen.py
 	rm -rf $(SRCDIR64)/E $(SRCDIR32)/E
 	touch $@
 
 .PHONY: privheaders
 privheaders: $(STAMP_DIR)/csrtests.stamp $(STAMP_DIR)/illegalinstrtests.stamp
 
-$(STAMP_DIR)/csrtests.stamp: testgen/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) testgen/csrtests.py
+$(STAMP_DIR)/csrtests.stamp: generators/tests/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) generators/tests/csrtests.py
 	touch $@
 
-$(STAMP_DIR)/illegalinstrtests.stamp: testgen/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) testgen/illegalinstrtests.py
+$(STAMP_DIR)/illegalinstrtests.stamp: generators/tests/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) generators/tests/illegalinstrtests.py
 	touch $@
 
 .PHONY: tests
