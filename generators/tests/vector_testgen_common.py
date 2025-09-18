@@ -1052,7 +1052,7 @@ def myhash(s):
 
 def insertTemplate(test, signatureWords, name):
      # writeLine(f"\n# {name}")     no longer desired to include template name
-    with open(f"{ARCH_VERIF}/testgen/templates/{name}") as h:
+    with open(f"{ARCH_VERIF}/generators/tests/templates/{name}") as h:
         template = h.read()
 
     if (test == "ExceptionsV"):

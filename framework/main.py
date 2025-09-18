@@ -37,11 +37,11 @@ def main():
 
         # TODO: Figure out a more robust way to handle UDB validation
         # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
-        # copied_udb_config = Path(f"./riscv-unified-db/cfgs/{config.udb_config.name}")
+        # copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{config.udb_config.name}")
         # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
         #     shutil.copy(config.udb_config, copied_udb_config)
         #     validate_udb_config_cmd = [
-        #         "./riscv-unified-db/bin/udb",
+        #         "./external/riscv-unified-db/bin/udb",
         #         "validate",
         #         "cfg",
         #         f"cfgs/{config.udb_config.name}",

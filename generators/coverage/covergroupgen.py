@@ -84,7 +84,7 @@ def readTestplans():
 # readCovergroupTemplates reads the covergroup templates from the templates directory
 
 def readCovergroupTemplates():
-    templateDir = f'{ARCH_VERIF}/covergroupgen/templates'
+    templateDir = f'{ARCH_VERIF}/generators/coverage/templates'
     covergroupTemplates = dict()
     for file in os.listdir(templateDir):
         if file.endswith(".txt"):

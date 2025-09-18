@@ -90,7 +90,7 @@ def gen_rvvi_targets(test_name: str, base_dir: Path, config: Config) -> str:
     make_lines.extend(
         [
             f"{rvvi_trace}: {sail_log}",
-            f"\tuv run bin/sail-parse.py {sail_log} {rvvi_trace}",
+            f"\tuv run tools/sail-parse.py {sail_log} {rvvi_trace}",
             "",
         ]
     )
