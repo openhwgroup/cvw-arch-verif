@@ -49,7 +49,7 @@ def gen_compile_targets(
     make_lines.extend(
         [
             f"{sig_file}: {sig_elf}",
-            f"\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\\n\t{sig_elf} > {sig_log_file}", # TODO: don't hardcode sail config file
+            f"\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\\n\t{sig_elf} > {sig_log_file}",  # TODO: don't hardcode sail config file
             "",
         ]
     )
@@ -110,24 +110,41 @@ def generate_common_makefile(
     common_test_dir = wkdir / "common"
     makefile_lines = [
         "# This Makefile is auto-generated. Do not edit directly.",
-        ".PHONY: fail",
-        "fail:",
-        '\t@echo "This Makefile is not intended to be run directly. Use the config-specific Makefile instead." && exit 1',
+        f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
+        f"XLEN := {xlen}",
         "",
     ]
     directory_set = {str(common_test_dir)}
+    test_targets = []
+
     for test_name, test_metadata in common_test_list.items():
+        elf_name = test_name.replace(".S", ".elf")
+        final_elf = common_test_dir / elf_name
+        test_targets.append(f"    {final_elf} \\")
         directory_set.add(str((common_test_dir / test_name).parent))
         makefile_lines.append(
             gen_compile_targets(test_name, test_metadata, tests_dir, common_test_dir, xlen, mabi, config)
         )
 
+    # Add TESTS variable and targets
+    makefile_lines.append("TESTS = \\")
+    makefile_lines.extend(test_targets)
+    makefile_lines.extend(
+        [
+            "",
+            ".DEFAULT_GOAL := compile",
+            ".PHONY: compile",
+            "compile: $(TESTS)",
+            "",
+        ]
+    )
+
     # Directory creation rules
     makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
 
     # Write out Makefile
-    common_test_dir.mkdir(parents=True, exist_ok=True)
-    makefile_path = common_test_dir / "Makefile"
+    makefile_path = common_test_dir / f"rv{xlen}" / "Makefile"
+    makefile_path.parent.mkdir(parents=True, exist_ok=True)
     makefile_path.write_text("\n".join(makefile_lines))
 
 
@@ -146,6 +163,8 @@ def generate_config_makefile(
     common_test_dir = wkdir / "common"
     makefile_lines = [
         "# This Makefile is auto-generated. Do not edit directly.",
+        f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
+        f"XLEN := {xlen}",
     ]
     directory_set = {str(config_test_dir)}
     test_targets = []
@@ -175,7 +194,15 @@ def generate_config_makefile(
     # Add TESTS variable and compile target
     makefile_lines.append("TESTS = \\")
     makefile_lines.extend(test_targets)
-    makefile_lines.append("\ncompile: $(TESTS)\n")
+    makefile_lines.extend(
+        [
+            "",
+            ".DEFAULT_GOAL := compile",
+            ".PHONY: compile",
+            "compile: $(TESTS)",
+            "",
+        ]
+    )
 
     # Directory creation rules
     makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
@@ -186,77 +213,101 @@ def generate_config_makefile(
     makefile_path.write_text("\n".join(makefile_lines))
 
 
-def generate_makefiles(
-    common_test_list: dict[str, TestMetadata],
-    config_test_list: dict[str, TestMetadata],
-    tests_dir: Path,
-    wkdir: Path,
-    config_name: str,
-    config: Config,
-    udb_config: dict[str, any],
-) -> None:
-    """Generate a Makefile to run the selected tests."""
-    xlen = udb_config.get("params", {}).get("MXLEN", 64)
-    mabi = f"{'i' if xlen == 32 else ''}lp{xlen}"
+def generate_top_makefile(configs: list[dict], workdir: Path) -> None:
+    """Generate a top-level Makefile that runs all config-specific Makefiles and the common Makefile."""
 
+    config_targets = []
     makefile_lines = []
 
-    # General variables
+    # Add targets for each config
+    for config_data in configs:
+        config_name = config_data["udb_config"]["name"]
+        config_targets.append(f"{config_name}-compile")
+        xlen = config_data["udb_config"]["params"]["MXLEN"]
+
+        makefile_lines.extend(
+            [
+                f"{config_name}-compile: common-rv{xlen}-compile",
+                f"\t$(MAKE) -C {config_name} compile",
+                "",
+            ]
+        )
+
+    # Add common build targets
     makefile_lines.extend(
         [
-            "# This Makefile is auto-generated. Do not edit directly.",
-            f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
-            f"XLEN := {xlen}",
+            "common-rv32-compile:",
+            "\t$(MAKE) -C common/rv32 compile",
             "",
-            ".DEFAULT_GOAL := compile",
-            ".PHONY: compile coverage clean",
+            "common-rv64-compile:",
+            "\t$(MAKE) -C common/rv64 compile",
             "",
         ]
     )
 
-    # Generate common Makefile
-    generate_common_makefile(common_test_list, tests_dir, wkdir, config, xlen, mabi)
+    # Main target runs all configs
+    makefile_content = [
+        "# Top-level Makefile for multiple configurations",
+        "# Auto-generated by cvw-arch-verif framework",
+        "",
+        ".PHONY: compile",
+        ".DEFAULT_GOAL := compile",
+        f"compile: {' '.join(config_targets)}",
+        "",
+    ]
+    makefile_content.extend(makefile_lines)
 
-    # Generate config-specific Makefile
-    generate_config_makefile(config_test_list, common_test_list, tests_dir, wkdir, config_name, config, xlen, mabi)
+    # Write the Makefile
+    top_makefile = workdir / "Makefile"
+    top_makefile.write_text("\n".join(makefile_content))
 
-    # Include common Makefile
-    makefile_lines.extend(
-        [f"include {wkdir / 'common' / 'Makefile'}\n", f"include {wkdir / config_name / 'Makefile'}\n"]
-    )
-
-    # Clean target
-    makefile_lines.extend(["clean:", f"\trm -rf {wkdir}/*"])
-
-    # Write to Makefile
-    makefile_path = wkdir / "Makefile"
-    makefile_path.write_text("\n".join(makefile_lines))
-
-
-def main() -> None:
-    import sys
-    from pathlib import Path
-
-    from framework.parse_test_constraints import generate_test_dict
-    from framework.parse_udb_config import parse_udb_config
-    from framework.select_tests import select_tests
-
-    tests_dir = Path(sys.argv[1])
-    udb_config_path = Path(sys.argv[2])
-    wkdir = Path.cwd() / "workdir"
-
-    # Parse UDB config and get implemented extensions
-    udb_config = parse_udb_config(udb_config_path)
-
-    # Generate test list with metadata
-    test_dict = generate_test_dict(tests_dir)
-
-    # Select tests based on UDB config
-    selected_tests, common_tests = select_tests(test_dict, udb_config)
-
-    # Generate Makefile
-    generate_makefiles(common_tests, selected_tests, wkdir, udb_config_path.stem)
+    print(f"Generated top-level Makefile: {top_makefile}")
 
 
-if __name__ == "__main__":
-    main()
+def generate_makefiles(configs: list[dict], tests_dir: Path, workdir: Path) -> None:
+    """Generate Makefiles for multiple configurations with shared common directories."""
+    # Collect data in single pass
+    rv32_configs = []
+    rv64_configs = []
+
+    for config_data in configs:
+        udb_config = config_data["udb_config"]
+        config_name = udb_config["name"]
+        xlen = udb_config["params"]["MXLEN"]
+        mabi = f"{'i' if xlen == 32 else ''}lp{xlen}"
+
+        # Generate config-specific Makefile
+        generate_config_makefile(
+            config_data["selected_tests"],
+            config_data["common_tests"],
+            tests_dir,
+            workdir,
+            config_name,
+            config_data["config"],
+            xlen,
+            mabi,
+        )
+
+        # Collect configs by architecture
+        if xlen == 32:
+            rv32_configs.append(config_data)
+        elif xlen == 64:
+            rv64_configs.append(config_data)
+        else:
+            raise ValueError(f"Unsupported MXLEN {xlen} in config {config_name}")
+
+    # Generate architecture-specific common Makefiles using first config of each architecture
+    if rv32_configs:
+        config_data = rv32_configs[0]
+        generate_common_makefile(
+            config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen=32, mabi="ilp32"
+        )
+
+    if rv64_configs:
+        config_data = rv64_configs[0]
+        generate_common_makefile(
+            config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen=64, mabi="lp64"
+        )
+
+    # Generate top-level Makefile
+    generate_top_makefile(configs, workdir)

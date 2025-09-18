@@ -22,44 +22,48 @@ from framework.select_tests import select_tests
 
 def main():
     parser = argparse.ArgumentParser(description="RISC-V Architecture Verification Framework")
-    parser.add_argument("-c", "--config", type=Path, help="Path to the configuration file", required=True)
+    parser.add_argument("-c", "--config", type=Path, nargs="+", help="Path to configuration file(s)", required=True)
     parser.add_argument("--tests-dir", type=Path, help="Path to the tests directory", default=Path("tests"))
     parser.add_argument("--workdir", type=Path, help="Path to the working directory", default=Path.cwd() / "workdir")
     args = parser.parse_args()
 
-    # Load configuration
-    config = load_config(args.config)
-
-    # TODO: Figure out a more robust way to handle UDB validation
-    # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
-    # copied_udb_config = Path(f"./riscv-unified-db/cfgs/{config.udb_config.name}")
-    # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
-    #     shutil.copy(config.udb_config, copied_udb_config)
-    #     validate_udb_config_cmd = ["./riscv-unified-db/bin/udb", "validate", "cfg", f"cfgs/{config.udb_config.name}"]
-    #     subprocess.run(validate_udb_config_cmd, check=True)
-
-    udb_config = parse_udb_config(config.udb_config)
-
-    # TODO: Generate DUT specific header file from UDB
-
-    # TODO: Generate Sail config file from UDB
-
     # Generate test list
     full_test_dict = generate_test_dict(args.tests_dir)
-    selected_tests, common_tests = select_tests(full_test_dict, udb_config)
 
-    # Generate Makefile
-    generate_makefiles(
-        common_tests,
-        selected_tests,
-        args.tests_dir.absolute(),
-        args.workdir.absolute(),
-        udb_config["name"],
-        config,
-        udb_config,
-    )
-    print(f"Makefile generated in {args.workdir}")
-    print(f"Run make -f {args.workdir / 'generated_makefile.mk'} to build and run tests.")
+    configs = []
+    for config_file in args.config:
+        # Load configuration
+        config = load_config(config_file)
+
+        # TODO: Figure out a more robust way to handle UDB validation
+        # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
+        # copied_udb_config = Path(f"./riscv-unified-db/cfgs/{config.udb_config.name}")
+        # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
+        #     shutil.copy(config.udb_config, copied_udb_config)
+        #     validate_udb_config_cmd = [
+        #         "./riscv-unified-db/bin/udb",
+        #         "validate",
+        #         "cfg",
+        #         f"cfgs/{config.udb_config.name}",
+        #     ]
+        #     subprocess.run(validate_udb_config_cmd, check=True)
+
+        udb_config = parse_udb_config(config.udb_config)
+
+        # TODO: Generate DUT specific header file from UDB
+
+        # TODO: Generate Sail config file from UDB
+
+        # Select tests for config
+        selected_tests, common_tests = select_tests(full_test_dict, udb_config)
+        configs.append(
+            {"config": config, "udb_config": udb_config, "selected_tests": selected_tests, "common_tests": common_tests}
+        )
+
+    # Generate Makefiles
+    generate_makefiles(configs, args.tests_dir.absolute(), args.workdir.absolute())
+    print(f"Makefiles generated in {args.workdir}")
+    print(f"Run make -C {args.workdir} compile to build all tests.")
 
 
 if __name__ == "__main__":

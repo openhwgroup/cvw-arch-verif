@@ -20,8 +20,8 @@ def select_tests(
     selected_tests = {}
     common_tests = {}
     for test_name, test_metadata in test_dict.items():
-        # Check if the test is config dependent
-        if not test_metadata.config_dependent:  # and test_metadata.mxlen == udb_config.get("params", {}).get("MXLEN"):
+        # Check if the test is config dependent and matches the architecture
+        if not test_metadata.config_dependent and test_metadata.mxlen == udb_config["params"]["MXLEN"]:
             common_tests[test_name] = test_metadata
 
         # Check if all required extensions are implemented
