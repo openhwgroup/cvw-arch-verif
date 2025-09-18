@@ -18,7 +18,7 @@ import sys
 from random import getrandbits, randint
 
 # change these to suite your tests
-ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", ".."))
 
 ##################################
 # Global Constants
