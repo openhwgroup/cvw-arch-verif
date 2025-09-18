@@ -61,6 +61,7 @@ $(STAMP_DIR)/covergroupgen.stamp: covergroupgen/covergroupgen.py $(COV_TEMPLATES
 testgen:  $(STAMP_DIR)/testgen.stamp
 $(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp testgen/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
 	$(UV_RUN) testgen/testgen.py
+	rm -rf $(SRCDIR64)/E $(SRCDIR32)/E
 	touch $@
 
 .PHONY: privheaders
