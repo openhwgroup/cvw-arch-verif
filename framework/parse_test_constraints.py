@@ -11,13 +11,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, FilePath
 from ruamel.yaml import YAML
 
 
 class TestMetadata(BaseModel):
     """Metadata for a RISC-V test case extracted from YAML configuration."""
 
+    test_path: FilePath
     implemented_extensions: set[str] = Field(min_length=1, whitespace_strip=True)
     march: str = Field(alias="MARCH", whitespace_strip=True, pattern=r"rv(?:32|64|\$\{XLEN\})[ieg].*")
     config_dependent: bool = Field(alias="CONFIG_DEPENDENT")
@@ -66,6 +67,7 @@ def extract_yaml_config(file: Path) -> TestMetadata:
     for line in yaml_section.split("\n"):
         line = line.lstrip("#")
         yaml_lines.append(line)
+    yaml_lines.append(f" test_path: '{file.absolute()}'")  # Add test_path to config data
 
     yaml = YAML(typ="safe", pure=True)
     config_dict = yaml.load("\n".join(yaml_lines))

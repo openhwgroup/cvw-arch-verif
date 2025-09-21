@@ -60,6 +60,8 @@ def main():
             {"config": config, "udb_config": udb_config, "selected_tests": selected_tests, "common_tests": common_tests}
         )
 
+    # TODO: Add a check that all configs use the same header files/compiler/etc. Otherwise error out or don't use common tests
+
     # Generate Makefiles
     generate_makefiles(configs, args.tests_dir.absolute(), args.workdir.absolute())
     print(f"Makefiles generated in {args.workdir}")

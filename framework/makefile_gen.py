@@ -16,7 +16,6 @@ from framework.parse_test_constraints import TestMetadata
 def gen_compile_targets(
     test_name: str,
     test_metadata: TestMetadata,
-    tests_dir: Path,
     base_dir: Path,
     xlen: int,
     mabi: str,
@@ -27,13 +26,13 @@ def gen_compile_targets(
     # Extract metadata using properties
     march = test_metadata.march
     flen = test_metadata.flen
+    test_path = test_metadata.test_path
 
     base_name = test_name.replace(".S", "")
-    sig_elf = base_dir / f"{base_name}-sig.elf"
-    sig_file = base_dir / f"{base_name}.sig"
-    sig_log_file = base_dir / f"{base_name}-sig.log"
-    final_elf = base_dir / f"{base_name}.elf"
-    test_path = tests_dir / test_name
+    sig_elf = base_dir / "build" / f"{base_name}-sig.elf"
+    sig_file = base_dir / "build" / f"{base_name}.sig"
+    sig_log_file = base_dir / "build" / f"{base_name}-sig.log"
+    final_elf = base_dir / "elfs" / f"{base_name}.elf"
 
     # Generate signature based ELF
     make_lines.extend(
@@ -57,7 +56,7 @@ def gen_compile_targets(
     # Final ELF target
     make_lines.extend(
         [
-            f"{final_elf}: {sig_elf} {sig_file}",
+            f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}",
             f"\t{config.compiler_string} $(CFLAGS) \\\n\t-o {final_elf} \\\n\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' \\\n\t{test_path}",
             f"\t{config.objdump_exe} -S -M no-aliases {final_elf} > {final_elf}.objdump"
             if config.objdump_exe is not None
@@ -73,9 +72,9 @@ def gen_rvvi_targets(test_name: str, base_dir: Path, config: Config) -> str:
     make_lines = []
 
     base_name = test_name.replace(".S", "")
-    elf = base_dir / f"{base_name}.elf"
-    sail_log = base_dir / f"{base_name}.log"
-    rvvi_trace = base_dir / f"{base_name}.rvvi"
+    elf = base_dir / "elfs" / f"{base_name}.elf"
+    sail_log = base_dir / "build" / f"{base_name}.log"
+    rvvi_trace = base_dir / "build" / f"{base_name}.rvvi"
 
     # Run test on Sail to generate log
     make_lines.extend(
@@ -107,23 +106,25 @@ def generate_common_makefile(
     mabi: str,
 ) -> None:
     """Generate a Makefile to compile the common tests."""
-    common_test_dir = wkdir / "common"
+    common_wkdir = wkdir / "common"
+    common_elf_dir = common_wkdir / "elfs"
     makefile_lines = [
         "# This Makefile is auto-generated. Do not edit directly.",
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
         f"XLEN := {xlen}",
         "",
     ]
-    directory_set = {str(common_test_dir)}
+    directory_set = {str(common_elf_dir)}
     test_targets = []
 
     for test_name, test_metadata in common_test_list.items():
         elf_name = test_name.replace(".S", ".elf")
-        final_elf = common_test_dir / elf_name
+        final_elf = common_elf_dir / elf_name
         test_targets.append(f"    {final_elf} \\")
-        directory_set.add(str((common_test_dir / test_name).parent))
+        directory_set.add(str((common_elf_dir / test_name).parent))
+        directory_set.add(str((common_wkdir / "build" / test_name).parent))
         makefile_lines.append(
-            gen_compile_targets(test_name, test_metadata, tests_dir, common_test_dir, xlen, mabi, config)
+            gen_compile_targets(test_name, test_metadata, common_wkdir, xlen, mabi, config)
         )
 
     # Add TESTS variable and targets
@@ -143,7 +144,7 @@ def generate_common_makefile(
     makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
 
     # Write out Makefile
-    makefile_path = common_test_dir / f"rv{xlen}" / "Makefile"
+    makefile_path = common_wkdir / f"rv{xlen}" / "Makefile"
     makefile_path.parent.mkdir(parents=True, exist_ok=True)
     makefile_path.write_text("\n".join(makefile_lines))
 
@@ -159,23 +160,26 @@ def generate_config_makefile(
     mabi: str,
 ) -> None:
     """Generate a Makefile to compile the config-specific tests."""
-    config_test_dir = wkdir / config_name
-    common_test_dir = wkdir / "common"
+    config_wkdir = wkdir / config_name
+    config_elf_dir = config_wkdir / "elfs"
+    common_wkdir = wkdir / "common"
+    common_elf_dir = common_wkdir / "elfs"
     makefile_lines = [
         "# This Makefile is auto-generated. Do not edit directly.",
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
         f"XLEN := {xlen}",
     ]
-    directory_set = {str(config_test_dir)}
+    directory_set = {str(config_elf_dir)}
     test_targets = []
 
     for test_name, test_metadata in config_test_list.items():
         elf_name = test_name.replace(".S", ".elf")
-        final_elf = config_test_dir / elf_name
+        final_elf = config_elf_dir / elf_name
         test_targets.append(f"    {final_elf} \\")
-        directory_set.add(str((config_test_dir / test_name).parent))
+        directory_set.add(str((config_elf_dir / test_name).parent))
+        directory_set.add(str((config_wkdir / "build" / test_name).parent))
         if test_name in common_test_list:
-            common_elf = common_test_dir / elf_name
+            common_elf = common_elf_dir / elf_name
             makefile_lines.extend(
                 [
                     f"{final_elf}: {common_elf} | {final_elf.parent}",
@@ -188,7 +192,7 @@ def generate_config_makefile(
             )
         else:
             makefile_lines.append(
-                gen_compile_targets(test_name, test_metadata, tests_dir, config_test_dir, xlen, mabi, config)
+                gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config)
             )
 
     # Add TESTS variable and compile target
@@ -208,8 +212,8 @@ def generate_config_makefile(
     makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
 
     # Write out Makefile
-    config_test_dir.mkdir(parents=True, exist_ok=True)
-    makefile_path = config_test_dir / "Makefile"
+    config_wkdir.mkdir(parents=True, exist_ok=True)
+    makefile_path = config_wkdir / "Makefile"
     makefile_path.write_text("\n".join(makefile_lines))
 
 
@@ -266,9 +270,8 @@ def generate_top_makefile(configs: list[dict], workdir: Path) -> None:
 
 def generate_makefiles(configs: list[dict], tests_dir: Path, workdir: Path) -> None:
     """Generate Makefiles for multiple configurations with shared common directories."""
-    # Collect data in single pass
-    rv32_configs = []
-    rv64_configs = []
+    rv32_config_generated = False
+    rv64_config_generated = False
 
     for config_data in configs:
         udb_config = config_data["udb_config"]
@@ -288,26 +291,9 @@ def generate_makefiles(configs: list[dict], tests_dir: Path, workdir: Path) -> N
             mabi,
         )
 
-        # Collect configs by architecture
-        if xlen == 32:
-            rv32_configs.append(config_data)
-        elif xlen == 64:
-            rv64_configs.append(config_data)
-        else:
-            raise ValueError(f"Unsupported MXLEN {xlen} in config {config_name}")
-
-    # Generate architecture-specific common Makefiles using first config of each architecture
-    if rv32_configs:
-        config_data = rv32_configs[0]
-        generate_common_makefile(
-            config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen=32, mabi="ilp32"
-        )
-
-    if rv64_configs:
-        config_data = rv64_configs[0]
-        generate_common_makefile(
-            config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen=64, mabi="lp64"
-        )
+        # Generate architecture-specific common Makefiles using first config of each XLEN
+        if (xlen == 32 and not rv32_config_generated) or (xlen == 64 and not rv64_config_generated):
+            generate_common_makefile(config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen, mabi)
 
     # Generate top-level Makefile
     generate_top_makefile(configs, workdir)
