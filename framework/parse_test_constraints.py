@@ -26,19 +26,18 @@ class TestMetadata(BaseModel):
     model_config = {"extra": "forbid", "frozen": True}
 
     @property
+    def coverage_group(self) -> str:
+        return self.test_path.parent.name
+
+    @property
     def mxlen(self) -> int | None:
         """Get MXLEN parameter if present."""
         return self.params.get("MXLEN")
 
     @property
-    def has_double_precision(self) -> bool:
-        """Check if test requires double-precision floating point (D extension)."""
-        return "D" in self.implemented_extensions
-
-    @property
     def flen(self) -> str:
         """Get floating-point register length: '64' if D extension present, else '32'."""
-        return "64" if self.has_double_precision else "32"
+        return 128 if "Q" in self.implemented_extensions else "64" if "D" in self.implemented_extensions else "32"
 
 
 def extract_yaml_config(file: Path) -> TestMetadata:
