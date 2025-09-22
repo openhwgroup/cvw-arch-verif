@@ -123,9 +123,7 @@ def generate_common_makefile(
         test_targets.append(f"    {final_elf} \\")
         directory_set.add(str((common_elf_dir / test_name).parent))
         directory_set.add(str((common_wkdir / "build" / test_name).parent))
-        makefile_lines.append(
-            gen_compile_targets(test_name, test_metadata, common_wkdir, xlen, mabi, config)
-        )
+        makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_wkdir, xlen, mabi, config))
 
     # Add TESTS variable and targets
     makefile_lines.append("TESTS = \\")
@@ -191,9 +189,7 @@ def generate_config_makefile(
                 ]
             )
         else:
-            makefile_lines.append(
-                gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config)
-            )
+            makefile_lines.append(gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config))
 
     # Add TESTS variable and compile target
     makefile_lines.append("TESTS = \\")
@@ -268,7 +264,13 @@ def generate_top_makefile(configs: list[dict], workdir: Path) -> None:
     print(f"Generated top-level Makefile: {top_makefile}")
 
 
-def generate_makefiles(configs: list[dict], tests_dir: Path, workdir: Path) -> None:
+def generate_makefiles(
+    configs: list[dict],
+    rv32_common_tests: dict[str, TestMetadata],
+    rv64_common_tests: dict[str, TestMetadata],
+    tests_dir: Path,
+    workdir: Path,
+) -> None:
     """Generate Makefiles for multiple configurations with shared common directories."""
     rv32_config_generated = False
     rv64_config_generated = False
@@ -292,8 +294,10 @@ def generate_makefiles(configs: list[dict], tests_dir: Path, workdir: Path) -> N
         )
 
         # Generate architecture-specific common Makefiles using first config of each XLEN
-        if (xlen == 32 and not rv32_config_generated) or (xlen == 64 and not rv64_config_generated):
-            generate_common_makefile(config_data["common_tests"], tests_dir, workdir, config_data["config"], xlen, mabi)
+        if xlen == 32 and not rv32_config_generated:
+            generate_common_makefile(rv32_common_tests, tests_dir, workdir, config_data["config"], xlen, mabi)
+        elif xlen == 64 and not rv64_config_generated:
+            generate_common_makefile(rv64_common_tests, tests_dir, workdir, config_data["config"], xlen, mabi)
 
     # Generate top-level Makefile
     generate_top_makefile(configs, workdir)

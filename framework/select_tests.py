@@ -13,55 +13,34 @@ from framework.parse_test_constraints import TestMetadata
 from framework.parse_udb_config import get_implemented_extensions
 
 
-def select_tests(
-    test_dict: dict[str, TestMetadata], udb_config: dict[str, Any]
-) -> tuple[dict[str, TestMetadata], dict[str, TestMetadata]]:
+def check_test_params(test_params: dict[str, Any], config_params: dict[str, Any]) -> bool:
+    """Check if all parameters in test_params match those in config_params."""
+    for param, value in test_params.items():
+        if param not in config_params or config_params[param] != value:
+            return False
+    return True
+
+
+def select_tests(test_dict: dict[str, TestMetadata], udb_config: dict[str, Any]) -> dict[str, TestMetadata]:
+    """Select tests that match the UDB configuration."""
     implemented_extensions = get_implemented_extensions(udb_config)
     selected_tests = {}
-    common_tests = {}
     for test_name, test_metadata in test_dict.items():
-        # Check if the test is config dependent and matches the architecture
-        if not test_metadata.config_dependent and test_metadata.mxlen == udb_config["params"]["MXLEN"]:
-            common_tests[test_name] = test_metadata
-
         # Check if all required extensions are implemented
         required_exts = set(test_metadata.implemented_extensions)
         if required_exts.issubset(implemented_extensions):
             # Check if all parameters match
-            param_match = True
             test_params = test_metadata.params
             config_params = udb_config.get("params", {})
-            for param, value in test_params.items():
-                if param not in config_params or config_params[param] != value:
-                    param_match = False
-            if param_match:
+            if check_test_params(test_params, config_params):
                 selected_tests[test_name] = test_metadata
-    return selected_tests, common_tests
+    return selected_tests
 
 
-def main():
-    import sys
-    from pathlib import Path
-    from pprint import pprint
-
-    from framework.parse_test_constraints import generate_test_dict
-    from framework.parse_udb_config import parse_udb_config
-
-    tests_dir = Path(sys.argv[1])
-    udb_config_path = Path(sys.argv[2])
-
-    # Parse UDB config and get implemented extensions
-    udb_config = parse_udb_config(udb_config_path)
-
-    # Generate test list with metadata
-    test_dict = generate_test_dict(tests_dir)
-
-    # Select tests based on UDB config
-    selected_tests, common_tests = select_tests(test_dict, udb_config)
-
-    pprint(list(selected_tests.keys()))
-    pprint(list(common_tests.keys()))
-
-
-if __name__ == "__main__":
-    main()
+def get_common_tests(test_dict: dict[str, TestMetadata], xlen: int) -> dict[str, TestMetadata]:
+    "Get tests that do not depend on configuration and match the given XLEN."
+    common_tests = {}
+    for test_name, test_metadata in test_dict.items():
+        if not test_metadata.config_dependent and test_metadata.mxlen == xlen:
+            common_tests[test_name] = test_metadata
+    return common_tests

@@ -17,7 +17,7 @@ from framework.config import load_config
 from framework.makefile_gen import generate_makefiles
 from framework.parse_test_constraints import generate_test_dict
 from framework.parse_udb_config import parse_udb_config
-from framework.select_tests import select_tests
+from framework.select_tests import get_common_tests, select_tests
 
 
 def main():
@@ -29,6 +29,8 @@ def main():
 
     # Generate test list
     full_test_dict = generate_test_dict(args.tests_dir)
+    rv32_common_tests = get_common_tests(full_test_dict, 32)
+    rv64_common_tests = get_common_tests(full_test_dict, 64)
 
     configs = []
     for config_file in args.config:
@@ -55,15 +57,15 @@ def main():
         # TODO: Generate Sail config file from UDB
 
         # Select tests for config
-        selected_tests, common_tests = select_tests(full_test_dict, udb_config)
-        configs.append(
-            {"config": config, "udb_config": udb_config, "selected_tests": selected_tests, "common_tests": common_tests}
-        )
+        selected_tests = select_tests(full_test_dict, udb_config)
+        configs.append({"config": config, "udb_config": udb_config, "selected_tests": selected_tests})
 
     # TODO: Add a check that all configs use the same header files/compiler/etc. Otherwise error out or don't use common tests
 
     # Generate Makefiles
-    generate_makefiles(configs, args.tests_dir.absolute(), args.workdir.absolute())
+    generate_makefiles(
+        configs, rv32_common_tests, rv64_common_tests, args.tests_dir.absolute(), args.workdir.absolute()
+    )
     print(f"Makefiles generated in {args.workdir}")
     print(f"Run make -C {args.workdir} compile to build all tests.")
 
