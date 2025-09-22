@@ -7,7 +7,6 @@
 # Parse UDB configuration file
 ##################################
 
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -28,15 +27,3 @@ def get_implemented_extensions(udb_config: dict[str, Any]) -> set[str]:
     """Extract the list of implemented extensions from the UDB configuration."""
     extensions = udb_config["implemented_extensions"]
     return {ext["name"] for ext in extensions}
-
-
-def main():
-    udb_config_path = Path(sys.argv[1])
-    config = parse_udb_config(udb_config_path)
-    yaml = YAML()
-    yaml.dump(config, sys.stdout)
-    print(get_implemented_extensions(config))
-
-
-if __name__ == "__main__":
-    main()

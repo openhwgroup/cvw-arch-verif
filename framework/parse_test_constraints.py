@@ -7,7 +7,6 @@
 # Parse YAML comment header from test files
 ##################################
 
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -87,30 +86,3 @@ def generate_test_dict(tests_dir: Path) -> dict[str, TestMetadata]:
         test_list[test_file_unique_name] = config
 
     return test_list
-
-
-def main():
-    from devtools import pprint
-
-    if len(sys.argv) != 2:
-        print("Usage: parse-test-constraints <file_or_directory_path>", file=sys.stderr)
-        sys.exit(1)
-
-    path = Path(sys.argv[1])
-
-    if path.is_file():
-        # Single file mode - extract and display config
-        pprint(extract_yaml_config(path))
-    elif path.is_dir():
-        # Directory mode - process all .S files
-        test_configs = generate_test_dict(path)
-        pprint(test_configs)
-        # test_configs_dict = {name: config.model_dump() for name, config in test_configs.items()}
-        # pprint(test_configs_dict)
-    else:
-        print(f"Error: {path} is neither a file nor a directory", file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()

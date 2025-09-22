@@ -97,23 +97,3 @@ def load_config(config_file: Path) -> Config:
         raise ValueError(f"Configuration file is empty: {config_file}")
 
     return Config.model_validate(yaml_data, context={"config_file_dir": config_file.parent})
-
-
-def main():
-    import sys
-
-    if len(sys.argv) != 2:
-        print("Usage: python config.py <config_file>", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        config_path = Path(sys.argv[1])
-        config = load_config(config_path)
-        print(config)
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
