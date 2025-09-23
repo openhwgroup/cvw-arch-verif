@@ -64,7 +64,7 @@ cmd = f"vcover report -details {ucdb} -below 100 -output {uncovered_report}"
 os.system(cmd)
 
 # Use grep to get the lines that match the criteria
-cmd = f"grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' {full_report} | grep -v 'Covergroup instance' > {temp_summary_report}"
+cmd = "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' " + f"{full_report} | grep -v 'Covergroup instance' > {temp_summary_report}"
 os.system(cmd)
 
 # Process each line and replace the specified path pattern
