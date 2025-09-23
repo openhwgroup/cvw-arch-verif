@@ -45,49 +45,59 @@ def gen_compile_targets(
 
     # Generate Makefile targets
     return (
-        f"# Compilation targets for {test_name}\n"
+        f"########## Targets for {test_name} ##########\n"
         "# Generate signature based ELF\n"
         f"{sig_elf}: {test_path} | {sig_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
         f"\t-o {sig_elf} \\\n"
         f"\t-march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} \\\n"
         f"\t{test_path}\n"
+        f"\n"
         "# Generate signature file\n"
         f"{sig_file}: {sig_elf}\n"
-        f"\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\\n"
-        f"\t{sig_elf} > {sig_log_file}\n"  # TODO: don't hardcode sail config file
+        f"\t{config.ref_model_exe} \\\n"
+        f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
+        f"\t{ref_model_sig_flags} \\\n"
+        f"\t{sig_elf} \\\n"
+        f"\t\t> {sig_log_file}\n"
+        f"\n"
         "# Final ELF target\n"
         f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
         f"\t-o {final_elf} \\\n"
-        f"\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' \\\n"
+        f"\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} \\\n"
+        f"\t-DSIGNATURE_FILE='{sig_file}' \\\n"
         f"\t{test_path}\n"
         # Objdump
         f"{
-            f'\t{config.objdump_exe} -S -M no-aliases {final_elf} > {final_elf}.objdump\n'
+            f'\n\t{config.objdump_exe} -S -M no-aliases \\\n\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
             if config.objdump_exe is not None
             else '# skipping objdump generation\n'
         }"
     )
 
 
-def gen_rvvi_targets(test_name: str, base_dir: Path, config: Config) -> str:
+def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
     # Define paths
     build_dir = base_dir / "build"
     elf_dir = base_dir / "elfs"
-    base_name = Path(test_name)
-    elf = elf_dir / base_name.with_suffix(".elf")
-    sail_log = build_dir / base_name.with_suffix(".log")
-    rvvi_trace = build_dir / base_name.with_suffix(".rvvi")
+    elf = elf_dir / test_name.with_suffix(".elf")
+    sail_log = build_dir / test_name.with_suffix(".log")
+    rvvi_trace = build_dir / test_name.with_suffix(".rvvi")
 
     # Generate Makefile targets
     return (
         "# Run test on Sail to generate log\n"
         f"{sail_log}: {elf}\n"
-        f"\t{config.ref_model_exe} --trace-all {elf} --trace-output {sail_log}\n"
+        f"\t{config.ref_model_exe} --trace-all \\\n"
+        f"\t{elf} \\\n"
+        f"\t--trace-output {sail_log}\n"
+        f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_log}\n"
-        f"\tuv run tools/sail-parse.py {sail_log} {rvvi_trace}\n"
+        f"\tuv run tools/sail-parse.py \\\n"
+        f"\t{sail_log} \\\n"
+        f"\t{rvvi_trace}\n"
     )
 
 
@@ -158,12 +168,14 @@ def generate_config_makefile(
     config_wkdir = wkdir / config_name
     config_elf_dir = config_wkdir / "elfs"
     config_build_dir = config_wkdir / "build"
+    config_coverage_dir = config_wkdir / "coverage"
     common_wkdir = wkdir / "common"
     common_elf_dir = common_wkdir / "elfs"
 
     # Makefile targets
     directory_set = set()
     test_targets = []
+    coverage_targets: dict[Path, list[Path]] = {}
     makefile_lines = [
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
         f"XLEN := {xlen}",
@@ -171,10 +183,18 @@ def generate_config_makefile(
 
     # Build Makefile targets for each test
     for test_name, test_metadata in config_test_list.items():
-        elf_name = Path(test_name).with_suffix(".elf")
+        # Test specific paths
+        test_name = Path(test_name)
+        elf_name = test_name.with_suffix(".elf")
         final_elf = config_elf_dir / elf_name
+        trace_name = test_name.with_suffix(".rvvi")
+        trace_path = config_coverage_dir / trace_name
+
+        # Add test to target lists
         test_targets.append(f"\t{final_elf} \\")
         directory_set.update([str((config_elf_dir / test_name).parent), str((config_build_dir / test_name).parent)])
+
+        # Generate compilation/symlink targets
         if test_name in common_test_list:
             common_elf = common_elf_dir / elf_name
             makefile_lines.append(
@@ -188,9 +208,52 @@ def generate_config_makefile(
         else:
             makefile_lines.append(gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config))
 
+        # Generate coverage trace targets
+        if test_name.parent not in coverage_targets:
+            coverage_targets[test_name.parent] = []
+        coverage_targets[test_name.parent].append(trace_path.absolute())
+        makefile_lines.append(gen_rvvi_targets(test_name, config_wkdir, config))
+        makefile_lines.append("\n")
+
+    # Generate coverage targets
+    makefile_lines.append(gen_coverage_targets(coverage_targets, config_coverage_dir, config))
+
     # Write out Makefile
     makefile_path = config_wkdir / "Makefile"
     write_makefile(makefile_path, [("ELFS", test_targets, "compile")], directory_set, makefile_lines)
+
+
+def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config: Config) -> str:
+    """Generate coverage targets and tracelists."""
+    # Generate tracelist file for each extension/test group
+    for coverage_group, test_list in coverage_targets.items():
+        coverage_file = (base_dir / coverage_group / coverage_group.stem).with_suffix(".tracelist")
+        lines=[f"# Tests for coverage group: {coverage_group} \n# Generated automatically by cvw-arch-verif\n"]
+
+        for test_name in test_list:
+            lines.append(str(test_name))
+
+        # Write the tracefile
+        coverage_file.parent.mkdir(parents=True, exist_ok=True)
+        coverage_file.write_text("\n".join(lines))
+
+    # # Generate Makefile targets for coverage
+    # makefile_lines = []
+    # makefile_lines.append("# Coverage targets")
+
+    # for coverage_group, test_list in coverage_targets.items():
+    #     # Create a target for each coverage group
+    #     rvvi_files = [f"build/{test}.rvvi" for test in test_list]
+    #     makefile_lines.append(f"coverage-{coverage_group}: {' '.join(rvvi_files)}")
+    #     makefile_lines.append("")
+
+    # # Create an all-coverage target
+    # all_coverage_targets = [f"coverage-{group}" for group in coverage_targets.keys()]
+    # makefile_lines.append(f"coverage-all: {' '.join(all_coverage_targets)}")
+    # makefile_lines.append("")
+
+    # return "\n".join(makefile_lines)
+    return ""  # Currently not generating coverage targets in Makefile
 
 
 def generate_makefiles(
