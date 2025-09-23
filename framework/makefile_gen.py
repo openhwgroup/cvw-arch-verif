@@ -78,11 +78,11 @@ def gen_compile_targets(
 
 def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
     # Define paths
-    build_dir = base_dir / "build"
+    coverage_dir = base_dir / "coverage"
     elf_dir = base_dir / "elfs"
     elf = elf_dir / test_name.with_suffix(".elf")
-    sail_log = build_dir / test_name.with_suffix(".log")
-    rvvi_trace = build_dir / test_name.with_suffix(".rvvi")
+    sail_log = coverage_dir / test_name.with_suffix(".log")
+    rvvi_trace = coverage_dir / test_name.with_suffix(".rvvi")
 
     # Generate Makefile targets
     return (
@@ -100,12 +100,12 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
     )
 
 
-def write_makefile(makefile_path: Path, main_targets: list[tuple[str, list[str], str]], directory_set: set[str], makefile_lines: list[str]) -> None:
+def write_makefile(makefile_path: Path, main_targets: list[tuple[str, list[Path], str]], directory_set: set[str], makefile_lines: list[str]) -> None:
     """Helper function to write out a Makefile."""
     # Create top-level targets
     for variable_name, targets, command in main_targets:
         makefile_lines.append(f"{variable_name} = \\")
-        makefile_lines.extend(targets)
+        makefile_lines.extend(f"\t{target} \\" for target in targets)
         makefile_lines.append(f"\n{command}: $({variable_name})\n")
 
     # Directory creation rules
@@ -144,7 +144,7 @@ def generate_common_makefile(
         test_name = Path(test_name)
         elf_name = test_name.with_suffix(".elf")
         final_elf = common_elf_dir / elf_name
-        test_targets.append(f"\t{final_elf} \\")
+        test_targets.append(final_elf)
         directory_set.update([str((common_elf_dir / test_name).parent), str((common_build_dir / test_name).parent)])
         makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_wkdir, xlen, mabi, config))
 
@@ -191,7 +191,7 @@ def generate_config_makefile(
         trace_path = config_coverage_dir / trace_name
 
         # Add test to target lists
-        test_targets.append(f"\t{final_elf} \\")
+        test_targets.append(final_elf)
         directory_set.update([str((config_elf_dir / test_name).parent), str((config_build_dir / test_name).parent)])
 
         # Generate compilation/symlink targets
@@ -224,7 +224,7 @@ def generate_config_makefile(
     write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("UCDBS", ucdb_files, "ucdbs")], directory_set, makefile_lines)
 
 
-def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config: Config) -> tuple[str, list[str]]:
+def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config: Config) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
@@ -234,19 +234,21 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         base_name = base_dir / coverage_group / coverage_group.stem
         tracelist_file = base_name.with_suffix(".tracelist")
         ucdb_file = base_name.with_suffix(".ucdb")
-        tracelist_lines=[f"# Tests for coverage group: {coverage_group} \n# Generated automatically by cvw-arch-verif\n"]
 
-        for trace in traces:
-            tracelist_lines.append(str(trace))
+
 
         # Write the tracefile
         tracelist_file.parent.mkdir(parents=True, exist_ok=True)
-        tracelist_file.write_text("\n".join(tracelist_lines))
+        tracelist_file.write_text(
+            f"# Tests for coverage group: {coverage_group}\n"
+            + "# Generated automatically by cvw-arch-verif\n"
+            + "\n".join([str(trace) for trace in traces])
+        )
 
         # Add UCDB file to the list
         ucdb_files.append(str(ucdb_file))
         makefile_lines.append(
-            f"# Generate UCDB file for coverage group {coverage_group}\n"
+            f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
             # f'\t vsim -c -do "do {questa_do_file} {test_dir} {test_name} {cvw_arch_verif_dir}/fcov {self.work_dir} \\\n'
         )
