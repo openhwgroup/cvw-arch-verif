@@ -37,7 +37,7 @@ class TestMetadata(BaseModel):
     @property
     def flen(self) -> str:
         """Get floating-point register length: '64' if D extension present, else '32'."""
-        return 128 if "Q" in self.implemented_extensions else "64" if "D" in self.implemented_extensions else "32"
+        return "128" if "Q" in self.implemented_extensions else "64" if "D" in self.implemented_extensions else "32"
 
 
 def extract_yaml_config(file: Path) -> TestMetadata:
