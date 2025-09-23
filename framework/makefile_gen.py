@@ -31,11 +31,11 @@ def gen_compile_targets(
     # Define paths
     build_dir = base_dir / "build"
     elf_dir = base_dir / "elfs"
-    base_name = test_name.replace(".S", "")
-    sig_elf = build_dir / f"{base_name}-sig.elf"
-    sig_file = build_dir / f"{base_name}.sig"
-    sig_log_file = build_dir / f"{base_name}-sig.log"
-    final_elf = elf_dir / f"{base_name}.elf"
+    base_name = Path(test_name)
+    sig_elf = build_dir / base_name.with_suffix(".sig.elf")
+    sig_file = build_dir / base_name.with_suffix(".sig")
+    sig_log_file = build_dir / base_name.with_suffix(".sig.log")
+    final_elf = elf_dir / base_name.with_suffix(".elf")
 
     # Extract metadata
     march = test_metadata.march
@@ -43,49 +43,68 @@ def gen_compile_targets(
     test_path = test_metadata.test_path
     ref_model_sig_flags = config.ref_model_type.signature_flags.format(sig_file=sig_file, granularity=int(xlen / 8))
 
-    return f"""
-# Generate signature based ELF
-{sig_elf}: {test_path} | {sig_elf.parent}
-\t{config.compiler_string} $(CFLAGS) \\
-\t-o {sig_elf} \\
-\t-march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} \\
-\t{test_path}
-
-# Generate signature file
-{sig_file}: {sig_elf}
-\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\
-\t{sig_elf} > {sig_log_file}  # TODO: don't hardcode sail config file
-
-# Final ELF target
-{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}
-\t{config.compiler_string} $(CFLAGS) \\
-\t-o {final_elf} \\
-\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' \\
-\t{test_path}
-\t# Objdump
-{
-        f"\t{config.objdump_exe} -S -M no-aliases {final_elf} > {final_elf}.objdump"
-        if config.objdump_exe is not None
-        else "# skipping objdump generation"
-    }
-"""
+    # Generate Makefile targets
+    return (
+        f"# Compilation targets for {test_name}\n"
+        "# Generate signature based ELF\n"
+        f"{sig_elf}: {test_path} | {sig_elf.parent}\n"
+        f"\t{config.compiler_string} $(CFLAGS) \\\n"
+        f"\t-o {sig_elf} \\\n"
+        f"\t-march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} \\\n"
+        f"\t{test_path}\n"
+        "# Generate signature file\n"
+        f"{sig_file}: {sig_elf}\n"
+        f"\t{config.ref_model_exe} --config {config.dut_include_dir}/sail.json {ref_model_sig_flags} \\\n"
+        f"\t{sig_elf} > {sig_log_file}\n"  # TODO: don't hardcode sail config file
+        "# Final ELF target\n"
+        f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
+        f"\t{config.compiler_string} $(CFLAGS) \\\n"
+        f"\t-o {final_elf} \\\n"
+        f"\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} -DSIGNATURE_FILE='{sig_file}' \\\n"
+        f"\t{test_path}\n"
+        # Objdump
+        f"{
+            f'\t{config.objdump_exe} -S -M no-aliases {final_elf} > {final_elf}.objdump\n'
+            if config.objdump_exe is not None
+            else '# skipping objdump generation\n'
+        }"
+    )
 
 
 def gen_rvvi_targets(test_name: str, base_dir: Path, config: Config) -> str:
-    base_name = test_name.replace(".S", "")
-    elf = base_dir / "elfs" / f"{base_name}.elf"
-    sail_log = base_dir / "build" / f"{base_name}.log"
-    rvvi_trace = base_dir / "build" / f"{base_name}.rvvi"
+    # Define paths
+    build_dir = base_dir / "build"
+    elf_dir = base_dir / "elfs"
+    base_name = Path(test_name)
+    elf = elf_dir / base_name.with_suffix(".elf")
+    sail_log = build_dir / base_name.with_suffix(".log")
+    rvvi_trace = build_dir / base_name.with_suffix(".rvvi")
 
-    return f"""
-# Run test on Sail to generate log
-{sail_log}: {elf}
-\t{config.ref_model_exe} --trace-all {elf} --trace-output {sail_log}
+    # Generate Makefile targets
+    return (
+        "# Run test on Sail to generate log\n"
+        f"{sail_log}: {elf}\n"
+        f"\t{config.ref_model_exe} --trace-all {elf} --trace-output {sail_log}\n"
+        "# Generate RVVI trace\n"
+        f"{rvvi_trace}: {sail_log}\n"
+        f"\tuv run tools/sail-parse.py {sail_log} {rvvi_trace}\n"
+    )
 
-# Generate RVVI trace
-{rvvi_trace}: {sail_log}
-\tuv run tools/sail-parse.py {sail_log} {rvvi_trace}
-"""
+
+def write_makefile(makefile_path: Path, main_targets: list[tuple[str, list[str], str]], directory_set: set[str], makefile_lines: list[str]) -> None:
+    """Helper function to write out a Makefile."""
+    # Create top-level targets
+    for variable_name, targets, command in main_targets:
+        makefile_lines.append(f"{variable_name} = \\")
+        makefile_lines.extend(targets)
+        makefile_lines.append(f"\n{command}: $({variable_name})\n")
+
+    # Directory creation rules
+    makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
+
+    # Write out Makefile
+    makefile_path.parent.mkdir(parents=True, exist_ok=True)
+    makefile_path.write_text("\n".join(makefile_lines))
 
 
 def generate_common_makefile(
@@ -97,37 +116,31 @@ def generate_common_makefile(
     mabi: str,
 ) -> None:
     """Generate a Makefile to compile the common tests."""
+    # Define paths
     common_wkdir = wkdir / "common"
     common_elf_dir = common_wkdir / "elfs"
     common_build_dir = common_wkdir / "build"
+
+    # Makefile targets
+    directory_set = set()
+    test_targets = []
     makefile_lines = [
         MAKEFILE_HEADER,
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
         f"XLEN := {xlen}",
-        "",
     ]
-    directory_set = {str(common_elf_dir), str(common_build_dir)}  # Directories to create
-    test_targets = []
 
+    # Build Makefile targets for each test
     for test_name, test_metadata in common_test_list.items():
-        elf_name = test_name.replace(".S", ".elf")
+        elf_name = Path(test_name).with_suffix(".elf")
         final_elf = common_elf_dir / elf_name
         test_targets.append(f"\t{final_elf} \\")
         directory_set.update([str((common_elf_dir / test_name).parent), str((common_build_dir / test_name).parent)])
         makefile_lines.append(gen_compile_targets(test_name, test_metadata, common_wkdir, xlen, mabi, config))
 
-    # Add TESTS variable and targets
-    makefile_lines.append("TESTS = \\")
-    makefile_lines.extend(test_targets)
-    makefile_lines.append("\ncompile: $(TESTS)\n")
-
-    # Directory creation rules
-    makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
-
     # Write out Makefile
-    makefile_path = common_wkdir / f"rv{xlen}" / "Makefile"
-    makefile_path.parent.mkdir(parents=True, exist_ok=True)
-    makefile_path.write_text("\n".join(makefile_lines))
+    makefile_path = common_wkdir / f"Makefile-rv{xlen}.mk"
+    write_makefile(makefile_path, [("ELFS", test_targets, "compile")], directory_set, makefile_lines)
 
 
 def generate_config_makefile(
@@ -141,50 +154,43 @@ def generate_config_makefile(
     mabi: str,
 ) -> None:
     """Generate a Makefile to compile the config-specific tests."""
+    # Define paths
     config_wkdir = wkdir / config_name
     config_elf_dir = config_wkdir / "elfs"
     config_build_dir = config_wkdir / "build"
     common_wkdir = wkdir / "common"
     common_elf_dir = common_wkdir / "elfs"
+
+    # Makefile targets
+    directory_set = set()
+    test_targets = []
     makefile_lines = [
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
         f"XLEN := {xlen}",
     ]
-    directory_set = {str(config_elf_dir), str(config_build_dir)}  # Directories to create
-    test_targets = []
 
+    # Build Makefile targets for each test
     for test_name, test_metadata in config_test_list.items():
-        elf_name = test_name.replace(".S", ".elf")
+        elf_name = Path(test_name).with_suffix(".elf")
         final_elf = config_elf_dir / elf_name
         test_targets.append(f"\t{final_elf} \\")
         directory_set.update([str((config_elf_dir / test_name).parent), str((config_build_dir / test_name).parent)])
         if test_name in common_test_list:
             common_elf = common_elf_dir / elf_name
-            makefile_lines.extend(
-                [
-                    f"{final_elf}: {common_elf} | {final_elf.parent}",
-                    f"\tln -sf {common_elf} {final_elf}",
-                    f"\tln -sf {common_elf}.objdump {final_elf}.objdump"
+            makefile_lines.append(
+                    f"# Create symlink to common elf for {test_name}\n"
+                    f"{final_elf}: {common_elf} | {final_elf.parent}\n"
+                    f"\tln -sf {common_elf} {final_elf}\n"
+                    f"\tln -sf {common_elf}.objdump {final_elf}.objdump\n"
                     if config.objdump_exe is not None
-                    else "# skipping objdump",
-                    "",
-                ]
+                    else "# skipping objdump\n",
             )
         else:
             makefile_lines.append(gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config))
 
-    # Add TESTS variable and compile target
-    makefile_lines.append("TESTS = \\")
-    makefile_lines.extend(test_targets)
-    makefile_lines.append("\ncompile: $(TESTS)\n")
-
-    # Directory creation rules
-    makefile_lines.extend([f"{' '.join(directory_set)}:", "\tmkdir -p $@", ""])
-
     # Write out Makefile
-    config_wkdir.mkdir(parents=True, exist_ok=True)
     makefile_path = config_wkdir / "Makefile"
-    makefile_path.write_text("\n".join(makefile_lines))
+    write_makefile(makefile_path, [("ELFS", test_targets, "compile")], directory_set, makefile_lines)
 
 
 def generate_makefiles(
@@ -240,7 +246,7 @@ def generate_makefiles(
             top_makefile_lines.extend(
                 [
                     f"common-rv{xlen}-compile:",
-                    f"\t$(MAKE) -C common/rv{xlen} compile",
+                    f"\t$(MAKE) -f common/Makefile-rv{xlen}.mk compile",
                     "",
                 ]
             )
