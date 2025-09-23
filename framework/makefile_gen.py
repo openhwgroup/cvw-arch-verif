@@ -216,19 +216,19 @@ def generate_config_makefile(
         makefile_lines.append("\n")
 
     # Generate coverage targets
-    coverage_makefile_lines, ucdb_files = gen_coverage_targets(coverage_targets, config_coverage_dir, config)
+    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir)
     makefile_lines.append(coverage_makefile_lines)
 
     # Write out Makefile
     makefile_path = config_wkdir / "Makefile"
-    write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("UCDBS", ucdb_files, "ucdbs")], directory_set, makefile_lines)
+    write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")], directory_set, makefile_lines)
 
 
-def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config: Config) -> tuple[str, list[Path]]:
+def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
-    ucdb_files = []
+    coverage_reports = []
     for coverage_group, traces in coverage_targets.items():
         # Define paths
         base_name = base_dir / coverage_group / coverage_group.stem
@@ -246,20 +246,20 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         )
 
         # Add UCDB file to the list
-        ucdb_files.append(str(ucdb_file))
         makefile_lines.append(
             f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov" \\\n'
+            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov {{{coverage_group.stem.upper()}_COVERAGE}}" \\\n'
         )
 
         # Generate coverage report
+        coverage_reports.append(report_file)
         makefile_lines.append(
             f"# Generate coverage report for {coverage_group.stem}\n"
             f"{report_file}: {ucdb_file}\n"
             f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py {ucdb_file} {base_name}\n"
         )
-    return ("\n".join(makefile_lines), ucdb_files)
+    return ("\n".join(makefile_lines), coverage_reports)
 
 
 def generate_makefiles(

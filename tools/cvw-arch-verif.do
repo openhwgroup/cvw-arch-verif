@@ -27,6 +27,7 @@ set TRACEFILELIST ${1}
 set UCDB ${2}
 set WKDIR ${3}
 set FCOVDIR ${4}
+set COVERAGELIST ${5}
 
 # create library
 if [file exists ${WKDIR}] {
@@ -39,7 +40,16 @@ set INC_DIRS ""
 # "+incdir+${COVERAGEFILEDIR}"
 set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
 set TB ${FCOVDIR}/testbench.sv
-vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} ${TB}
+# Build +define+ list from COVERAGELIST (space-separated)
+set DEFINE_ARGS {}
+foreach def [split ${COVERAGELIST}] {
+    if {$def eq ""} { continue }
+    lappend DEFINE_ARGS "+define+$def"
+}
+
+puts "Compiling with defines: {*}${DEFINE_ARGS}"
+
+vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} {*}${DEFINE_ARGS} ${TB}
 
 # start and run simulation
 vopt ${WKDIR}.testbench -work ${WKDIR} -o testbenchopt
