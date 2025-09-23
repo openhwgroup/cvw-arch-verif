@@ -234,8 +234,8 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         base_name = base_dir / coverage_group / coverage_group.stem
         tracelist_file = base_name.with_suffix(".tracelist")
         ucdb_file = base_name.with_suffix(".ucdb")
-
-
+        work_dir = base_name.parent / "ucdb_work"
+        report_file = Path(f"{base_name}_report.txt")
 
         # Write the tracefile
         tracelist_file.parent.mkdir(parents=True, exist_ok=True)
@@ -250,7 +250,14 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         makefile_lines.append(
             f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            # f'\t vsim -c -do "do {questa_do_file} {test_dir} {test_name} {cvw_arch_verif_dir}/fcov {self.work_dir} \\\n'
+            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov" \\\n'
+        )
+
+        # Generate coverage report
+        makefile_lines.append(
+            f"# Generate coverage report for {coverage_group.stem}\n"
+            f"{report_file}: {ucdb_file}\n"
+            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py {ucdb_file} {base_name}\n"
         )
     return ("\n".join(makefile_lines), ucdb_files)
 

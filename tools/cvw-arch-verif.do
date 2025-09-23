@@ -23,17 +23,12 @@ onbreak {resume}
 onerror {quit -f}
 
 # Initialize variables
-set TESTDIR questa_work
-set TESTNAME ${1}
-set FCOVDIR ${2}
-# set COVERAGEFILEDIR ${3}
-set TRACEFILELIST ${3}
-set UCDB ${TESTDIR}/${TESTNAME}.ucdb
-set WKDIR ${TESTDIR}/cov_work
-set TB ${FCOVDIR}/testbench.sv
+set TRACEFILELIST ${1}
+set UCDB ${2}
+set WKDIR ${3}
+set FCOVDIR ${4}
 
 # create library
-file mkdir -p ${TESTDIR}
 if [file exists ${WKDIR}] {
     vdel -lib ${WKDIR} -all
 }
@@ -43,6 +38,7 @@ vlib ${WKDIR}
 set INC_DIRS ""
 # "+incdir+${COVERAGEFILEDIR}"
 set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
+set TB ${FCOVDIR}/testbench.sv
 vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} ${TB}
 
 # start and run simulation
