@@ -23,7 +23,7 @@ onbreak {resume}
 onerror {quit -f}
 
 # Initialize variables
-set TESTDIR build
+set TESTDIR questa_work
 set TESTNAME ${1}
 set FCOVDIR ${2}
 # set COVERAGEFILEDIR ${3}
@@ -33,6 +33,7 @@ set WKDIR ${TESTDIR}/cov_work
 set TB ${FCOVDIR}/testbench.sv
 
 # create library
+file mkdir -p ${TESTDIR}
 if [file exists ${WKDIR}] {
     vdel -lib ${WKDIR} -all
 }

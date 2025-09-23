@@ -102,7 +102,7 @@ module testbench;
       $finish;
     end
     while($fgets(line, traceFileListHandler)) begin
-      if (line != "" && line != "\n") begin
+      if (line != "" && line != "\n" && line[0] != "#") begin
         // Strip newline character from the end of the line
         if (line[line.len()-1] == "\n") begin
           line = line.substr(0, line.len()-2);
@@ -231,8 +231,6 @@ module testbench;
         endcase
       end
       valid = 1;
-    end else begin
-      $display("Skipping empty line");
     end
   end
 
