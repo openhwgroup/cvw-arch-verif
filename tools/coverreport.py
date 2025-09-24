@@ -57,10 +57,10 @@ temp_summary_report = report_dir / (report_name + "_temp_summary.txt")
 os.makedirs(report_dir, exist_ok=True)
 
 # Generate reports
-cmd = f"vcover report -details {ucdb} -output {full_report}"
+cmd = f"vcover report -details {ucdb} -output {full_report} &> {full_report}.log"
 os.system(cmd)
 
-cmd = f"vcover report -details {ucdb} -below 100 -output {uncovered_report}"
+cmd = f"vcover report -details {ucdb} -below 100 -output {uncovered_report} &> {uncovered_report}.log"
 os.system(cmd)
 
 # Use grep to get the lines that match the criteria

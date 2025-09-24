@@ -58,7 +58,7 @@ def gen_compile_targets(
         f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
         f"\t{ref_model_sig_flags} \\\n"
         f"\t{sig_elf} \\\n"
-        f"\t\t> {sig_log_file}\n"
+        f"\t\t&> {sig_log_file}\n"
         f"\n"
         "# Final ELF target\n"
         f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
@@ -81,22 +81,23 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
     coverage_dir = base_dir / "coverage"
     elf_dir = base_dir / "elfs"
     elf = elf_dir / test_name.with_suffix(".elf")
-    sail_log = coverage_dir / test_name.with_suffix(".log")
+    sail_trace = coverage_dir / test_name.with_suffix(".trace")
     rvvi_trace = coverage_dir / test_name.with_suffix(".rvvi")
 
     # Generate Makefile targets
     return (
         "# Run test on Sail to generate log\n"
-        f"{sail_log}: {elf}\n"
+        f"{sail_trace}: {elf}\n"
         f"\t{config.ref_model_exe} --trace-all \\\n"
         f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
         f"\t{elf} \\\n"
-        f"\t--trace-output {sail_log}\n"
+        f"\t--trace-output {sail_trace}\\\n"
+        f" &> {sail_trace}.log\\\n"
         f"\n"
         "# Generate RVVI trace\n"
-        f"{rvvi_trace}: {sail_log}\n"
+        f"{rvvi_trace}: {sail_trace}\n"
         f"\tuv run $(CVW_ARCH_VERIF)/tools/sail-parse.py \\\n"
-        f"\t{sail_log} \\\n"
+        f"\t{sail_trace} \\\n"
         f"\t{rvvi_trace}\n"
     )
 
