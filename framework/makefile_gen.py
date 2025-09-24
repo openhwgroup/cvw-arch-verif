@@ -252,7 +252,7 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         makefile_lines.append(
             f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov {{{coverage_group.stem.upper()}_COVERAGE}}" \\\n'
+            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov {{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\\\n'
         )
 
         # Generate coverage report
