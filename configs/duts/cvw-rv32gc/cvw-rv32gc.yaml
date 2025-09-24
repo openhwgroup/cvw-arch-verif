@@ -3,8 +3,8 @@
 $schema: config_schema.json#
 kind: architecture configuration
 type: fully configured
-name: cvw-rv64gc
-description: The rv64gc configuration of Core-V Wally; RVA22S64 compliant
+name: cvw-rv32gc
+description: The rv32gc configuration of Core-V Wally;
 implemented_extensions:
   - { name: I, version: "2.1" }
   - { name: A, version: "2.1.0" }
@@ -19,7 +19,6 @@ implemented_extensions:
   - { name: Zicboz, version: "1.0.0" }
   - { name: Ziccamoa, version: "1.0.0" }
   - { name: Ziccif, version: "1.0.0" }
-  - { name: Zicclsm, version: "1.0.0" }
   - { name: Ziccrse, version: "1.0.0" }
   - { name: Zicntr, version: "2.0" }
   - { name: Zicond, version: "1.0.0" }
@@ -48,8 +47,6 @@ implemented_extensions:
   - { name: Svadu, version: "1.0.0" }
   - { name: Svbare, version: "1.0.0" }
   - { name: Svinval, version: "1.0.0" }
-  - { name: Svnapot, version: "1.0.0" }
-  - { name: Svpbmt, version: "1.0.0" }
   - { name: Sm, version: "1.12.0" }
   - { name: Smpmp, version: "1.12.0" }
   - { name: Smhpm, version: "1.12.0" }
@@ -73,7 +70,7 @@ params:
   # C params
   MUTABLE_MISA_C: false
   # B params
-  MUTABLE_MISA_B: false
+  MUTABLE_MISA_B: true
   # CBO params
   CACHE_BLOCK_SIZE: 64
   FORCE_UPGRADE_CBO_INVAL_TO_FLUSH: false
@@ -82,13 +79,13 @@ params:
   # U params
   MUTABLE_MISA_U: false
   U_MODE_ENDIANNESS: dynamic
-  UXLEN: 64
+  UXLEN: 32
   TRAP_ON_ECALL_FROM_U: true
   # S params
   MUTABLE_MISA_S: false
   ASID_WIDTH: 16
   S_MODE_ENDIANNESS: dynamic
-  SXLEN: 64
+  SXLEN: 32
   REPORT_VA_IN_MTVAL_ON_LOAD_PAGE_FAULT: true
   REPORT_VA_IN_MTVAL_ON_STORE_AMO_PAGE_FAULT: true
   REPORT_VA_IN_MTVAL_ON_INSTRUCTION_PAGE_FAULT: true
@@ -149,7 +146,7 @@ params:
   MSTATUS_VS_LEGAL_VALUES: [0]
   MSTATUS_TVM_IMPLEMENTED: true
   # Sm params
-  MXLEN: 64
+  MXLEN: 32
   PRECISE_SYNCHRONOUS_EXCEPTIONS: true
   TRAP_ON_ECALL_FROM_M: true
   TRAP_ON_EBREAK: true

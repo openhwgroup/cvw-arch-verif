@@ -84,7 +84,7 @@ def readTestplans():
 # readCovergroupTemplates reads the covergroup templates from the templates directory
 
 def readCovergroupTemplates():
-    templateDir = f'{ARCH_VERIF}/templates/coverage'
+    templateDir = f'{ARCH_VERIF}/generators/coverage/templates'
     covergroupTemplates = dict()
     for file in os.listdir(templateDir):
         if file.endswith(".txt"):
@@ -307,7 +307,7 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
 ##################################
 
 if __name__ == '__main__':
-    ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+    ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", ".."))
     missingTemplates = list() # keep list of missing templates to only print once
     testPlans, archSources = readTestplans()
     covergroupTemplates = readCovergroupTemplates()

@@ -51,7 +51,4 @@ module cvw_arch_verif(rvviTrace rvvi);
       `endif
     end
   end
-
-  // Check assertion coverage
-  `include "RV_Assertions.sv"
 endmodule

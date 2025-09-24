@@ -100,7 +100,6 @@
 
 #include "encoding.h"
 #include "test_macros.h"
-#define RVTEST_ISA(_STR)         //empty macro used by framework
 
 #define T1      x6
 #define T2      x7

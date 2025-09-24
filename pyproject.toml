@@ -8,16 +8,17 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "pyyaml>=6.0.2",
+    "pydantic>=2.11.9",
+    "ruamel-yaml>=0.18.15",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.12.12",
+    "ruff>=0.13.0",
 ]
 
 [project.scripts]
-makefile_gen = "framework.makefile_gen:main"
+act = "framework.main:main"
 
 ##### BUILD #####
 
@@ -33,6 +34,7 @@ module-name = "framework"
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["riscv-unified-db"]
 
 [tool.ruff.lint]
 select = [

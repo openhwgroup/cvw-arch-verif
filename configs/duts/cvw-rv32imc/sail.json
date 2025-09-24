@@ -1,5 +1,7 @@
 {
+  "$schema": "/opt/riscv/share/sail-riscv/sail_riscv_config_schema.json",
   "base": {
+    "xlen": 32,
     "writable_misa": false,
     "writable_fiom": true,
     "writable_hpm_counters": {
@@ -11,7 +13,10 @@
   "memory": {
     "pmp": {
       "grain": 0,
-      "count": 16
+      "count": 0,
+      "tor_supported": true,
+      "na4_supported": true,
+      "napot_supported": true
     },
     "misaligned": {
       "supported": false,
@@ -51,34 +56,37 @@
       "supported": true
     },
     "A": {
-      "supported": true
+      "supported": false
     },
-    "FD": {
-      "supported": true
+    "F": {
+      "supported": false
+    },
+    "D": {
+      "supported": false
     },
     "V": {
-      "supported": true,
+      "supported": false,
       "vlen_exp": 9,
       "elen_exp": 6,
       "vl_use_ceil": false
     },
     "B": {
-      "supported": true
+      "supported": false
     },
     "S": {
-      "supported": true
+      "supported": false
     },
     "U": {
       "supported": true
     },
     "Zicbom": {
-      "supported": true
+      "supported": false
     },
     "Zicboz": {
-      "supported": true
+      "supported": false
     },
     "Zicond": {
-      "supported": true
+      "supported": false
     },
     "Zicntr": {
       "supported": true
@@ -87,7 +95,7 @@
       "supported": true
     },
     "Zifencei": {
-      "supported": true
+      "supported": false
     },
     "Zihpm": {
       "supported": true
@@ -104,6 +112,9 @@
     "Zabha": {
       "supported": false
     },
+    "Zacas": {
+      "supported": false
+    },
     "Zalrsc": {
       "supported": false
     },
@@ -117,10 +128,10 @@
       }
     },
     "Zfa": {
-      "supported": true
+      "supported": false
     },
     "Zfh": {
-      "supported": true
+      "supported": false
     },
     "Zfhmin": {
       "supported": false
@@ -132,13 +143,13 @@
       "supported": true
     },
     "Zcf": {
-      "supported": true
+      "supported": false
     },
     "Zcd": {
-      "supported": true
+      "supported": false
     },
     "Zcb": {
-      "supported": true
+      "supported": false
     },
     "Zcmop": {
       "supported": false
@@ -153,25 +164,25 @@
       "supported": false
     },
     "Zbc": {
-      "supported": true
+      "supported": false
     },
     "Zbkb": {
-      "supported": true
+      "supported": false
     },
     "Zbkc": {
-      "supported": true
+      "supported": false
     },
     "Zbkx": {
-      "supported": true
+      "supported": false
     },
     "Zknd": {
-      "supported": true
+      "supported": false
     },
     "Zkne": {
-      "supported": true
+      "supported": false
     },
     "Zknh": {
-      "supported": true
+      "supported": false
     },
     "Zkr": {
       "supported": false,
@@ -187,7 +198,7 @@
       "supported": false
     },
     "Zkt": {
-      "supported": true
+      "supported": false
     },
     "Zhinx": {
       "supported": false
@@ -220,7 +231,7 @@
       "supported": false
     },
     "Zvksh": {
-      "supported": true
+      "supported": false
     },
     "Zvkt": {
       "supported": false
@@ -235,14 +246,14 @@
       "supported": true
     },
     "Svinval": {
-      "supported": true
+      "supported": false
     },
     "Svbare": {
-      "supported": true,
+      "supported": false,
       "sfence_vma_illegal_if_svbare_only": true
     },
     "Sv32": {
-      "supported": true
+      "supported": false
     },
     "Sv39": {
       "supported": false

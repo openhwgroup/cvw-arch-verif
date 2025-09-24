@@ -19,12 +19,14 @@ import re
 import sys
 from random import randint, seed
 
+# Ignore Unpacked variable is never used until there is time for a full refactor
+# ruff: noqa: RUF059
 
 def insertTemplate(name, is_custom=False):
     global signatureWords, sigupd_count
 
     # f.write(f"\n# {name}\n")      no longer desired to include header name
-    with open(f"{ARCH_VERIF}/templates/testgen/{name}") as h:
+    with open(f"{ARCH_VERIF}/generators/tests/templates/{name}") as h:
         template = h.read()
     # Split extension into components based on capital letters
     ext_parts = re.findall(r'Z[a-z]+|[A-Z]', extension)
@@ -2295,7 +2297,7 @@ def getExtensions():
 # main body
 #
 # change these to suite your tests
-ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", ".."))
 rtype = ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and",
         "addw", "subw", "sllw", "srlw", "sraw",
         "mul", "mulh", "mulhsu", "mulhu", "div", "divu", "rem", "remu",
