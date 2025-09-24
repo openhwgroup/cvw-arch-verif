@@ -95,9 +95,16 @@ covergroup PMPZca_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],lo
 
 	addr_in_consecutive_regions: coverpoint (ins.current.rs1_val + ins.current.imm) {
 		bins inside_first_region   = {`REGIONSTART};
-		bins straddle_first_second = {`REGIONSTART + `g - 2};
-		bins inside_second_region  = {`REGIONSTART + `g};
-		bins straddle_second_third = {`REGIONSTART + 2*`g - 2 };
+		bins straddle_first_second = {`REGIONSTART + `g_tor - 2};
+		bins inside_second_region  = {`REGIONSTART + `g_tor};
+		bins straddle_second_third = {`REGIONSTART + 2*`g_tor - 2 };
+	}
+
+	addr_in_consecutive_regions_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins inside_first_region   = {`REGIONSTART};
+		bins straddle_first_second = {`REGIONSTART + `g_napot - 2};
+		bins inside_second_region  = {`REGIONSTART + `g_napot};
+		bins straddle_second_third = {`REGIONSTART + 2*`g_napot - 2 };
 	}
 
 	`ifdef G_IS_0
@@ -107,11 +114,18 @@ covergroup PMPZca_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],lo
 		}
 	`endif
 
-	addr_adjacent_to_pmp_boundary: coverpoint (ins.current.rs1_val + ins.current.imm) {
-		bins just_below_pmp = {`REGIONSTART - 2};        // 2 bytes before region start (possible straddle)
-		bins at_start_pmp   = {`REGIONSTART};            // aligned to start of region
-		bins at_end_pmp     = {`REGIONSTART + `g - 2};   // 2 bytes before end → straddles out
-		bins just_above_pmp = {`REGIONSTART + `g};       // just outside region
+	addr_adjacent_to_pmp_boundary_tor: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins just_below_pmp = {`REGIONSTART - 2};       	 // 2 bytes before region start (possible straddle)
+		bins at_start_pmp   = {`REGIONSTART};           	 // aligned to start of region
+		bins at_end_pmp     = {`REGIONSTART + `g_tor - 2};   // 2 bytes before end → straddles out
+		bins just_above_pmp = {`REGIONSTART + `g_tor};       // just outside region
+	}
+
+	addr_adjacent_to_pmp_boundary_napot: coverpoint (ins.current.rs1_val + ins.current.imm) {
+		bins just_below_pmp = {`REGIONSTART - 2};       	 // 2 bytes before region start (possible straddle)
+		bins at_start_pmp   = {`REGIONSTART};           	 // aligned to start of region
+		bins at_end_pmp     = {`REGIONSTART + `g_napot - 2}; // 2 bytes before end → straddles out
+		bins just_above_pmp = {`REGIONSTART + `g_napot};     // just outside region
 	}
 
 	`ifdef G_IS_0

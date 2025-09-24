@@ -112,21 +112,15 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |PMPU|User PMP|<<t-PMPU-coverpoints>>||x|x|x|x
 |PMPF|Float PMP|<<t-PMPF-coverpoints>>|||x|x|x
 |PMPZca|Compressed PMP|<<t-PMPZca-coverpoints>>|||x|x|x
-|PMPZicbo|CBO PMP|<<t-PMPZicbo-coverpoints>>|||x|x|x
+|PMPZicbo|PMP + CBOM/CBOZ|<<t-PMPZicbo-coverpoints>>|||x|x|x
 |PMPZaamo|AMO PMP|<<t-PMPZaamo-coverpoints>>|||x|x|x
 |PMPZalrsc|LR/SC PMP|<<t-PMPZalrsc-coverpoints>>|||x|x|x
 |Svbare|No Virtual Memory|<<t-Svbare-coverpoints>>|||x|x|x
-|Sv32|Sv32 Virtual Memory|<<t-Sv32-coverpoints>>|||||
-|RV32VM_PMP|VM + PMP|<<t-RV32VM_PMP-coverpoints>>|||||
-|RV32CBO_VM|VM + CBO|<<t-RV32CBO_VM-coverpoints>>|||||
-|RV32CBO_PMP|CBO + PMP|<<t-RV32CBO_PMP-coverpoints>>|||||
-|Sv39|Sv39/48/57 Virtual Memory|<<t-Sv39-coverpoints>>|||x|x|x
-|Sv48|Sv39/48/57 Virtual Memory|<<t-Sv48-coverpoints>>|||o|o|o
-|Sv57|Sv39/48/57 Virtual Memory|<<t-Sv57-coverpoints>>|||o|o|o
-|RV64VM_PMP|VM + PMP|<<t-RV64VM_PMP-coverpoints>>|||x|x|x
-|RV64CBO_VM|VM + CBO|<<t-RV64CBO_VM-coverpoints>>|||x|x|x
-|RV64CBO_PMP|CBO + PMP|<<t-RV64CBO_PMP-coverpoints>>|||x|x|x
+|Sv|Sv32/39/48/57 Virtual Memory|<<t-Sv-coverpoints>>|||||
 |Svinval|TLB Invalidation|<<t-Svinval-coverpoints>>|||x|x|x
+|VMPMP|VM + PMP|<<t-VMPMP-coverpoints>>|||x|x|x
+|VMZicbo|VM + CBOM/CBOZ|<<t-VMZicbo-coverpoints>>|||x|x|x
+|VMPMPZicbo|VM + PMP + CBOM/CBOZ|<<t-VMPMPZicbo-coverpoints>>|||x|x|x
 |Svade|Page Table A/D Exceptions|<<t-Svade-coverpoints>>|||x|x|x
 |Svadu|Page Table Update|<<t-Svadu-coverpoints>>||||o|o
 |Svpbmt|Page-based Memory Types|<<t-Svpbmt-coverpoints>>|||x|x|x
@@ -178,19 +172,14 @@ All privileged suites require at least version 1.12 of the privileged specificat
 8+^|Hypervisor
 |H|Hypervisor Instructions|<<t-H-coverpoints>>|||o|o|x
 |ZicsrH|Hypervisor CSRs|<<t-ZicsrH-coverpoints>>|||o|o|x
-|ZicsrHF|Hypervisor Float CSRs|<<t-ZicsrHF-coverpoints>>|||o|o|x
-|ZicsrHV|Hypervisor Vector CSRs|<<t-ZicsrHV-coverpoints>>|||o|o|x
 |ExceptionsH|Hypervisor Exceptions|<<t-ExceptionsH-coverpoints>>|||o|o|x
 |ExceptionsHV|Hypervisor Vector Exceptions|<<t-ExceptionsHV-coverpoints>>|||o|o|x
 |InterruptsH|Hypervisor Interrupts|<<t-InterruptsH-coverpoints>>|||o|o|x
 |EndianH|Hypervisor Endian|<<t-EndianH-coverpoints>>|||o|o|x
 |ZicntrH|Hypervisor Counters|<<t-ZicntrH-coverpoints>>|||o|o|x
 |PMPH|Hypervisor PMP|<<t-PMPH-coverpoints>>|||o|o|x
-|RV32VMH|Hypervisor Virtual Memory|<<t-RV32VMH-coverpoints>>|||o|o|x
-|RV32VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV32VMH_CBO-coverpoints>>|||o|o|x
-|RV64VMH|Hypervisor Virtual Memory|<<t-RV64VMH-coverpoints>>|||o|o|x
-|RV64VMH_CBO|Hypervisor Virtual Memory + CBO|<<t-RV64VMH_CBO-coverpoints>>|||o|o|x
-|SsstrictH|Hypervisor Strict|<<t-SsstrictH-coverpoints>>|||o|o|x
+|VMH|Hypervisor Virtual Memory|<<t-VMH-coverpoints>>|||o|o|x
+|VMHCBO|Hypervisor Virtual Memory + CBO|<<t-VMHCBO-coverpoints>>|||o|o|x
 |Shcounterenw|Counter Enables|<<t-Shcounterenw-coverpoints>>|||o|o|x
 |Shvsatpa|VM Modes Supported|<<t-Shvsatpa-coverpoints>>|||o|o|x
 |Shgatpa|VM x4 Modes Supported|<<t-Shgatpa-coverpoints>>|||o|o|x
@@ -268,7 +257,10 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Ssaia|Supervisor Advanced Interrupts|<<t-Ssaia-coverpoints>>|||||
 |IMSIC|Incoming MSI Controller|<<t-imsic-coverpoints>>|||||
 |APLIC|Advanced Platform-Level Interrupt Controller|<<t-aplic-coverpoints>>|||||
+|IOMMU|AIA I/O Memory Management Unit|<<t-iommu-coverpoints>>|||||
+8+^|I/O Memory Management Unit
 |IOMMU|I/O Memory Management Unit|<<t-iommu-coverpoints>>|||||
+
 |===
 
 === Architecturally Untestable Extensions
@@ -292,6 +284,14 @@ All privileged suites require at least version 1.12 of the privileged specificat
 |Svvptc|Valid PTEs appear within bounded time without fence||||x|x
 |===
 
-=== Conforming M-Mode Requirement
+=== Certification Requirements
+
+Certification places basic requirements on the DUT.
+
+==== Conforming M-Mode
 
 The privileged testplan relies on a machine mode conforming to Sm1p12 machine architecture or later.  The tests need to configure machine-mode CSRs that affect the behavior of lower privilege modes. This is done most easily by directly writing such registers using standard instructions in machine mode.  It is theoretically possible to write tests that only operate in S and U-mode, and use some sort of generalized SBI interface to request machine mode configurations even from non-conforming machine-mode implementations, but no such SBI interface exists at this time and the complexity seems to exceed the benefit.  Therefore, privileged tests rely on machine-mode, and also contain coverpoints and tests to check that privileged behaviors work correctly in machine mode.
+
+==== Consistent XLEN and Endianness
+
+The test plan requires that after the boot process, XLEN and endianness are the same in all privilege modes.  Specifically, MXLEN = SXLEN = UXLEN = HSXLEN = VSXLEN and MBE = SBE = UBE = VSBE.  If this is not the reset state of the DUT, the <<t-trickbox, `RVMODEL_BOOT` trick box macro>> may be able to place it in that state before testing.  If the DUT cannot be placed in this state, it cannot be certified because the tests assume XLEN and endianness do not change with privilege mode unless specifcially modified by a test. For example, a machine hardwired to 64-bit machine mode and 32-bit user mode is not certifiable. (Presently, only endian changes are tested; certifying multiple XLEN is not a priority.)

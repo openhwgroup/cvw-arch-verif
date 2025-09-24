@@ -40,7 +40,8 @@
 `define REGIONSTART        `SAFE_REGION_START
 
 // Calculate region size g in bytes.
-`define g ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)) )
+`define g_tor       (2 ** (`G + 2))
+`define g_napot     ((`G > 1) ? (2 ** (`G + 2)) : (2 ** (`G + 3)))
 
 // Calculate k = G - 1 trailing ones in NAPOT encoding.
 `define k  ((`G > 1) ? (`G - 1) : 0)
@@ -52,6 +53,11 @@
 
 // NAPOT region: add trailing 1s per `k` to form mask
 `define STANDARD_REGION      ((`REGIONSTART >> 2) | ((2 ** `k) - 1)) // NAPOT format: yyyyy...0111
+
+// XLEN64 -> [53:0] & XLEN32 -> [31:0]
+`define EFFECTIVE_PMPADDR (`ifdef XLEN64 53 `else 31 `endif)
+`define READ_ZERO_MASK   ~((1<<`G)-1)
+
 
 // -----------------------------------------------------------------------------
 //                         XLEN FLEN VLEN Macros

@@ -30,11 +30,6 @@ UNPRIVOBJECTS   = $(UNPRIV_SOURCES:.$(SRCEXT)=.$(OBJEXT))
 
 # Main targets
 all: unpriv priv
-Vx  : riscv-arch-Vx8  riscv-arch-Vx16  riscv-arch-Vx32  riscv-arch-Vx64
-Vls : riscv-arch-Vls8 riscv-arch-Vls16 riscv-arch-Vls32 riscv-arch-Vls64
-Vf  : riscv-arch-Vf16 riscv-arch-Vf32  riscv-arch-Vf64
-V   : Vx Vls Vf
-
 
 unpriv: testgen
 	$(MAKE) $(UNPRIVOBJECTS)
@@ -48,21 +43,8 @@ covergroupgen: bin/covergroupgen.py
 
 testgen: covergroupgen bin/vector-testgen-unpriv.py bin/combinetests.py bin/testgen.py
 	bin/testgen.py
-	bin/vector-testgen-unpriv.py
+# 	bin/vector-testgen-unpriv.py
 	rm -rf ${TESTDIR}/rv32/E ${TESTDIR}/rv64/E # E tests are not used in the regular (I) suite
-# bin/combinetests.py
-
-riscv-arch: testgen
-	cp -r ${TESTDIR}/rv32/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/
-	cp -r ${TESTDIR}/rv64/* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/
-
-riscv-arch-%: testgen
-	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
-	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
-	mkdir -p ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
-	mkdir -p ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
-	cp -r ${TESTDIR}/rv32/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/$*
-	cp -r ${TESTDIR}/rv64/$* ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/$*
 
 privheaders: bin/csrtests.py bin/illegalinstrtests.py | $(PRIVHEADERSDIR)
 	bin/csrtests.py
@@ -89,7 +71,7 @@ SOURCEFILE = $(subst priv/rv64/,priv/,$(subst priv/rv32/,priv/,$*)).S
 # Compile tests
 %.elf: $$(SOURCEFILE)
 	riscv64-unknown-elf-gcc -g -o $@ -march=rv$(BITWIDTH)gv$(CMPR_FLAGS)_zfa_zba_zbb_zbc_zbs_zfh_zicboz_zicbop_zicbom_zicond_zbkb_zbkx_zknd_zkne_zknh_zihintpause_svinval -mabi=$(MABI) -mcmodel=medany \
-	-nostartfiles -I$(TESTDIR) -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
+	-nostartfiles -I$(TESTDIR) -I$(TESTDIR)/env -I$(PRIVHEADERSDIR) -T$(TESTDIR)/link.ld -DLOCKSTEP=1 -DXLEN=$(BITWIDTH) -DTEST_CASE_1=True $<
 	$(MAKE) $@.objdump $@.memfile
 
 %.elf.objdump: %.elf
@@ -108,7 +90,7 @@ sim:
 
 interrupts:
 	rm -f ${WALLY}/sim/questa/fcov_ucdb/*
-	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsM.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsM.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
+	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsM.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr                -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsM.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
 	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Mmode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Mmode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
 	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Smode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Smode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
 	cd ${WALLY}/tests/riscof/riscof_work/cvw-arch64/privileged/interrupts/src/InterruptsS_Umode.S/ref;riscv64-unknown-elf-gcc -march=rv64i_zicsr          -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles         -T ${WALLY}/tests/riscof/sail_cSim/env/link.ld         -I ${WALLY}/tests/riscof/sail_cSim/env/         -I ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/env -mabi=lp64  ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/privileged/interrupts/src/InterruptsS_Umode.S -o ref.elf -Drvtest_mtrap_routine=True -Drvtest_strap_routine=True -Drvtest_dtrap_routine=True -DTEST_CASE_1=True -DXLEN=64
@@ -154,8 +136,6 @@ $(SRCDIR64) $(SRCDIR32) $(PRIVDIR) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $
 clean:
 	rm -rf fcov/unpriv/*
 	rm -rf $(SRCDIR64) $(SRCDIR32) $(PRIVHEADERSDIR) $(PRIVDIR64) $(PRIVDIR32) $(WORK)
-	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv32i/*
-	rm -rf ${WALLY}/addins/cvw-riscv-arch-test/riscv-test-suite/rv64i/*
 
 lint:
 	uvx ruff check
