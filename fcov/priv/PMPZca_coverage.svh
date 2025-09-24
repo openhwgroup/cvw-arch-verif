@@ -250,17 +250,5 @@ function void pmpzca_sample(int hart, int issue, ins_t ins);
 		pmp_hit[k] = (pmpaddr[k] == `STANDARD_REGION) || (pmpaddr[k] == `NON_STANDARD_REGION);
 	end
 
-	PMPZca_cg.sample(ins, pmpcfg, pmp_hit,pmpaddr);
-	$display("value of pmpaddr3 is %x",ins.current.csr[12'h3B3]);
-	$display("value of pmpaddr2 is %x",ins.current.csr[12'h3B2]);
-	$display("value of pmpaddr1 is %x",ins.current.csr[12'h3B1]);
-	$display("value of pmpaddr0 is %x",ins.current.csr[12'h3B0]);
-
-	$display("value of pmpaddr3 is %x",((`REGIONSTART + (3*`g)) >> 2));
-	$display("value of pmpaddr2 is %x",((`REGIONSTART + (2*`g)) >> 2));
-	$display("value of pmpaddr1 is %x",((`REGIONSTART + (`g)) >> 2));
-	$display("value of pmpaddr0 is %x",((`REGIONSTART ) >> 2));
-
-
-
+	PMPZca_cg.sample(ins, pmpcfg, pmp_hit, pmpaddr);
 endfunction
