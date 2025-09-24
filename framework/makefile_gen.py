@@ -89,12 +89,13 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         "# Run test on Sail to generate log\n"
         f"{sail_log}: {elf}\n"
         f"\t{config.ref_model_exe} --trace-all \\\n"
+        f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
         f"\t{elf} \\\n"
         f"\t--trace-output {sail_log}\n"
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_log}\n"
-        f"\tuv run tools/sail-parse.py \\\n"
+        f"\tuv run $(CVW_ARCH_VERIF)/tools/sail-parse.py \\\n"
         f"\t{sail_log} \\\n"
         f"\t{rvvi_trace}\n"
     )
@@ -169,6 +170,7 @@ def generate_config_makefile(
     config_elf_dir = config_wkdir / "elfs"
     config_build_dir = config_wkdir / "build"
     config_coverage_dir = config_wkdir / "coverage"
+    config_report_dir = config_wkdir / "reports"
     common_wkdir = wkdir / "common"
     common_elf_dir = common_wkdir / "elfs"
 
@@ -216,7 +218,7 @@ def generate_config_makefile(
         makefile_lines.append("\n")
 
     # Generate coverage targets
-    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir)
+    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir, config_report_dir)
     makefile_lines.append(coverage_makefile_lines)
 
     # Write out Makefile
@@ -224,7 +226,7 @@ def generate_config_makefile(
     write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")], directory_set, makefile_lines)
 
 
-def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path) -> tuple[str, list[Path]]:
+def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
@@ -235,7 +237,8 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         tracelist_file = base_name.with_suffix(".tracelist")
         ucdb_file = base_name.with_suffix(".ucdb")
         work_dir = base_name.parent / "ucdb_work"
-        report_file = Path(f"{base_name}_report.txt")
+        report_file_base = config_report_dir / coverage_group.stem
+        report_file = Path(f"{report_file_base}_report.txt")
 
         # Write the tracefile
         tracelist_file.parent.mkdir(parents=True, exist_ok=True)
@@ -256,8 +259,10 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         coverage_reports.append(report_file)
         makefile_lines.append(
             f"# Generate coverage report for {coverage_group.stem}\n"
+            f".PHONY: {coverage_group.stem}-report\n"
+            f"{coverage_group.stem}-report: {report_file}\n"
             f"{report_file}: {ucdb_file}\n"
-            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py {ucdb_file} {base_name}\n"
+            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py {ucdb_file} {report_file_base}\n"
         )
     return ("\n".join(makefile_lines), coverage_reports)
 
@@ -273,7 +278,8 @@ def generate_makefiles(
     rv32_common_generated = False
     rv64_common_generated = False
     top_makefile_lines = [MAKEFILE_HEADER]
-    config_targets = []
+    compile_targets = []
+    coverage_targets = []
 
     for config_data in configs:
         # Unpack config data
@@ -288,11 +294,14 @@ def generate_makefiles(
         common_tests = rv32_common_tests if xlen == 32 else rv64_common_tests
 
         # Update top-level Makefile
-        config_targets.append(f"{config_name}-compile")
+        compile_targets.append(f"{config_name}-compile")
+        coverage_targets.append(f"{config_name}-coverage")
         top_makefile_lines.extend(
             [
                 f"{config_name}-compile: common-rv{xlen}-compile",
                 f"\t$(MAKE) -C {config_name} compile",
+                f"{config_name}-coverage: {config_name}-compile",
+                f"\t$(MAKE) -C {config_name} coverage",
                 "",
             ]
         )
@@ -321,6 +330,7 @@ def generate_makefiles(
             )
 
     # Write top-level Makefile
-    top_makefile_lines.append(f"compile: {' '.join(config_targets)}")
+    top_makefile_lines.append(f"compile: {' '.join(compile_targets)}")
+    top_makefile_lines.append(f"coverage: {' '.join(coverage_targets)}")
     top_makefile = workdir / "Makefile"
     top_makefile.write_text("\n".join(top_makefile_lines))

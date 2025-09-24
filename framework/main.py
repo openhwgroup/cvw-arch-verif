@@ -23,12 +23,12 @@ from framework.select_tests import get_common_tests, select_tests
 def main():
     parser = argparse.ArgumentParser(description="RISC-V Architecture Verification Framework")
     parser.add_argument("-c", "--config", type=Path, nargs="+", help="Path to configuration file(s)", required=True)
-    parser.add_argument("--tests-dir", type=Path, help="Path to the tests directory", default=Path("tests"))
+    parser.add_argument("--test-dir", type=Path, help="Path to the tests directory", default=Path("tests"))
     parser.add_argument("--workdir", type=Path, help="Path to the working directory", default=Path.cwd() / "workdir")
     args = parser.parse_args()
 
     # Generate test list
-    full_test_dict = generate_test_dict(args.tests_dir)
+    full_test_dict = generate_test_dict(args.test_dir)
     rv32_common_tests = get_common_tests(full_test_dict, 32)
     rv64_common_tests = get_common_tests(full_test_dict, 64)
 
@@ -39,6 +39,9 @@ def main():
 
         # TODO: Figure out a more robust way to handle UDB validation
         # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
+        # import shutil
+        # import subprocess
+        # import filecmp
         # copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{config.udb_config.name}")
         # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
         #     shutil.copy(config.udb_config, copied_udb_config)
@@ -64,7 +67,7 @@ def main():
 
     # Generate Makefiles
     generate_makefiles(
-        configs, rv32_common_tests, rv64_common_tests, args.tests_dir.absolute(), args.workdir.absolute()
+        configs, rv32_common_tests, rv64_common_tests, args.test_dir.absolute(), args.workdir.absolute()
     )
     print(f"Makefiles generated in {args.workdir}")
     print(f"Run make -C {args.workdir} compile to build all tests.")

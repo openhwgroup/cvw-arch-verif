@@ -4,6 +4,7 @@
 
 # Directories and files
 CONFIG_FILE ?= configs/duts/cvw-rv64gc/test_config.yaml configs/duts/cvw-rv32gc/test_config.yaml
+WORKDIR     ?= workdir
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
@@ -21,11 +22,7 @@ COV_TEMPLATES     := $(wildcard $(COV_TEMPLATE_DIR)/*.txt $(COV_TEMPLATE_DIR)/**
 TESTPLANS_DIR		  := testplans
 TESTPLANS         := $(wildcard $(TESTPLANS_DIR)/*.csv $(TESTPLANS_DIR)/**/*.csv)
 
-STAMP_DIR := workdir/stamps
-
-debug:
-# 	@echo "TEST_TEMPLATES: $(TEST_TEMPLATES)"
-	@echo "COV_TEMPLATES: $(COV_TEMPLATES)"
+STAMP_DIR := $(WORKDIR)/stamps
 
 # Check if UV is installed and set UV variable
 UV := $(shell command -v uv 2> /dev/null)
@@ -41,14 +38,15 @@ endif
 # Test compilation targets
 .PHONY: elfs
 elfs: generate_makefiles
-	$(MAKE) -C workdir compile
+	$(MAKE) -C $(WORKDIR) compile
 
+.PHONY: generate_makefiles
 generate_makefiles: # too many dependencies to track; always regenerate Makefile
-	$(UV_RUN) act --config $(CONFIG_FILE)
+	$(UV_RUN) act --config $(CONFIG_FILE) --workdir $(WORKDIR) --test-dir $(TESTDIR)
 
 .PHONY: clean
 clean:
-	rm -rf workdir
+	rm -rf $(WORKDIR)
 
 # Test generation targets
 .PHONY: covergroupgen
@@ -88,6 +86,9 @@ $(PRIVHEADERSDIR) $(STAMP_DIR):
 	mkdir -p $@
 
 # TODO: Coverage targets
+.PHONY: coverage
+coverage: generate_makefiles
+	$(MAKE) -C $(WORKDIR) coverage
 
 # Dev targets
 .PHONY: lint
