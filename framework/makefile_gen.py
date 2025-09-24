@@ -92,7 +92,7 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
         f"\t{elf} \\\n"
         f"\t--trace-output {sail_trace}\\\n"
-        f" &> {sail_trace}.log\\\n"
+        f"\t&> {sail_trace}.log\\\n"
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_trace}\n"
@@ -198,13 +198,15 @@ def generate_config_makefile(
         directory_set.update([str((config_elf_dir / test_name).parent), str((config_build_dir / test_name).parent)])
 
         # Generate compilation/symlink targets
-        if test_name in common_test_list:
+        if str(test_name) in common_test_list:
             common_elf = common_elf_dir / elf_name
             makefile_lines.append(
                     f"# Create symlink to common elf for {test_name}\n"
                     f"{final_elf}: {common_elf} | {final_elf.parent}\n"
-                    f"\tln -sf {common_elf} {final_elf}\n"
-                    f"\tln -sf {common_elf}.objdump {final_elf}.objdump\n"
+                    f"\tln -sf {common_elf} \\\n"
+                    f"\t\t{final_elf}\n"
+                    f"\tln -sf {common_elf}.objdump \\\n"
+                    f"\t\t{final_elf}.objdump\n"
                     if config.objdump_exe is not None
                     else "# skipping objdump\n",
             )
