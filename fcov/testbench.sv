@@ -22,7 +22,7 @@
 module testbench;
 
   // Load configuration
-  `include "coverage.svh"
+  `include "cvw-arch-verif_coverage.svh"
 
   // Set up varialbe lengths
   `ifdef XLEN32

@@ -27,7 +27,8 @@ set TRACEFILELIST ${1}
 set UCDB ${2}
 set WKDIR ${3}
 set FCOVDIR ${4}
-set COVERAGELIST ${5}
+set CONFIGDIR ${5}
+set COVERAGELIST ${6}
 
 # create library
 if [file exists ${WKDIR}] {
@@ -36,8 +37,7 @@ if [file exists ${WKDIR}] {
 vlib ${WKDIR}
 
 # compile source files
-set INC_DIRS ""
-# "+incdir+${COVERAGEFILEDIR}"
+set INC_DIRS "+incdir+${CONFIGDIR}"
 set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
 set TB ${FCOVDIR}/testbench.sv
 # Build +define+ list from COVERAGELIST (space-separated)

@@ -221,7 +221,7 @@ def generate_config_makefile(
         makefile_lines.append("\n")
 
     # Generate coverage targets
-    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir, config_report_dir)
+    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir, config_report_dir, config)
     makefile_lines.append(coverage_makefile_lines)
 
     # Write out Makefile
@@ -229,7 +229,7 @@ def generate_config_makefile(
     write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")], directory_set, makefile_lines)
 
 
-def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path) -> tuple[str, list[Path]]:
+def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path, config: Config) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
@@ -255,7 +255,12 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         makefile_lines.append(
             f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do {tracelist_file} {ucdb_file} {work_dir} $(CVW_ARCH_VERIF)/fcov {{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\\\n'
+            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
+            f"\t\t{tracelist_file}\\\n"
+            f"\t\t{ucdb_file}\\\n"
+            f"\t\t{work_dir}\\\n"
+            f"\t\t$(CVW_ARCH_VERIF)/fcov {config.dut_include_dir}\\\n" # TODO: coverage config dir should be generated from UDB
+            f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\\\n'
         )
 
         # Generate coverage report
