@@ -48,28 +48,28 @@ def gen_compile_targets(
         "# Generate signature based ELF\n"
         f"{sig_elf}: {test_path} | {sig_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
-        f"\t-o {sig_elf} \\\n"
-        f"\t-march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} \\\n"
-        f"\t{test_path}\n"
+        f"\t\t-o {sig_elf} \\\n"
+        f"\t\t-march={march} -mabi={mabi} -DSIGNATURE -DXLEN={xlen} -DFLEN={flen} \\\n"
+        f"\t\t{test_path}\n"
         f"\n"
         "# Generate signature file\n"
         f"{sig_file}: {sig_elf}\n"
         f"\t{config.ref_model_exe} \\\n"
-        f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
-        f"\t{ref_model_sig_flags} \\\n"
-        f"\t{sig_elf} \\\n"
+        f"\t\t--config {config.dut_include_dir}/sail.json \\\n"  # TODO: don't hardcode sail config file
+        f"\t\t{ref_model_sig_flags} \\\n"
+        f"\t\t{sig_elf} \\\n"
         f"\t\t&> {sig_log_file}\n"
         f"\n"
         "# Final ELF target\n"
         f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
-        f"\t-o {final_elf} \\\n"
-        f"\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} \\\n"
-        f"\t-DSIGNATURE_FILE='{sig_file}' \\\n"
-        f"\t{test_path}\n"
+        f"\t\t-o {final_elf} \\\n"
+        f"\t\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} \\\n"
+        f"\t\t-DSIGNATURE_FILE='{sig_file}' \\\n"
+        f"\t\t{test_path}\n"
         # Objdump
         f"{
-            f'\n\t{config.objdump_exe} -S -M no-aliases \\\n\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
+            f'\n\t{config.objdump_exe} -S -M no-aliases \\\n\t\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
             if config.objdump_exe is not None
             else '# skipping objdump generation\n'
         }"
@@ -89,20 +89,25 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         "# Run test on Sail to generate log\n"
         f"{sail_trace}: {elf}\n"
         f"\t{config.ref_model_exe} --trace-all \\\n"
-        f"\t--config {config.dut_include_dir}/sail.json \\\n" # TODO: don't hardcode sail config file
-        f"\t{elf} \\\n"
-        f"\t--trace-output {sail_trace}\\\n"
-        f"\t&> {sail_trace}.log\\\n"
+        f"\t\t--config {config.dut_include_dir}/sail.json \\\n"  # TODO: don't hardcode sail config file
+        f"\t\t{elf} \\\n"
+        f"\t\t--trace-output {sail_trace}\\\n"
+        f"\t\t&> {sail_trace}.log\\\n"
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_trace}\n"
         f"\tuv run $(CVW_ARCH_VERIF)/tools/sail-parse.py \\\n"
-        f"\t{sail_trace} \\\n"
-        f"\t{rvvi_trace}\n"
+        f"\t\t{sail_trace} \\\n"
+        f"\t\t{rvvi_trace}\n"
     )
 
 
-def write_makefile(makefile_path: Path, main_targets: list[tuple[str, list[Path], str]], directory_set: set[str], makefile_lines: list[str]) -> None:
+def write_makefile(
+    makefile_path: Path,
+    main_targets: list[tuple[str, list[Path], str]],
+    directory_set: set[str],
+    makefile_lines: list[str],
+) -> None:
     """Helper function to write out a Makefile."""
     # Create top-level targets
     for variable_name, targets, command in main_targets:
@@ -201,14 +206,14 @@ def generate_config_makefile(
         if str(test_name) in common_test_list:
             common_elf = common_elf_dir / elf_name
             makefile_lines.append(
-                    f"# Create symlink to common elf for {test_name}\n"
-                    f"{final_elf}: {common_elf} | {final_elf.parent}\n"
-                    f"\tln -sf {common_elf} \\\n"
-                    f"\t\t{final_elf}\n"
-                    f"\tln -sf {common_elf}.objdump \\\n"
-                    f"\t\t{final_elf}.objdump\n"
-                    if config.objdump_exe is not None
-                    else "# skipping objdump\n",
+                f"# Create symlink to common elf for {test_name}\n"
+                f"{final_elf}: {common_elf} | {final_elf.parent}\n"
+                f"\tln -sf {common_elf} \\\n"
+                f"\t\t{final_elf}\n"
+                f"\tln -sf {common_elf}.objdump \\\n"
+                f"\t\t{final_elf}.objdump\n"
+                if config.objdump_exe is not None
+                else "# skipping objdump\n",
             )
         else:
             makefile_lines.append(gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config))
@@ -221,15 +226,24 @@ def generate_config_makefile(
         makefile_lines.append("\n")
 
     # Generate coverage targets
-    coverage_makefile_lines, coverage_reports = gen_coverage_targets(coverage_targets, config_coverage_dir, config_report_dir, config)
+    coverage_makefile_lines, coverage_reports = gen_coverage_targets(
+        coverage_targets, config_coverage_dir, config_report_dir, config
+    )
     makefile_lines.append(coverage_makefile_lines)
 
     # Write out Makefile
     makefile_path = config_wkdir / "Makefile"
-    write_makefile(makefile_path, [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")], directory_set, makefile_lines)
+    write_makefile(
+        makefile_path,
+        [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")],
+        directory_set,
+        makefile_lines,
+    )
 
 
-def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path, config: Config) -> tuple[str, list[Path]]:
+def gen_coverage_targets(
+    coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path, config: Config
+) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
@@ -255,12 +269,12 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
         makefile_lines.append(
             f"# Generate UCDB file for {coverage_group.stem}\n"
             f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            f'\t vsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
+            f'\tvsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
             f"\t\t{tracelist_file}\\\n"
             f"\t\t{ucdb_file}\\\n"
             f"\t\t{work_dir}\\\n"
-            f"\t\t$(CVW_ARCH_VERIF)/fcov {config.dut_include_dir}\\\n" # TODO: coverage config dir should be generated from UDB
-            f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\\\n'
+            f"\t\t$(CVW_ARCH_VERIF)/fcov {config.dut_include_dir}\\\n"  # TODO: coverage config dir should be generated from UDB
+            f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\n'
         )
 
         # Generate coverage report
@@ -270,7 +284,9 @@ def gen_coverage_targets(coverage_targets: dict[Path, list[Path]], base_dir: Pat
             f".PHONY: {coverage_group.stem}-report\n"
             f"{coverage_group.stem}-report: {report_file}\n"
             f"{report_file}: {ucdb_file}\n"
-            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py {ucdb_file} {report_file_base}\n"
+            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py\\\n"
+            f"\t\t{ucdb_file}\\\n"
+            f"\t\t{report_file_base}\n"
         )
     return ("\n".join(makefile_lines), coverage_reports)
 

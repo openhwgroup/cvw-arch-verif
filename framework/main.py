@@ -66,9 +66,7 @@ def main():
     # TODO: Add a check that all configs use the same header files/compiler/etc. Otherwise error out or don't use common tests
 
     # Generate Makefiles
-    generate_makefiles(
-        configs, rv32_common_tests, rv64_common_tests, args.test_dir.absolute(), args.workdir.absolute()
-    )
+    generate_makefiles(configs, rv32_common_tests, rv64_common_tests, args.test_dir.absolute(), args.workdir.absolute())
     print(f"Makefiles generated in {args.workdir}")
     print(f"Run make -C {args.workdir} compile to build all tests.")
 
