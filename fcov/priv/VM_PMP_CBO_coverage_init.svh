@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    RV32VM_PMP_cg = new(); RV32VM_PMP_cg.set_inst_name("obj_RV32VM_PMP");
+    VM_PMP_CBO_cg = new(); VM_PMP_CBO_cg.set_inst_name("obj_VM_PMP_CBO");
