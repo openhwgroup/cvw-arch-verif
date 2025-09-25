@@ -31,7 +31,9 @@ module testbench;
     localparam XLEN = 64;
   `endif
 
-  `ifdef D_COVERAGE
+  `ifdef FLEN128
+    localparam FLEN = 128;
+  `elsif FLEN64
     localparam FLEN = 64;
   `else
     localparam FLEN = 32;
