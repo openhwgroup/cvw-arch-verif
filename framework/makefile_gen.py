@@ -7,6 +7,7 @@
 # Generate Makefile for tests
 ##################################
 
+import importlib.resources
 from pathlib import Path
 
 from framework.config import Config
@@ -165,6 +166,7 @@ def generate_config_makefile(
     config_test_list: dict[str, TestMetadata],
     common_test_list: dict[str, TestMetadata],
     tests_dir: Path,
+    coverpoint_dir: Path,
     wkdir: Path,
     config_name: str,
     xlen: int,
@@ -227,7 +229,7 @@ def generate_config_makefile(
 
     # Generate coverage targets
     coverage_makefile_lines, coverage_reports = gen_coverage_targets(
-        coverage_targets, config_coverage_dir, config_report_dir, config
+        coverage_targets, coverpoint_dir, config_coverage_dir, config_report_dir, config.dut_include_dir  # TODO: coverage config dir should be generated from UDB
     )
     makefile_lines.append(coverage_makefile_lines)
 
@@ -242,7 +244,7 @@ def generate_config_makefile(
 
 
 def gen_coverage_targets(
-    coverage_targets: dict[Path, list[Path]], base_dir: Path, config_report_dir: Path, config: Config
+    coverage_targets: dict[Path, list[Path]], coverpoint_dir: Path, base_dir: Path, config_report_dir: Path, dut_header_dir: Path
 ) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
@@ -266,16 +268,19 @@ def gen_coverage_targets(
         )
 
         # Add UCDB file to the list
-        makefile_lines.append(
-            f"# Generate UCDB file for {coverage_group.stem}\n"
-            f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-            f'\tvsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
-            f"\t\t{tracelist_file}\\\n"
-            f"\t\t{ucdb_file}\\\n"
-            f"\t\t{work_dir}\\\n"
-            f"\t\t$(CVW_ARCH_VERIF)/fcov {config.dut_include_dir}\\\n"  # TODO: coverage config dir should be generated from UDB
-            f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\n'
-        )
+        with importlib.resources.path('framework', "fcov") as fcov_path:
+            makefile_lines.append(
+                f"# Generate UCDB file for {coverage_group.stem}\n"
+                f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
+                f'\tvsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
+                f"\t\t{tracelist_file}\\\n"
+                f"\t\t{ucdb_file}\\\n"
+                f"\t\t{work_dir}\\\n"
+                f"\t\t{fcov_path.absolute()}\\\n"
+                f"\t\t{coverpoint_dir}\\\n"
+                f"\t\t{dut_header_dir}\\\n"
+                f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\n'
+            )
 
         # Generate coverage report
         coverage_reports.append(report_file)
@@ -296,6 +301,7 @@ def generate_makefiles(
     rv32_common_tests: dict[str, TestMetadata],
     rv64_common_tests: dict[str, TestMetadata],
     tests_dir: Path,
+    coverpoint_dir: Path,
     workdir: Path,
 ) -> None:
     """Generate Makefiles for multiple configurations with shared common directories."""
@@ -335,6 +341,7 @@ def generate_makefiles(
             selected_tests,
             common_tests,
             tests_dir,
+            coverpoint_dir,
             workdir,
             config_name,
             xlen,

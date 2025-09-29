@@ -27,19 +27,21 @@ set TRACEFILELIST ${1}
 set UCDB ${2}
 set WKDIR ${3}
 set FCOVDIR ${4}
-set CONFIGDIR ${5}
-set COVERAGELIST ${6}
+set COVERPOINTDIR ${5}
+set CONFIGDIR ${6}
+set COVERAGELIST ${7}
 
-# create library
+# Create library
 if [file exists ${WKDIR}] {
     vdel -lib ${WKDIR} -all
 }
 vlib ${WKDIR}
 
-# compile source files
-set INC_DIRS "+incdir+${CONFIGDIR}"
-set FCOV_MANIFEST "-f ${FCOVDIR}/cvw-arch-verif.f"
-set TB ${FCOVDIR}/testbench.sv
+# Include directories and files to compile
+set COVERPOINTS "+incdir+${COVERPOINTDIR}/unpriv +incdir+${COVERPOINTDIR}/priv +incdir+${COVERPOINTDIR}/rv32_priv +incdir+${COVERPOINTDIR}/rv64_priv"
+set INC_DIRS "+incdir+${CONFIGDIR} ${COVERPOINTS} +incdir+${FCOVDIR}"
+set COMPILE_FILES "${FCOVDIR}/rvviTrace.sv ${FCOVDIR}/cvw_arch_verif.sv ${FCOVDIR}/testbench.sv"
+
 # Build +define+ list from COVERAGELIST (space-separated)
 set DEFINE_ARGS {}
 foreach def [split ${COVERAGELIST}] {
@@ -47,11 +49,10 @@ foreach def [split ${COVERAGELIST}] {
     lappend DEFINE_ARGS "+define+$def"
 }
 
-puts "Compiling with defines: {*}${DEFINE_ARGS}"
+# Compile
+vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${DEFINE_ARGS} {*}${COMPILE_FILES}
 
-vlog -permissive -lint -work ${WKDIR} {*}${INC_DIRS} {*}${FCOV_MANIFEST} {*}${DEFINE_ARGS} ${TB}
-
-# start and run simulation
+# Start and run simulation
 vopt ${WKDIR}.testbench -work ${WKDIR} -o testbenchopt
 vsim -lib ${WKDIR} testbenchopt +traceFileList=${TRACEFILELIST} -fatal 7
 
