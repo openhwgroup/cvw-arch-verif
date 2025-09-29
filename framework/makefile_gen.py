@@ -60,17 +60,18 @@ def gen_compile_targets(
         f"\t\t{ref_model_sig_flags} \\\n"
         f"\t\t{sig_elf} \\\n"
         f"\t\t&> {sig_log_file}\n"
+        f"\tuv run sig_modify {sig_file} {xlen}\n"
         f"\n"
         "# Final ELF target\n"
         f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
         f"\t\t-o {final_elf} \\\n"
         f"\t\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} \\\n"
-        f"\t\t-DSIGNATURE_FILE='{sig_file}' \\\n"
+        f'\t\t-DSIGNATURE_FILE=\\"{sig_file}\\" \\\n'
         f"\t\t{test_path}\n"
         # Objdump
         f"{
-            f'\n\t{config.objdump_exe} -S -M no-aliases \\\n\t\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
+            f'\n\t{config.objdump_exe} -Sd -M no-aliases \\\n\t\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
             if config.objdump_exe is not None
             else '# skipping objdump generation\n'
         }"

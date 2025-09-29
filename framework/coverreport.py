@@ -7,7 +7,6 @@
 # Find and merge UCDBs on a per-configuration basis
 ##################################
 
-import argparse
 import re
 import subprocess
 from pathlib import Path
@@ -45,6 +44,8 @@ def remove_duplicates_after_second_header(file_path : Path) -> None:
 
 def main() -> None:
     # Parse arguments
+    import argparse
+
     argparser = argparse.ArgumentParser()
     argparser.add_argument("ucdb", help="Input UCDB file", type=Path)
     argparser.add_argument("report_prefix", help="Output report prefix", type=Path)

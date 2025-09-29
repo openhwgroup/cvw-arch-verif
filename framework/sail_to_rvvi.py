@@ -8,7 +8,6 @@
 # with RVVI input to cvw-arch-verif
 ##################################
 
-import argparse
 import re
 from pathlib import Path
 
@@ -75,6 +74,8 @@ def sailLog2Trace(inputLogFile: Path, outputTraceFile: Path) -> None:
 
 
 def main() -> None:
+    import argparse
+
     parser = argparse.ArgumentParser(description="Convert a Sail log file into a trace format for use with RVVI")
     parser.add_argument("input_file", type=Path, help="Input Sail log file to parse")
     parser.add_argument("output_file", type=Path, help="Output trace file for RVVI")

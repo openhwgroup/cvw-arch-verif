@@ -21,6 +21,7 @@ dev = [
 act = "framework.act:main"
 sail-to-rvvi = "framework.sail_to_rvvi:main"
 coverreport = "framework.coverreport:main"
+sig_modify = "framework.sig_modify:main"
 
 ##### BUILD #####
 

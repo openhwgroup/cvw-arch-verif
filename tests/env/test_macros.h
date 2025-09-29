@@ -249,9 +249,23 @@
  /* RVTEST_SIGUPD(basereg, sigreg)	  stores sigreg at offset(basereg) and updates offset by regwidth	 */
  /* RVTEST_SIGUPD(basereg, sigreg,newoff) stores sigreg at newoff(basereg) and updates offset to regwidth+newoff */
 
+infloop:    j write_tohost
+
+
 #ifdef LOCKSTEP
     #define RVTEST_SIGUPD(_BR, _R, ...) \
         nop;
+#elifdef SELFCHECK
+    #define RVTEST_SIGUPD(_BR, _R, ...)                \
+        .if NARG(__VA_ARGS__) == 1				;\
+          .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))	;\
+        .endif						;\
+        CHK_OFFSET(_BR, REGWIDTH,0)				;\
+        LREG x4,offset(_BR)					;\
+        beq x4, _R, 1f					;\
+        j  infloop       ;\
+        1:      nop     ;\
+        .set offset,offset+REGWIDTH
 #else
     #define RVTEST_SIGUPD(_BR, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1				;\

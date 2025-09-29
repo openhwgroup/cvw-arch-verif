@@ -23,7 +23,11 @@ sig_begin_canary:
 CANARY;
 
 signature_base:
-    .fill sigupd_count*(XLEN/32),4,0xdeadbeef
+#ifdef SELFCHECK
+  #include SIGNATURE_FILE
+#else
+  .fill sigupd_count*(XLEN/32),4,0xdeadbeef
+#endif
 
 #ifdef rvtest_mtrap_routine
 

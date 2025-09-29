@@ -300,13 +300,18 @@
 
 #ifdef LOCKSTEP
   #define CANARY // blank for lockstep
+  #define CANARY_VALUE // blank for lockstep
 #else
   #if SIGALIGN==8
+    #define CANARY_VALUE \
+        0x6F5CA309E7D4B281
     #define CANARY \
-        .dword 0x6F5CA309E7D4B281
+        .dword CANARY_VALUE
   #else
+    #define CANARY_VALUE \
+        0x6F5CA309
     #define CANARY \
-        .word 0x6F5CA309
+        .word CANARY_VALUE
   #endif
 #endif
 

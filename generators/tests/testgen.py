@@ -2283,7 +2283,7 @@ def getcovergroups(coverdefdir, coverfiles, xlen):
 
 def getExtensions():
   extensions = []
-  path = ARCH_VERIF+"/fcov/unpriv"
+  path = ARCH_VERIF+"/coverpoints/unpriv"
   for (dirpath, dirnames, filenames) in os.walk(path):
     for filename in filenames:
       m = re.search("(.*)_coverage.svh", filename)
@@ -2695,7 +2695,7 @@ if __name__ == '__main__':
 
       for extension in extensions:
       #for extension in ["I"]:  # temporary for faster run
-        coverdefdir = f"{ARCH_VERIF}/fcov/unpriv"
+        coverdefdir = f"{ARCH_VERIF}/coverpoints/unpriv"
         coverfiles = [extension]
         coverpoints = getcovergroups(coverdefdir, coverfiles, xlen)
         pathname = f"{ARCH_VERIF}/tests/rv{xlen}{E_suffix}/{extension}"
