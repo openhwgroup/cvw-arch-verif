@@ -33,6 +33,7 @@ class RefModelType(str, Enum):
 
 class Config(BaseModel):
     """Configuration for the RISC-V architecture verification framework."""
+
     name: str
     udb_config: FilePath
     linker_script: FilePath

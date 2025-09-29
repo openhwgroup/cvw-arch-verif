@@ -20,7 +20,9 @@ def check_test_params(test_params: dict[str, Any], config_params: dict[str, Any]
     return True
 
 
-def select_tests(test_dict: dict[str, TestMetadata], implemented_extensions: set[str], config_params: dict[str, Any]) -> dict[str, TestMetadata]:
+def select_tests(
+    test_dict: dict[str, TestMetadata], implemented_extensions: set[str], config_params: dict[str, Any]
+) -> dict[str, TestMetadata]:
     """Select tests that match the UDB configuration."""
     selected_tests = {}
     for test_name, test_metadata in test_dict.items():

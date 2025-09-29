@@ -96,7 +96,7 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_trace}\n"
-        f"\tuv run $(CVW_ARCH_VERIF)/tools/sail-parse.py \\\n"
+        f"\tuv run sail-to-rvvi \\\n"
         f"\t\t{sail_trace} \\\n"
         f"\t\t{rvvi_trace}\n"
     )

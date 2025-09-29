@@ -53,6 +53,7 @@ def generate_extension_list(udb_config_file: Path, output_dir: Path) -> set[str]
 def get_implemented_extensions(extension_list_file: Path) -> set[str]:
     return set(extension_list_file.read_text().splitlines())
 
+
 def generate_udb_files(udb_config_file: Path, output_dir: Path) -> None:
     # TODO: Figure out a more robust way to handle UDB validation
     # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
