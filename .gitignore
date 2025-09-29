@@ -51,9 +51,10 @@ docs/ctp/ctp.pdf
 
 testplans/Vx.csv
 
-wkdir
+work
 fcov_ucdb
 
 *.trace
 *.tracelist
 *.mk
+*.stamp

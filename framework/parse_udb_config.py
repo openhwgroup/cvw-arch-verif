@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 ##################################
 # parse_udb_config.py
 #
@@ -8,36 +7,61 @@
 # Parse UDB configuration file
 ##################################
 
-import sys
+import filecmp
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 
-import yaml
+from ruamel.yaml import YAML
 
 
-def parse_udb_config(udb_config_file: Path) -> dict[str, Any]:
-    """Parse the UDB configuration YAML file and return its contents as a dictionary."""
-    try:
-        config = yaml.safe_load(udb_config_file.read_text())
-        return config
-    except FileNotFoundError:
-        raise FileNotFoundError(f"UDB configuration file not found: {udb_config_file}")
-    except yaml.YAMLError as e:
-        raise ValueError(f"Error parsing UDB configuration file: {e}")
+def validate_udb_config(udb_config_file: Path) -> None:
+    validate_udb_config_cmd = [
+        "./external/riscv-unified-db/bin/udb",
+        "validate",
+        "cfg",
+        f"cfgs/{udb_config_file.name}",
+    ]
+    subprocess.run(validate_udb_config_cmd, check=True)
 
 
-def get_implemented_extensions(udb_config: dict[str, Any]) -> set[str]:
-    """Extract the list of implemented extensions from the UDB configuration."""
-    extensions = udb_config["implemented_extensions"]
-    return {ext["name"] for ext in extensions}
+def get_config_params(udb_config_file: Path) -> dict[str, Any]:
+    yaml = YAML(typ="safe", pure=True)
+    udb_config = yaml.load(udb_config_file.read_text())
+    config_params = udb_config["params"]
+    return config_params
 
 
-def main():
-    udb_config_path = Path(sys.argv[1])
-    config = parse_udb_config(udb_config_path)
-    print(yaml.dump(config))
-    print(get_implemented_extensions(config))
+def generate_extension_list(udb_config_file: Path, output_dir: Path) -> set[str]:
+    extension_list_file = output_dir / "extensions.txt"
+    if not extension_list_file.exists() or (extension_list_file.stat().st_mtime < udb_config_file.stat().st_mtime):
+        print(f"Generating extension list for {udb_config_file.stem}")
+        generate_extensions_list_cmd = [
+            "./external/riscv-unified-db/bin/udb",
+            "list",
+            "extensions",
+            "--config",
+            f"cfgs/{udb_config_file.name}",
+            "--output",
+            f"{udb_config_file.stem}_extensions.txt",
+        ]
+        subprocess.run(generate_extensions_list_cmd, check=True)
+        shutil.move(f"./external/riscv-unified-db/{udb_config_file.stem}_extensions.txt", extension_list_file)
 
 
-if __name__ == "__main__":
-    main()
+def get_implemented_extensions(extension_list_file: Path) -> set[str]:
+    return set(extension_list_file.read_text().splitlines())
+
+def generate_udb_files(udb_config_file: Path, output_dir: Path) -> None:
+    # TODO: Figure out a more robust way to handle UDB validation
+    # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
+    copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{udb_config_file.name}")
+    if not copied_udb_config.exists() or not filecmp.cmp(udb_config_file, copied_udb_config):
+        shutil.copy(udb_config_file, copied_udb_config)
+        validate_udb_config(udb_config_file)
+    generate_extension_list(udb_config_file, output_dir)
+
+    # TODO: Generate DUT specific header file from UDB
+
+    # TODO: Generate Sail config file from UDB

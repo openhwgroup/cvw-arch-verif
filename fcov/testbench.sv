@@ -22,7 +22,7 @@
 module testbench;
 
   // Load configuration
-  `include "coverage.svh"
+  `include "cvw-arch-verif_coverage.svh"
 
   // Set up varialbe lengths
   `ifdef XLEN32
@@ -31,7 +31,9 @@ module testbench;
     localparam XLEN = 64;
   `endif
 
-  `ifdef D_COVERAGE
+  `ifdef FLEN128
+    localparam FLEN = 128;
+  `elsif FLEN64
     localparam FLEN = 64;
   `else
     localparam FLEN = 32;
@@ -102,7 +104,7 @@ module testbench;
       $finish;
     end
     while($fgets(line, traceFileListHandler)) begin
-      if (line != "" && line != "\n") begin
+      if (line != "" && line != "\n" && line[0] != "#") begin
         // Strip newline character from the end of the line
         if (line[line.len()-1] == "\n") begin
           line = line.substr(0, line.len()-2);
@@ -231,8 +233,6 @@ module testbench;
         endcase
       end
       valid = 1;
-    end else begin
-      $display("Skipping empty line");
     end
   end
 

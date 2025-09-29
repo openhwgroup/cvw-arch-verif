@@ -85,15 +85,13 @@ all categories of illegal instructions.
 * PMA is implementation-defined and cannot be tested explicitly.  The user must
 define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
 unless memory is implemented at that address); the Exceptions tests do limited PMA
-testing by ensuring this address thorows an AccessFault.  
+testing by ensuring this address thorows an AccessFault.
 
 
 Notes:
 Unprivileged extensions are being refactored to share code
 
-Use make --jobs to create the SystemVerilog covergroups and assembly language tests.  
-
-# **Git overview**
+Use make tests --jobs to create the SystemVerilog covergroups and assembly language tests.
 
 
 **Setup and contribute:**
@@ -208,29 +206,3 @@ regression-wally \--fcov
 make
 
 Analyze the coverage report by checking out the covergroups in covSummary.html file (in the work dir) to make sure that 100% Functional Coverage has been achieved. In case there are misses, it is indicative of missing tests or possible faults in the design. Carefully examine the coverage report to find the exact hole.
-
-# **Teams**
-
-**Harvey Mudd College:**
-
-* Vikram Krishna
-* David Harris
-* Corey Hickson
-* Ahlyssa Santillana
-* Hamza Jamal
-
-**Habib University:**
-
-* Muhammad Shaheer
-* Shahjahan
-* Ehzem Farhan Sheikh
-* Daniyal Areshia
-* Sher Ali
-* Ahmed Abdullah Mujtaba
-
-**UET:**
-
-* Muhammad Zain
-* Muhammad Ahmad
-* Muhammad Abdullah
-* Hamza Ali

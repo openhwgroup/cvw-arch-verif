@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Load which extensions are supported in this configuration (from $WALLY/config/<config>/coverage.svh)
-`include "coverage.svh"
+`include "cvw-arch-verif_coverage.svh"
 
 // Load disassembler
 `include "disassemble.svh"
@@ -51,7 +51,4 @@ module cvw_arch_verif(rvviTrace rvvi);
       `endif
     end
   end
-
-  // Check assertion coverage
-  `include "RV_Assertions.sv"
 endmodule
