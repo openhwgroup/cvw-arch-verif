@@ -20,6 +20,7 @@ dev = [
 [project.scripts]
 act = "framework.act:main"
 sail-to-rvvi = "framework.sail_to_rvvi:main"
+coverreport = "framework.coverreport:main"
 
 ##### BUILD #####
 

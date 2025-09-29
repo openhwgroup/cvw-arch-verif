@@ -229,7 +229,11 @@ def generate_config_makefile(
 
     # Generate coverage targets
     coverage_makefile_lines, coverage_reports = gen_coverage_targets(
-        coverage_targets, coverpoint_dir, config_coverage_dir, config_report_dir, config.dut_include_dir  # TODO: coverage config dir should be generated from UDB
+        coverage_targets,
+        coverpoint_dir,
+        config_coverage_dir,
+        config_report_dir,
+        config.dut_include_dir,  # TODO: coverage config dir should be generated from UDB
     )
     makefile_lines.append(coverage_makefile_lines)
 
@@ -244,7 +248,11 @@ def generate_config_makefile(
 
 
 def gen_coverage_targets(
-    coverage_targets: dict[Path, list[Path]], coverpoint_dir: Path, base_dir: Path, config_report_dir: Path, dut_header_dir: Path
+    coverage_targets: dict[Path, list[Path]],
+    coverpoint_dir: Path,
+    base_dir: Path,
+    config_report_dir: Path,
+    dut_header_dir: Path,
 ) -> tuple[str, list[Path]]:
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
@@ -268,11 +276,14 @@ def gen_coverage_targets(
         )
 
         # Add UCDB file to the list
-        with importlib.resources.path('framework', "fcov") as fcov_path:
+        with (
+            importlib.resources.path("framework", "fcov") as fcov_path,
+            importlib.resources.path("framework", "cvw-arch-verif.do") as vsim_do_path,
+        ):
             makefile_lines.append(
                 f"# Generate UCDB file for {coverage_group.stem}\n"
                 f"{ucdb_file}: {' '.join([str(trace) for trace in traces])}\n"
-                f'\tvsim -c -do "do $(CVW_ARCH_VERIF)/tools/cvw-arch-verif.do \\\n'
+                f'\tvsim -c -do "do {vsim_do_path.absolute()} \\\n'
                 f"\t\t{tracelist_file}\\\n"
                 f"\t\t{ucdb_file}\\\n"
                 f"\t\t{work_dir}\\\n"
@@ -289,7 +300,7 @@ def gen_coverage_targets(
             f".PHONY: {coverage_group.stem}-report\n"
             f"{coverage_group.stem}-report: {report_file}\n"
             f"{report_file}: {ucdb_file}\n"
-            f"\tuv run $(CVW_ARCH_VERIF)/tools/coverreport.py\\\n"
+            f"\tuv run coverreport\\\n"
             f"\t\t{ucdb_file}\\\n"
             f"\t\t{report_file_base}\n"
         )
