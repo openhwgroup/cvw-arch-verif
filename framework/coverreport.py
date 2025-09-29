@@ -13,7 +13,7 @@ import subprocess
 from pathlib import Path
 
 
-def remove_duplicates_after_second_header(file_path):
+def remove_duplicates_after_second_header(file_path : Path) -> None:
     unique_lines_before_header = set()  # Set to store unique lines before the second header
     header_count = 0
     header_line = "Covergroup                                             Metric       Goal       Bins    Status"
@@ -44,10 +44,13 @@ def remove_duplicates_after_second_header(file_path):
 
 
 def main() -> None:
+    # Parse arguments
     argparser = argparse.ArgumentParser()
     argparser.add_argument("ucdb", help="Input UCDB file", type=Path)
     argparser.add_argument("report_prefix", help="Output report prefix", type=Path)
     args = argparser.parse_args()
+
+    # Define paths
     ucdb = args.ucdb
     report_prefix = args.report_prefix
     report_dir = report_prefix.parent
@@ -55,33 +58,30 @@ def main() -> None:
     full_report = report_dir / (report_name + "_report.txt")
     uncovered_report = report_dir / (report_name + "_uncovered.txt")
     summary_report = report_dir / (report_name + "_summary.txt")
-    temp_summary_report = report_dir / (report_name + "_temp_summary.txt")
 
     report_dir.mkdir(exist_ok=True, parents=True)
 
-    # Generate reports
-    cmd = f"vcover report -details {ucdb} -output {full_report} &> {full_report}.log"
-    subprocess.run(cmd, shell=True, check=True)
+    # Generate detailed reports
+    detail_report_cmd = ["vcover", "report", "-details", str(ucdb), "-output", str(full_report)]
+    subprocess.run(detail_report_cmd, check=True)
 
-    cmd = f"vcover report -details {ucdb} -below 100 -output {uncovered_report} &> {uncovered_report}.log"
-    subprocess.run(cmd, shell=True, check=True)
+    uncovered_report_cmd = ["vcover", "report", "-details", str(ucdb), "-below", "100", "-output", str(uncovered_report)]
+    subprocess.run(uncovered_report_cmd, check=True)
 
     # Use grep to get the lines that match the criteria
-    cmd = (
-        "grep -E '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)' "
-        + f"{full_report} | grep -v 'Covergroup instance' > {temp_summary_report}"
-    )
-    subprocess.run(cmd, shell=True, check=True)
+    grep_cmd = [
+        "grep", "-E", '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)',
+        f"{full_report}", "|", "grep", "-v", "'Covergroup instance'"
+    ]
+    grep_cmd_result = subprocess.run(grep_cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+    grep_cmd_output = grep_cmd_result.stdout.splitlines()
 
     # Process each line and replace the specified path pattern
-    with (
-        temp_summary_report.open() as infile,
-        summary_report.open("w") as outfile,
-    ):
+    with (summary_report.open("w") as outfile):
         metric_start_pos = None
         previous_line = None  # To keep track of the previous line
 
-        for line in infile:
+        for line in grep_cmd_output:
             if "Metric" in line and metric_start_pos is None:
                 # Find the index of the start of "Metric" in this line
                 metric_match = re.search(r"\bMetric\b", line)
@@ -153,9 +153,6 @@ def main() -> None:
                     outfile.write(previous_line)
                 # Update previous_line to the current one (so it's available for the next merge if needed)
                 previous_line = line
-
-    # Step 3: Remove the temporary file
-    temp_summary_report.unlink()
 
     # Remove duplicates in generated reports
     remove_duplicates_after_second_header(full_report)
