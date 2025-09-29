@@ -4,7 +4,7 @@
 
 # Directories and files
 CONFIG_FILE ?= configs/duts/cvw-rv64gc/test_config.yaml configs/duts/cvw-rv32gc/test_config.yaml
-WORKDIR     ?= workdir
+WORKDIR     ?= work
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64

@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description="RISC-V Architecture Verification Framework")
     parser.add_argument("-c", "--config", type=Path, nargs="+", help="Path to configuration file(s)", required=True)
     parser.add_argument("--test-dir", type=Path, help="Path to the tests directory", default=Path("tests"))
-    parser.add_argument("--workdir", type=Path, help="Path to the working directory", default=Path.cwd() / "workdir")
+    parser.add_argument("--workdir", type=Path, help="Path to the working directory", default=Path.cwd() / "work")
     args = parser.parse_args()
 
     # Generate test list
