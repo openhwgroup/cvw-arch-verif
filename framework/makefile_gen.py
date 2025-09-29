@@ -308,12 +308,11 @@ def generate_makefiles(
     for config_data in configs:
         # Unpack config data
         config = config_data["config"]
-        udb_config = config_data["udb_config"]
+        config_name = config.name
+        xlen = config_data["xlen"]
         selected_tests = config_data["selected_tests"]
 
         # Extract config parameters
-        config_name = udb_config["name"]
-        xlen = udb_config["params"]["MXLEN"]
         mabi = f"{'i' if xlen == 32 else ''}lp{xlen}"
         common_tests = rv32_common_tests if xlen == 32 else rv64_common_tests
 

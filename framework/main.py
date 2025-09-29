@@ -16,7 +16,7 @@ from pathlib import Path
 from framework.config import load_config
 from framework.makefile_gen import generate_makefiles
 from framework.parse_test_constraints import generate_test_dict
-from framework.parse_udb_config import parse_udb_config
+from framework.parse_udb_config import generate_udb_files, get_config_params, get_implemented_extensions
 from framework.select_tests import get_common_tests, select_tests
 
 
@@ -36,32 +36,18 @@ def main():
     for config_file in args.config:
         # Load configuration
         config = load_config(config_file)
+        udb_config_file = config.udb_config
+        config_dir = args.workdir / config.udb_config.stem
+        config_dir.mkdir(parents=True, exist_ok=True)
 
-        # TODO: Figure out a more robust way to handle UDB validation
-        # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
-        # import shutil
-        # import subprocess
-        # import filecmp
-        # copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{config.udb_config.name}")
-        # if not copied_udb_config.exists() or not filecmp.cmp(config.udb_config, copied_udb_config):
-        #     shutil.copy(config.udb_config, copied_udb_config)
-        #     validate_udb_config_cmd = [
-        #         "./external/riscv-unified-db/bin/udb",
-        #         "validate",
-        #         "cfg",
-        #         f"cfgs/{config.udb_config.name}",
-        #     ]
-        #     subprocess.run(validate_udb_config_cmd, check=True)
-
-        udb_config = parse_udb_config(config.udb_config)
-
-        # TODO: Generate DUT specific header file from UDB
-
-        # TODO: Generate Sail config file from UDB
+        # UDB integration
+        generate_udb_files(udb_config_file, config_dir)
+        implemented_extensions = get_implemented_extensions(config_dir / "extensions.txt")
+        config_params = get_config_params(udb_config_file)
 
         # Select tests for config
-        selected_tests = select_tests(full_test_dict, udb_config)
-        configs.append({"config": config, "udb_config": udb_config, "selected_tests": selected_tests})
+        selected_tests = select_tests(full_test_dict, implemented_extensions, config_params)
+        configs.append({"config": config, "xlen": config_params["MXLEN"], "selected_tests": selected_tests})
 
     # TODO: Add a check that all configs use the same header files/compiler/etc. Otherwise error out or don't use common tests
 

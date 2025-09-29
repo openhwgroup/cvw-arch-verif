@@ -10,7 +10,6 @@
 from typing import Any
 
 from framework.parse_test_constraints import TestMetadata
-from framework.parse_udb_config import get_implemented_extensions
 
 
 def check_test_params(test_params: dict[str, Any], config_params: dict[str, Any]) -> bool:
@@ -21,9 +20,8 @@ def check_test_params(test_params: dict[str, Any], config_params: dict[str, Any]
     return True
 
 
-def select_tests(test_dict: dict[str, TestMetadata], udb_config: dict[str, Any]) -> dict[str, TestMetadata]:
+def select_tests(test_dict: dict[str, TestMetadata], implemented_extensions: set[str], config_params: dict[str, Any]) -> dict[str, TestMetadata]:
     """Select tests that match the UDB configuration."""
-    implemented_extensions = get_implemented_extensions(udb_config)
     selected_tests = {}
     for test_name, test_metadata in test_dict.items():
         # Check if all required extensions are implemented
@@ -31,7 +29,6 @@ def select_tests(test_dict: dict[str, TestMetadata], udb_config: dict[str, Any])
         if required_exts.issubset(implemented_extensions):
             # Check if all parameters match
             test_params = test_metadata.params
-            config_params = udb_config.get("params", {})
             if check_test_params(test_params, config_params):
                 selected_tests[test_name] = test_metadata
     return selected_tests

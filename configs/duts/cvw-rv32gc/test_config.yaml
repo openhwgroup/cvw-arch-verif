@@ -1,3 +1,4 @@
+name: cvw-rv32gc
 compiler_exe: /opt/riscv/bin/riscv64-unknown-elf-gcc # executable name on $PATH or full path to executable
 objdump_exe: /opt/riscv/bin/riscv64-unknown-elf-objdump # executable name on $PATH or full path to executable, optional
 ref_model_exe: /opt/riscv/bin/sail_riscv_sim # executable name on $PATH or full path to executable
