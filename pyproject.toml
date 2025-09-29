@@ -18,7 +18,8 @@ dev = [
 ]
 
 [project.scripts]
-act = "framework.main:main"
+act = "framework.act:main"
+sail-to-rvvi = "framework.sail_to_rvvi:main"
 
 ##### BUILD #####
 

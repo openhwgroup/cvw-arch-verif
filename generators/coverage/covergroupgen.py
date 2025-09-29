@@ -13,6 +13,7 @@ import math
 import os
 import re
 import sys
+from pathlib import Path
 
 ##################################
 # Functions
@@ -209,12 +210,15 @@ def getEffew(arch):
 # all instructions in each testplan
 
 def writeCovergroups(testPlans, covergroupTemplates, archSources):
-    covergroupDir = ARCH_VERIF+'/fcov/'
-    with open(os.path.join(covergroupDir,"coverage/RISCV_instruction_sample.svh"), "w") as fsample:
+    covergroupDir = Path(ARCH_VERIF) / "coverpoints"
+    coverageHeaderDir = covergroupDir / "coverage"
+    coverageHeaderDir.mkdir(parents=True, exist_ok=True)
+
+    with open(coverageHeaderDir / "RISCV_instruction_sample.svh", "w") as fsample:
         fsample.write(customizeTemplate(covergroupTemplates, "instruction_sample_header", "NA", "NA"))
         for arch, tp in testPlans.items():
             covergroupSubDir = archSources.get(arch, 'unpriv')
-            covergroupOutDir = os.path.join(covergroupDir, covergroupSubDir)
+            covergroupOutDir = covergroupDir / covergroupSubDir
             os.makedirs(covergroupOutDir, exist_ok=True)
 
             file = arch + "_coverage.svh"
@@ -291,11 +295,11 @@ def writeCovergroups(testPlans, covergroupTemplates, archSources):
     keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/priv") if f.endswith("_coverage.svh"))
     keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/rv32_priv") if f.endswith("_coverage.svh"))
     keys.extend(f.split("_")[0] for f in os.listdir(f"{covergroupDir}/rv64_priv") if f.endswith("_coverage.svh"))
-    file = f"{covergroupDir}/coverage/RISCV_coverage_base_init.svh"
+    file = coverageHeaderDir / "RISCV_coverage_base_init.svh"
     with open(os.path.join(file), "w") as f:
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coverageinit", arch, ""))
-    file = f"{covergroupDir}/coverage/RISCV_coverage_base_sample.svh"
+    file = coverageHeaderDir / "RISCV_coverage_base_sample.svh"
     with open(os.path.join(file), "w") as f:
         for arch in keys:
             f.write(customizeTemplate(covergroupTemplates, "coveragesample", arch, ""))
