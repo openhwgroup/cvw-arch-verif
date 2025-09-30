@@ -1,164 +1,116 @@
 ##################################
-# trace-covertreport.py
+# coverreport.py
 #
 # jcarlin@hmc.edu 9 May 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 #
-# Find and merge UCDBs on a per-configuration basis
+# Generate txt coverage reports from UCDB file
 ##################################
 
+import argparse
 import re
 import subprocess
 from pathlib import Path
 
+HEADER_LINE = "Covergroup                                             Metric       Goal       Bins    Status"
+TYPE_LINE_PATTERN = re.compile(r"^\s*TYPE\s+(.+?)\s*$")
+COVERGROUP_PREFIX = "/RISCV_coverage_pkg/RISCV_coverage__1/"
 
-def remove_duplicates_after_second_header(file_path : Path) -> None:
-    unique_lines_before_header = set()  # Set to store unique lines before the second header
+
+def remove_duplicates_after_second_header(file_path: Path) -> None:
+    """Remove duplicates that appear after the second summary header."""
+
+    unique_lines_before_header: set[str] = set()
     header_count = 0
-    header_line = "Covergroup                                             Metric       Goal       Bins    Status"
+    output_lines: list[str] = []
 
-    # Read the file and process lines
-    with open(file_path) as infile:
-        lines = infile.readlines()
-
-    with open(file_path, "w") as outfile:
-        for line in lines:
-            stripped_line = line.strip()  # Remove leading/trailing whitespace
-
-            # Check for the header line
-            if stripped_line == header_line:
-                header_count += 1
-                # If it's the second header, skip writing it and continue
-                if header_count == 2:
-                    continue
-
-            # If the second header has been found, filter out duplicates
+    for line in file_path.read_text().splitlines(keepends=True):
+        stripped_line = line.strip()
+        if stripped_line == HEADER_LINE:
+            header_count += 1
             if header_count == 2:
-                if stripped_line not in unique_lines_before_header:
-                    outfile.write(line)  # Write unique lines after the second header
-            else:
-                # Collect lines before the second header without filtering
-                outfile.write(line)  # Write the original line
-                unique_lines_before_header.add(stripped_line)  # Add line to the set
+                continue
+
+        if header_count == 2 and stripped_line in unique_lines_before_header:
+            continue
+
+        output_lines.append(line)
+        if header_count < 2:
+            unique_lines_before_header.add(stripped_line)
+
+    file_path.write_text("".join(output_lines))
+
+
+def report_to_summary(report_path: Path, summary_path: Path) -> None:
+    """Convert a detailed coverage report into a condensed summary."""
+
+    lines = report_path.read_text().splitlines()
+    entries: list[tuple[str, str, str, str, str]] = []
+
+    for idx, line in enumerate(lines):
+        match = TYPE_LINE_PATTERN.match(line)
+        if not match:
+            continue
+
+        full_path = match.group(1).strip()
+        name = (
+            full_path.split(COVERGROUP_PREFIX, 1)[1].strip()
+            if COVERGROUP_PREFIX in full_path
+            else full_path.split("/")[-1].strip()
+        )
+
+        metrics_line = next((candidate.strip() for candidate in lines[idx + 1 :] if candidate.strip()), "")
+        if not metrics_line:
+            continue
+
+        parts = metrics_line.split()
+        if len(parts) < 4:
+            raise ValueError(f"Unexpected metric line format: '{metrics_line}'")
+
+        metric_value, goal_value, bins_value = parts[0], parts[1], parts[2]
+        status_value = " ".join(parts[3:])
+
+        entries.append((name, metric_value, goal_value, bins_value, status_value))
+
+    if not entries:
+        raise ValueError("No coverage entries found in report.")
+
+    padding = 5
+    headers = ["Covergroup", "Metric", "Goal", "Bins", "Status"]
+    widths = [
+        max(len(header) + padding, max(len(entry[idx]) for entry in entries)) for idx, header in enumerate(headers)
+    ]
+
+    header = "".join(f"{header:<{widths[idx]}}" for idx, header in enumerate(headers))
+
+    formatted_rows = ["".join(f"{entry[idx]:<{widths[idx]}}" for idx in range(len(headers))) for entry in entries]
+
+    with summary_path.open("w", encoding="utf-8") as summary_file:
+        summary_file.write(header + "\n")
+        summary_file.write("\n".join(formatted_rows) + "\n")
 
 
 def main() -> None:
-    # Parse arguments
-    import argparse
+    parser = argparse.ArgumentParser(description="Generate coverage reports from a UCDB file.")
+    parser.add_argument("ucdb", help="Input UCDB file", type=Path)
+    parser.add_argument("report_prefix", help="Output report prefix", type=Path)
+    args = parser.parse_args()
 
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("ucdb", help="Input UCDB file", type=Path)
-    argparser.add_argument("report_prefix", help="Output report prefix", type=Path)
-    args = argparser.parse_args()
+    report_dir = args.report_prefix.parent
+    report_name = args.report_prefix.name
+    full_report = report_dir / f"{report_name}_report.txt"
+    uncovered_report = report_dir / f"{report_name}_uncovered.txt"
+    summary_report = report_dir / f"{report_name}_summary.txt"
 
-    # Define paths
-    ucdb = args.ucdb
-    report_prefix = args.report_prefix
-    report_dir = report_prefix.parent
-    report_name = report_prefix.name
-    full_report = report_dir / (report_name + "_report.txt")
-    uncovered_report = report_dir / (report_name + "_uncovered.txt")
-    summary_report = report_dir / (report_name + "_summary.txt")
+    report_dir.mkdir(parents=True, exist_ok=True)
 
-    report_dir.mkdir(exist_ok=True, parents=True)
+    vcover_cmd = ["vcover", "report", "-details", str(args.ucdb)]
 
-    # Generate detailed reports
-    detail_report_cmd = ["vcover", "report", "-details", str(ucdb), "-output", str(full_report)]
-    subprocess.run(detail_report_cmd, check=True)
-
-    uncovered_report_cmd = ["vcover", "report", "-details", str(ucdb), "-below", "100", "-output", str(uncovered_report)]
-    subprocess.run(uncovered_report_cmd, check=True)
-
-    # Use grep to get the lines that match the criteria
-    grep_cmd = [
-        "grep", "-E", '(Covergroup|TYPE|^ +([0-9]{1,2}|100)\\.[0-9]{2}%.*(ZERO|Covered|Uncovered)[[:space:]]*$)',
-        f"{full_report}", "|", "grep", "-v", "'Covergroup instance'"
-    ]
-    grep_cmd_result = subprocess.run(grep_cmd, shell=True, check=True, stdout=subprocess.PIPE, text=True)
-    grep_cmd_output = grep_cmd_result.stdout.splitlines()
-
-    # Process each line and replace the specified path pattern
-    with (summary_report.open("w") as outfile):
-        metric_start_pos = None
-        previous_line = None  # To keep track of the previous line
-
-        for line in grep_cmd_output:
-            if "Metric" in line and metric_start_pos is None:
-                # Find the index of the start of "Metric" in this line
-                metric_match = re.search(r"\bMetric\b", line)
-                if metric_match:
-                    metric_start_pos = metric_match.start()  # Store the starting position of "Metric"
-
-            if "TYPE" in line:
-                # Replace the pattern with spaces after '_cg'
-                line = re.sub(r"/RISCV_coverage_pkg/RISCV_coverage__1/", "", line)
-                if "_cg" in line:
-                    # Find the start of "_cg"
-                    cg_index = line.index("_cg") + len("_cg")
-
-                    # Calculate the starting position of the percentage
-                    match = re.search(r"\b((100|[0-9]{1,2})\.[0-9]{2})%", line)
-                    if match:
-                        percentage_value = match.group(0)  # Get the matched percentage
-                        percentage_num = float(percentage_value.strip("%"))  # Convert to float
-
-                        # Adjust percentage_start_pos based on the value of percentage_num
-                        if percentage_num < 10.00:
-                            percentage_start_pos = metric_start_pos + 2
-                        elif percentage_num < 100.00:
-                            percentage_start_pos = metric_start_pos + 1
-                        else:
-                            percentage_start_pos = metric_start_pos
-
-                        # Calculate necessary padding based on current position of the percentage
-                        percentage_index = match.start()
-
-                        if percentage_index < percentage_start_pos:
-                            line = line[:cg_index] + " " * (percentage_start_pos - cg_index) + line[cg_index:].lstrip()
-                        elif percentage_index > percentage_start_pos:
-                            line = line[:cg_index] + line[cg_index:].lstrip()
-
-            # Check if the current line starts with multiple spaces followed by a percentage
-            match = re.match(r"^ +\b((100|[0-9]{1,2})\.[0-9]{2})%", line)
-            if match and previous_line:
-                previous_line = previous_line.rstrip()
-                percentage_value = match.group(0)  # Get the matched percentage
-                percentage_num = float(percentage_value.strip("%"))  # Convert to float
-
-                # Adjust percentage_start_pos based on the value of percentage_num
-                if percentage_num < 10.00:
-                    percentage_start_pos = metric_start_pos + 2
-                elif percentage_num < 100.00:
-                    percentage_start_pos = metric_start_pos + 1
-                else:
-                    percentage_start_pos = metric_start_pos
-
-                if len(previous_line) < percentage_start_pos:
-                    # Pad with spaces if previous line is shorter than the percentage start position
-                    previous_line = previous_line + " " * (percentage_start_pos - len(previous_line))
-
-                # Find the position of the percentage in the current line
-                match_percentage = re.search(r"\b((100|[0-9]{1,2})\.[0-9]{2})%", line)
-                if match_percentage:
-                    percentage_index = match_percentage.start()
-
-                    # Merge the previous line and current line starting from the percentage index
-                    merged_line = previous_line + line[percentage_index:].strip()
-
-                outfile.write(merged_line + "\n")
-
-                previous_line = None  # Reset previous_line after merging
-            else:
-                if previous_line:
-                    # Write the previous line to the output file (if it's not merged)
-                    outfile.write(previous_line)
-                # Update previous_line to the current one (so it's available for the next merge if needed)
-                previous_line = line
-
-    # Remove duplicates in generated reports
+    subprocess.run([*vcover_cmd, "-output", str(full_report)], check=True)
     remove_duplicates_after_second_header(full_report)
-    remove_duplicates_after_second_header(uncovered_report)
-    remove_duplicates_after_second_header(summary_report)
 
-    # skip HTML report because it is a mess doing one for each different config
-    # vcover report -details -html merge.ucdb && \
+    uncovered_report_cmd = [*vcover_cmd, "-below", "100", "-output", str(uncovered_report)]
+    subprocess.run(uncovered_report_cmd, check=True)
+    remove_duplicates_after_second_header(uncovered_report)
+
+    report_to_summary(full_report, summary_report)
