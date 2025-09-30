@@ -1,6 +1,6 @@
 [project]
 name = "cvw-arch-verif"
-version = "0.1.0"
+version = "0.2.0"
 description = "RISC-V Architecture Compatibility Test Framework"
 readme = "README.md"
 authors = [
