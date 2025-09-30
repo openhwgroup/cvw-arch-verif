@@ -33,7 +33,7 @@ def get_config_params(udb_config_file: Path) -> dict[str, Any]:
     return config_params
 
 
-def generate_extension_list(udb_config_file: Path, output_dir: Path) -> set[str]:
+def generate_extension_list(udb_config_file: Path, output_dir: Path) -> None:
     extension_list_file = output_dir / "extensions.txt"
     if not extension_list_file.exists() or (extension_list_file.stat().st_mtime < udb_config_file.stat().st_mtime):
         print(f"Generating extension list for {udb_config_file.stem}")
