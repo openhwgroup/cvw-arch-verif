@@ -340,7 +340,7 @@ reset_external_interrupts:
 
 reset_mtimecmp:
     // resets M-mode timer compare register to prevent further M-mode timer interrupts
-    li t0, -1               # set mtimecmp to biggest number so it doesnt interrupt again
+    li t0, -1               # set mtimecmp to biggest number so it doesn't interrupt again
     la t1, MTIMECMP
     SREG t0, 0(t1)
     #ifdef __riscv_xlen
@@ -356,10 +356,10 @@ reset_mtimecmp:
 reset_stimecmp:
     // resets S-mode timer compare register to prevent further S-mode timer interrupts
     li t0, -1
-    csrw stimecmp, t0   # sets stimecmp to big number so it doesnt interrupt
+    csrw stimecmp, t0   # sets stimecmp to big number so it doesn't interrupt
     #ifdef __riscv_xlen
         #if __riscv_xlen == 32
-            csrw stimecmph, t0   # for RV32 sets upper word (stimecmph) to big number so it doesnt interrupt
+            csrw stimecmph, t0   # for RV32 sets upper word (stimecmph) to big number so it doesn't interrupt
         #endif
     #else
         ERROR: __riscv_xlen not defined

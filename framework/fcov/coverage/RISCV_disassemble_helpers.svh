@@ -243,7 +243,7 @@ function string get_frm_string(int key);
   endcase
 endfunction
 
-//Vector vsetvli paramaters
+//Vector vsetvli parameters
 function string get_vtype_eSEW_name(int eSEW);
   case(eSEW)
     3'b000: return "e8";

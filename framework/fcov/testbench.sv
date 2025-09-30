@@ -24,7 +24,7 @@ module testbench;
   // Load configuration
   `include "cvw-arch-verif_coverage.svh"
 
-  // Set up varialbe lengths
+  // Set up variable lengths
   `ifdef XLEN32
     localparam XLEN = 32;
   `else

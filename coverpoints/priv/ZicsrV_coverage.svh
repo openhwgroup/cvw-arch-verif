@@ -94,7 +94,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     }
 
     mstatus_vs_initial_clean : coverpoint get_csr_val(ins.hart, ins.issue, `SAMPLE_BEFORE, "mstatus", "vs") {
-        bins intial = {1};
+        bins initial = {1};
         bins clean  = {2};
     }
 
@@ -220,7 +220,7 @@ covergroup ZicsrV_cg with function sample(ins_t ins);
     //////////////////////////////////////////////////////////////////////////////////
     // cp_vill_vsetvl_rs2_vill
     // make sure even if vill bit is already set, writing with another illegal value
-    // doesnt change the vtype csr value
+    // doesn't change the vtype csr value
     //////////////////////////////////////////////////////////////////////////////////
 
     rs2_vill_set : coverpoint ins.current.rs2_val[`XLEN-1] {

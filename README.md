@@ -1,121 +1,121 @@
 # cvw-arch-verif
+
 The purpose of the repo is to support CORE-V Wally architectural verification.
 
 This document contains guidelines for setup and running of RISC-V Architecture Functional Verification project. It contains commands and formats needed to generate and execute tests, write test plans and collect and analyze coverage. The following sections have been covered:
 
-* Summary of coverage
-* Git overview
-* Server guide and Tool access
-* Writing Test plan
-* Adding and using Test generation scripts
-* Running Tests on CVW Core
-* Creating RVVI Functional Coverage files
-* Teams
+- Summary of coverage
+- Git overview
+- Server guide and Tool access
+- Writing Test plan
+- Adding and using Test generation scripts
+- Running Tests on CVW Core
+- Creating RVVI Functional Coverage files
+- Teams
 
 # Summary of coverage
 
 This repo contains testplans, covergroups, and directed tests for the RVA22S64 profile, and corresponding RV32 extensions. These include
 
-| Extension | RV32 | RV64 | Notes |
-| --- | --- | --- | --- |
-| **Unprivileged** |
-| I | x|x | Integer base |
-| M | x|x | Mul/div |
-| F |x |x | Floating-point |
-| D |x |x | Double-precision floating-point |
-| Zfh |x |x | Half-precision floating-point |
-| Zfhmin |x |x | Half-precision transfers/converts |
-| Zfa |x |x | Additonal floating-point: F, D, Zfh |
-| Zaamo |x |x | A extension: atomic memory operations |
-| Zalrsc |x |x | A extension: load reserved/store conditional |
-| Zba |x |x | B extension: address generation |
-| Zbb |x |x | B extension: basic bit manipulation |
-| Zbs |x |x | B extension: single-bit operations |
-| Zbc |x |x | Carry-free multiplication |
-| Zca |x |x | Compressed instructions |
-| Zcb |x |x | Additional compressed instructions |
-| Zcf |x | | RV32 compressed single-precision fp |
-| Zcd |x |x | Compressed double-precision fp |
-| Zbkb |x |x | Basic bit manipulation for crypto |
-| Zbkc |x |x | Carry free multiplication for crypto |
-| Zbkx |x |x | Crossbar permutations for crypto |
-| Zknd |x |x | AES decryption |
-| Zkne |x |x | AES encryption |
-| Zknh |x |x | SHA2 hash |
-| Zicond |x |x | Conditional zero |
-| Zicbom |x |x | Cache block management, architecturally invisible |
-| Zicboz |x |x | Cach block zero |
-| Zicsr |x |x | CSR read/write/set/clear instructions |
-| Zifencei |x |x | Instruction/data synchronization |
-| **Privileged** |
-| Zicsr |x |x | Excercise CSRs in each mode: M, S, U, F |
-| Exceptions |x |x | Exceptions: M, S, U, F, Zc, ZicboU, ZicboS, Zalrsc, Zaamo |
-| Interrupts |x |x | Interrupts: M, S, U, Sstc |
-| VM | SV32 | SV39/48 | Virtual Memory: Svbare, Sv32/39/48, Svade, Svadu, Sstvecd, Svinval, Svnapot |
-| PMP |x |x | Physical memory protection
-| Endian |x |x | Big vs. little endian: M, S, U |
-| Zicntr|x |x | Counters and performance monitors |
+| Extension         | RV32 | RV64    | Notes                                                                       |
+| ----------------- | ---- | ------- | --------------------------------------------------------------------------- |
+| **Unprivileged**  |
+| I                 | x    | x       | Integer base                                                                |
+| M                 | x    | x       | Mul/div                                                                     |
+| F                 | x    | x       | Floating-point                                                              |
+| D                 | x    | x       | Double-precision floating-point                                             |
+| Zfh               | x    | x       | Half-precision floating-point                                               |
+| Zfhmin            | x    | x       | Half-precision transfers/converts                                           |
+| Zfa               | x    | x       | Additional floating-point: F, D, Zfh                                        |
+| Zaamo             | x    | x       | A extension: atomic memory operations                                       |
+| Zalrsc            | x    | x       | A extension: load reserved/store conditional                                |
+| Zba               | x    | x       | B extension: address generation                                             |
+| Zbb               | x    | x       | B extension: basic bit manipulation                                         |
+| Zbs               | x    | x       | B extension: single-bit operations                                          |
+| Zbc               | x    | x       | Carry-free multiplication                                                   |
+| Zca               | x    | x       | Compressed instructions                                                     |
+| Zcb               | x    | x       | Additional compressed instructions                                          |
+| Zcf               | x    |         | RV32 compressed single-precision fp                                         |
+| Zcd               | x    | x       | Compressed double-precision fp                                              |
+| Zbkb              | x    | x       | Basic bit manipulation for crypto                                           |
+| Zbkc              | x    | x       | Carry free multiplication for crypto                                        |
+| Zbkx              | x    | x       | Crossbar permutations for crypto                                            |
+| Zknd              | x    | x       | AES decryption                                                              |
+| Zkne              | x    | x       | AES encryption                                                              |
+| Zknh              | x    | x       | SHA2 hash                                                                   |
+| Zicond            | x    | x       | Conditional zero                                                            |
+| Zicbom            | x    | x       | Cache block management, architecturally invisible                           |
+| Zicboz            | x    | x       | Cache block zero                                                            |
+| Zicsr             | x    | x       | CSR read/write/set/clear instructions                                       |
+| Zifencei          | x    | x       | Instruction/data synchronization                                            |
+| **Privileged**    |
+| Zicsr             | x    | x       | Exercise CSRs in each mode: M, S, U, F                                      |
+| Exceptions        | x    | x       | Exceptions: M, S, U, F, Zc, ZicboU, ZicboS, Zalrsc, Zaamo                   |
+| Interrupts        | x    | x       | Interrupts: M, S, U, Sstc                                                   |
+| VM                | SV32 | SV39/48 | Virtual Memory: Svbare, Sv32/39/48, Svade, Svadu, Sstvecd, Svinval, Svnapot |
+| PMP               | x    | x       | Physical memory protection                                                  |
+| Endian            | x    | x       | Big vs. little endian: M, S, U                                              |
+| Zicntr            | x    | x       | Counters and performance monitors                                           |
 | **Miscellaneous** |
-| Fences |x |x | Tested in Zicsr |
-| Zihintpause |x |x | Tested in Zicsr |
-| Zicclsm |x |x | Misaligned access support is implicitly tested through accesses |
-| S{m/s}1p12 |x |x | Implicit in Zicsr |
-| Sstvala |x |x | stval implicity tested through exceptions |
-| Sscounterenw |x |x | Writable scounteren tested through Zicntr |
-| Ssu64xl | |x| RV64 sstatus.UXL tested through Zicsr |
-| **Untested** |
-| PMA | | | Implementation dependent, not architectural |
-| Ziccif | | | Main memory cachability and coherence part of PMA |
-| Ziccrse | | | RsrvEventual part of PMA |
-| Ziccamoa | | | AMOArithmetic part of PMA |
-| Svbpmt | | only | Uncachable regions not testable architecturally |
-| Za64rs | | | Reservation set size not tested |
-| Zi64b | | | Cache block size not tested architecturally |
-| Zicbop | | | Cache block prefetch architecturally invisible |
-| Zkt | | | Data-independent execution time architecturally invisible |
-| Zkr | | | Entropy source hard to test architecturally |
-| Ssccptr | | | Hardware page table reads part of PMA |
+| Fences            | x    | x       | Tested in Zicsr                                                             |
+| Zihintpause       | x    | x       | Tested in Zicsr                                                             |
+| Zicclsm           | x    | x       | Misaligned access support is implicitly tested through accesses             |
+| S{m/s}1p12        | x    | x       | Implicit in Zicsr                                                           |
+| Sstvala           | x    | x       | stval implicitly tested through exceptions                                  |
+| Sscounterenw      | x    | x       | Writable scounteren tested through Zicntr                                   |
+| Ssu64xl           |      | x       | RV64 sstatus.UXL tested through Zicsr                                       |
+| **Untested**      |
+| PMA               |      |         | Implementation dependent, not architectural                                 |
+| Ziccif            |      |         | Main memory cachability and coherence part of PMA                           |
+| Ziccrse           |      |         | RsrvEventual part of PMA                                                    |
+| Ziccamoa          |      |         | AMOArithmetic part of PMA                                                   |
+| Svbpmt            |      | only    | Uncachable regions not testable architecturally                             |
+| Za64rs            |      |         | Reservation set size not tested                                             |
+| Zi64b             |      |         | Cache block size not tested architecturally                                 |
+| Zicbop            |      |         | Cache block prefetch architecturally invisible                              |
+| Zkt               |      |         | Data-independent execution time architecturally invisible                   |
+| Zkr               |      |         | Entropy source hard to test architecturally                                 |
+| Ssccptr           |      |         | Hardware page table reads part of PMA                                       |
 
 Notes:
-* As of 12/7/24, atomic, CBO, Zifencei, crypto, Sscofpmf not implemented and privileged tests are in progress
-* V, hypervisor (Sha), debug, Zce, Zks are not supported
-* A testplan such as ZcbM requires both Zcb and M extensions for c.mul
-* Exceptions also tests that illegal instruction behavior matches reference model for
-all categories of illegal instructions.
-* PMA is implementation-defined and cannot be tested explicitly.  The user must
-define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
-unless memory is implemented at that address); the Exceptions tests do limited PMA
-testing by ensuring this address thorows an AccessFault.
 
+- As of 12/7/24, atomic, CBO, Zifencei, crypto, Sscofpmf not implemented and privileged tests are in progress
+- V, hypervisor (Sha), debug, Zce, Zks are not supported
+- A testplan such as ZcbM requires both Zcb and M extensions for c.mul
+- Exceptions also tests that illegal instruction behavior matches reference model for
+  all categories of illegal instructions.
+- PMA is implementation-defined and cannot be tested explicitly. The user must
+  define the `ACCESS_FAULT_ADDRESS to be an illegal physical address (typically 0
+  unless memory is implemented at that address); the Exceptions tests do limited PMA
+  testing by ensuring this address thorows an AccessFault.
 
 Notes:
 Unprivileged extensions are being refactored to share code
 
 Use make tests --jobs to create the SystemVerilog covergroups and assembly language tests.
 
-
 **Setup and contribute:**
 
-* Fork the [cvw-arch-verif](https://github.com/openhwgroup/cvw-arch-verif) repo
-* Clone the repository using:
+- Fork the [cvw-arch-verif](https://github.com/openhwgroup/cvw-arch-verif) repo
+- Clone the repository using:
 
 git clone https://github.com/\[your\_github\_username\]/cvw-arch-verif
 cd cvw-arch-verif
 
-* Create a separate branch for you work:
+- Create a separate branch for you work:
 
-git checkout \-b \<branch\_name\>
+git checkout \-b \<branch_name\>
 
-* After contributing your work commit it:
+- After contributing your work commit it:
 
 git add \<file\>
 git commit \-m “Your Commit message”
 
-* Push your changes:
+- Push your changes:
 
-git push origin \<branch\_name\>
+git push origin \<branch_name\>
 
-* Submit a Pull request
+- Submit a Pull request
 
 # **Server guide and Tool access**
 
@@ -159,24 +159,24 @@ needs updating
 
 **Step 1: Setting up CVW**
 
-* Use the guidelines in the README file on the CVW repo to clone and test it
-* Install the prerequisites using
+- Use the guidelines in the README file on the CVW repo to clone and test it
+- Install the prerequisites using
 
 sudo $WALLY/bin/wally-tool-chain-install.sh
 
-* Change the branch of **addins/cvw-arch-verif** by:
+- Change the branch of **addins/cvw-arch-verif** by:
 
-git config \-f .gitmodules submodule.addins/cvw-arch-verif.branch \<branch\_name\>
+git config \-f .gitmodules submodule.addins/cvw-arch-verif.branch \<branch_name\>
 git submodule update \--remote addins/cvw-arch-verif
 
 **Step 2: Running tests on the Core**
 
-* Add the name and path of the test to tests.vh in the respective test\_suite
-* Running test:
+- Add the name and path of the test to tests.vh in the respective test_suite
+- Running test:
 
-wsim rv64gc \<test\_suite\> \<additional flags\>
+wsim rv64gc \<test_suite\> \<additional flags\>
 
-* Running tests in regression
+- Running tests in regression
 
 regression-wally
 
@@ -184,24 +184,24 @@ regression-wally
 
 **Step 1: Creating a coverage file**
 
-* Create a file in the fcov folder with name: test\_\<feature\_name\>\_coverage.sv
-* Include the file in the **rvvicov.svh** file under
-* Instantiate your coverage module in the wrapper.svh file
-* Instantiate both rvvi & wallyTracer in the coverage file
-* Instantiate all covergroups and sample them
-* Foreach coverpoint if possible sample data from the rvvi interface, otherwise sample data from dut
+- Create a file in the fcov folder with name: test\_\<feature_name\>\_coverage.sv
+- Include the file in the **rvvicov.svh** file under
+- Instantiate your coverage module in the wrapper.svh file
+- Instantiate both rvvi & wallyTracer in the coverage file
+- Instantiate all covergroups and sample them
+- Foreach coverpoint if possible sample data from the rvvi interface, otherwise sample data from dut
 
 **Step 2: Running Functional Coverage**
 
-* To run functional coverage per test\_suite
+- To run functional coverage per test_suite
 
-wsim rv64gc \<test\_suite\> \--fcov
+wsim rv64gc \<test_suite\> \--fcov
 
-* To run functional coverage in regression
+- To run functional coverage in regression
 
 regression-wally \--fcov
 
-* To merge all fcov files and create a merge html report, in the fcov folder run:
+- To merge all fcov files and create a merge html report, in the fcov folder run:
 
 make
 

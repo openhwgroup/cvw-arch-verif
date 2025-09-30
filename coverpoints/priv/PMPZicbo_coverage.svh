@@ -81,7 +81,7 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
         bins pmpcfg2 = {8'b10011011}; //XWR = 011
     }
 
-    //for each instruction, there are 3 configurations, in 3 seperate regions
+    //for each instruction, there are 3 configurations, in 3 separate regions
     cp_cbo_clean1 : cross priv_mode_m, pmpaddr_region0, pmp0cfg_for_cp_cbo, addr_in_region0, cfg_for_menvcfg, cbo_clean_instr;
     cp_cbo_clean2 : cross priv_mode_m, pmpaddr_region1, pmp1cfg_for_cp_cbo, addr_in_region1, cfg_for_menvcfg, cbo_clean_instr;
     cp_cbo_clean3 : cross priv_mode_m, pmpaddr_region2, pmp2cfg_for_cp_cbo, addr_in_region2, cfg_for_menvcfg, cbo_clean_instr;
@@ -200,7 +200,7 @@ covergroup PMPZicbo_cg with function sample(ins_t ins);
         bins pmpcfg8 = {8'b10011111}; //XWR = 111
     }
 
-    //for each instruction, there are 6 configurations, in 6 seperate regions
+    //for each instruction, there are 6 configurations, in 6 separate regions
     cp_prefetch_i1: cross priv_mode_m, addr_in_region3, pmpaddr_region3, pmp3cfg_for_cp_prefetch, cfg_for_menvcfg, prefetch_i_instr;
     cp_prefetch_i2: cross priv_mode_m, addr_in_region4, pmpaddr_region4, pmp4cfg_for_cp_prefetch, cfg_for_menvcfg, prefetch_i_instr;
     cp_prefetch_i3: cross priv_mode_m, addr_in_region5, pmpaddr_region5, pmp5cfg_for_cp_prefetch, cfg_for_menvcfg, prefetch_i_instr;

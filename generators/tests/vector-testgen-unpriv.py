@@ -87,7 +87,7 @@ from vector_testgen_common import (
   xvtype,
 )
 
-unsupported_tests = [ # conflicting signatures between sail and spike, open PRs listed bellow
+unsupported_tests = [ # conflicting signatures between sail and spike, open PRs listed below
   "vnclip.wi",      # Sail issue 1071
   "vnclipu.wi",     # Sail issue 1071
   "vnsra.wi",       # Sail issue 1071
@@ -1209,16 +1209,16 @@ if __name__ == '__main__':
         #   print(f"load {test in vector_loads}")
 
         if test in vector_loads:
-          genVsEdges(test, 64, "8") # max size edges to ave all zeros availible
+          genVsEdges(test, 64, "8") # max size edges to ave all zeros available
           if test in indexed_loads:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
-            genRandomVector(test, sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
+            genRandomVector(test, sew, vs="vd") # sew is max elen because eaach suite runs all supported eews
           else:
             randomized_memory_sew = getInstructionEEW(test) if getInstructionEEW(test) is not None else sew
-            genRandomVector(test, randomized_memory_sew, vs="vd") # sew is max elen becuase eaach suite runs all supported eews
+            genRandomVector(test, randomized_memory_sew, vs="vd") # sew is max elen because eaach suite runs all supported eews
           genRandomVectorLS()
         if test in vector_stores:
-          genVsEdges(test, 64, "8") # max size edges to ave all zeros availible
+          genVsEdges(test, 64, "8") # max size edges to ave all zeros available
           if test in indexed_stores:
             genRandomVector(test, getInstructionEEW(test), vs="vs2")
             genRandomVector(test, sew, vs="vs3")

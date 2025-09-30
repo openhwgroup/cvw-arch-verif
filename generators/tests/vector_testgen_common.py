@@ -1388,7 +1388,7 @@ def loadVxrmRoundingMode(vxrm, *scalar_registers_used):
   writeLine(f"csrw vcsr, x{tempReg3}", f"# set fcsr.frm to {vxrm}")
   return scalar_registers_used
 
-# TODO: doesnt work
+# TODO: doesn't work
 def loadVxsatMode(*scalar_registers_used):
   # TODO dont use t0 find a register that works
   # writeLine(f"csrr t0, vcsr"
@@ -1600,7 +1600,7 @@ def writeTest(description, instruction, instruction_data,
         if maskval is not None:
           testline = testline + "v0.t"
         else:
-          testline = testline[:-2] # remove the ", " since theres no argument
+          testline = testline[:-2] # remove the ", " since there's no argument
       elif argument == 'v0':
         testline = testline + "v0"
       elif argument == 'imm':

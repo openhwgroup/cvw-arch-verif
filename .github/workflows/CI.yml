@@ -12,25 +12,25 @@ jobs:
       DOCKER: 1
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Checkout UDB submodule only
-      run: git submodule update --init external/riscv-unified-db
+      - name: Checkout UDB submodule only
+        run: git submodule update --init external/riscv-unified-db
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
-    - name: Install RISCV-GNU Toolchain
-      run: |
-        sudo mkdir -p /opt/riscv
-        curl --location https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.09.03/riscv64-elf-ubuntu-20.04-gcc-nightly-2024.09.03-nightly.tar.gz | sudo tar xvz --directory /opt/riscv --strip-components=1
+      - name: Install RISCV-GNU Toolchain
+        run: |
+          sudo mkdir -p /opt/riscv
+          curl --location https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.09.03/riscv64-elf-ubuntu-20.04-gcc-nightly-2024.09.03-nightly.tar.gz | sudo tar xvz --directory /opt/riscv --strip-components=1
 
-    - name: Install Sail
-      run: curl --location https://github.com/riscv/sail-riscv/releases/download/0.8/sail-riscv-Linux-x86_64.tar.gz | sudo tar xvz --directory /opt/riscv --strip-components=1
+      - name: Install Sail
+        run: curl --location https://github.com/riscv/sail-riscv/releases/download/0.8/sail-riscv-Linux-x86_64.tar.gz | sudo tar xvz --directory /opt/riscv --strip-components=1
 
-    - name: Generate tests
-      run: make tests --jobs $(nproc)
+      - name: Generate tests
+        run: make tests --jobs $(nproc)
 
-    - name: Run tests
-      run: make --jobs $(nproc)
+      - name: Run tests
+        run: make --jobs $(nproc)

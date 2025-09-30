@@ -1,4 +1,4 @@
-# Solderpad Hardware Licence Version 2.1:  https://solderpad.org/licenses/SHL-2.1/
+# Solderpad Hardware Licence Version 2.1: https://solderpad.org/licenses/SHL-2.1/
 
 This licence (the “Licence”) operates as a wraparound licence to the Apache License Version 2.0 (the “Apache License”)
 and grants to You the rights, and imposes the obligations, set out in the Apache License

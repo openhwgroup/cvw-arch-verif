@@ -263,7 +263,7 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(mode.sv39) && binsof(misaligned_PPN_d.tera_not_zero);
     }
 
-    // PTE points to a non existant physical address
+    // PTE points to a non existent physical address
     leaf_PTE_to_nonexistant_pa_cbo_s: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_s {
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_u);
         ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
@@ -273,8 +273,8 @@ covergroup RV64CBO_VM_exceptions_cg with function sample(ins_t ins);
         ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.tera);
     }
 
-    // Non leaf PTE points to a non existatant phys addr instead of next page table. Store access fault required during walk
-    // Example: Setup a giga page in sv48, lvl 3 pte (tera) should point to lvl2 page table, but it points to non existant PA
+    // Non leaf PTE points to a non existent phys addr instead of next page table. Store access fault required during walk
+    // Example: Setup a giga page in sv48, lvl 3 pte (tera) should point to lvl2 page table, but it points to non existent PA
     nonleaf_PTE_to_nonexistant_pa_cbo: cross pointer_PTE_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_su {
         ignore_bins ig1 = binsof(PageType_d.tera);                          // Here PageType_d will be the type being pointed towards
         ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.giga);

@@ -1,6 +1,6 @@
 
 
-    vd_v0 : coverpoint ins.curent.insn[11:7] {
+    vd_v0 : coverpoint ins.current.insn[11:7] {
         bin zero = {0};
     }
 

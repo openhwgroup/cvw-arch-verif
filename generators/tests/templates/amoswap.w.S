@@ -9,5 +9,5 @@ li t2, 0xA5A5A5A5
 # cp_align_word
 amoswap.w t1, t2, (t0)
 
-#NOTE: haven't added a signature becuase rs1 is misaligned and that
+#NOTE: haven't added a signature because rs1 is misaligned and that
 #      will cause an access-fault exception whenever we do a memory access

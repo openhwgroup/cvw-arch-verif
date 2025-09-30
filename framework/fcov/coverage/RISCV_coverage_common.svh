@@ -550,7 +550,7 @@ function bit get_vm(string s);
   endcase
 endfunction
 
-//Vector vsetvli paramaters
+//Vector vsetvli parameters
 // Flipped: string -> int (bits), using case statements
 
 function bit [2:0] get_vtype_eSEW_val(string str);

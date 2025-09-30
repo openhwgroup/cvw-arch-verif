@@ -20,7 +20,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-//TODO many of these coverpoints are uncessary for most instructions thus this document should be seperated into categories
+//TODO many of these coverpoints are unnecessary for most instructions thus this document should be separated into categories
 // that way coverpoints are only imported when needed TODO
 
     //Common custom vector coverpoints

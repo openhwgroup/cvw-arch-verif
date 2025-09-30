@@ -114,7 +114,7 @@ class RISCV_instruction
         if (idx < 0) begin
           this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
-          this.ops[i].val = string'(this.current.x_wdata[idx]); //if reigster then value of register gets written to ops.val
+          this.ops[i].val = string'(this.current.x_wdata[idx]); //if register then value of register gets written to ops.val
         end
       // floating point registers
       end else if (this.ops[i].key[0] == "f") begin
@@ -122,7 +122,7 @@ class RISCV_instruction
         if (idx < 0) begin
           this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
-          this.ops[i].val = string'(this.current.f_wdata[idx]); //if reigster then value of register gets written to ops.val
+          this.ops[i].val = string'(this.current.f_wdata[idx]); //if register then value of register gets written to ops.val
         end
       // vector
       end else if (this.ops[i].key[0] == "v") begin
@@ -130,7 +130,7 @@ class RISCV_instruction
         if (idx < 0) begin
           this.ops[i].val = this.ops[i].key; // Not a register, key (name) is the value of the operand
         end else begin
-          this.ops[i].val = string'(this.current.v_wdata[idx]); //if reigster then value of register gets written to ops.val
+          this.ops[i].val = string'(this.current.v_wdata[idx]); //if register then value of register gets written to ops.val
         end
       // immediate values
       end else begin

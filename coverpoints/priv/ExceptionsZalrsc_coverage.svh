@@ -92,7 +92,7 @@ covergroup ExceptionsZalrsc_exceptions_cg with function sample(ins_t ins);
     // As a proxy we can check that the rd value changes as expected for rd when an
     // sc.x instruction is executed. Load rd with a value > 1.
     // Faulting instructions should not modify the rd value while
-    // Succesful instructions should write 0 to rd.
+    // Successful instructions should write 0 to rd.
     // sc.w and sc.d have a different set of legal LSB offset
     // (4 byte aligned vs ) so they are handled differently in the coverpoints.
 

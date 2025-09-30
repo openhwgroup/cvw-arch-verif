@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v6
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
-    - name: Ensure pre-commit checks pass
-      run: uvx pre-commit run --all-files --show-diff-on-failure --color=always
+      - name: Ensure pre-commit checks pass
+        run: uvx pre-commit run --all-files --show-diff-on-failure --color=always

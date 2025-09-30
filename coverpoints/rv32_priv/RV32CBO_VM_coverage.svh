@@ -172,7 +172,7 @@ covergroup RV32CBO_VM_exceptions_cg with function sample(ins_t ins);
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_s);
     }
 
-    // PTE points to a non existant physical address
+    // PTE points to a non existent physical address
     leaf_PTE_to_nonexistant_pa_s: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_s {
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_u);
     }
@@ -181,7 +181,7 @@ covergroup RV32CBO_VM_exceptions_cg with function sample(ins_t ins);
     }
 
     // Non leaf PTE points to a non existatant phys addr instead of next page table. Store access fault required during walk
-    // Example: Setup a level 0 page in sv48, lvl 1 pte should point to lvl0 page table, but it points to non existant PA
+    // Example: Setup a level 0 page in sv48, lvl 1 pte should point to lvl0 page table, but it points to non existent PA
     nonleaf_PTE_to_nonexistant_pa: cross pointer_PTE_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_su {
         ignore_bins ig1 = binsof(PageType_d.mega);                          // Here PageType_d will be the type being pointed towards
     }

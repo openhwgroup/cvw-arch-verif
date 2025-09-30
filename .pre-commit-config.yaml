@@ -7,6 +7,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 minimum_pre_commit_version: "4.0.0"
+exclude: "^_old-priv-tests/"
 repos:
   # Standard pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -34,10 +35,35 @@ repos:
     hooks:
       # Run the linter.
       - id: ruff-check
-        args: [ --fix ]
+        args: [--fix]
 
   # Ensure uv lock file is up to date
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.8.16
     hooks:
       - id: uv-lock
+
+  # Use spaces, not tabs
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: forbid-tabs
+        exclude: '.*\.(diff|dump|patch|svg|S|old)|Makefile*'
+
+  # Prettier for json, yaml, markdown, etc. formatting
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.5.3
+    hooks:
+      - id: prettier
+
+  # Avoid common misspellings
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+
+  # clang-format for assembly files
+  # - repo: https://github.com/pre-commit/mirrors-clang-format
+  #   rev: "v19.1.7"
+  #   hooks:
+  #     - id: clang-format

@@ -6,7 +6,7 @@ on:
       create_release:
         description: Create a new CTP release if set to true
         required: false
-        default: 'false'
+        default: "false"
       release_notes:
         description: Release Notes
         required: false
@@ -14,16 +14,16 @@ on:
     branches:
       - main
     paths:
-      - 'docs/ctp/**'
-      - 'testplans/**'
-      - '.github/workflows/ctp-build.yml'
+      - "docs/ctp/**"
+      - "testplans/**"
+      - ".github/workflows/ctp-build.yml"
   pull_request:
     branches:
       - main
     paths:
-      - 'docs/ctp/**'
-      - 'testplans/**'
-      - '.github/workflows/ctp-build.yml'
+      - "docs/ctp/**"
+      - "testplans/**"
+      - ".github/workflows/ctp-build.yml"
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - name: Pull Container
         run: docker pull riscvintl/riscv-docs-base-container-image:latest

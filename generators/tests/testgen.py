@@ -203,8 +203,8 @@ def writeSIGUPD(rd):
 def writeSIGUPD_F(rd):
     global sigupd_count  # Allow modification of global variable
     global sigupd_countF
-    ####sigupd_count += 1  #Increment counter for floating point signature sicne SIGUPD_F macro stores FCSR as SREG (*** commented out for now unitl good fix to missalignment))
-    sigupd_countF += 2  # Increment counter on each call since SIGUPD_F macro stores FREG (*** +2 instead of +1 for commented out line above need more space for missalignment error realignment)
+    ####sigupd_count += 1  #Increment counter for floating point signature since SIGUPD_F macro stores FCSR as SREG (*** commented out for now until good fix to misalignment))
+    sigupd_countF += 2  # Increment counter on each call since SIGUPD_F macro stores FREG (*** +2 instead of +1 for commented out line above need more space for misalignment error realignment)
     tempReg = 4
     while tempReg == sigReg:
       tempReg = randint(1,31)
@@ -232,7 +232,7 @@ def writeSIGUPD_V(vd, sew):
     return lines
 
 def loadFloatReg(reg, val, xlen, flen): # *** eventually load from constant table instead
-  # Assumes that x2 is loaded with the base addres to avoid repeated `la` instructions
+  # Assumes that x2 is loaded with the base address to avoid repeated `la` instructions
   global sigReg # this function can modify the signature register
   lines = "" # f"# Loading value {val} into f{reg}\n"
   if test[-1] == "d" or NaNBox_tests == "D" or test == 'c.fsdsp':
@@ -312,7 +312,7 @@ def getSigSpace(xlen, flen,sigupd_count, sigupd_countF, test):
       signatureWords = hasXregHaz*sigupd_count + (sigupd_countF * mult)   # multiply be reg ratio to get correct amount of Xlen/32 4byte blocks for footer and double sigupd_count for alignment in hazard cases
     else:
       signatureWords =  sigupd_count + sigupd_countF  #all Sigupd, when Xlen is larger than Flen and SIGUPD_F macro will adjust alignment up to XLEN
-  signatureWords += (4//(xlen//32))*(((signatureWords*(xlen//32))*4)//2016) # add additional space for offset overflow adjustment offset reset at offset of 2016 so calculate ofset amount from sigwords then multiply by addisional sigwords needed to cover the overflow realignment
+  signatureWords += (4//(xlen//32))*(((signatureWords*(xlen//32))*4)//2016) # add additional space for offset overflow adjustment offset reset at offset of 2016 so calculate offset amount from sigwords then multiply by addisional sigwords needed to cover the overflow realignment
   return signatureWords
 
 # writeTest appends the test to the lines.
@@ -816,7 +816,7 @@ def writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen
     lines = lines + "fsflagsi 0b00000 # clear all fflags\n"
     lines = lines + loadFloatReg(rs1, rs1val, xlen, flen)
     if not frm:
-      rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rouding mode
+      rm = ", rtz" if (test == "fcvtmod.w.d") else "" # fcvtmod requires explicit rtz rounding mode
       lines = writeTest(lines, rd, xlen, False, test + " x" + str(rd) + ", f" + str(rs1) + rm + " # perform operation\n")
     else:
       testInstr = f"{test} x{rd}, f{rs1}"
@@ -1033,7 +1033,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
             lines = lines + f"fld f{rs2b}, 0(x{tempReg2}) # load {formatstrFP.format(immvalb)} from memory into f{rs2b}\n"
         else:
           lines = lines + "LI(x" + str(rs2b) + ", " + formatstr.format(immvalb)  + ") # initialize random imm value\n"
-      #only generate one instrution
+      #only generate one instruction
       lines += writeSingleInstructionSequence(desc,
                   [testb],
                   [regconfig],
@@ -1127,7 +1127,7 @@ def writeHazardVector(desc, rs1a, rs2a, rda, rs1b, rs2b, rdb, testb, immvala, im
     if testb in floattypes and testb not in fTOrtype:
       lines += writeSIGUPD_F(rdb)
     elif (test in csrtype or test in csritype):
-      lines += "# orignal mscratch value: \n"
+      lines += "# original mscratch value: \n"
       lines += writeSIGUPD(rdb)
       lines += "csrr x" + str(rdb) + ", mscratch #Reading the updated mscratch value \n"
       lines += "# updated mscratch value: \n"
@@ -1623,7 +1623,7 @@ def make_imm_edges_jalr(test, xlen):
     lines = lines + "jalr x"+str(rd) + ", x" + str(rs1) + ", "+ signedImm12(immval) +" # jump to assigned address to stress immediate\n" # jump to the label using jalr #*** update this test
     lines += f"LI(x{rs2}, 0)" + "\n"
     lines = lines + "1:\n"
-    lines = lines +  writeSIGUPD(rd) #checking if return addres is correct
+    lines = lines +  writeSIGUPD(rd) #checking if return address is correct
     lines = lines +  writeSIGUPD(rs2) #checking if jump was performed
     f.write(lines)
 
@@ -2771,7 +2771,7 @@ if __name__ == '__main__':
 
 
           sigTotal = 0 # total number of bytes in signature
-          sigReg = 3 # start with x4 for signatures ->marina changed it to x3 beucase that what riscv-arch-test uses TO DO
+          sigReg = 3 # start with x4 for signatures ->marina changed it to x3 because that what riscv-arch-test uses TO DO
 
           # insert generic header
           insertTemplate("testgen_header.S")
