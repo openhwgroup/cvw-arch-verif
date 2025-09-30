@@ -169,14 +169,14 @@ covergroup PMPZca_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],lo
 	// - Region 0: start at 0, end at `REGIONSTART + `g` (pmpaddr0)
 	// - Region 1: start at `REGIONSTART + `g`, end at `REGIONSTART + 2*`g` (pmpaddr1)
 	// - Region 2: start at `REGIONSTART + 2*`g`, end at `REGIONSTART + 3*`g` (pmpaddr2)
-	pmpaddr_consecutive_tor: coverpoint ({ ((pmpaddr[3]) == ((`REGIONSTART + 3*`g) >> 2)) &&
-									       ((pmpaddr[2]) == ((`REGIONSTART + 2*`g) >> 2)) &&
-										   ((pmpaddr[1]) == ((`REGIONSTART + `g)   >> 2)) &&
-										   ((pmpaddr[0]) == ((`REGIONSTART) 	   >> 2))  }) {
+	pmpaddr_consecutive_tor: coverpoint ({ ((pmpaddr[3]) == ((`REGIONSTART + 3*`g_tor) >> 2)) &&
+									       ((pmpaddr[2]) == ((`REGIONSTART + 2*`g_tor) >> 2)) &&
+										   ((pmpaddr[1]) == ((`REGIONSTART +   `g_tor) >> 2)) &&
+										   ((pmpaddr[0]) == ((`REGIONSTART) 	       >> 2))}) {
 		bins first_three_region = {1};
 	}
 
-	tor_region: coverpoint ({ (pmpaddr[1]==(`REGIONSTART + `g)>>2) && (pmpaddr[0] == (`REGIONSTART >> 2)) }) {
+	tor_region: coverpoint ({ (pmpaddr[1]==(`REGIONSTART + `g_tor)>>2) && (pmpaddr[0] == (`REGIONSTART >> 2)) }) {
 		bins address = {1};
 	}
 
@@ -212,10 +212,10 @@ covergroup PMPZca_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],lo
 	cp_cfg_W: cross priv_mode_m, legal_lxwr, addr_in_region, write_c_instr;
 
 	cp_misaligned_napot: cross priv_mode_m, cfg_consecutive_napot, pmpaddr_consecutive_napot, addr_in_consecutive_regions, exec_c_instr;
-	cp_cret_napot: cross priv_mode_m, napot_setup, napot_region, exec_c_instr, addr_adjacent_to_pmp_boundary;
+	cp_cret_napot: cross priv_mode_m, napot_setup, napot_region, exec_c_instr, addr_adjacent_to_pmp_boundary_napot;
 
 	cp_misaligned_tor: cross priv_mode_m, cfg_consecutive_tor, pmpaddr_consecutive_tor, addr_in_consecutive_regions, exec_c_instr;
-	cp_cret_tor: cross priv_mode_m, tor_setup, tor_region, exec_c_instr, addr_adjacent_to_pmp_boundary;
+	cp_cret_tor: cross priv_mode_m, tor_setup, tor_region, exec_c_instr, addr_adjacent_to_pmp_boundary_tor;
 
 	`ifdef G_IS_0
 		cp_misaligned_na4: cross priv_mode_m, cfg_consecutive_na4, pmpaddr_consecutive_na4, addr_in_consecutive_na4, exec_c_instr;
