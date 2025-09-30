@@ -38,7 +38,7 @@ if [file exists ${WKDIR}] {
 vlib ${WKDIR}
 
 # Include directories and files to compile
-set COVERPOINTS "+incdir+${COVERPOINTDIR}/unpriv +incdir+${COVERPOINTDIR}/priv +incdir+${COVERPOINTDIR}/rv32_priv +incdir+${COVERPOINTDIR}/rv64_priv"
+set COVERPOINTS "+incdir+${COVERPOINTDIR} +incdir+${COVERPOINTDIR}/unpriv +incdir+${COVERPOINTDIR}/priv +incdir+${COVERPOINTDIR}/rv32_priv +incdir+${COVERPOINTDIR}/rv64_priv"
 set INC_DIRS "+incdir+${CONFIGDIR} ${COVERPOINTS} +incdir+${FCOVDIR}"
 set COMPILE_FILES "${FCOVDIR}/rvviTrace.sv ${FCOVDIR}/cvw_arch_verif.sv ${FCOVDIR}/testbench.sv"
 
