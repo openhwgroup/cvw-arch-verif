@@ -639,78 +639,78 @@ covergroup VM_vm_permissions_cg with function sample(ins_t ins);
         bins set = {1};
     }
 
-    PTE_inv_exec_s_i: cross PTE_i_inv, PageType_i, ins_page_fault, exec_acc { //pte.2
+    PTE_inv_exec_s_i: cross PTE_i_inv, PageType_i, ins_page_fault, priv_mode_s, exec_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_u);
     }
-    PTE_inv_exec_u_i: cross PTE_i_inv, PageType_i, ins_page_fault, exec_acc { //pte.2
+    PTE_inv_exec_u_i: cross PTE_i_inv, PageType_i, ins_page_fault, priv_mode_u, exec_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_i_inv.leaflvl_s);
     }
 
-    PTE_inv_read_s_d: cross PTE_d_inv, PageType_d, load_page_fault, read_acc { //pte.2
+    PTE_inv_read_s_d: cross PTE_d_inv, PageType_d, load_page_fault, priv_mode_s, read_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
         ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
         ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_w);
     }
-    PTE_inv_read_u_d: cross PTE_d_inv, PageType_d, load_page_fault, read_acc { //pte.2
+    PTE_inv_read_u_d: cross PTE_d_inv, PageType_d, load_page_fault, priv_mode_u, read_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
         ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
         ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_w);
     }
 
-    PTE_inv_write_s_d: cross PTE_d_inv, PageType_d, store_page_fault, write_acc { //pte.2
+    PTE_inv_write_s_d: cross PTE_d_inv, PageType_d, store_page_fault, priv_mode_s, write_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_u_r);
         ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_u_w);
         ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_s_r);
     }
-    PTE_inv_write_u_d: cross PTE_d_inv, PageType_d, store_page_fault, write_acc { //pte.2
+    PTE_inv_write_u_d: cross PTE_d_inv, PageType_d, store_page_fault, priv_mode_u, write_acc { //pte.2
         ignore_bins ig1 = binsof(PTE_d_inv.leaflvl_s_r);
         ignore_bins ig2 = binsof(PTE_d_inv.leaflvl_s_w);
         ignore_bins ig3 = binsof(PTE_d_inv.leaflvl_u_r);
     }
 
-    PTE_res_rwx_s_i_exec: cross PTE_i_res_rwx, PageType_i, ins_page_fault, exec_acc { //pte.3
+    PTE_res_rwx_s_i_exec: cross PTE_i_res_rwx, PageType_i, ins_page_fault, priv_mode_s, exec_acc { //pte.3
         ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_exec_u);
         ignore_bins ig2 = binsof(PTE_i_res_rwx.leaflvl_noexec_u);
     }
-    PTE_res_rwx_u_i_exec: cross PTE_i_res_rwx, PageType_i, ins_page_fault, exec_acc { //pte.3
+    PTE_res_rwx_u_i_exec: cross PTE_i_res_rwx, PageType_i, ins_page_fault, priv_mode_u, exec_acc { //pte.3
         ignore_bins ig1 = binsof(PTE_i_res_rwx.leaflvl_exec_s);
         ignore_bins ig2 = binsof(PTE_i_res_rwx.leaflvl_noexec_s);
     }
 
-    PTE_res_rwx_s_d_read: cross PTE_d_res_rwx, PageType_d, load_page_fault, read_acc { //pte.3
+    PTE_res_rwx_s_d_read: cross PTE_d_res_rwx, PageType_d, load_page_fault, priv_mode_s, read_acc { //pte.3
         ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_u);
         ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_u);
     }
-    PTE_res_rwx_u_d_read: cross PTE_d_res_rwx, PageType_d, load_page_fault, read_acc { //pte.3
+    PTE_res_rwx_u_d_read: cross PTE_d_res_rwx, PageType_d, load_page_fault, priv_mode_u, read_acc { //pte.3
         ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_s);
         ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_s);
     }
 
-    PTE_res_rwx_s_d_write: cross PTE_d_res_rwx, PageType_d, store_page_fault, write_acc { //pte.3
+    PTE_res_rwx_s_d_write: cross PTE_d_res_rwx, PageType_d, store_page_fault, priv_mode_s, write_acc { //pte.3
         ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_u);
         ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_u);
     }
-    PTE_res_rwx_u_d_write: cross PTE_d_res_rwx, PageType_d, store_page_fault, write_acc  { //pte.3
+    PTE_res_rwx_u_d_write: cross PTE_d_res_rwx, PageType_d, store_page_fault, priv_mode_u, write_acc  { //pte.3
         ignore_bins ig1 = binsof(PTE_d_res_rwx.leaflvl_exec_s);
         ignore_bins ig2 = binsof(PTE_d_res_rwx.leaflvl_noexec_s);
     }
 
-    PTE_nonleaf_lvl0_s_i_exec: cross PTE_nonleaf_lvl0_i, kilo_page_i, mode, ins_page_fault, exec_acc { //pte.4
+    PTE_nonleaf_lvl0_s_i_exec: cross PTE_nonleaf_lvl0_i, kilo_page_i, mode, ins_page_fault, priv_mode_s, exec_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_u);
     }
-    PTE_nonleaf_lvl0_u_i_exec: cross PTE_nonleaf_lvl0_i, kilo_page_i, mode, ins_page_fault, exec_acc { //pte.4
+    PTE_nonleaf_lvl0_u_i_exec: cross PTE_nonleaf_lvl0_i, kilo_page_i, mode, ins_page_fault, priv_mode_u, exec_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_i.lvl0_s);
     }
-    PTE_nonleaf_lvl0_s_d_read: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, load_page_fault, read_acc { //pte.4
+    PTE_nonleaf_lvl0_s_d_read: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, load_page_fault, priv_mode_s, read_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
     }
-    PTE_nonleaf_lvl0_u_d_read: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, load_page_fault, read_acc { //pte.4
+    PTE_nonleaf_lvl0_u_d_read: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, load_page_fault, priv_mode_u, read_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
     }
-    PTE_nonleaf_lvl0_s_d_write: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, store_page_fault, write_acc { //pte.4
+    PTE_nonleaf_lvl0_s_d_write: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, store_page_fault, priv_mode_s, write_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_u);
     }
-    PTE_nonleaf_lvl0_u_d_write: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, store_page_fault, write_acc { //pte.4
+    PTE_nonleaf_lvl0_u_d_write: cross PTE_nonleaf_lvl0_d, kilo_page_d, mode, store_page_fault, priv_mode_u, write_acc { //pte.4
         ignore_bins ig1 = binsof(PTE_nonleaf_lvl0_d.lvl0_s);
     }
 
