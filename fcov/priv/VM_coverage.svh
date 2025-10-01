@@ -1075,10 +1075,22 @@ covergroup VM_add_feature_cg with function sample(ins_t ins);
         }
 
         reserved_PTE_i: coverpoint ins.current.pte_i[60:54] {
-            bins reserved_non_zero  = {[7'd1:7'd127]};
+            bins reserved_bit_54 = {7'b0000001};
+            bins reserved_bit_55 = {7'b0000010};
+            bins reserved_bit_56 = {7'b0000100};
+            bins reserved_bit_57 = {7'b0001000};
+            bins reserved_bit_58 = {7'b0010000};
+            bins reserved_bit_59 = {7'b0100000};
+            bins reserved_bit_60 = {7'b1000000};
         }
         reserved_PTE_d: coverpoint ins.current.pte_d[60:54] {
-            bins reserved_non_zero  = {[7'd1:7'd127]};
+            bins reserved_bit_54 = {7'b0000001};
+            bins reserved_bit_55 = {7'b0000010};
+            bins reserved_bit_56 = {7'b0000100};
+            bins reserved_bit_57 = {7'b0001000};
+            bins reserved_bit_58 = {7'b0010000};
+            bins reserved_bit_59 = {7'b0100000};
+            bins reserved_bit_60 = {7'b1000000};
         }
 
         PBMTE_unset: coverpoint ins.current.csr[12'h30A][62] {
