@@ -92,14 +92,14 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
     }
 
     PTE_DAU_d: coverpoint ins.current.pte_d[7:0] {
-        wildcard bins nonleaf_D_bit = {8'b1?0?0001};
-        wildcard bins nonleaf_A_bit = {8'b?10?0001};
-        wildcard bins nonleaf_U_bit = {8'b??010001};
+        wildcard bins nonleaf_D_bit = {8'b10?00001};
+        wildcard bins nonleaf_A_bit = {8'b01?00001};
+        wildcard bins nonleaf_U_bit = {8'b00?10001};
     }
 
     // satp.mode for coverage of SV32, SV39, SV48 & SV57
     `ifdef XLEN64
-        mode: coverpoint  ins.current.csr[12'h180][63:60] {
+        mode: coverpoint ins.current.csr[12'h180][63:60] {
             `ifdef SV57
                 bins sv57 = {4'b1010};
             `endif
@@ -111,7 +111,7 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
             `endif
         }
     `else
-        mode: coverpoint  ins.current.csr[12'h180][31] {
+        mode: coverpoint ins.current.csr[12'h180][31] {
             bins sv32 = {1'b1};
         }
     `endif
@@ -129,7 +129,7 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
                 bins sv39_mega = {2'b01} iff (ins.current.csr[12'h180][63:60] == 4'b1000);
                 bins sv39_kilo = {2'b00} iff (ins.current.csr[12'h180][63:60] == 4'b1000);
             `endif
-    }
+        }
     `else
         PageType_d: coverpoint ins.current.page_type_d {
             bins sv32_mega = {2'b01} iff (ins.current.csr[12'h180][31] == 1'b1);
@@ -142,20 +142,20 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
     }
 
     `ifdef XLEN64
-        misaligned_PPN_d: coverpoint ins.current.ppn_d[35:0] {
+        misaligned_PPN_d: coverpoint ins.current.page_type_d {
             `ifdef SV48
-                bins sv48_tera_misaligned = {[0:$]} iff ((ins.current.ppn_d[26:0] != 27'b0) && (ins.current.page_type_d == 2'b11) && (ins.current.csr[12'h180][63:60] == 4'b1001));
-                bins sv48_giga_misaligned = {[0:$]} iff ((ins.current.ppn_d[17:0] != 18'b0) && (ins.current.page_type_d == 2'b10) && (ins.current.csr[12'h180][63:60] == 4'b1001));
-                bins sv48_mega_misaligned = {[0:$]} iff ((ins.current.ppn_d[8:0]  !=  9'b0) && (ins.current.page_type_d == 2'b01) && (ins.current.csr[12'h180][63:60] == 4'b1001));
+                bins sv48_tera_misaligned = {2'b11} iff ((ins.current.ppn_d[26:0] != 27'b0) && (ins.current.csr[12'h180][63:60] == 4'b1001));
+                bins sv48_giga_misaligned = {2'b10} iff ((ins.current.ppn_d[17:0] != 18'b0) && (ins.current.csr[12'h180][63:60] == 4'b1001));
+                bins sv48_mega_misaligned = {2'b01} iff ((ins.current.ppn_d[8:0]  !=  9'b0) && (ins.current.csr[12'h180][63:60] == 4'b1001));
             `endif
             `ifdef SV39
-                bins sv39_giga_misaligned = {[0:$]} iff ((ins.current.ppn_d[17:0] != 18'b0) && (ins.current.page_type_d == 2'b10) && (ins.current.csr[12'h180][63:60] == 4'b1000));
-                bins sv39_mega_misaligned = {[0:$]} iff ((ins.current.ppn_d[8:0]  !=  9'b0) && (ins.current.page_type_d == 2'b01) && (ins.current.csr[12'h180][63:60] == 4'b1000));
+                bins sv39_giga_misaligned = {2'b10} iff ((ins.current.ppn_d[17:0] != 18'b0) && (ins.current.csr[12'h180][63:60] == 4'b1000));
+                bins sv39_mega_misaligned = {2'b01} iff ((ins.current.ppn_d[8:0]  !=  9'b0) && (ins.current.csr[12'h180][63:60] == 4'b1000));
             `endif
         }
     `else
-        misaligned_PPN_d: coverpoint ins.current.ppn_d[9:0] {
-            bins mega_misaligned = {[0:$]} iff ((ins.current.ppn_d[9:0] != 10'b0) && (ins.current.page_type_d == 2'b01) && (ins.current.csr[12'h180][31] == 1'b1));
+        misaligned_PPN_d: coverpoint ins.current.page_type_d {
+            bins sv32_mega_misaligned = {2'b01} iff ((ins.current.ppn_d[9:0] != 10'b0) && (ins.current.csr[12'h180][31] == 1'b1));
         }
     `endif
 

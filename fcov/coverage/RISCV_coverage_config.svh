@@ -167,11 +167,8 @@
 `endif
 
 // Privileged extensions
-`ifdef RV64VM_COVERAGE
-  `include "RV64VM_coverage.svh"
-`endif
-`ifdef RV32VM_COVERAGE
-  `include "RV32VM_coverage.svh"
+`ifdef VM_COVERAGE
+  `include "VM_coverage.svh"
 `endif
 `ifdef RV64VM_PMP_COVERAGE
   `include "RV64VM_PMP_coverage.svh"
