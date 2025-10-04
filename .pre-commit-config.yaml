@@ -48,7 +48,7 @@ repos:
     rev: v1.5.5
     hooks:
       - id: forbid-tabs
-        exclude: '.*\.(diff|dump|patch|svg|S|old)|Makefile*'
+        exclude: '.*\.(diff|dump|patch|svg|mk)|Makefile*'
 
   # Prettier for json, yaml, markdown, etc. formatting
   - repo: https://github.com/rbubley/mirrors-prettier
