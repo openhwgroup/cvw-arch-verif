@@ -8,4 +8,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-RV64CBO_VM_exceptions_cg = new(); RV64CBO_VM_exceptions_cg.set_inst_name("obj_RV64CBO_VM_exceptions");
+VM_CBO_exceptions_cg = new(); VM_CBO_exceptions_cg.set_inst_name("obj_VM_CBO_exceptions");
