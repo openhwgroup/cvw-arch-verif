@@ -15,11 +15,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Setup UDB container
       - name: Checkout UDB submodule only
         run: git submodule update --init external/riscv-unified-db
-
-      - name: Setup UDB container
-        uses: ./external/riscv-unified-db/.github/actions/singularity-setup
+      - name: Setup apptainer
+        uses: eWaterCycle/setup-apptainer@v2.0.0
+      - name: Get UDB container from cache
+        id: cache-sif
+        uses: actions/cache@v4
+        with:
+          path: external/riscv-unified-db/.singularity/image.sif
+          key: ${{ hashFiles('external/riscv-unified-db/container.def', 'external/riscv-unified-db/bin/.container-tag') }}
+      - name: Get UDB gems and node files from cache
+        id: cache-bundle-npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            external/riscv-unified-db/.home/.gems
+            external/riscv-unified-db/node_modules
+          key: ${{ hashFiles('external/riscv-unified-db/Gemfile.lock') }}-${{ hashFiles('external/riscv-unified-db/package-lock.json') }}
+      - if: ${{ steps.cache-sif.outputs.cache-hit != 'true' }}
+        name: Build UDB container
+        run: ./external/riscv-unified-db/bin/build_container
+      - name: Setup UDB
+        run: ./external/riscv-unified-db/bin/setup
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
