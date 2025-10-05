@@ -78,7 +78,8 @@ def report_to_summary(report_path: Path, summary_path: Path) -> None:
     padding = 5
     headers = ["Covergroup", "Metric", "Goal", "Bins", "Status"]
     widths = [
-        max(len(header) + padding, max(len(entry[idx]) for entry in entries) + padding) for idx, header in enumerate(headers)
+        max(len(header) + padding, max(len(entry[idx]) for entry in entries) + padding)
+        for idx, header in enumerate(headers)
     ]
 
     header = "".join(f"{header:<{widths[idx]}}" for idx, header in enumerate(headers))
