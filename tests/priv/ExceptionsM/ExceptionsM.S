@@ -32,10 +32,10 @@ RVTEST_CODE_BEGIN
 
   RVTEST_SIGBASE( x3,signature_base)
 
-	.attribute unaligned_access, 0
-	.attribute stack_align, 16
-  	.align	2
-  	.option norvc
+  .attribute unaligned_access, 0
+  .attribute stack_align, 16
+  .align 2
+  .option norvc
 
 main:
 
