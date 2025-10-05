@@ -9,7 +9,7 @@ jobs:
     name: Generate and run tests
     runs-on: ubuntu-latest
     env:
-      DOCKER: 1
+      SINGULARITY: 1
 
     steps:
       - name: Checkout code
@@ -17,6 +17,9 @@ jobs:
 
       - name: Checkout UDB submodule only
         run: git submodule update --init external/riscv-unified-db
+
+      - name: Setup UDB container
+        uses: ./external/riscv-unified-db/.github/actions/singularity-setup
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
