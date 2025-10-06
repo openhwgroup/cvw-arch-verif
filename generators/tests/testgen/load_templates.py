@@ -1,5 +1,5 @@
 ##################################
-# templates.py
+# load_templates.py
 #
 # jcarlin@hmc.edu 5 Oct 2025
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
@@ -13,7 +13,7 @@ import importlib.resources
 import re
 
 
-def insertSetupTemplate(template_name: str, xlen: int, extension: str, signatureWords: int) -> str:
+def insert_setup_template(template_name: str, xlen: int, extension: str, signatureWords: int = 0) -> str:
     """Insert a header/footer template file into the test file."""
     ext_components, march = canonicalize_extension(extension, xlen)
     with importlib.resources.open_text("testgen.templates", template_name) as template_file:
@@ -29,7 +29,7 @@ def insertSetupTemplate(template_name: str, xlen: int, extension: str, signature
     return template
 
 
-def insertTestTemplate(template_name: str, xlen: int, sig_reg: int) -> tuple[str, int]:
+def insert_test_template(template_name: str, xlen: int, sig_reg: int) -> tuple[str, int]:
     """Insert a custom test template into the test file, handling signature pointer updates."""
     with importlib.resources.open_text("testgen.templates", template_name) as template_file:
         template = template_file.read()

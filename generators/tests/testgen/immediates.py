@@ -9,8 +9,10 @@
 Immediate value formatting for cvw-arch-verif test generation.
 """
 
+from random import randint
 
-def format_imm(
+
+def modify_imm(
     value: int,
     bits: int,
     *,  # require keyword arguments after this point
@@ -55,8 +57,21 @@ def format_imm(
 
     # Format output
     if hex_format:
-        # if value < 0:
-        #     value = value + (2**bits)
-        return hex(value)
+        if value < 0:
+            value = value + (2**bits)
+        return value
     else:
-        return str(value)
+        return value
+
+def gen_random_imm(bits: int, signed: bool = False) -> int:
+    """
+    Generate a random immediate value within the specified bit width.
+    """
+    if signed:
+        min_val = -(2 ** (bits - 1))
+        max_val = (2 ** (bits - 1)) - 1
+    else:
+        min_val = 0
+        max_val = (2 ** bits) - 1
+
+    return randint(min_val, max_val)

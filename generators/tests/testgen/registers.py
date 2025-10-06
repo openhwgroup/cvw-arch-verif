@@ -63,7 +63,7 @@ class IntegerRegisterFile(RegisterFile):
         # Default special registers
         self._sig_reg = 3
         self._link_reg = 4
-        self.consume_registers([self._sig_reg, self._link_reg])
+        super().consume_registers([self._sig_reg, self._link_reg])
 
     # Access to special registers
     @property
@@ -102,11 +102,11 @@ class IntegerRegisterFile(RegisterFile):
         # Reallocate special registers to new locations
         if sig_conflict:
             self._sig_reg = self.get_registers(1)
-            asm_code += f"    mv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
+            asm_code += f"mv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:
             self._link_reg = self.get_registers(1)
-            asm_code += f"    mv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
+            asm_code += f"mv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
 
         return asm_code
 
