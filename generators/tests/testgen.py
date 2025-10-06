@@ -19,6 +19,16 @@ import re
 import sys
 from random import randint, seed
 
+# Import edge value definitions
+from edges import (
+    FLOAT_EDGES,
+    IMMEDIATE_EDGES,
+    INTEGER_EDGES,
+    MEMORY_EDGES,
+    get_general_edges,
+    get_orcb_edges,
+)
+
 # Ignore Unpacked variable is never used until there is time for a full refactor
 # ruff: noqa: RUF059
 
@@ -1609,7 +1619,7 @@ def make_imm_edges_branch(test, xlen):
 
 def make_imm_edges_jalr(test, xlen):
   [rs1, rs2, rd, rs1val, rs2val, dummy, rdval] = randomize(test)
-  for immval in edges_imm_12bit:
+  for immval in IMMEDIATE_EDGES.imm_12bit:
     if (immval == 0):
       continue
     lines = "\n# Testcase cp_imm_edges jalr " + str(immval) + " bin\n"
@@ -1827,34 +1837,36 @@ def make_frm(test, xlen):
   writeCovVector(desc, rs1, rs2, rd, rs1val, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3, frm=True)
 
 def make_cr_fs1_fs2_edges(test, xlen, frm = False):
-  edges = fedges
-  if test[-1] == "h":
-    edges = fedgesH
-  if test[-1] == "d":
-    edges = fedgesD
-  for v1 in edges:
-    for v2 in edges:
-      # select distinct fs1 and fs2
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-      while rs1 == rs2:
-        [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-      desc = "cr_fs1_fs2_edges (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
+    if test[-1] == "d":
+        edges = FLOAT_EDGES.double
+    elif test[-1] == "h":
+        edges = FLOAT_EDGES.half
+    else:
+        edges = FLOAT_EDGES.single
+    for v1 in edges:
+        for v2 in edges:
+            # select distinct fs1 and fs2
+            [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+            while rs1 == rs2:
+                [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+            desc = "cr_fs1_fs2_edges (Test source fs1 = " + hex(v1) + " fs2 = " + hex(v2) + ")"
 
-      #f.write("fsflagsi 0b00000 # clear all fflags\n")
-      writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
+            #f.write("fsflagsi 0b00000 # clear all fflags\n")
+            writeCovVector(desc, rs1, rs2, rd, v1, v2, immval, rdval, test, xlen, rs3=rs3, rs3val=rs3val, frm=frm)
 
 def make_cr_fs1_fs3_edges(test, xlen, frm = False):
-  edges = fedges
-  if test[-1] == "h":
-    edges = fedgesH
-  if test[-1] == "d":
-    edges = fedgesD
-  for v1 in edges:
-    for v2 in edges:
-      # select distinct fs1 and fs3
-      [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
-      desc = "cr_fs1_fs3_edges (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
-      writeCovVector(desc, rs1, rs2, rd, v1, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v2, frm=frm)
+    if test[-1] == "d":
+        edges = FLOAT_EDGES.double
+    elif test[-1] == "h":
+        edges = FLOAT_EDGES.half
+    else:
+        edges = FLOAT_EDGES.single
+    for v1 in edges:
+        for v2 in edges:
+            # select distinct fs1 and fs3
+            [rs1, rs2, rs3, rd, rs1val, rs2val, rs3val, immval, rdval] = randomize(test, rs3=True)
+            desc = "cr_fs1_fs3_edges (Test source fs1 = " + hex(v1) + " fs3 = " + hex(v2) + ")"
+            writeCovVector(desc, rs1, rs2, rd, v1, rs2val, immval, rdval, test, xlen, rs3=rs3, rs3val=v2, frm=frm)
 
 def make_fs1_edges(test, xlen, fedges, frm = False):
   for v in fedges:
@@ -1976,23 +1988,23 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_fs2p"):
       make_fs2(test, xlen, range(8, 16))
     elif (coverpoint == "cp_fs1_edges"):
-      make_fs1_edges(test, xlen, fedges)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.single)
     elif (coverpoint == "cp_fs2_edges"):
-      make_fs2_edges(test, xlen, fedges)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.single)
     elif (coverpoint == "cp_fs3_edges"):
-      make_fs3_edges(test, xlen, fedges)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.single)
     elif (coverpoint == "cp_fs1_edges_D"):
-      make_fs1_edges(test, xlen, fedgesD)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.double)
     elif (coverpoint == "cp_fs2_edges_D"):
-      make_fs2_edges(test, xlen, fedgesD)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.double)
     elif (coverpoint == "cp_fs3_edges_D"):
-      make_fs3_edges(test, xlen, fedgesD)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.double)
     elif (coverpoint == "cp_fs1_edges_H"):
-      make_fs1_edges(test, xlen, fedgesH)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.half)
     elif (coverpoint == "cp_fs2_edges_H"):
-      make_fs2_edges(test, xlen, fedgesH)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.half)
     elif (coverpoint == "cp_fs3_edges_H"):
-      make_fs3_edges(test, xlen, fedgesH)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.half)
     # elif (coverpoint == "cp_fs1_edges_Q"):
     #   make_fs1_edges(test, xlen, fedgesQ)
     # elif (coverpoint == "cp_fs2_edges_Q"):
@@ -2041,35 +2053,35 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rs2_edges(test, xlen)
     elif (coverpoint == "cp_rd_edges_slli"):
       if (xlen == 32):
-        make_rd_edges(test, xlen, c_slli_32_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_slli_32)
       else:
-        make_rd_edges(test, xlen, c_slli_64_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_slli_64)
     elif (coverpoint == "cp_rd_edges_srli"):
       if (xlen == 32):
-        make_rd_edges(test, xlen, c_srli_32_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_srli_32)
       else:
-        make_rd_edges(test, xlen, c_srli_64_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_srli_64)
     elif (coverpoint == "cp_rd_edges_srai"):
       if (xlen == 32):
-        make_rd_edges(test, xlen, c_srai_32_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_srai_32)
       else:
-        make_rd_edges(test, xlen, c_srai_64_edges)
+        make_rd_edges(test, xlen, INTEGER_EDGES.c_srai_64)
     elif (coverpoint == "cp_rd_edges"):
       make_rd_edges(test, xlen, edges)
     elif (coverpoint == "cp_rd_edges_clui"):
-      make_rd_edges(test, xlen, edges_6bit)
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_6)
     elif (coverpoint == "cp_rd_edges_lw" or coverpoint == "cp_rd_edges_lwu"):
-      make_rd_edges(test, xlen, edges_32bit)
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_32)
     elif (coverpoint == "cp_rd_edges_lh" or coverpoint == "cp_rd_edges_lhu"):
-      make_rd_edges(test, xlen, edges_16bit)           # Make rd edges for lh and lhu for both RV32I & RV64I
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_16)           # Make rd edges for lh and lhu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_edges_lb" or coverpoint == "cp_rd_edges_lbu"):
-      make_rd_edges(test, xlen, edges_8bits)            # Make rd edges for lb and lbu for both RV32I & RV64I
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_8)            # Make rd edges for lb and lbu for both RV32I & RV64I
     elif (coverpoint == "cp_rd_edges_6bit"):
-      make_rd_edges(test, xlen, edges_6bit)
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_6)
     elif (coverpoint == "cp_rd_edges_32bit"):
-      make_rd_edges(test, xlen, edges_32bit)
+      make_rd_edges(test, xlen, INTEGER_EDGES.bits_32)
     elif (coverpoint == "cp_rd_edges_lui"):
-      make_rd_edges_lui(test, xlen, edges_20bit)
+      make_rd_edges_lui(test, xlen, INTEGER_EDGES.bits_20)
     elif (coverpoint == "cmp_rd_rs1_eqval"):
       pass # already covered by cr_rs1_rs2_edges
     elif (coverpoint == "cmp_rd_rs2_eqval"):
@@ -2084,11 +2096,11 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       if (test == "jalr"):
           make_imm_edges_jalr(test, xlen)
       else:
-        make_cp_imm_edges(test, xlen, edges_imm_12bit)
+        make_cp_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_12bit)
     elif (coverpoint == "cp_imm_edges_20bit"):
-      make_cp_imm_edges(test, xlen, edges_imm_20bit)
+      make_cp_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_20bit)
     elif (coverpoint == "cp_imm_edges_6bit"):
-      make_cp_imm_edges(test, xlen, edges_imm_6bit)
+      make_cp_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_6bit)
     elif (coverpoint == "cp_imm_edges_c"):
       pass # handled by cr_rs1_imm_edges
       # make_cp_imm_edges(test, xlen, edges_imm_c)
@@ -2099,19 +2111,19 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_imm_edges_c_jal"):
         make_imm_edges_jal(test,xlen)
     elif (coverpoint == "cr_rs1_imm_edges"):
-      make_cr_rs1_imm_edges(test, xlen, edges_imm_12bit)
+      make_cr_rs1_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_12bit)
     elif (coverpoint == "cr_rs1_imm_edges_6bit"):
-      make_cr_rs1_imm_edges(test, xlen, edges_imm_6bit)
+      make_cr_rs1_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_6bit)
     elif (coverpoint == "cr_rs1_imm_edges_6bit_n0"):
-      make_cr_rs1_imm_edges(test, xlen, edges_imm_6bit[1:]) # exclude imm=0
+      make_cr_rs1_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_6bit[1:]) # exclude imm=0
     elif (coverpoint == "cp_imm_edges_6bit_n0"):
       pass # only used for cross product
     elif (coverpoint == "cr_rs1_imm_edges_c"):
       make_cr_rs1_imm_edges(test, xlen, edges_imm_c)
     elif (coverpoint == "cr_rs1_imm_edges_uimm"):
-      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimm if xlen==64 else edges_imm_uimmw) # more unsigned immediates for RV64
+      make_cr_rs1_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_uimm if xlen==64 else IMMEDIATE_EDGES.imm_uimmw) # more unsigned immediates for RV64
     elif (coverpoint == "cr_rs1_imm_edges_uimmw"):
-      make_cr_rs1_imm_edges(test, xlen, edges_imm_uimmw)
+      make_cr_rs1_imm_edges(test, xlen, IMMEDIATE_EDGES.imm_uimmw)
     elif (coverpoint in ["cp_imm_edges_uimm", "cp_imm_edges_uimmw"]):
       pass  # covered by cr_rs1_imm_edges_uimm
     elif (coverpoint == "cr_rs1_rs2"):
@@ -2128,7 +2140,7 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint == "cp_imm_sign_clui"):
       pass
     elif (coverpoint == "cp_rd_edges_sraiw"):
-      make_rd_edges(test,xlen,edges_sraiw)
+      make_rd_edges(test,xlen,INTEGER_EDGES.sraiw)
     elif (coverpoint == "cp_mem_hazard"):
       make_mem_hazard(test, xlen)
     elif (coverpoint == "cp_f_mem_hazard"):
@@ -2172,11 +2184,11 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint in ["cp_frm_2", "cp_frm_3", "cp_frm_4"]):
       make_frm(test, xlen)
     elif (coverpoint == "cr_fs1_edges_frm"):
-      make_fs1_edges(test, xlen, fedges, frm=True)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.single, frm=True)
     elif (coverpoint == "cr_fs1_edges_frm_D"):
-      make_fs1_edges(test, xlen, fedgesD, frm=True)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.double, frm=True)
     elif (coverpoint == "cr_fs1_edges_frm_H"):
-      make_fs1_edges(test, xlen, fedgesH, frm=True)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.half, frm=True)
     elif (coverpoint.startswith("cp_csr_fflags")):
       pass # doesn't require designated tests
     elif (coverpoint == "cp_csr_frm"):
@@ -2187,39 +2199,39 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
       make_rs1(test, xlen, range(maxreg+1), fli=True)
     elif (coverpoint == "cp_fs1_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs1_edges(test, xlen, badNB_edges_D_S)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_single)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs2_edges(test, xlen, badNB_edges_D_S)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_single)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_D_S"):
       NaNBox_tests = "D"
-      make_fs3_edges(test, xlen, badNB_edges_D_S)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_single)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs1_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs1_edges(test, xlen, badNB_edges_D_H)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs2_edges(test, xlen, badNB_edges_D_H)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_D_H"):
       NaNBox_tests = "D"
-      make_fs3_edges(test, xlen, badNB_edges_D_H)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.bad_NaN_double_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs1_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs1_edges(test, xlen, badNB_edges_S_H)
+      make_fs1_edges(test, xlen, FLOAT_EDGES.bad_NaN_single_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs2_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs2_edges(test, xlen, badNB_edges_S_H)
+      make_fs2_edges(test, xlen, FLOAT_EDGES.bad_NaN_single_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_fs3_badNB_S_H"):
       NaNBox_tests = "S"
-      make_fs3_edges(test, xlen, badNB_edges_S_H)
+      make_fs3_edges(test, xlen, FLOAT_EDGES.bad_NaN_single_half)
       NaNBox_tests = False
     elif (coverpoint == "cp_imm5_edges"):
       make_imm5_edges(test, xlen)
@@ -2238,13 +2250,13 @@ def write_tests(coverpoints, test, xlen=None, vlen=None, sew=None, vlmax=None, v
     elif (coverpoint in ["cp_align_byte", "cp_align_word", "cp_align_hword"]):
       make_custom(test, xlen)
     elif (coverpoint in ["cp_memval_byte"]):
-      make_memval(test, xlen, memval_byte)
+      make_memval(test, xlen, MEMORY_EDGES.byte)
     elif (coverpoint in ["cp_memval_hword"]):
-      make_memval(test, xlen, memval_hword)
+      make_memval(test, xlen, MEMORY_EDGES.halfword)
     elif (coverpoint in ["cp_memval_word"]):
-      make_memval(test, xlen, memval_word)
+      make_memval(test, xlen, MEMORY_EDGES.word)
     elif (coverpoint in ["cp_memval_double"]):
-      make_memval(test, xlen, memval_double)
+      make_memval(test, xlen, MEMORY_EDGES.doubleword)
     else:
       print("Warning: " + coverpoint + " not implemented yet for " + test)
 
@@ -2503,185 +2515,13 @@ if __name__ == '__main__':
   author = "David_Harris@hmc.edu"
   xlens = [32, 64]
   numrand = 3
-  edges = []
-  fedges = []
 
   # setup
   seed(0) # make tests reproducible
-  edges_imm_12bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1023, 1024, 1795, 2047, -2048, -2047, -2, -1]
-  edges_imm_20bit = [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524286, 524287, 524288, 524289, 1048574, 1048575]
-  edges_16bit = [0, 1, 2, 2**(15), 2**(15)+1,2**(15)-1, 2**(15)-2, 2**(16)-1, 2**(16)-2,
-                0b0101010101010101, 0b1010101010101010, 0b0101101110111100, 0b1101101110111100]
-  edges_8bits = [0, 1, 2, 2**(7), 2**(7)+1,2**(7)-1, 2**(7)-2, 2**(8)-1, 2**(8)-2,
-                    0b01010101, 0b10101010, 0b01011011, 0b11011011]
-  edges_32bit = [0, 1, 2, 2**(31), 2**(31)+1, 2**(31)-1, 2**(31)-2, 2**32-1, 2**32-2,
-                    0b10101010101010101010101010101010, 0b01010101010101010101010101010101,
-                    0b01100011101011101000011011110111, 0b11100011101011101000011011110111]
-  edges_6bit = [0, 1, 2, 2**(5), 2**(5)+1, 2**(5)-1, 2**(5)-2, 2**(6)-1, 2**(6)-2,
-                    0b101010, 0b010101, 0b010110]
-  memval_byte = [0, 1, 0x7f, 0x80, 0xff]
-  memval_hword = [0, 1, 0x7FFF, 0x8000, 0xFFFF]
-  memval_word = [0, 1, 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF]
-  memval_double = [0, 1, 0x7FFFFFFFFFFFFFFF, 0x8000000000000000, 0xFFFFFFFFFFFFFFFF]
-  edges_imm_6bit = [0, 1, 2, 3, 4, 8, 16, 30, 31, -32, -31, -2, -1]
-  edges_imm_32_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31]
-  edges_imm_64_c = [1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63]
-  edges_imm_uimmw = [0, 1, 19, 30, 31]
-  edges_imm_uimm = [0, 1, 19, 30, 31, 32, 33, 45, 62, 63]
-  edges_20bit = [0,0b11111111111111111111000000000000,0b10000000000000000000000000000000,
-                    0b00000000000000000001000000000000,0b01001010111000100000000000000000]
-  c_slli_32_edges  = [0,1,0b01000000000000000000000000000000,0b00111111111111111111111111111111,
-                        0b01111111111111111111111111111111,0b01010101010101010101010101010101,
-                        0b00101101110111100100010000111011]
-  c_slli_64_edges  = [0x0000000000000000,0x0000000000000001,0x4000000000000000,0x0000000007fffffff,0x000000080000000,
-                        0x3FFFFFFFFFFFFFFF,0x7FFFFFFFFFFFFFFF,0x5555555555555555,0x2DDE443BB1D7437B]
-  c_srli_32_edges  = [0,2,4,0b11111111111111111111111111111110, 0b11111111111111111111111111111100,
-                        0b10101010101010101010101010101010,0b10110111011110010001000011101110]
-  c_srli_64_edges =  [0x000000000000000,0x00000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
-                        0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0xaaaaaaaaaaaaaaaa,
-                        0xb77910eec75d0dee]
-  c_srai_32_edges  = [0,2,4,0b11111111111111111111111111111110, 0b00110111011110010001000011101110]
-  c_srai_64_edges  = [0x0000000000000000,0x0000000000000002,0x0000000000000004,0x00000001fffffffe,0x00000001fffffffc,
-                        0x0000000200000000,0x0000000200000002,0xfffffffffffffffe,0xfffffffffffffffc,0x377910eec75d0dee]
-
-
-  fedges =            [0x00000000, # 0
-                            0x80000000, # -0
-                            0x3f800000, # 1.0
-                            0xbf800000, # -1.0
-                            0x3fc00000, # 1.5
-                            0xbfc00000, # -1.5
-                            0x40000000,  # 2.0
-                            0xc0000000,  # -2.0
-                            0x00800000,  # smallest positive normalized
-                            0x80800000,  # smallest negative normalized
-                            0x7f7fffff,  # most positive
-                            0xff7fffff,  # most negative
-                            0x007fffff,  # largest positive subnorm
-                            0x807fffff,  # largest negative subnorm
-                            0x00400000,  # positive subnorm with leading 1
-                            0x80400000,  # negative subnorm with leading 1
-                            0x00000001,  # smallest positive subnorm
-                            0x80000001,  # smallest negative subnorm
-                            0x7f800000,  # positive infinity
-                            0xff800000,  # negative infinity
-                            0x7fc00000,  # canonical quiet NaN
-                            0x7fffffff,  # noncanonical quiet NaN
-                            0xffffffff,  # noncanonical quiet NaN with sign bit set
-                            0x7f800001,  # signaling NaN with lsb set
-                            0x7fbfffff,  # signaling NaN with all mantissa bits set
-                            0xffbfffff,  # signaling Nan with all mantissa bits and sign bit set
-                            0x7ef8654f,  # random positive 1.65087e+38
-                            0x813d9ab0]  # random negative -3.48248e-38
-
-  fedgesD = [0x0000000000000000, # 0.0
-              0x8000000000000000,  # -0.0
-              0x3FF0000000000000,  # 1.0
-              0xBFF0000000000000,  # -1.0
-              0x3FF8000000000000,  # 1.5
-              0xBFF8000000000000,  #-1.5
-              0x4000000000000000,  # 2.0
-              0xc000000000000000,  # -2.0
-              0x0010000000000000,  # smallest positive normalized
-              0x8010000000000000,  # smallest negative normalized
-              0x7FEFFFFFFFFFFFFF,  # most positive normalized
-              0xFFEFFFFFFFFFFFFF,  # most negative normalized
-              0x000FFFFFFFFFFFFF,  # largest positive subnorm
-              0x800FFFFFFFFFFFFF,  # largest negative subnorm
-              0x0008000000000000,  # mid positive subnorm
-              0x8008000000000000,  # mid negative subnorm
-              0x0000000000000001,  # smallest positive subnorm
-              0x8000000000000001,  # smallest negative subnorm
-              0x7FF0000000000000,  # positive infinity
-              0xFFF0000000000000,  # negative infinity
-              0x7FF8000000000000,  # canonical quiet NaN
-              0x7FFFFFFFFFFFFFFF,  # noncanonical quiet NaN
-              0xFFF8000000000000,  # noncanonical quiet NaN with sign bit set
-              0x7FF0000000000001,  # signaling NaN with lsb set
-              0x7FF7FFFFFFFFFFFF,  # signaling NaN with all mantissa bits set
-              0xFFF0000000000001,  # signaling NaN with lsb and sign bits set
-              0x5A392534A57711AD, # 4.25535e126 random positive
-              0xA6E895993737426C] # -2.97516e-121 random negative
-
-  fedgesH = [0x0000, # 0.0
-                0x8000, # -0.0
-                0x3C00, # 1.0
-                0xBC00, # -1.0
-                0x3E00, # 1.5
-                0xBE00, # -1.5
-                0x4000, # 2.0
-                0xC000, # -2.0
-                0x0400, # smallest normalized
-                0x8400, # smallest negative normalized
-                0x7BFF, # most positive normalized
-                0xFBFF, #  most negative normalized
-                0x03FF, # largest positive subnorm
-                0x83FF,  # largest negative subnorm
-                0x0200,  # positive subnorm with leading 1
-                0x8200,  # negative subnorm with leading 1
-                0x0001, # smallest positive subnorm
-                0x8001,  # smallest negative subnorm
-                0x7C00,  # positive infinity
-                0xFC00,  # negative infinity
-                0x7E00,  # canonical quiet NaN
-                0x7FFF,  # noncanonical quiet NaN
-                0xFE00,  # noncanonical quiet NaN with sign bit set
-                0x7C01, # signaling NaN with lsb set
-                0x7DFF,  # signaling NaN with all mantissa bits set
-                0xFC01,  # signaling NaN with lsb and sign bits set
-                0x58B4,  # 150.5 random positive
-                0xC93A]  # -10.4531 random negative
-
-  # fedgesQ = [] # TODO: Fill out quad precision F edges
-
-  badNB_edges_D_S =  [0xffffefff00000000,
-                        0xaaaaaaaa80000000,
-                        0x000000003f800000,
-                        0xdeadbeefbf800000,
-                        0xa1b2c3d400800000,
-                        0xffffffef80800000,
-                        0xfeffffef7f7fffff,
-                        0x7e7e7e7eff7fffff,
-                        0x7fffffff7f800000,
-                        0xfffffffeff800000,
-                        0xfeedbee57fc00000,
-                        0xffc0deff7fffffff,
-                        0xfeffffff7f800001,
-                        0xfffffeff7fbfffff]
-
-  badNB_edges_D_H =  [0xffffffff00000000,
-                        0xfffffffffffe8000,
-                        0x7fffffffffff3C00,
-                        0xfeedbee5beefBC00,
-                        0xffffffefffff0400,
-                        0x00000000ffff8400,
-                        0xefffffffffff7BFF,
-                        0xc0dec0dec0deFBFF,
-                        0xa83ef1cc4f1a7C00,
-                        0xffffffff0fffFC00,
-                        0xfffeffffffff7E00,
-                        0xffffffefffff7FFF,
-                        0xa1b2c3d4e5f67C01,
-                        0xfffffffcffff7DFF]
-
-  badNB_edges_S_H =  [0x00000000,
-                        0xfffe8000,
-                        0x7fff3C00,
-                        0xbeefBC00,
-                        0xfeff0400,
-                        0x0fff8400,
-                        0xefff7BFF,
-                        0xc0deFBFF,
-                        0x4f1a7C00,
-                        0x0fffFC00,
-                        0xffef7E00,
-                        0xfeef7FFF,
-                        0xa1b27C01,
-                        0x4fd77DFF]
 
 # generate files for each test
   for xlen in xlens:
-    edges_imm_c = edges_imm_32_c if xlen == 32 else edges_imm_64_c # 32-bit or 64-bit immediate edges for compressed shifts
+    edges_imm_c = IMMEDIATE_EDGES.imm_32_c if xlen == 32 else IMMEDIATE_EDGES.imm_64_c # 32-bit or 64-bit immediate edges for compressed shifts
     # for E_ext in [False, True]:
     for E_ext in [False]: # for testing only ***
       if (E_ext):
@@ -2718,29 +2558,9 @@ if __name__ == '__main__':
           flen = 32
         formatstrlenFP = str(int(flen/4))
         formatstrFP = "0x{:0" + formatstrlenFP + "x}" # format as flen-bit hexadecimal number
-        edges = [0, 1, 2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2, 2**xlen-1, 2**xlen-2]
-        # redgesv = [0, 1, 2, 2**xlen-1, 2**xlen-2, 2**(xlen-1), 2**(xlen-1)+1, 2**(xlen-1)-1, 2**(xlen-1)-2]
-        if (xlen == 32):
-          edges = edges + [0b01011011101111001000100001110010, 0b10101010101010101010101010101010, 0b01010101010101010101010101010101]
-        else:
-          edges = edges + [0b0101101110111100100010000111011101100011101011101000011011110010, # random
-                              0b1010101010101010101010101010101010101010101010101010101010101010, # walking odd
-                              0b0101010101010101010101010101010101010101010101010101010101010101, # walking even
-                              0b0000000000000000000000000000000011111111111111111111111111111111, # Wmax
-                              0b0000000000000000000000000000000011111111111111111111111111111110, # Wmaxm1
-                              0b0000000000000000000000000000000100000000000000000000000000000000, # Wmaxp1
-                              0b0000000000000000000000000000000100000000000000000000000000000001] # Wmaxp2
 
-          edges_sraiw = [0b0000000000000000000000000000000000000000000000000000000000000000,
-                          0b0000000000000000000000000000000000000000000000000000000000000001,
-                          0b1111111111111111111111111111111111111111111111111111111111111111,
-                          0b0000000000000000000000000000000001111111111111111111111111111111,
-                          0b1111111111111111111111111111111110000000000000000000000000000000]
-
-        if (xlen == 32):
-          edges_orcb = edges + [0x01020408, 0x10204080, 0x02040801, 0x20408010]
-        else: # xlen = 64
-          edges_orcb = edges + [0x1020408001020408, 0x2040801002040801, 0x4080102004080102, 0x8010204008010204]
+        edges = get_general_edges(xlen)
+        edges_orcb = get_orcb_edges(xlen)
 
         # global NaNBox_tests
         NaNBox_tests = False
