@@ -74,7 +74,7 @@ class IntegerRegisterFile(RegisterFile):
     def link_reg(self):
         return self._link_reg
 
-    def consume_registers(self, regs: list[int]) -> str | None:
+    def consume_registers(self, regs: list[int]) -> str:
         """Mark registers as used/unavailable, handling special register conflicts.
 
         If any of the requested registers conflict with special registers (sig_reg, link_reg),
