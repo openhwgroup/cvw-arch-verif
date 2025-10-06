@@ -34,6 +34,7 @@ def gen_compile_targets(
     elf_dir = base_dir / "elfs"
     sig_elf = build_dir / test_name.with_suffix(".sig.elf")
     sig_file = build_dir / test_name.with_suffix(".sig")
+    result_file = build_dir / test_name.with_suffix(".results")
     sig_log_file = build_dir / test_name.with_suffix(".sig.log")
     final_elf = elf_dir / test_name.with_suffix(".elf")
 
@@ -60,14 +61,17 @@ def gen_compile_targets(
         f"\t\t{ref_model_sig_flags} \\\n"
         f"\t\t{sig_elf} \\\n"
         f"\t\t&> {sig_log_file}\n"
+        f"\n"
+        f"# Modify sig file for inclusion in assembly\n"
+        f"{result_file}: {sig_file}\n"
         f"\tuv run sig_modify {sig_file} {xlen}\n"
         f"\n"
         "# Final ELF target\n"
-        f"{final_elf}: {sig_elf} {sig_file} | {final_elf.parent}\n"
+        f"{final_elf}: {sig_elf} {result_file} | {final_elf.parent}\n"
         f"\t{config.compiler_string} $(CFLAGS) \\\n"
         f"\t\t-o {final_elf} \\\n"
         f"\t\t-march={march} -mabi={mabi} -DSELFCHECK -DXLEN={xlen} -DFLEN={flen} \\\n"
-        f'\t\t-DSIGNATURE_FILE=\\"{sig_file}\\" \\\n'
+        f'\t\t-DSIGNATURE_FILE=\\"{result_file}\\" \\\n'
         f"\t\t{test_path}\n"
         # Objdump
         f"{
