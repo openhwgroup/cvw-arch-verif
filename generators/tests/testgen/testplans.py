@@ -1,0 +1,46 @@
+##################################
+# testplans.py
+#
+# jcarlin@hmc.edu 5 October 2025
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+##################################
+
+"""
+Read testplans for cvw-arch-verif test generation.
+"""
+
+import csv
+from pathlib import Path
+
+
+def get_extensions(testplan_dir: Path) -> list[str]:
+    """Get the list of extensions to generate tests for"""
+    extensions = []
+    for testplan in testplan_dir.glob("*.csv"):
+        extension = testplan.stem
+        if ('V' not in extension and 'Zv' not in extension) or extension in ['ZfaZvfh']: # TODO: Remove once vector testgen is merged
+            extensions.append(extension)
+    return extensions
+
+def read_testplan(testplan_path: Path) -> dict[str,dict[str, str| list[str]]]:
+    """Read a testplan and return a dictionary of instructions and their associated coverpoints"""
+    instructions: dict[str,dict[str, str| list[str]]] = {}
+    with testplan_path.open() as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            instr = row["Instruction"]
+            instr_type = row["Type"]
+            rv32 = row["RV32"].strip().lower() == 'x'
+            rv64 = row["RV64"].strip().lower() == 'x'
+            del row["Instruction"]
+            del row["Type"]
+            del row["RV32"]
+            del row["RV64"]
+            coverpoints = []
+            for key, value in row.items():
+                if (type(value) is str and value != ''):
+                    if (value != "x"): # for special entries, append the entry name (e.g. cp_rd_edges becomes cp_rd_edges_lui)
+                        key = key + "_" + value
+                    coverpoints.append(key)
+            instructions[instr] = {"type": instr_type, "rv32": rv32, "rv64": rv64, "coverpoints": coverpoints}
+    return instructions
