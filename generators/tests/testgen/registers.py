@@ -30,12 +30,12 @@ class RegisterFile:
     def __repr__(self):
         return f"Register File with the following registers available: {self.reg_list}"
 
-    def get_registers(self, num_regs: int) -> list[int]:
+    def get_registers(self, num_regs: int) -> list[int] | int:
         """Get a specified number of unique registers from the register file."""
         selected_regs = select_registers(num_regs, self.reg_list)
         for reg in selected_regs:
             self.reg_list.remove(reg)
-        return selected_regs
+        return selected_regs if num_regs > 1 else selected_regs[0]
 
     def return_registers(self, regs: list[int]) -> None:
         """Mark registers as available again."""
@@ -101,11 +101,11 @@ class IntegerRegisterFile(RegisterFile):
 
         # Reallocate special registers to new locations
         if sig_conflict:
-            self._sig_reg = self.get_registers(1)[0]
+            self._sig_reg = self.get_registers(1)
             asm_code += f"    mv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:
-            self._link_reg = self.get_registers(1)[0]
+            self._link_reg = self.get_registers(1)
             asm_code += f"    mv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
 
         return asm_code
