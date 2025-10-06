@@ -30,9 +30,16 @@ class RegisterFile:
     def __repr__(self):
         return f"Register File with the following registers available: {self.reg_list}"
 
-    def get_registers(self, num_regs: int) -> list[int] | int:
+    def get_registers(self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> list[int] | int:
         """Get a specified number of unique registers from the register file."""
-        selected_regs = select_registers(num_regs, self.reg_list)
+        # Handle exclusions and range limitations
+        if exclude_reg is None:
+            exclude_reg = []
+        if reg_range is not None:
+            exclude_reg += [reg for reg in self.reg_list if reg not in reg_range]
+        available_regs = [reg for reg in self.reg_list if reg not in exclude_reg]
+        # Select random registers and remove them from the available list
+        selected_regs = select_registers(num_regs, available_regs)
         for reg in selected_regs:
             self.reg_list.remove(reg)
         return selected_regs if num_regs > 1 else selected_regs[0]
@@ -55,6 +62,9 @@ class RegisterFile:
 
 class IntegerRegisterFile(RegisterFile):
     """Class to represent an integer register file."""
+
+    # Limit legal link registers to simplify failure handler
+    link_regs: tuple[int] = (4, 14)
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -105,7 +115,8 @@ class IntegerRegisterFile(RegisterFile):
             asm_code += f"mv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:
-            self._link_reg = self.get_registers(1)
+            # Restrict link register to specific set
+            self._link_reg = self.get_registers(1, reg_range=list(self.link_regs))
             asm_code += f"mv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
 
         return asm_code
