@@ -16,7 +16,7 @@ dev = [
 ]
 
 [project.scripts]
-testgen = "testgen.testgen2:main"
+testgen = "testgen.testgen:main"
 
 ##### BUILD #####
 

@@ -30,6 +30,10 @@ class RegisterFile:
     def __repr__(self):
         return f"Register File with the following registers available: {self.reg_list}"
 
+    @property
+    def reg_count(self):
+        return len(self.reg_list)
+
     def get_registers(self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> list[int] | int:
         """Get a specified number of unique registers from the register file."""
         # Handle exclusions and range limitations
@@ -64,7 +68,7 @@ class IntegerRegisterFile(RegisterFile):
     """Class to represent an integer register file."""
 
     # Limit legal link registers to simplify failure handler
-    link_regs: tuple[int] = (4, 14)
+    link_regs: tuple[int] = (4, 7, 14)
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -112,12 +116,12 @@ class IntegerRegisterFile(RegisterFile):
         # Reallocate special registers to new locations
         if sig_conflict:
             self._sig_reg = self.get_registers(1)
-            asm_code += f"mv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
+            asm_code += f"\nmv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:
             # Restrict link register to specific set
             self._link_reg = self.get_registers(1, reg_range=list(self.link_regs))
-            asm_code += f"mv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
+            asm_code += f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
 
         return asm_code
 

@@ -252,27 +252,24 @@
 infloop:    j write_tohost
 
 
-#ifdef LOCKSTEP
-    #define RVTEST_SIGUPD(_BR, _R, ...) \
-        nop;
-#elifdef SELFCHECK
-    #define RVTEST_SIGUPD(_BR, _R, ...)                \
+#ifdef SELFCHECK
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1        ;\
           .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))  ;\
         .endif            ;\
-        CHK_OFFSET(_BR, REGWIDTH,0)        ;\
-        LREG x4,offset(_BR)          ;\
-        beq x4, _R, 1f          ;\
+        CHK_OFFSET(_SIG_BASE, REGWIDTH,0)        ;\
+        LREG _LINK_REG,offset(_SIG_BASE)          ;\
+        beq _LINK_REG, _R, 1f          ;\
         j  infloop       ;\
         1:      nop     ;\
         .set offset,offset+REGWIDTH
 #else
-    #define RVTEST_SIGUPD(_BR, _R, ...)                \
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1        ;\
           .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))  ;\
         .endif            ;\
-        CHK_OFFSET(_BR, REGWIDTH,0)        ;\
-        SREG _R,offset(_BR)          ;\
+        CHK_OFFSET(_SIG_BASE, REGWIDTH,0)        ;\
+        SREG _R,offset(_SIG_BASE)          ;\
         .set offset,offset+REGWIDTH
 #endif
 /* RVTEST_SIGUPD_F(basereg, sigreg,flagreg,newoff)       */
