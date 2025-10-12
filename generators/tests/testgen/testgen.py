@@ -52,11 +52,12 @@ def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
                 instructions = read_testplan(testplan_dir / f"{extension}.csv")
                 for instr_name, instr_data in sorted(instructions.items()):
                     # Skip instructions not valid for this xlen
-                    if (xlen == 32 and not instr_data["rv32"]) or (xlen == 64 and not instr_data["rv64"]):
+                    if (xlen == 32 and not instr_data.rv32) or (xlen == 64 and not instr_data.rv64):
                         continue
                     test_data = TestData(xlen, flen, E_ext)
                     test_file = output_dir / f"{extension}-{instr_name}.S"
                     test_file_relative = str(test_file.relative_to(output_test_dir))
+
                     # Test header
                     test_lines = [insert_setup_template("testgen_header.S", xlen, extension, test_file_relative)]
                     # Enable floating point if needed
@@ -64,7 +65,11 @@ def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
                         test_lines.append("# set mstatus.FS to 01 to enable fp\nLI(t0,0x4000)\ncsrs mstatus, t0\n")
 
                     # Generate tests for this instruction
-                    test_lines.append(write_tests_for_instruction(instr_name, instr_data, test_data, extension))
+                    test_lines.append(
+                        write_tests_for_instruction(
+                            instr_name, instr_data.instr_type, instr_data.coverpoints, test_data, extension
+                        )
+                    )
 
                     # Test footer
                     sig_words = get_sig_space(test_data)

@@ -27,7 +27,7 @@ from testgen.test_data import TestData
 
 
 def write_tests_for_instruction(
-    instr_name: str, instr_data: dict[str, str | list[str]], test_data: TestData, extension: str
+    instr_name: str, instr_type: str, coverpoints: list[str], test_data: TestData, extension: str
 ) -> str:
     """
     Generate tests for a specific instruction based on its coverpoints.
@@ -35,7 +35,8 @@ def write_tests_for_instruction(
 
     Args:
         instr_name: Instruction mnemonic (e.g., 'add', 'lw')
-        instr_data: Dictionary with 'type' and 'coverpoints' keys
+        instr_type: Instruction type (e.g., 'R', 'I', 'S')
+        coverpoints: List of coverpoints for the instruction
         test_data: Test data context
         extension: Extension name (e.g., 'I', 'M', 'Zba')
 
@@ -43,8 +44,6 @@ def write_tests_for_instruction(
         Generated test code as a string
     """
     # Extract relevant data
-    instr_type: str = instr_data["type"]
-    coverpoints: list[str] = instr_data["coverpoints"]
     test_lines: list[str] = []
 
     # Coverpoints that don't need dedicated test generation

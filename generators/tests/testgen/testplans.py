@@ -10,12 +10,13 @@ Read testplans for cvw-arch-verif test generation.
 """
 
 import csv
+from dataclasses import dataclass
 from pathlib import Path
 
 
 def get_extensions(testplan_dir: Path) -> list[str]:
     """Get the list of extensions to generate tests for"""
-    extensions = []
+    extensions: list[str] = []
     for testplan in testplan_dir.glob("*.csv"):
         extension = testplan.stem
         if ("V" not in extension and "Zv" not in extension) or extension in [
@@ -25,9 +26,17 @@ def get_extensions(testplan_dir: Path) -> list[str]:
     return extensions
 
 
-def read_testplan(testplan_path: Path) -> dict[str, dict[str, str | list[str]]]:
+@dataclass
+class TestPlanData:
+    instr_type: str
+    rv32: bool
+    rv64: bool
+    coverpoints: list[str]
+
+
+def read_testplan(testplan_path: Path) -> dict[str, TestPlanData]:
     """Read a testplan and return a dictionary of instructions and their associated coverpoints"""
-    instructions: dict[str, dict[str, str | list[str]]] = {}
+    instructions: dict[str, TestPlanData] = {}
     with testplan_path.open() as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -39,7 +48,7 @@ def read_testplan(testplan_path: Path) -> dict[str, dict[str, str | list[str]]]:
             del row["Type"]
             del row["RV32"]
             del row["RV64"]
-            coverpoints = []
+            coverpoints: list[str] = []
             for key, value in row.items():
                 if type(value) is str and value != "":
                     if (
@@ -47,5 +56,5 @@ def read_testplan(testplan_path: Path) -> dict[str, dict[str, str | list[str]]]:
                     ):  # for special entries, append the entry name (e.g. cp_rd_edges becomes cp_rd_edges_lui)
                         key = key + "_" + value
                     coverpoints.append(key)
-            instructions[instr] = {"type": instr_type, "rv32": rv32, "rv64": rv64, "coverpoints": coverpoints}
+            instructions[instr] = TestPlanData(instr_type=instr_type, rv32=rv32, rv64=rv64, coverpoints=coverpoints)
     return instructions

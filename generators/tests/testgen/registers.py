@@ -61,6 +61,10 @@ class RegisterFile:
         self.reg_list = list(set(self.reg_list))  # Ensure uniqueness
         self.reg_list.sort()
 
+    def return_register(self, reg: int) -> None:
+        """Mark a single register as available again."""
+        self.return_registers([reg])
+
     def consume_registers(self, regs: list[int]) -> str | None:
         """Mark registers as used/unavailable."""
         for reg in regs:
@@ -75,7 +79,7 @@ class IntegerRegisterFile(RegisterFile):
     """Class to represent an integer register file."""
 
     # Limit legal link registers to simplify failure handler
-    link_regs: tuple[int] = (4, 7, 14)
+    link_regs = (4, 7, 14)
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -88,11 +92,11 @@ class IntegerRegisterFile(RegisterFile):
 
     # Access to special registers
     @property
-    def sig_reg(self):
+    def sig_reg(self) -> int:
         return self._sig_reg
 
     @property
-    def link_reg(self):
+    def link_reg(self) -> int:
         return self._link_reg
 
     def consume_registers(self, regs: list[int]) -> str:
@@ -107,15 +111,17 @@ class IntegerRegisterFile(RegisterFile):
         # Check for conflicts with special registers
         sig_conflict = self._sig_reg in regs
         link_conflict = self._link_reg in regs
+        old_sig_reg = -1
+        old_link_reg = -1
 
         # Return special registers to pool if they conflict
         if sig_conflict:
             old_sig_reg = self._sig_reg
-            self.return_registers([self._sig_reg])
+            self.return_register(self._sig_reg)
 
         if link_conflict:
             old_link_reg = self._link_reg
-            self.return_registers([self._link_reg])
+            self.return_register(self._link_reg)
 
         # Consume requested registers
         super().consume_registers(regs)
@@ -127,7 +133,7 @@ class IntegerRegisterFile(RegisterFile):
 
         if link_conflict:
             # Restrict link register to specific set
-            self._link_reg = self.get_registers(1, reg_range=list(self.link_regs))
+            self._link_reg = self.get_register(reg_range=list(self.link_regs))
             asm_code += (
                 f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
             )

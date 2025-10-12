@@ -19,7 +19,7 @@ class InstructionGenerator:
     """
 
     # Supported instruction types
-    INSTRUCTION_TYPES: tuple[str] = (
+    INSTRUCTION_TYPES = (
         # Integer types (implemented)
         "R",
         "I",
@@ -138,6 +138,9 @@ class InstructionGenerator:
 
     def _format_r_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format R-type instruction (add, sub, and, or, xor, etc.)."""
+        assert p.rs1 is not None and p.rs1val is not None
+        assert p.rs2 is not None and p.rs2val is not None
+        assert p.rd is not None
         setup = [
             load_int_reg("rs1", p.rs1, p.rs1val, self.test_data),
             load_int_reg("rs2", p.rs2, p.rs2val, self.test_data),
@@ -150,6 +153,9 @@ class InstructionGenerator:
 
     def _format_i_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format I-type instruction (addi, slti, xori, ori, andi, addiw)."""
+        assert p.rs1 is not None and p.rs1val is not None
+        assert p.rd is not None
+        assert p.immval is not None
         scaled_imm = modify_imm(p.immval, 12)
         setup = [
             load_int_reg("rs1", p.rs1, p.rs1val, self.test_data),
@@ -162,6 +168,7 @@ class InstructionGenerator:
 
     def _format_u_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format U-type instruction (lui, auipc)."""
+        assert p.rd is not None and p.immval is not None
         scaled_imm = modify_imm(p.immval, 20, signed=False)
         setup = []
         test = [
@@ -172,6 +179,9 @@ class InstructionGenerator:
 
     def _format_b_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format B-type instruction (beq, bne, blt, bge, bltu, bgeu)."""
+        assert p.rs1 is not None and p.rs1val is not None
+        assert p.rs2 is not None and p.rs2val is not None
+        assert p.rd is not None
         setup = [
             load_int_reg("rs1", p.rs1, p.rs1val, self.test_data),
             load_int_reg("rs2", p.rs2, p.rs2val, self.test_data),
@@ -189,6 +199,7 @@ class InstructionGenerator:
 
     def _format_j_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format J-type instruction (jal)."""
+        assert p.rd is not None and p.rs2 is not None
         setup = [
             f"LI(x{p.rs2}, 1) # initialize indicator to 1 (jump taken)",
         ]
@@ -205,6 +216,8 @@ class InstructionGenerator:
 
     def _format_jr_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format JR-type instruction (jalr)."""
+        assert p.rs1 is not None and p.rs2 is not None and p.rd is not None
+        assert p.immval is not None
         scaled_imm = modify_imm(p.immval, 12, restrict_offset=True)
         neg_scaled_imm = modify_imm(-p.immval, 12, restrict_offset=True)
         setup = [
@@ -225,6 +238,9 @@ class InstructionGenerator:
 
     def _format_is_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format IS-type instruction (slli, srli, srai, slliw, srliw, sraiw)."""
+        assert p.rs1 is not None and p.rs1val is not None
+        assert p.rd is not None
+        assert p.immval is not None
         # Shift amount is modulo xlen
         shift_amt = modify_imm(p.immval, self.test_data.xlen, modulo=True)
         setup = [
@@ -240,6 +256,9 @@ class InstructionGenerator:
 
     def _format_isw_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format ISW-type instruction (word-width shifts on RV64)."""
+        assert p.rs1 is not None and p.rs1val is not None
+        assert p.rd is not None
+        assert p.immval is not None
         # Shift amount is modulo 32 for word operations
         shift_amt = modify_imm(p.immval, 32, modulo=True)
         setup = [
@@ -255,6 +274,10 @@ class InstructionGenerator:
 
     def _format_l_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format L-type instruction (lb, lh, lw, ld, lbu, lhu, lwu)."""
+        assert p.rs1 is not None
+        assert p.rs2 is not None and p.rs2val is not None
+        assert p.rd is not None
+        assert p.immval is not None
         scaled_imm = modify_imm(p.immval, 12)
         setup = [
             load_int_reg("rs2", p.rs2, p.rs2val, self.test_data),
@@ -282,6 +305,10 @@ class InstructionGenerator:
 
     def _format_s_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format S-type instruction (sb, sh, sw, sd)."""
+        assert p.rs1 is not None
+        assert p.rs2 is not None and p.rs2val is not None
+        assert p.rd is not None
+        assert p.immval is not None
         scaled_imm = modify_imm(p.immval, 12)
         setup = [
             load_int_reg("rs2", p.rs2, p.rs2val, self.test_data),
@@ -309,6 +336,7 @@ class InstructionGenerator:
 
     def _format_i1_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:
         """Format I1-type instruction (single-operand like mv, not, neg, etc.)."""
+        assert p.rs1 is not None and p.rs1val is not None and p.rd is not None
         setup = [
             load_int_reg("rs1", p.rs1, p.rs1val, self.test_data),
         ]

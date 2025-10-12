@@ -25,19 +25,19 @@ from testgen.test_data import TestData
 def make_rd(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     # Determine which rd registers to test based on coverpoint variant
     if coverpoint == "cp_rd":
-        rd_regs = range(test_data.int_regs.reg_count)
+        rd_regs = list(range(test_data.int_regs.reg_count))
     elif coverpoint.endswith("nx0"):
-        rd_regs = range(1, test_data.int_regs.reg_count)  # Exclude x0
+        rd_regs = list(range(1, test_data.int_regs.reg_count))  # Exclude x0
     elif coverpoint.endswith("nx2"):
-        rd_regs = range(1, test_data.int_regs.reg_count)  # Exclude x0
+        rd_regs = list(range(1, test_data.int_regs.reg_count))  # Exclude x0
         rd_regs.remove(2)  # Exclude x2
     elif coverpoint.endswith("p"):
-        rd_regs = range(8, 16)  # x8-x15 for compressed instructions
+        rd_regs = list(range(8, 16))  # x8-x15 for compressed instructions
     else:
         raise ValueError(f"Unknown cp_rd coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for rd in rd_regs:
@@ -62,7 +62,7 @@ def make_rs1(instr_name: str, instr_type: str, coverpoint: str, test_data: TestD
         raise ValueError(f"Unknown cp_rs1 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for rs1 in rs1_regs:
@@ -87,7 +87,7 @@ def make_rs2(instr_name: str, instr_type: str, coverpoint: str, test_data: TestD
         raise ValueError(f"Unknown cp_rs2 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for rs2 in rs2_regs:
@@ -112,7 +112,7 @@ def make_cmp_rd_rs1(instr_name: str, instr_type: str, coverpoint: str, test_data
         raise ValueError(f"Unknown cmp_rd_rs1 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for reg in regs:
@@ -137,7 +137,7 @@ def make_cmp_rd_rs2(instr_name: str, instr_type: str, coverpoint: str, test_data
         raise ValueError(f"Unknown cmp_rd_rs2 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for reg in regs:
@@ -162,7 +162,7 @@ def make_cmp_rs1_rs2(instr_name: str, instr_type: str, coverpoint: str, test_dat
         raise ValueError(f"Unknown cmp_rs1_rs2 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for reg in regs:
@@ -185,7 +185,7 @@ def make_cmp_rd_rs1_rs2(instr_name: str, instr_type: str, coverpoint: str, test_
         raise ValueError(f"Unknown cmp_rd_rs1_rs2 coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Generate tests
     for reg in regs:
@@ -207,7 +207,7 @@ def make_rs1_edges(instr_name: str, instr_type: str, coverpoint: str, test_data:
         raise ValueError(f"Unknown cp_rs1_edges coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     for edge_val in edges:
         test_lines.append("")
@@ -226,7 +226,7 @@ def make_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, test_data:
         raise ValueError(f"Unknown cp_rs2_edges coverpoint variant: {coverpoint} for {instr_name}")
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     for edge_val in edges:
         test_lines.append("")
@@ -248,7 +248,7 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
         return []
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     for edge_val1 in edges1:
         for edge_val2 in edges2:
@@ -274,7 +274,7 @@ def make_cp_imm_edges(instr_name: str, instr_type: str, coverpoint: str, test_da
         return []
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     for edge_val in edges_imm:
         test_lines.append("")
@@ -306,7 +306,7 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
         return []
 
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     for reg_edge_val in edges_reg:
         for imm_edge_val in edges_imm:
@@ -319,9 +319,9 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     return test_lines
 
 
-def make_imm_edges_jalr(instr_name: str, instr_type: str, test_data: TestData) -> list[str]:
+def make_imm_edges_jalr(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Use 12-bit immediate edges for JALR
     for edge_val in IMMEDIATE_EDGES.imm_12bit:
@@ -341,10 +341,10 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
 
     add_generator = InstructionGenerator("add", "R", test_data)
     test_generator = InstructionGenerator(instr_name, instr_type, test_data)
-    test_lines = []
+    test_lines: list[str] = []
 
     # Determine which hazard types to test
-    hazard_types = []
+    hazard_types: list[str] = []
     if "r" in haz_class:
         hazard_types.append("raw")
     if "w" in haz_class:
@@ -396,7 +396,7 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
     return test_lines
 
 
-def make_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> list[str]:
+def make_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     """
     Generate tests for cp_mem_hazard coverpoint.
 
@@ -405,6 +405,7 @@ def make_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> li
     Args:
         instr_name: Instruction mnemonic
         instr_type: Instruction type
+        coverpoint: Coverpoint name (unused, for compatibility)
         test_data: Test data context
 
     Returns:
@@ -414,7 +415,7 @@ def make_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> li
     return ["# TODO: Implement cp_mem_hazard"]
 
 
-def make_f_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> list[str]:
+def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     """
     Generate tests for cp_f_mem_hazard coverpoint.
 
@@ -423,6 +424,7 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> 
     Args:
         instr_name: Instruction mnemonic
         instr_type: Instruction type
+        coverpoint: Coverpoint name (unused, for compatibility)
         test_data: Test data context
 
     Returns:
@@ -445,7 +447,7 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> 
 #
 # Handlers are searched in order, first match wins.
 
-COVERPOINT_HANDLERS = {
+COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] = {
     # Compare register coverpoints
     "cmp_rd_rs1_rs2": make_cmp_rd_rs1_rs2,
     "cmp_rs1_rs2": make_cmp_rs1_rs2,
@@ -471,7 +473,7 @@ COVERPOINT_HANDLERS = {
 }
 
 
-def get_coverpoint_handler(coverpoint: str) -> Callable[[str, str, TestData], list[str]] | None:
+def get_coverpoint_handler(coverpoint: str) -> Callable[[str, str, str, TestData], list[str]] | None:
     """
     Get the handler function for a given coverpoint.
 
