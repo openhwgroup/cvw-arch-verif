@@ -9,29 +9,29 @@
 # Generate directed tests for functional coverage
 ##################################
 
-##################################
-# libraries
-##################################
-import argparse
 from pathlib import Path
+from typing import Annotated
 
-# Import common utilities
+import typer
+
 from testgen.common import get_sig_space
-
-# Import template utilities
 from testgen.load_templates import insert_setup_template
-
-# Import register management
 from testgen.test_data import TestData
-
-# Import testplan reading utilities
 from testgen.testplans import get_extensions, read_testplan
-
-# Import test writing utilities
 from testgen.write_tests import write_tests_for_instruction
 
 
-def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
+def generate_tests(
+    testplan_dir: Annotated[
+        Path, typer.Argument(exists=True, file_okay=False, help="Directory containing testplan CSV files")
+    ],
+    output_test_dir: Annotated[
+        Path, typer.Option("--output_test_dir", "-o", help="Directory to output generated tests")
+    ] = Path("tests"),
+) -> None:
+    """
+    Generate riscv-arch-test tests from testplan CSV files.
+    """
     extensions = get_extensions(testplan_dir)
     # Generate tests for each extension, xlen, and E_ext combination
     for xlen in [32, 64]:
@@ -85,18 +85,7 @@ def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate cvw-arch-verif tests")
-    parser.add_argument("testplan_dir", type=Path, help="Directory containing testplan CSV files")
-    parser.add_argument(
-        "-o", "--output-test-dir", type=Path, default=Path("tests"), help="Directory to output generated tests"
-    )
-    args = parser.parse_args()
-
-    if not args.testplan_dir.is_dir():
-        print(f"Error: {args.testplan_dir} does not exist or is not a directory")
-        exit(1)
-
-    generate_tests(args.testplan_dir, args.output_test_dir)
+    typer.run(generate_tests)
 
 
 if __name__ == "__main__":

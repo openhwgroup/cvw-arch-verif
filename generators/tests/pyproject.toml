@@ -7,12 +7,15 @@ authors = [
     { name = "Jordan Carlin", email = "jcarlin@hmc.edu" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.19.2",
+]
 
 [dependency-groups]
 dev = [
+    "pyright>=1.1.406",
     "ruff>=0.14.0",
-    "ty>=0.0.1a21",
+    "ty>=0.0.1a22",
 ]
 
 [project.scripts]
