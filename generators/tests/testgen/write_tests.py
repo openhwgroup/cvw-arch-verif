@@ -84,7 +84,10 @@ def write_tests_for_instruction(
             test_lines.extend(make_rs2_edges(instr_name, instr_type, coverpoint, test_data))
 
         elif coverpoint.startswith("cr_rs1_rs2_edges"):
-            test_lines.extend(make_cr_rs1_rs2_edges(instr_name, instr_type, coverpoint,test_data))
+            test_lines.extend(make_cr_rs1_rs2_edges(instr_name, instr_type, coverpoint, test_data))
+
+        elif coverpoint.startswith("cr_rs1_imm_edges"):
+            test_lines.extend(make_cr_rs1_imm_edges(instr_name, instr_type, coverpoint, test_data))
 
         # ====================================================================
         # HAZARD COVERPOINTS (special handling - instruction sequences)
@@ -137,7 +140,7 @@ def write_tests_for_instruction(
             # if instr_name == "jalr":
             #     test_lines.extend(make_imm_edges_jalr(instr_name, instr_type, test_data))
             # else:
-                test_lines.extend(make_cp_imm_edges(instr_name, instr_type, coverpoint, test_data))
+            test_lines.extend(make_cp_imm_edges(instr_name, instr_type, coverpoint, test_data))
 
         # ====================================================================
         # WARNING FOR MISSING COVERPOINT IMPLEMENTATIONS

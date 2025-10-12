@@ -21,6 +21,7 @@ def load_int_reg(name: str, reg: int, val: int, test_data: TestData) -> str:
     formatstr = test_data.xlen_format_str
     return f"LI(x{reg}, {formatstr.format(modify_imm(val, xlen, hex_format=True))}) # initialize {name}"
 
+
 def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 64, 128], test_data: TestData) -> str:
     """Generate assembly to load a floating point register with a specific value."""
     test_lines = []
@@ -34,25 +35,30 @@ def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 6
         loadop = "flq"
     storeop = "sw" if min(test_data.xlen, test_data.flen) == 32 else "sd"
     formatstr = test_data.flen_format_str
-    fp_data_base_reg = 2 # Assumes that x2 is loaded with the base address to avoid repeated `la` instructions
+    fp_data_base_reg = 2  # Assumes that x2 is loaded with the base address to avoid repeated `la` instructions
     temp_reg = test_data.int_regs.get_registers(1)
     test_lines = [f"LA(x{fp_data_base_reg}, scratch)"]
     test_data.int_regs.return_registers([temp_reg])
     if precision > test_data.xlen:
-        test_lines.extend([
-            f"LI(x{temp_reg}, 0x{formatstr.format(val)[10:18]}) # load x{temp_reg} with 32 MSBs {formatstr.format(val)}\n"
-            f"{storeop} x{temp_reg}, 0(x{fp_data_base_reg}) # store x{temp_reg} (0x{formatstr.format(val)[10:18]}) in memory\n"
-            f"LI(x{temp_reg}, 0x{formatstr.format(val)[2:10]}) # load x{temp_reg} with 32 LSBs of {formatstr.format(val)}\n"
-            f"{storeop} x{temp_reg}, 4(x{fp_data_base_reg}) # store x{temp_reg} (0x{formatstr.format(val)[2:10]}) in memory 4 bytes after x{fp_data_base_reg}\n"
-            f"{loadop} f{reg}, 0(x{fp_data_base_reg}) # load {formatstr.format(val)} from memory into f{reg}"
-        ])
+        test_lines.extend(
+            [
+                f"LI(x{temp_reg}, 0x{formatstr.format(val)[10:18]}) # load x{temp_reg} with 32 MSBs {formatstr.format(val)}\n"
+                f"{storeop} x{temp_reg}, 0(x{fp_data_base_reg}) # store x{temp_reg} (0x{formatstr.format(val)[10:18]}) in memory\n"
+                f"LI(x{temp_reg}, 0x{formatstr.format(val)[2:10]}) # load x{temp_reg} with 32 LSBs of {formatstr.format(val)}\n"
+                f"{storeop} x{temp_reg}, 4(x{fp_data_base_reg}) # store x{temp_reg} (0x{formatstr.format(val)[2:10]}) in memory 4 bytes after x{fp_data_base_reg}\n"
+                f"{loadop} f{reg}, 0(x{fp_data_base_reg}) # load {formatstr.format(val)} from memory into f{reg}"
+            ]
+        )
     else:
-        test_lines.extend([
-            f"LI(x{temp_reg}, {formatstr.format(val)}) # load x{temp_reg} with value {formatstr.format(val)}\n"
-            f"{storeop} x{temp_reg}, 0(x{fp_data_base_reg}) # store {formatstr.format(val)} in memory\n"
-            f"{loadop} f{reg}, 0(x{fp_data_base_reg}) # load {formatstr.format(val)} from memory into f{reg}"
-        ])
+        test_lines.extend(
+            [
+                f"LI(x{temp_reg}, {formatstr.format(val)}) # load x{temp_reg} with value {formatstr.format(val)}\n"
+                f"{storeop} x{temp_reg}, 0(x{fp_data_base_reg}) # store {formatstr.format(val)} in memory\n"
+                f"{loadop} f{reg}, 0(x{fp_data_base_reg}) # load {formatstr.format(val)} from memory into f{reg}"
+            ]
+        )
     return "\n".join(test_lines)
+
 
 def write_sigupd(rd: int, test_data: TestData, sig_type: Literal["int", "float"] = "int") -> str:
     """
@@ -66,12 +72,13 @@ def write_sigupd(rd: int, test_data: TestData, sig_type: Literal["int", "float"]
     elif sig_type == "float":
         test_data.sigupd_count_float += 2
         temp_reg = test_data.int_regs.get_registers(1)
-        sigupd_str = f"csrr x{temp_reg}, fcsr\n" # Get fcsr into a temp register
+        sigupd_str = f"csrr x{temp_reg}, fcsr\n"  # Get fcsr into a temp register
         sigupd_str += f"RVTEST_SIGUPD_F(x{sig_reg}, f{rd}, x{temp_reg})"
         test_data.int_regs.return_registers([temp_reg])
         return sigupd_str
     else:
         raise ValueError("Invalid sig_type specified.")
+
 
 def get_sig_space(test_data: TestData) -> int:
     """Get the space needed for signature region taking xlen and flen into account."""
@@ -87,8 +94,9 @@ def get_sig_space(test_data: TestData) -> int:
         else:
             sig_words += test_data.sigupd_count_float
     # Account for offset overflow adjustment
-    sig_words += (4//(xlen//32))*(((sig_words*(xlen//32))*4)//2016)
+    sig_words += (4 // (xlen // 32)) * (((sig_words * (xlen // 32)) * 4) // 2016)
     return sig_words
+
 
 def myhash(s: str) -> int:
     """Return a simple hash of a string for use as a random seed.

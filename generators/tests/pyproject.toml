@@ -11,7 +11,7 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "ruff>=0.13.0",
+    "ruff>=0.14.0",
     "ty>=0.0.1a21",
 ]
 
@@ -21,7 +21,7 @@ testgen = "testgen.testgen:main"
 ##### BUILD #####
 
 [build-system]
-requires = ["uv_build>=0.8.14,<0.9.0"]
+requires = ["uv_build>=0.8.14,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]

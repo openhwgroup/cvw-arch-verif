@@ -63,6 +63,7 @@ def modify_imm(
     else:
         return value
 
+
 def gen_random_imm(bits: int, signed: bool = False) -> int:
     """
     Generate a random immediate value within the specified bit width.
@@ -72,6 +73,6 @@ def gen_random_imm(bits: int, signed: bool = False) -> int:
         max_val = (2 ** (bits - 1)) - 1
     else:
         min_val = 0
-        max_val = (2 ** bits) - 1
+        max_val = (2**bits) - 1
 
     return randint(min_val, max_val)

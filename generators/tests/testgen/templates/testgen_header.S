@@ -1,4 +1,5 @@
-//
+///////////////////////////////////////////
+// @TEST_PATH@
 // Copyright (C) 2024 Harvey Mudd College & Oklahoma State University, Habib University, UET Lahore
 //
 // SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
@@ -24,7 +25,7 @@ RVTEST_CODE_BEGIN
 RVTEST_SIGBASE( x3,signature_base)
 
 #ifdef SELFCHECK
-# Check CANARY in signature
-LI(T1, CANARY_VALUE)
-RVTEST_SIGUPD(x3, T1)  # sig_begin_canary
+  # Check CANARY in signature
+  LI(T1, CANARY_VALUE)
+  RVTEST_SIGUPD(x3, T1)  # sig_begin_canary
 #endif

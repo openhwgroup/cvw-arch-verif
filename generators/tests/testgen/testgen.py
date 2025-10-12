@@ -58,12 +58,9 @@ def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
                         continue
                     test_data = TestData(xlen, flen, E_ext)
                     test_file = output_dir / f"{extension}-{instr_name}.S"
+                    test_file_relative = str(test_file.relative_to(output_test_dir))
                     # Test header
-                    test_lines = [
-                        "///////////////////////////////////////////",
-                        f"// {test_file.relative_to(output_test_dir)}",
-                        insert_setup_template("testgen_header.S", xlen, extension)
-                    ]
+                    test_lines = [insert_setup_template("testgen_header.S", xlen, extension, test_file_relative)]
                     # Enable floating point if needed
                     if "F" in extension or "D" in extension or "Q" in extension or "Zf" in extension:
                         test_lines.append("# set mstatus.FS to 01 to enable fp\nLI(t0,0x4000)\ncsrs mstatus, t0\n")
@@ -73,11 +70,13 @@ def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
 
                     # Test footer
                     sig_words = get_sig_space(test_data)
-                    test_lines.append(insert_setup_template("testgen_footer.S", xlen, extension, sig_words))
+                    test_lines.append(
+                        insert_setup_template("testgen_footer.S", xlen, extension, test_file_relative, sig_words)
+                    )
 
                     # Write test file if different from existing file
                     test_string = "\n".join(test_lines) + "\n"
-                    if not(test_file.exists()) or test_file.read_text() != test_string:
+                    if not (test_file.exists()) or test_file.read_text() != test_string:
                         test_file.write_text(test_string)
                         print(f"Updated {test_file}")
 

@@ -189,7 +189,7 @@ class InstructionGenerator:
         Returns:
             Complete test case as a string
         """
-        test_lines = [f"\n# Testcase {desc}"]
+        test_lines = [f"# Testcase {desc}"]
 
         # Add test and signature update lines
         setup, test, check = self.format_instruction(params)
@@ -270,7 +270,7 @@ class InstructionGenerator:
             f"LI(x{p.rd}, 1) # initialize rd to 1 (branch not taken value)",
         ]
         test = [
-            f"{self.instr_name} x{p.rs1}, x{p.rs2}, 1f # branch if condition true",
+            f"{self.instr_name} x{p.rs1}, x{p.rs2}, 1f # perform operation",
             f"LI(x{p.rd}, 0) # branch not taken, set rd to 0",
         ]
         check = [
@@ -367,8 +367,8 @@ class InstructionGenerator:
 
         setup.append(f"SREG x{p.rs2}, {scaled_imm}(x{p.rs1}) # store test value to memory")
         test = [
-                f"{self.instr_name} x{p.rd}, {scaled_imm}(x{p.rs1}) # perform load",
-            ]
+            f"{self.instr_name} x{p.rd}, {scaled_imm}(x{p.rs1}) # perform load",
+        ]
         check = [write_sigupd(p.rd, self.test_data, "int")]
         return (setup, test, check)
 
@@ -393,8 +393,10 @@ class InstructionGenerator:
             setup.append(f"addi x{p.rs1}, x{p.rs1}, {neg_scaled_imm} # adjust base address for offset")
 
         test = [f"{self.instr_name} x{p.rs2}, {scaled_imm}(x{p.rs1}) # perform store"]
-        check = [f"LREG x{p.rd}, {scaled_imm}(x{p.rs1}) # load back to verify",
-                 write_sigupd(p.rd, self.test_data, "int")]
+        check = [
+            f"LREG x{p.rd}, {scaled_imm}(x{p.rs1}) # load back to verify",
+            write_sigupd(p.rd, self.test_data, "int"),
+        ]
         return (setup, test, check)
 
     def _format_i1_type(self, p: InstructionParams) -> tuple[list[str], list[str], list[str]]:

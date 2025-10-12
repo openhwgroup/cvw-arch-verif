@@ -13,15 +13,18 @@ import importlib.resources
 import re
 
 
-def insert_setup_template(template_name: str, xlen: int, extension: str, signatureWords: int = 0) -> str:
+def insert_setup_template(
+    template_name: str, xlen: int, extension: str, test_file: str, signatureWords: int = 0
+) -> str:
     """Insert a header/footer template file into the test file."""
     ext_components, march = canonicalize_extension(extension, xlen)
     with importlib.resources.open_text("testgen.templates", template_name) as template_file:
         template = template_file.read()
     # Replace placeholders
     template = (
-        template.replace("@EXTENSION_LIST@", f"{ext_components}")
-        .replace("@MARCH@", march)
+        template.replace("@TEST_PATH@", f"{test_file}")
+        .replace("@EXTENSION_LIST@", f"{ext_components}")
+        .replace("@MARCH@", march.lower())
         .replace("@XLEN@", str(xlen))
         .replace("@CONFIG_DEPENDENT@", "false")  # TODO: Make this configurable for some tests (e.g. Zimop)
         .replace("sigupd_count", str(signatureWords))

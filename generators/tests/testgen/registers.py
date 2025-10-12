@@ -25,6 +25,7 @@ class RegisterFile:
     """Class to represent a register file and provide methods to select registers."""
 
     def __init__(self, reg_count: int):
+        self._reg_count = reg_count
         self.reg_list = list(range(reg_count))
 
     def __repr__(self):
@@ -32,9 +33,11 @@ class RegisterFile:
 
     @property
     def reg_count(self):
-        return len(self.reg_list)
+        return self._reg_count
 
-    def get_registers(self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> list[int] | int:
+    def get_registers(
+        self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None
+    ) -> list[int] | int:
         """Get a specified number of unique registers from the register file."""
         # Handle exclusions and range limitations
         if exclude_reg is None:
@@ -121,14 +124,15 @@ class IntegerRegisterFile(RegisterFile):
         if link_conflict:
             # Restrict link register to specific set
             self._link_reg = self.get_registers(1, reg_range=list(self.link_regs))
-            asm_code += f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
+            asm_code += (
+                f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
+            )
 
         return asm_code
 
 
 class FloatRegisterFile(RegisterFile):
-    """Class to represent a floating point register file.
-    """
+    """Class to represent a floating point register file."""
 
     def __init__(self):
         # There are always 32 floating point registers
