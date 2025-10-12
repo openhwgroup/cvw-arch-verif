@@ -37,7 +37,7 @@ class RegisterFile:
 
     def get_registers(
         self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None
-    ) -> list[int] | int:
+    ) -> list[int]:
         """Get a specified number of unique registers from the register file."""
         # Handle exclusions and range limitations
         if exclude_reg is None:
@@ -49,7 +49,11 @@ class RegisterFile:
         selected_regs = select_registers(num_regs, available_regs)
         for reg in selected_regs:
             self.reg_list.remove(reg)
-        return selected_regs if num_regs > 1 else selected_regs[0]
+        return selected_regs
+
+    def get_register(self, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> int:
+        """Get a single register from the register file."""
+        return self.get_registers(1, exclude_reg=exclude_reg, reg_range=reg_range)[0]
 
     def return_registers(self, regs: list[int]) -> None:
         """Mark registers as available again."""
@@ -118,7 +122,7 @@ class IntegerRegisterFile(RegisterFile):
 
         # Reallocate special registers to new locations
         if sig_conflict:
-            self._sig_reg = self.get_registers(1)
+            self._sig_reg = self.get_register()
             asm_code += f"\nmv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:

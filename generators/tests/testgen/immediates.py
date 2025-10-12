@@ -21,7 +21,7 @@ def modify_imm(
     no_zero: bool = False,
     restrict_offset: bool = False,
     modulo: bool = False,
-) -> str:
+) -> int:
     """
     Format an immediate value for RISC-V assembly instructions.
 

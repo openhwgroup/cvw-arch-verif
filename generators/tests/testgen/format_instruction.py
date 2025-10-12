@@ -1,79 +1,21 @@
 # ============================================================================
-# INSTRUCTION GENERATOR CLASS
+# INSTRUCTION FORMATTER CLASS
 # ============================================================================
 
-
-from dataclasses import dataclass
 
 from testgen.common import load_int_reg, write_sigupd
-from testgen.immediates import gen_random_imm, modify_imm
+from testgen.immediates import modify_imm
+from testgen.instruction_params import InstructionParams
 from testgen.test_data import TestData
-
-# ============================================================================
-# DATA STRUCTURES
-# ============================================================================
-
-
-@dataclass
-class InstructionParams:
-    """
-    Parameters for generating a single instruction test case.
-
-    This dataclass holds all the information needed to generate a single
-    instruction test, including register numbers, values, and flags.
-    """
-
-    # Integer registers
-    rs1: int | None = None
-    rs2: int | None = None
-    rs3: int | None = None
-    rd: int | None = None
-
-    # Float registers
-    fs1: int | None = None
-    fs2: int | None = None
-    fs3: int | None = None
-    fd: int | None = None
-
-    # Register values
-    rs1val: int | None = None
-    rs2val: int | None = None
-    rs3val: int | None = None
-    rdval: int | None = None
-
-    # Immediate value
-    immval: int | None = None
-
-    # Flags
-    frm: bool = False  # Floating-point rounding mode tests
-    aqrl: str = ""  # Acquire/Release for atomic operations
-
-    @property
-    def used_int_regs(self) -> list[int]:
-        """Return list of all integer registers used in this test."""
-        regs = []
-        for reg in [self.rs1, self.rs2, self.rs3, self.rd]:
-            if reg is not None:
-                regs.append(reg)
-        return regs
-
-    @property
-    def used_float_regs(self) -> list[int]:
-        """Return list of all float registers used in this test."""
-        regs = []
-        for reg in [self.fs1, self.fs2, self.fs3, self.fd]:
-            if reg is not None:
-                regs.append(reg)
-        return regs
 
 
 class InstructionGenerator:
     """
-    Generates assembly test cases for a specific instruction.
+    Formats assembly test cases for a specific instruction.
 
-    This class handles the type-specific formatting of instructions,
-    generating random parameters, and creating complete test cases.
-    All instruction type formatters have the same signature for uniformity.
+    This class handles the type-specific formatting of instructions into
+    assembly code. It takes InstructionParams and generates the appropriate
+    assembly instructions with setup and verification code.
     """
 
     # Supported instruction types
@@ -137,40 +79,6 @@ class InstructionGenerator:
 
         if instr_type not in self.INSTRUCTION_TYPES:
             raise ValueError(f"Unknown instruction type: {instr_type}")
-
-    def generate_random_params(self, **fixed_params) -> InstructionParams:
-        """
-        Generate random parameters for instruction, with some fixed values.
-
-        This fills in any missing parameters based on the instruction type.
-        Fixed parameters are passed as keyword arguments.
-
-        Args:
-            **fixed_params: Fixed parameter values (e.g., rd=5, rs1val=0x100)
-
-        Returns:
-            InstructionParams with all necessary fields filled in
-        """
-        params = InstructionParams(**fixed_params)
-
-        # Fill in missing integer register parameters based on instruction type
-        if params.rd is None:
-            params.rd = self.test_data.int_regs.get_registers(1)
-
-        if params.rs1 is None:
-            params.rs1 = self.test_data.int_regs.get_registers(1)
-        if params.rs1val is None:
-            params.rs1val = gen_random_imm(self.test_data.xlen)
-
-        if params.rs2 is None:
-            params.rs2 = self.test_data.int_regs.get_registers(1)
-        if params.rs2val is None:
-            params.rs2val = gen_random_imm(self.test_data.xlen)
-
-        if params.immval is None:
-            params.immval = gen_random_imm(self.test_data.xlen)
-
-        return params
 
     def format_single_test(self, desc: str, params: InstructionParams) -> str:
         """

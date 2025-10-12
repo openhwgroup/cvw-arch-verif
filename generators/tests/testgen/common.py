@@ -24,7 +24,6 @@ def load_int_reg(name: str, reg: int, val: int, test_data: TestData) -> str:
 
 def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 64, 128], test_data: TestData) -> str:
     """Generate assembly to load a floating point register with a specific value."""
-    test_lines = []
     if precision == 16:
         loadop = "flh"
     elif precision == 32:
@@ -36,7 +35,7 @@ def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 6
     storeop = "sw" if min(test_data.xlen, test_data.flen) == 32 else "sd"
     formatstr = test_data.flen_format_str
     fp_data_base_reg = 2  # Assumes that x2 is loaded with the base address to avoid repeated `la` instructions
-    temp_reg = test_data.int_regs.get_registers(1)
+    temp_reg = test_data.int_regs.get_register()
     test_lines = [f"LA(x{fp_data_base_reg}, scratch)"]
     test_data.int_regs.return_registers([temp_reg])
     if precision > test_data.xlen:
@@ -71,7 +70,7 @@ def write_sigupd(rd: int, test_data: TestData, sig_type: Literal["int", "float"]
         return f"RVTEST_SIGUPD(x{sig_reg}, x{link_reg}, x{rd})"
     elif sig_type == "float":
         test_data.sigupd_count_float += 2
-        temp_reg = test_data.int_regs.get_registers(1)
+        temp_reg = test_data.int_regs.get_register()
         sigupd_str = f"csrr x{temp_reg}, fcsr\n"  # Get fcsr into a temp register
         sigupd_str += f"RVTEST_SIGUPD_F(x{sig_reg}, f{rd}, x{temp_reg})"
         test_data.int_regs.return_registers([temp_reg])

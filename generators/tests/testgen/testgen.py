@@ -14,7 +14,6 @@
 ##################################
 import argparse
 from pathlib import Path
-from random import seed
 
 # Import common utilities
 from testgen.common import get_sig_space
@@ -33,7 +32,6 @@ from testgen.write_tests import write_tests_for_instruction
 
 
 def generate_tests(testplan_dir: Path, output_test_dir: Path) -> None:
-    seed(0)  # Make tests reproducible
     extensions = get_extensions(testplan_dir)
     # Generate tests for each extension, xlen, and E_ext combination
     for xlen in [32, 64]:
@@ -88,6 +86,10 @@ def main() -> None:
         "-o", "--output-test-dir", type=Path, default=Path("tests"), help="Directory to output generated tests"
     )
     args = parser.parse_args()
+
+    if not args.testplan_dir.is_dir():
+        print(f"Error: {args.testplan_dir} does not exist or is not a directory")
+        exit(1)
 
     generate_tests(args.testplan_dir, args.output_test_dir)
 

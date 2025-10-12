@@ -10,12 +10,15 @@
 # 5. Manage register allocation
 
 
+from collections.abc import Callable
+
 from testgen.edges import (
     IMMEDIATE_EDGES,
     get_general_edges,
     get_orcb_edges,
 )
 from testgen.format_instruction import InstructionGenerator
+from testgen.instruction_params import generate_random_params
 from testgen.test_data import TestData
 
 
@@ -39,7 +42,7 @@ def make_rd(instr_name: str, instr_type: str, coverpoint: str, test_data: TestDa
     # Generate tests
     for rd in rd_regs:
         test_lines.append(test_data.int_regs.consume_registers([rd]))
-        params = generator.generate_random_params(rd=rd)
+        params = generate_random_params(test_data, instr_type, rd=rd)
         desc = f"cp_rd (Test destination rd = x{rd})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -64,7 +67,7 @@ def make_rs1(instr_name: str, instr_type: str, coverpoint: str, test_data: TestD
     # Generate tests
     for rs1 in rs1_regs:
         test_lines.append(test_data.int_regs.consume_registers([rs1]))
-        params = generator.generate_random_params(rs1=rs1)
+        params = generate_random_params(test_data, instr_type, rs1=rs1)
         desc = f"cp_rs1 (Test source rs1 = x{rs1})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -89,7 +92,7 @@ def make_rs2(instr_name: str, instr_type: str, coverpoint: str, test_data: TestD
     # Generate tests
     for rs2 in rs2_regs:
         test_lines.append(test_data.int_regs.consume_registers([rs2]))
-        params = generator.generate_random_params(rs2=rs2)
+        params = generate_random_params(test_data, instr_type, rs2=rs2)
         desc = f"cp_rs2 (Test source rs2 = x{rs2})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -114,7 +117,7 @@ def make_cmp_rd_rs1(instr_name: str, instr_type: str, coverpoint: str, test_data
     # Generate tests
     for reg in regs:
         test_lines.append(test_data.int_regs.consume_registers([reg]))
-        params = generator.generate_random_params(rd=reg, rs1=reg)
+        params = generate_random_params(test_data, instr_type, rd=reg, rs1=reg)
         desc = f"cmp_rd_rs1 (Test rd = rs1 = x{reg})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -139,7 +142,7 @@ def make_cmp_rd_rs2(instr_name: str, instr_type: str, coverpoint: str, test_data
     # Generate tests
     for reg in regs:
         test_lines.append(test_data.int_regs.consume_registers([reg]))
-        params = generator.generate_random_params(rd=reg, rs2=reg)
+        params = generate_random_params(test_data, instr_type, rd=reg, rs2=reg)
         desc = f"cmp_rd_rs2 (Test rd = rs2 = x{reg})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -164,7 +167,7 @@ def make_cmp_rs1_rs2(instr_name: str, instr_type: str, coverpoint: str, test_dat
     # Generate tests
     for reg in regs:
         test_lines.append(test_data.int_regs.consume_registers([reg]))
-        params = generator.generate_random_params(rs1=reg, rs2=reg)
+        params = generate_random_params(test_data, instr_type, rs1=reg, rs2=reg)
         desc = f"cmp_rs1_rs2 (Test rs1 = rs2 = x{reg})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -187,7 +190,7 @@ def make_cmp_rd_rs1_rs2(instr_name: str, instr_type: str, coverpoint: str, test_
     # Generate tests
     for reg in regs:
         test_lines.append(test_data.int_regs.consume_registers([reg]))
-        params = generator.generate_random_params(rd=reg, rs1=reg, rs2=reg)
+        params = generate_random_params(test_data, instr_type, rd=reg, rs1=reg, rs2=reg)
         desc = f"cmp_rd_rs1_rs2 (Test rd = rs1 = rs2 = x{reg})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -208,7 +211,7 @@ def make_rs1_edges(instr_name: str, instr_type: str, coverpoint: str, test_data:
 
     for edge_val in edges:
         test_lines.append("")
-        params = generator.generate_random_params(rs1val=edge_val)
+        params = generate_random_params(test_data, instr_type, rs1val=edge_val)
         desc = f"cp_rs1_edges (Test source rs1 value = {test_data.xlen_format_str.format(edge_val)})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -227,7 +230,7 @@ def make_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, test_data:
 
     for edge_val in edges:
         test_lines.append("")
-        params = generator.generate_random_params(rs2val=edge_val)
+        params = generate_random_params(test_data, instr_type, rs2val=edge_val)
         desc = f"cp_rs2_edges (Test source rs2 value = {test_data.xlen_format_str.format(edge_val)})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -250,7 +253,7 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     for edge_val1 in edges1:
         for edge_val2 in edges2:
             test_lines.append("")
-            params = generator.generate_random_params(rs1val=edge_val1, rs2val=edge_val2)
+            params = generate_random_params(test_data, instr_type, rs1val=edge_val1, rs2val=edge_val2)
             desc = f"cr_rs1_rs2_edges (Test source rs1 = {test_data.xlen_format_str.format(edge_val1)} rs2 = {test_data.xlen_format_str.format(edge_val2)})"
             test_lines.append(generator.format_single_test(desc, params))
             test_data.int_regs.return_registers(params.used_int_regs)
@@ -275,7 +278,7 @@ def make_cp_imm_edges(instr_name: str, instr_type: str, coverpoint: str, test_da
 
     for edge_val in edges_imm:
         test_lines.append("")
-        params = generator.generate_random_params(immval=edge_val)
+        params = generate_random_params(test_data, instr_type, immval=edge_val)
         desc = f"cp_imm_edges (imm = {edge_val})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -308,7 +311,7 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     for reg_edge_val in edges_reg:
         for imm_edge_val in edges_imm:
             test_lines.append("")
-            params = generator.generate_random_params(rs1val=reg_edge_val, immval=imm_edge_val)
+            params = generate_random_params(test_data, instr_type, rs1val=reg_edge_val, immval=imm_edge_val)
             desc = f"cr_rs1_imm_edges (rs1 = {test_data.xlen_format_str.format(reg_edge_val)}, imm = {imm_edge_val})"
             test_lines.append(generator.format_single_test(desc, params))
             test_data.int_regs.return_registers(params.used_int_regs)
@@ -323,7 +326,7 @@ def make_imm_edges_jalr(instr_name: str, instr_type: str, test_data: TestData) -
     # Use 12-bit immediate edges for JALR
     for edge_val in IMMEDIATE_EDGES.imm_12bit:
         test_lines.append("")
-        params = generator.generate_random_params(immval=edge_val)
+        params = generate_random_params(test_data, instr_type, immval=edge_val)
         desc = f"cp_imm_edges (jalr offset = {edge_val})"
         test_lines.append(generator.format_single_test(desc, params))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -351,24 +354,24 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
     for haz_type in hazard_types:
         for i in range(2):  # 2 test cases per hazard type
             # Generate first instruction (add) with random registers
-            params_a = add_generator.generate_random_params()
+            params_a = generate_random_params(test_data, "R")
 
             # Generate second instruction with hazard relationship to A
             if haz_type == "raw":
                 # Read-After-Write: B reads what A wrote. Test with both rs1 and rs2
                 if i % 2 == 0:
-                    params_b = test_generator.generate_random_params(rs1=params_a.rd)
+                    params_b = generate_random_params(test_data, instr_type, rs1=params_a.rd)
                 else:
-                    params_b = test_generator.generate_random_params(rs2=params_a.rd)
+                    params_b = generate_random_params(test_data, instr_type, rs2=params_a.rd)
             elif haz_type == "waw":
                 # Write-After-Write: B writes same register as A
-                params_b = test_generator.generate_random_params(rd=params_a.rd)
+                params_b = generate_random_params(test_data, instr_type, rd=params_a.rd)
             elif haz_type == "war":
                 # Write-After-Read: B writes what A read. Test with both rs1 and rs2
                 if i % 2 == 0:
-                    params_b = test_generator.generate_random_params(rd=params_a.rs1)
+                    params_b = generate_random_params(test_data, instr_type, rd=params_a.rs1)
                 else:
-                    params_b = test_generator.generate_random_params(rd=params_a.rs2)
+                    params_b = generate_random_params(test_data, instr_type, rd=params_a.rs2)
             else:
                 raise ValueError(f"Unknown hazard type: {haz_type}")
 
@@ -427,3 +430,65 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, test_data: TestData) -> 
     """
     # TODO: Implement floating-point memory hazard testing
     return ["# TODO: Implement cp_f_mem_hazard"]
+
+
+# ============================================================================
+# COVERPOINT HANDLER REGISTRY
+# ============================================================================
+# This registry maps coverpoint patterns to their handler functions.
+# Use this registry to dynamically dispatch to the appropriate handler
+# instead of maintaining a long if/elif chain or explicit import list.
+#
+# Pattern matching:
+# - Exact match: "cp_asm_count" matches only "cp_asm_count"
+# - Prefix match: "cp_rd" matches "cp_rd", "cp_rd_nx0", "cp_rd_p", etc.
+#
+# Handlers are searched in order, first match wins.
+
+COVERPOINT_HANDLERS = {
+    # Compare register coverpoints
+    "cmp_rd_rs1_rs2": make_cmp_rd_rs1_rs2,
+    "cmp_rs1_rs2": make_cmp_rs1_rs2,
+    "cmp_rd_rs1": make_cmp_rd_rs1,
+    "cmp_rd_rs2": make_cmp_rd_rs2,
+    # Edge value coverpoints
+    "cp_rs1_edges": make_rs1_edges,
+    "cp_rs2_edges": make_rs2_edges,
+    # Cross-product coverpoints
+    "cr_rs1_rs2_edges": make_cr_rs1_rs2_edges,
+    "cr_rs1_imm_edges": make_cr_rs1_imm_edges,
+    # Immediate coverpoints
+    "cp_imm_edges": make_cp_imm_edges,
+    # Register coverpoints
+    "cp_rd": make_rd,
+    "cp_rs1": make_rs1,
+    "cp_rs2": make_rs2,
+    # Hazard coverpoints
+    "cp_gpr_hazard": make_cp_gpr_hazard,
+    "cp_fpr_hazard": make_cp_gpr_hazard,  # Same handler for now
+    "cp_mem_hazard": make_mem_hazard,
+    "cp_f_mem_hazard": make_f_mem_hazard,
+}
+
+
+def get_coverpoint_handler(coverpoint: str) -> Callable[[str, str, TestData], list[str]] | None:
+    """
+    Get the handler function for a given coverpoint.
+
+    Searches the registry using prefix matching. Returns the first handler
+    whose key is a prefix of the coverpoint name.
+
+    Args:
+        coverpoint: Coverpoint name (e.g., "cp_rd_nx0", "cp_rs1_edges_orcb")
+
+    Returns:
+        Handler function if found, None otherwise
+
+    Example:
+        >>> handler = get_coverpoint_handler("cp_rd_nx0")
+        >>> # Returns make_rd since "cp_rd" is a prefix of "cp_rd_nx0"
+    """
+    for pattern, handler in COVERPOINT_HANDLERS.items():
+        if coverpoint.startswith(pattern):
+            return handler
+    return None
