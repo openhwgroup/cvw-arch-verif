@@ -208,7 +208,12 @@ covergroup PMPZca_cg with function sample(ins_t ins,logic [7:0] pmpcfg [63:0],lo
 		bins locked_off_regions = {24'b100001111000011110000111};
 	}
 
-	cp_cfg_R: cross priv_mode_m, legal_lxwr, addr_in_region, read_c_instr;
+	cp_cfg_R: cross priv_mode_m, legal_lxwr, addr_in_region, read_c_instr {
+        ignore_bins ig1 = binsof(addr_in_region.at_region) && binsof(read_c_instr.c_lwsp);
+		`ifdef XLEN64
+        	ignore_bins ig2 = binsof(addr_in_region.at_region) && binsof(read_c_instr.c_ldsp);
+		`endif
+	}
 	cp_cfg_W: cross priv_mode_m, legal_lxwr, addr_in_region, write_c_instr;
 
 	cp_misaligned_napot: cross priv_mode_m, cfg_consecutive_napot, pmpaddr_consecutive_napot, addr_in_consecutive_regions, exec_c_instr;
