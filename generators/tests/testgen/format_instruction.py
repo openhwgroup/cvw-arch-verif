@@ -138,9 +138,9 @@ def format_b_type(
     ]
     test = [
         f"{instr_name} x{params.rs1}, x{params.rs2}, 1f # perform operation",
-        f"LI(x{params.rd}, 0) # branch not taken, set rd to 0",
     ]
     check = [
+        f"LI(x{params.rd}, 0) # branch not taken, set rd to 0",
         "1:",
         write_sigupd(params.rd, test_data, "int"),
     ]
@@ -157,9 +157,9 @@ def format_j_type(
     ]
     test = [
         f"{instr_name} x{params.rd}, 1f # perform jump",
-        f"LI(x{params.rs2}, 0) # should not execute (jump not taken)",
     ]
     check = [
+        f"LI(x{params.rs2}, 0) # should not execute (jump not taken)",
         "1:",
         write_sigupd(params.rd, test_data, "int"),
         write_sigupd(params.rs2, test_data, "int"),
@@ -182,9 +182,9 @@ def format_jr_type(
     ]
     test = [
         f"{instr_name} x{params.rd}, x{params.rs1}, {scaled_imm} # perform jump with offset",
-        f"LI(x{params.rs2}, 0) # should not execute (jump not taken)",
     ]
     check = [
+        f"LI(x{params.rs2}, 0) # should not execute (jump not taken)",
         "1:",
         write_sigupd(params.rd, test_data, "int"),
         write_sigupd(params.rs2, test_data, "int"),
