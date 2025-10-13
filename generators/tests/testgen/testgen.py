@@ -20,7 +20,10 @@ from testgen.test_data import TestData
 from testgen.testplans import get_extensions, read_testplan
 from testgen.write_tests import write_tests_for_instruction
 
+testgen_app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
 
+
+@testgen_app.command()
 def generate_tests(
     testplan_dir: Annotated[
         Path, typer.Argument(exists=True, file_okay=False, help="Directory containing testplan CSV files")
@@ -28,15 +31,30 @@ def generate_tests(
     output_test_dir: Annotated[
         Path, typer.Option("--output_test_dir", "-o", help="Directory to output generated tests")
     ] = Path("tests"),
+    extensions: Annotated[
+        str,
+        typer.Option(
+            "--extensions", "-e", help="Comma-separated list of extensions to generate tests for (default: all)"
+        ),
+    ] = "all",
 ) -> None:
     """
     Generate riscv-arch-test tests from testplan CSV files.
     """
-    extensions = get_extensions(testplan_dir)
+    # Get list of extensions
+    extensions_from_testplans = get_extensions(testplan_dir)
+    extension_list: list[str] = []
+    if extensions == "all":
+        extension_list = extensions_from_testplans
+    else:
+        for ext in extensions.split(","):
+            if ext not in extensions_from_testplans:
+                raise ValueError(f"Extension {ext} not found in testplans at {testplan_dir}")
+            extension_list.append(ext)
     # Generate tests for each extension, xlen, and E_ext combination
     for xlen in [32, 64]:
         for E_ext in [False]:  # TODO: Enable E tests
-            for extension in sorted(extensions):
+            for extension in sorted(extension_list):
                 # Set extension-specific variables
                 output_dir = output_test_dir / f"rv{xlen}{'e' if E_ext else ''}/{extension}"
                 output_dir.mkdir(parents=True, exist_ok=True)
@@ -85,7 +103,7 @@ def generate_tests(
 
 
 def main() -> None:
-    typer.run(generate_tests)
+    testgen_app()  # runs generate_tests() using Typer to fill in args
 
 
 if __name__ == "__main__":
