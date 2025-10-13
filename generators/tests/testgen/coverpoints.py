@@ -31,6 +31,7 @@ from testgen.edges import (
 )
 from testgen.format_instruction import format_instruction, format_single_test
 from testgen.instruction_params import generate_random_params
+from testgen.load_templates import insert_test_template
 from testgen.test_data import TestData
 
 
@@ -368,6 +369,27 @@ def make_imm_edges_jalr(instr_name: str, instr_type: str, coverpoint: str, test_
     return test_lines
 
 
+def make_align(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    if coverpoint == "cp_align_byte":
+        alignments = [0, 1, 2, 3, 4, 5, 6, 7]
+    elif coverpoint == "cp_align_hword":
+        alignments = [0, 2, 4, 6]
+    elif coverpoint == "cp_align_word":
+        alignments = [0, 4]
+    else:
+        raise ValueError(f"Unknown cp_align coverpoint variant: {coverpoint} for {instr_name}")
+
+    test_lines: list[str] = []
+    for alignment in alignments:
+        test_lines.append("")
+        params = generate_random_params(test_data, instr_type, immval=alignment)
+        desc = f"cp_align: imm[2:0]={alignment:03b}"
+        test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
+        test_data.int_regs.return_registers(params.used_int_regs)
+
+    return test_lines
+
+
 def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     # Extract hazard class from suffix (e.g., cp_gpr_hazard_r -> 'r')
     parts = coverpoint.split("_")
@@ -469,6 +491,12 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_da
 # ============================================================================
 # SPECIAL COVERPOINT HANDLERS
 # ============================================================================
+
+def make_custom(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    """Generate tests for custom coverpoints using a template file."""
+    test_lines, sigupd_count_increment = insert_test_template(f"{instr_name}.S", test_data.xlen, test_data.int_regs.sig_reg)
+    test_data.sigupd_count += sigupd_count_increment
+    return [test_lines]
 
 
 def make_cp_imm_edges_branch(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
@@ -605,6 +633,8 @@ COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] =
     "cp_rs2": make_rs2,
     # Special coverpoints
     "cp_offset": make_offset,
+    "cp_align": make_align,
+    "cp_custom": make_custom,
     # Hazard coverpoints
     "cp_gpr_hazard": make_cp_gpr_hazard,
     "cp_fpr_hazard": make_cp_gpr_hazard,  # Same handler for now
