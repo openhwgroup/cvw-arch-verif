@@ -13,11 +13,17 @@
 # 5. Return list of test lines
 # ============================================================================
 
+# Most coverpoint handlers should be generic and reusable across instructions and instruction types.
+# They should not contain instruction-specific logic and should instead rely on the instruction formatters.
+# See make_rd for an example.
+# Some coverpoints are inherently type or instruction specific and need custom logic. These can directly
+# generate the test code instead of using the formatter. They should still be as general as possible.
+# See make_cp_imm_edges_branch for an example.
 
 from collections.abc import Callable
 from random import seed
 
-from testgen.common import myhash
+from testgen.common import myhash, write_sigupd
 from testgen.edges import (
     IMMEDIATE_EDGES,
     get_general_edges,
@@ -278,9 +284,7 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
         edges1 = get_general_edges(test_data.xlen)
         edges2 = get_general_edges(test_data.xlen)
     else:
-        # raise ValueError(f"Unknown cr_rs1_rs2_edges coverpoint variant: {coverpoint} for {instr_name}")
-        print(f"Warning: Unknown cr_rs1_rs2_edges coverpoint variant: {coverpoint} for {instr_name}")
-        return []
+        raise ValueError(f"Unknown cr_rs1_rs2_edges coverpoint variant: {coverpoint} for {instr_name}")
 
     test_lines: list[str] = []
 
@@ -298,14 +302,15 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
 def make_cp_imm_edges(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     if coverpoint == "cp_imm_edges":
         edges_imm = IMMEDIATE_EDGES.imm_12bit
-    elif coverpoint.endswith("20bit"):
+    elif coverpoint.endswith("_20bit"):
         edges_imm = IMMEDIATE_EDGES.imm_20bit
-    elif coverpoint.endswith("6bit"):
+    elif coverpoint.endswith("_6bit"):
         edges_imm = IMMEDIATE_EDGES.imm_6bit
+    elif coverpoint.endswith("_branch"):
+        # Branch edges coverpoint is special, use dedicated function
+        return make_cp_imm_edges_branch(instr_name, instr_type, coverpoint, test_data)
     else:
-        # raise ValueError(f"Unknown cp_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
-        print(f"Warning: Unknown cp_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
-        return []
+        raise ValueError(f"Unknown cp_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
 
     test_lines: list[str] = []
 
@@ -334,9 +339,7 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     elif coverpoint.endswith("uimm"):
         edges_imm = IMMEDIATE_EDGES.imm_uimm if test_data.xlen == 64 else IMMEDIATE_EDGES.imm_uimmw
     else:
-        # raise ValueError(f"Unknown cr_rs1_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
-        print(f"Warning: Unknown cr_rs1_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
-        return []
+        raise ValueError(f"Unknown cr_rs1_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
 
     test_lines: list[str] = []
 
@@ -464,6 +467,60 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_da
 
 
 # ============================================================================
+# SPECIAL COVERPOINT HANDLERS
+# ============================================================================
+
+
+def make_cp_imm_edges_branch(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    test_lines: list[str] = ["\n# Testcase cp_imm_edges_branch"]
+    params = generate_random_params(test_data, instr_type)
+    assert params.rs1 is not None and params.rs2 is not None
+    test_lines.extend(
+        [
+            f"LI(x{params.rs1}, 1)",
+            f"LI(x{params.rs2}, {1 if instr_name in ['beq', 'bge', 'bgeu'] else 2}) # setup for taken branch",
+            f"{instr_name} x{params.rs1}, x{params.rs2}, 1f # branch forward by 4",
+            f"1: {instr_name} x{params.rs1}, x{params.rs2}, 2f # branch forward by 8",
+            "j 19f # shouldn't happen",
+            f"2: {instr_name} x{params.rs1}, x{params.rs2}, 3f # branch forward by 16",
+            "j 19f # shouldn't happen",
+            "nop",
+            "nop # shouldn't be executed",
+            f"3: LI(x{params.rs1}, 1) # insignificant, just an action before the next align",
+            ".align 11 # align to 2048 bytes",
+            f"{instr_name} x{params.rs1}, x{params.rs2}, 4f # branch forward by 2048",
+            "j 19f # shouldn't happen",
+            ".align 11 # align to 2048 bytes",
+            f"4: LI(x{params.rs1}, 1) # insignificant, just an action before the next align",
+            ".align 12 # align to 4096 bytes",
+            "nop # use up 4 bytes",
+            f"{instr_name} x{params.rs1}, x{params.rs2}, 5f # branch forward by 4092",
+            "j 19f # shouldn't happen",
+            ".align 12 # align to 4096 bytes",
+            "5: j 7f # jump around to test backward branch",
+            "6: j 9f # backward branch succeeded",
+            f"7: {instr_name} x{params.rs1}, x{params.rs2}, 6b # backward branch by -4",
+            "j 19f # shouldn't happen",
+            "8: j 11f # backward branch succeeded",
+            "nop",
+            f"9: {instr_name} x{params.rs1}, x{params.rs2}, 8b # backward branch by -8",
+            "j 19f # shouldn't happen",
+            ".align 12 # align to 4096 bytes",
+            "10: j 20f # backward branch succeeded",
+            ".align 12 # align to 4096 bytes",
+            f"11: {instr_name} x{params.rs1}, x{params.rs2}, 10b # backward branch by -4096",
+            "j 19f # shouldn't happen",
+            f"19: li x{params.rs1}, -1 # write failure code",
+            write_sigupd(params.rs1, test_data),  # failure code
+            f"20: li x{params.rs1}, 1 # write success code",
+            write_sigupd(params.rs1, test_data),  # success code
+        ]
+    )
+    test_data.int_regs.return_registers(params.used_int_regs)
+    return test_lines
+
+
+# ============================================================================
 # COVERPOINT HANDLER REGISTRY
 # ============================================================================
 # This registry maps coverpoint patterns to their handler functions.
@@ -489,6 +546,8 @@ COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] =
     "cp_rd": make_rd,
     "cp_rs1": make_rs1,
     "cp_rs2": make_rs2,
+    # Special coverpoints
+    # "cp_offset": make_offset,
     # Hazard coverpoints
     "cp_gpr_hazard": make_cp_gpr_hazard,
     "cp_fpr_hazard": make_cp_gpr_hazard,  # Same handler for now

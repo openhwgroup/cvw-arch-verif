@@ -55,7 +55,7 @@ def insert_test_template(template_name: str, xlen: int, sig_reg: int) -> tuple[s
             sigupd_count_increment += incr_val // (4 * (xlen // 32))
     # Handle wrong or unused macro
     elif "SIG_POINTER_INCREMENT" in template and not sig_pointer_incr_matches:
-        raise ValueError(f"Warning: Invalid or missing SIG_POINTER_INCREMENT(n) in '{template_name}'.")
+        raise ValueError(f"Invalid or missing SIG_POINTER_INCREMENT(n) in '{template_name}'.")
     # Return test text and sigupd count increment
     template = f"mv x3, x{sig_reg}  # Move signature pointer to x3 for use in custom template\n" + template
     return template, sigupd_count_increment
