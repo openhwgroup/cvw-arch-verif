@@ -5,14 +5,14 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ##################################
 
-"""
-Data structure for cvw-arch-verif test generation.
-"""
-
 from testgen.registers import FloatRegisterFile, IntegerRegisterFile
 
 
 class TestData:
+    """
+    Context and state for test generation. Includes register files, xlen/flen, and signature space tracking.
+    """
+
     def __init__(self, xlen: int, flen: int, e_register_file: bool = False) -> None:
         self._int_regs = IntegerRegisterFile(e_register_file)
         self._float_regs = FloatRegisterFile()

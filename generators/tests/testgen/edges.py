@@ -58,13 +58,13 @@ class IMMEDIATE_EDGES:
     imm_32_c = (1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31)
 
     # 64-bit compressed shift immediates
-    imm_64_c = (1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31, 32, 33, 48, 62, 63)
+    imm_64_c = imm_32_c + (32, 33, 48, 62, 63)
 
     # Unsigned immediate for word operations
     imm_uimmw = (0, 1, 19, 30, 31)
 
     # Unsigned immediate for doubleword operations
-    imm_uimm = (0, 1, 19, 30, 31, 32, 33, 45, 62, 63)
+    imm_uimm = imm_uimmw + (32, 33, 45, 62, 63)
 
 
 # ==============================================================================
@@ -173,8 +173,8 @@ class INTEGER_EDGES:
 
     # c.slli edges for RV64
     c_slli_64 = (
-        0x0000000000000000,
-        0x0000000000000001,
+        0,
+        1,
         0x4000000000000000,
         0x0000000007FFFFFFF,
         0x000000080000000,
@@ -197,9 +197,9 @@ class INTEGER_EDGES:
 
     # c.srli edges for RV64
     c_srli_64 = (
-        0x000000000000000,
-        0x00000000000000002,
-        0x0000000000000004,
+        0,
+        2,
+        4,
         0x00000001FFFFFFFE,
         0x00000001FFFFFFFC,
         0x0000000200000000,
@@ -221,9 +221,9 @@ class INTEGER_EDGES:
 
     # c.srai edges for RV64
     c_srai_64 = (
-        0x0000000000000000,
-        0x0000000000000002,
-        0x0000000000000004,
+        0,
+        2,
+        4,
         0x00000001FFFFFFFE,
         0x00000001FFFFFFFC,
         0x0000000200000000,

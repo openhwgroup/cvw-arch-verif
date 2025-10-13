@@ -30,7 +30,7 @@ def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 6
         loadop = "flw"
     elif precision == 64:
         loadop = "fld"
-    elif precision == 128:
+    else:  # precision == 128
         loadop = "flq"
     storeop = "sw" if min(test_data.xlen, test_data.flen) == 32 else "sd"
     formatstr = test_data.flen_format_str

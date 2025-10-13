@@ -76,7 +76,11 @@ class RegisterFile:
 
 
 class IntegerRegisterFile(RegisterFile):
-    """Class to represent an integer register file."""
+    """
+    Class to represent an integer register file.
+
+    Automatically handles special registers like signature pointer and link register.
+    """
 
     # Limit legal link registers to simplify failure handler
     link_regs = (4, 7, 14)

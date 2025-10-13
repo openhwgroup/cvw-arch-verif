@@ -5,13 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ##################################
 
-"""
-Instruction parameter data structures for cvw-arch-verif test generation.
-
-This module contains data structures for representing instruction parameters
-that are shared between coverpoint handlers and instruction formatters.
-"""
-
 from dataclasses import dataclass
 
 from testgen.immediates import gen_random_imm
@@ -73,16 +66,14 @@ class InstructionParams:
 
 def generate_random_params(test_data: TestData, instr_type: str, **fixed_params) -> InstructionParams:
     """
-    Generate random parameters for an instruction with some fixed values.
+    Generate random parameters for an instruction.
 
-    This function fills in any missing parameters needed for the instruction type.
-    Parameters explicitly provided via **fixed_params are preserved; only None
-    values are filled with random data.
+    This function randomly fills in any missing parameters needed for the instruction type.
+    Explicitly provided parameters are preserved.
 
     Args:
         test_data: Test data context (xlen, register allocators, etc.)
-        instr_type: Instruction type (e.g., 'R', 'I', 'L') - currently unused
-                    but reserved for future type-specific parameter generation
+        instr_type: Instruction type (e.g., 'R', 'I', 'L') to determine needed parameters
         **fixed_params: Fixed parameter values (e.g., rd=5, rs1val=0x100)
 
     Returns:

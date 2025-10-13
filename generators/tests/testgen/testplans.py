@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 def get_extensions(testplan_dir: Path) -> list[str]:
-    """Get the list of extensions to generate tests for"""
+    """Get the list of extensions from the testplan directory"""
     extensions: list[str] = []
     for testplan in testplan_dir.glob("*.csv"):
         extension = testplan.stem
@@ -28,6 +28,10 @@ def get_extensions(testplan_dir: Path) -> list[str]:
 
 @dataclass
 class TestPlanData:
+    """
+    Data structure for information on a single instruction parsed from a testplan.
+    """
+
     instr_type: str
     rv32: bool
     rv64: bool
@@ -35,7 +39,7 @@ class TestPlanData:
 
 
 def read_testplan(testplan_path: Path) -> dict[str, TestPlanData]:
-    """Read a testplan and return a dictionary of instructions and their associated coverpoints"""
+    """Read a testplan and return a dictionary of instructions and their associated data(type, coverpoints, etc.)"""
     instructions: dict[str, TestPlanData] = {}
     with testplan_path.open() as csvfile:
         reader = csv.DictReader(csvfile)

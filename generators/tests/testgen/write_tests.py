@@ -78,10 +78,7 @@ def write_tests_for_instruction(
         # Look up handler in registry and dispatch
         else:
             handler = get_coverpoint_handler(coverpoint)
-            if handler:
-                test_lines.extend(handler(instr_name, instr_type, coverpoint, test_data))
-            else:
-                print(f"Warning: {coverpoint} not implemented yet for {instr_name}")
+            test_lines.extend(handler(instr_name, instr_type, coverpoint, test_data))
 
     # Combine test lines into a single string
     return "\n".join(test_lines) + "\n"
