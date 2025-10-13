@@ -132,7 +132,7 @@ class IntegerRegisterFile(RegisterFile):
 
         # Reallocate special registers to new locations
         if sig_conflict:
-            self._sig_reg = self.get_register()
+            self._sig_reg = self.get_register(exclude_reg=[0])
             asm_code += f"\nmv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
         if link_conflict:
