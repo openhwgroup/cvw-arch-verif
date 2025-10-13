@@ -2,6 +2,8 @@
 #define _COMPLIANCE_MODEL_H
 
 #define ACCESS_FAULT_ADDRESS 0x00000000
+#define RVMODEL_PMP_GRAIN 4
+#define RVMODEL_NUM_PMPS 16
 
 #define RVMODEL_DATA_SECTION \
         .pushsection .tohost,"aw",@progbits;                            \
