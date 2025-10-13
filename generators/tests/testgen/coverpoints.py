@@ -15,7 +15,9 @@
 
 
 from collections.abc import Callable
+from random import seed
 
+from testgen.common import myhash
 from testgen.edges import (
     IMMEDIATE_EDGES,
     get_general_edges,
@@ -24,6 +26,44 @@ from testgen.edges import (
 from testgen.format_instruction import format_instruction, format_single_test
 from testgen.instruction_params import generate_random_params
 from testgen.test_data import TestData
+
+
+def select_coverpoint_generator(coverpoint: str) -> Callable[[str, str, str, TestData], list[str]]:
+    """Select the appropriate coverpoint generator function based on coverpoint name. Matches using prefix matching."""
+    for pattern, handler in COVERPOINT_HANDLERS.items():
+        if coverpoint.startswith(pattern):
+            return handler
+    raise ValueError(f"No coverpoint generator found for coverpoint: {coverpoint}")
+
+
+def generate_tests_for_coverpoint(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> str:
+    """
+    Generate tests for a specific coverpoint.
+
+    Args:
+        instr_name: Instruction mnemonic
+        instr_type: Instruction type
+        coverpoint: Coverpoint name
+        test_data: Test data context
+
+    Returns:
+        List of test code lines
+    """
+    # Get the coverpoint specific generator
+    coverpoint_handler = select_coverpoint_generator(coverpoint)
+
+    # Produce a deterministic seed for repeatable random numbers
+    hashval = myhash(instr_name + coverpoint)
+    seed(hashval)
+
+    # Call the generator to get test lines
+    test_lines = coverpoint_handler(instr_name, instr_type, coverpoint, test_data)
+    return "\n".join(test_lines)
+
+
+# ========================================================================
+# COVERPOINT GENERATORS
+# ========================================================================
 
 
 def make_rd(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
@@ -455,26 +495,3 @@ COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] =
     "cp_mem_hazard": make_mem_hazard,
     "cp_f_mem_hazard": make_f_mem_hazard,
 }
-
-
-def get_coverpoint_handler(coverpoint: str) -> Callable[[str, str, str, TestData], list[str]]:
-    """
-    Get the handler function for a given coverpoint.
-
-    Searches the registry using prefix matching. Returns the first handler
-    whose key is a prefix of the coverpoint name.
-
-    Args:
-        coverpoint: Coverpoint name (e.g., "cp_rd_nx0", "cp_rs1_edges_orcb")
-
-    Returns:
-        Handler function if found, None otherwise
-
-    Example:
-        >>> handler = get_coverpoint_handler("cp_rd_nx0")
-        >>> # Returns make_rd since "cp_rd" is a prefix of "cp_rd_nx0"
-    """
-    for pattern, handler in COVERPOINT_HANDLERS.items():
-        if coverpoint.startswith(pattern):
-            return handler
-    raise ValueError(f"No coverpoint handler found for coverpoint: {coverpoint}")

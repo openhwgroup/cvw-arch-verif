@@ -15,16 +15,16 @@ from typing import Annotated
 import typer
 
 from testgen.common import get_sig_space
+from testgen.coverpoints import generate_tests_for_coverpoint
 from testgen.load_templates import insert_setup_template
 from testgen.test_data import TestData
 from testgen.testplans import get_extensions, read_testplan
-from testgen.write_tests import write_tests_for_instruction
 
 testgen_app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
 
 
 @testgen_app.command()
-def generate_tests(
+def generate_all_tests(
     testplan_dir: Annotated[
         Path, typer.Argument(exists=True, file_okay=False, help="Directory containing testplan CSV files")
     ],
@@ -51,6 +51,7 @@ def generate_tests(
             if ext not in extensions_from_testplans:
                 raise ValueError(f"Extension {ext} not found in testplans at {testplan_dir}")
             extension_list.append(ext)
+
     # Generate tests for each extension, xlen, and E_ext combination
     for xlen in [32, 64]:
         for E_ext in [False]:  # TODO: Enable E tests
@@ -84,8 +85,8 @@ def generate_tests(
 
                     # Generate tests for this instruction
                     test_lines.append(
-                        write_tests_for_instruction(
-                            instr_name, instr_data.instr_type, instr_data.coverpoints, test_data, extension
+                        generate_tests_for_instruction(
+                            instr_name, instr_data.instr_type, instr_data.coverpoints, test_data
                         )
                     )
 
@@ -100,6 +101,52 @@ def generate_tests(
                     if not (test_file.exists()) or test_file.read_text() != test_string:
                         test_file.write_text(test_string)
                         print(f"Updated {test_file}")
+
+
+def generate_tests_for_instruction(
+    instr_name: str, instr_type: str, coverpoints: list[str], test_data: TestData
+) -> str:
+    """
+    Generate tests for a specific instruction based on its coverpoints.
+    Each coverpoint generates multiple test cases.
+
+    Args:
+        instr_name: Instruction mnemonic (e.g., 'add', 'lw')
+        instr_type: Instruction type (e.g., 'R', 'I', 'S')
+        coverpoints: List of coverpoints for the instruction
+        test_data: Test data context
+
+    Returns:
+        Generated test code as a string
+    """
+    # Extract relevant data
+    test_lines: list[str] = []
+
+    # Coverpoints that don't need dedicated test generation
+    skip_coverpoints = {
+        "cp_imm_edges_6bit_n0",  # Used only for cross products
+        "cp_rd_sign",  # Already covered by rd_edges
+        "cmp_rd_rs1_eqval",  # Already covered by cr_rs1_rs2_edges
+        "cmp_rd_rs2_eqval",  # Already covered by cr_rs1_rs2_edges
+    }
+
+    # Iterate through each coverpoint and generate tests
+    for coverpoint in coverpoints:
+        # Skip coverpoints that don't need test generation
+        if coverpoint in skip_coverpoints:
+            continue
+
+        # If cp_asm_count is the only coverpoint, generate a trivial test:
+        if coverpoint == "cp_asm_count":
+            if len(coverpoints) == 1:
+                test_lines.extend(["# Testcase cp_asm_count", f"{instr_name}"])
+            continue
+        # Get the coverpoint specific handler and generate tests
+        else:
+            test_lines.extend(generate_tests_for_coverpoint(instr_name, instr_type, coverpoint, test_data))
+
+    # Combine test lines into a single string
+    return "\n".join(test_lines) + "\n"
 
 
 def main() -> None:
