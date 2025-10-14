@@ -1,13 +1,6 @@
 
 
-# Expects a PC16550-compatible UART.
-# Change these addresses to match your memory map
-.EQU UART_ENABLED, 1                     # set to 0 to not print
-.EQU UART_BASE_ADDR, 0x10000000
-.EQU UART_THR, (UART_BASE_ADDR + 0)
-.EQU UART_RBR, (UART_BASE_ADDR + 0)
-.EQU UART_LCR, (UART_BASE_ADDR + 3)
-.EQU UART_LSR, (UART_BASE_ADDR + 5)
+
 
 # Expects a SiFive-compatible GPIO
 # Change these addresses to match your memory map
@@ -118,22 +111,40 @@ failedtest_saveresults:
 failedtest_report:
     RVMODEL_IO_INIT
     RVMODEL_IO_WRITE_STR(a0, failstr)
-    # jal failedtest_printstr
-    # la a0, failing_instruction
-    # jal failedtest_printhexln
-    # la a0, failing_addr
-    # jal failedtest_printhexln32
-    # la a0, failing_reg
-    # jal failedtest_printhexln32
-    # la a0, failing_value
-    # jal failedtest_printhexln
-    # la a0, expected_value
-    # jal failedtest_printhexln
+
+    # Print failing instruction (32-bit)
+    lw a0, failing_instruction
+    li a1, 32
+    jal failedtest_hex_to_str
+    RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
+
+    # Print failing address (XLEN-bit)
+    LREG a0, failing_addr
+    li a1, __riscv_xlen
+    jal failedtest_hex_to_str
+    RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
+
+    # Print failing register (32-bit)
+    lw a0, failing_reg
+    li a1, 32
+    jal failedtest_hex_to_str
+    RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
+
+    # Print failing value (XLEN-bit)
+    LREG a0, failing_value
+    li a1, __riscv_xlen
+    jal failedtest_hex_to_str
+    RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
+
+    # Print expected value (XLEN-bit)
+    LREG a0, expected_value
+    li a1, __riscv_xlen
+    jal failedtest_hex_to_str
+    RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
 failedtest_terminate:
     RVMODEL_HALT_FAIL
 
-/*
 
 # raise GPIO
 # ideally the startup code would do OUTPUT_EN and set the pins low
@@ -147,75 +158,45 @@ failedtest_terminate:
     sw x7, 0(x6)            # set GPIO pins 0 and 1 high to indicate failure
 1:
 
-write_tohost_failure:
-    la x7, tohost
-    li x6, 3 # failure code
-    sw x6, 0(x7)
-    sw zero, 4(x7)
-    j self_loop
+# Convert hex number to ASCII string
+# a0: value to convert
+# a1: number of bits (32 or 64)
+# Returns: a0 pointing to ascii_buffer with null-terminated hex string
+failedtest_hex_to_str:
+    la a2, ascii_buffer     # buffer pointer
+    li a3, '0'
+    sb a3, 0(a2)            # write '0'
+    li a3, 'x'
+    sb a3, 1(a2)            # write 'x'
+    addi a2, a2, 2          # move past "0x"
 
-# simple printing routines.  Stack isn't set up, so use dedicated variables
+    mv a3, a1               # a3 = bit count
+failedtest_hex_to_str_loop:
+    addi a3, a3, -4         # move to next nibble
+    srl a4, a0, a3          # shift nibble to bottom
+    andi a4, a4, 15         # mask to get nibble
 
-# a0: pointer to null-terminated string to print
-failedtest_printstr:
-    lb a1, 0(a0)    # fetch a character
-    beqz a1, 1f     # terminate if null
-    jal a2, failedtest_putch   # print the character
-    addi a1, a1, 1  # move to next character
-    j failedtest_printstr
-1:  ret             # return from function call
+    # Convert nibble to ASCII
+    li a5, 10
+    blt a4, a5, failedtest_hex_to_str_digit
+    # It's a letter (A-F)
+    addi a4, a4, 87         # 'a' - 10 = 87
+    j failedtest_hex_to_str_write
+failedtest_hex_to_str_digit:
+    # It's a digit (0-9)
+    addi a4, a4, 48         # '0' = 48
+failedtest_hex_to_str_write:
+    sb a4, 0(a2)            # write character to buffer
+    addi a2, a2, 1          # advance buffer pointer
+    bnez a3, failedtest_hex_to_str_loop
 
-# a0: pointer to XLEN-sized number to print in hexadecimal form
-failedtest_printhexln:
-    li x6, __riscv_xlen     # 32 or 64
-failedtest_printhexlnnibble:
-    addi x6, x6, -4         # move over one nibble
-    srl x7, a0, x6          # shift nibble into bottom bits
-    andi x7, x7, 15         # mask upper bits
-    li x8, 10               # check if this is a letter
-    blt x8, x7, failedtest_printhexlnnumber
-    addi x8, x7, 55         # convert letter to ASCII
-    j failedtest_printhexlnputch
-failedtest_printhexlnnumber:
-    addi x6, x6, 48         # convert number to ASCII
-failedtest_printhexlnputch:
-    jal a2, failedtest_putch  # print the character
-    bnez x6, failedtest_printhexlnnibble # repeat until done
-    la a1, 10               # print \n character at end
-    jal a2, failedtest_putch
+    # Add newline and null terminator
+    li a3, 10               # '\n'
+    sb a3, 0(a2)
+    sb zero, 1(a2)          # null terminator
+
+    la a0, ascii_buffer     # return buffer address
     ret
-
-# a0: pointer to 32-bit number to print in hexadecimal form
-failedtest_printhexln32:
-    li x6, 32               # 32 bits
-    j failedtest_printhexlnnibble  # same as above
-
-# Initialize UART
-failedtest_uartinit:
-    li x6, UART_ENABLED
-    beqz x6, 1f             # skip if UART is not enabled
-    li x6, UART_LCR
-    li x7, 3                # 8-bit characters, 1 stop bit, no parity
-    sb x7, 0(x6)
-1:
-    ret
-
-# a1: character to print
-# a2: return address
-failedtest_putch:
-    li x6, UART_ENABLED
-    beqz x6, 1f             # skip if UART is not enabled
-    li x6, UART_LSR
-failedtest_waituartbusy:
-    lbu x7, 0(x6)
-    andi x7, x7, 0x20 # check line status register bit 5
-    beqz x7, failedtest_waituartbusy # wait until Transmit Holding Register Empty is set
-
-    li x6, UART_THR     # transmit character
-    sb a1, 0(x6)
-1:  jr a2               # return
-
-*/
 
 .data
 
@@ -232,6 +213,8 @@ failing_value:
     .fill 1, 8, 0xfeedf00dbaaaaaad
 expected_value:
     .fill 1, 8, 0xfeedf00dbaaaaaad
+ascii_buffer:
+    .fill 20, 1, 0          # Buffer for hex string conversion (max "0x" + 16 hex digits + "\n" + null)
 end_failure_scratch:
 
 
