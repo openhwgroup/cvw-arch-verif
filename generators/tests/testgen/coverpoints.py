@@ -620,14 +620,16 @@ def make_cp_imm_edges_jal(instr_name: str, instr_type: str, coverpoint: str, tes
         maxrng = 13
 
     # Test smallest offset as a special case
-    test_lines = [
-        "",
-        f"# Testcase cp_imm_edges_jal (imm = {minrng - 1})",
-        f".align {maxrng} # Start all tests on a multiple of the largest offset",
-        f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} 1f # jump to aligned address to stress immediate",
-        "1: # alignment too small to test with sigupd",
-        f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} f{minrng}_{instr_name} # jump to aligned address to stress immediate",
-    ]
+    test_lines.extend(
+        [
+            "",
+            f"# Testcase cp_imm_edges_jal (imm = {minrng - 1})",
+            f".align {maxrng} # Start all tests on a multiple of the largest offset",
+            f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} 1f # jump to aligned address to stress immediate",
+            "1: # alignment too small to test with sigupd",
+            f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} f{minrng}_{instr_name} # jump to aligned address to stress immediate",
+        ]
+    )
 
     # Test all other offsets
     for val in range(minrng, maxrng):
@@ -778,7 +780,7 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
         test_lines.append(f"LA(x{params.rs2}, 1b) # load backward branch target")
     elif instr_type == "CB":
         branch_val = 0 if instr_name == "c.beqz" else 1  # set value to ensure branch is taken
-        test_lines.append(f"LI({params.rs1}, {branch_val}) # initialize {params.rs1} to {branch_val} for taken branch")
+        test_lines.append(f"LI(x{params.rs1}, {branch_val}) # initialize {params.rs1} to {branch_val} for taken branch")
     test_lines.extend(
         [
             f"LI(x{check_reg}, 1) # branch is taken",
@@ -794,6 +796,7 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
     test_data.int_regs.return_registers(params.used_int_regs)
     return test_lines
 
+
 def make_cr_rs1_rs2_edges_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     edges1 = get_general_edges(test_data.xlen)
     edges2 = get_general_edges(test_data.xlen)
@@ -805,27 +808,30 @@ def make_cr_rs1_rs2_edges_offset(instr_name: str, instr_type: str, coverpoint: s
             test_lines.append("")
             params = generate_random_params(test_data, instr_type, rs1val=edge_val1, rs2val=edge_val2)
             assert params.rs1 is not None and params.rs2 is not None
-            test_lines.extend([
-                f"{coverpoint} (Test source rs1 = {test_data.xlen_format_str.format(edge_val1)} rs2 = {test_data.xlen_format_str.format(edge_val2)})",
-                load_int_reg("rs1", params.rs1, edge_val1, test_data),
-                load_int_reg("rs2", params.rs2, edge_val2, test_data),
-                "0: # destination for backwards branch that is never taken",
-                f"{instr_name} x{params.rs1}, x{params.rs2}, 3f # forward branch, if taken",
-                "1: # goes here if not taken",
-                f"{instr_name} x{params.rs1}, x{params.rs2}, 0b # backward branch, never taken",
-                write_sigupd(0, test_data),  # signature 0 for not taken
-                "j 4f # done with test",
-                "2: # goes here during backward branch if taken",
-                f"LI(x{params.rs1}, 1)",
-                write_sigupd(params.rs1, test_data) + " # signature 1 for taken",
-                "j 4f # done with test",
-                "3: # goes here during forward branch if taken",
-                f"{instr_name} x{params.rs1}, x{params.rs2}, 2b # backward branch, definitely taken",
-                "4: # done with test",
-            ])
+            test_lines.extend(
+                [
+                    f"# {coverpoint} (Test source rs1 = {test_data.xlen_format_str.format(edge_val1)} rs2 = {test_data.xlen_format_str.format(edge_val2)})",
+                    load_int_reg("rs1", params.rs1, edge_val1, test_data),
+                    load_int_reg("rs2", params.rs2, edge_val2, test_data),
+                    "0: # destination for backwards branch that is never taken",
+                    f"{instr_name} x{params.rs1}, x{params.rs2}, 3f # forward branch, if taken",
+                    "1: # goes here if not taken",
+                    f"{instr_name} x{params.rs1}, x{params.rs2}, 0b # backward branch, never taken",
+                    write_sigupd(0, test_data),  # signature 0 for not taken
+                    "j 4f # done with test",
+                    "2: # goes here during backward branch if taken",
+                    f"LI(x{params.rs1}, 1)",
+                    write_sigupd(params.rs1, test_data) + " # signature 1 for taken",
+                    "j 4f # done with test",
+                    "3: # goes here during forward branch if taken",
+                    f"{instr_name} x{params.rs1}, x{params.rs2}, 2b # backward branch, definitely taken",
+                    "4: # done with test",
+                ]
+            )
             test_data.int_regs.return_registers(params.used_int_regs)
 
     return test_lines
+
 
 # ============================================================================
 # COVERPOINT HANDLER REGISTRY

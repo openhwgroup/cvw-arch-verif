@@ -48,6 +48,7 @@ def generate_all_tests(
         extension_list = extensions_from_testplans
     else:
         for ext in extensions.split(","):
+            ext = ext.strip()
             if ext not in extensions_from_testplans:
                 raise ValueError(f"Extension {ext} not found in testplans at {testplan_dir}")
             extension_list.append(ext)
