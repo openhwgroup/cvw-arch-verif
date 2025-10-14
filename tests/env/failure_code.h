@@ -78,14 +78,14 @@ failedtest_saveregs:
 failedtest_saveresults:
     # failing instruction might be 16 or 32 bits, on a 16-byte boundary.
     # fetch with halfwords, report all 32 bits, let user figure it out
-    lhu x6, -10(x4)     # get upper half of the failing instruction
-    lhu x7, -12(x4)     # get lower half
+    lhu x6, -14(x4)     # get upper half of the failing instruction
+    lhu x7, -16(x4)     # get lower half
     slli x6, x6, 16     # reassemble
     or x6, x6, x7
     sw x6, 256(x5)      # record 32 bits of failing instruction.  Actual instruction might be top half
     # branch might be on 16-byte boundary, so fetch with halfword
-    lhu x6, -6(x4)      # get upper half of the the beq that compared good and bad registers
-    lhu x7, -8(x4)      # get lower half of the beq
+    lhu x6, -10(x4)      # get upper half of the the beq that compared good and bad registers
+    lhu x7, -12(x4)      # get lower half of the beq
     slli x6, x6, 16     # reassemble beq
     or x6, x6, x7
     # extract rs1 and rs2 from branch
@@ -113,50 +113,46 @@ failedtest_report:
     RVMODEL_IO_WRITE_STR(a0, failstr)
 
     # Print failing instruction (32-bit)
+    RVMODEL_IO_WRITE_STR(a0, inststr)
     lw a0, failing_instruction
     li a1, 32
     jal failedtest_hex_to_str
     RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
     # Print failing address (XLEN-bit)
+    RVMODEL_IO_WRITE_STR(a0, addrstr)
     LREG a0, failing_addr
     li a1, __riscv_xlen
     jal failedtest_hex_to_str
     RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
     # Print failing register (32-bit)
+    RVMODEL_IO_WRITE_STR(a0, regstr)
     lw a0, failing_reg
     li a1, 32
     jal failedtest_hex_to_str
     RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
     # Print failing value (XLEN-bit)
+    RVMODEL_IO_WRITE_STR(a0, badvalstr)
     LREG a0, failing_value
     li a1, __riscv_xlen
     jal failedtest_hex_to_str
     RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
     # Print expected value (XLEN-bit)
+    RVMODEL_IO_WRITE_STR(a0, expvalstr)
     LREG a0, expected_value
     li a1, __riscv_xlen
     jal failedtest_hex_to_str
     RVMODEL_IO_WRITE_STR(a0, ascii_buffer)
 
+    RVMODEL_IO_WRITE_STR(a0, endstr)
+
 failedtest_terminate:
     RVMODEL_HALT_FAIL
 
 
-# raise GPIO
-# ideally the startup code would do OUTPUT_EN and set the pins low
-# and write_tohost would show success by setting them to 01
-    li x6, GPIO_ENABLED
-    beqz x6, 1f             # skip if not enabled
-    li x6, GPIO_OUTPUT_EN   # address of OUTPUT_EN register
-    li x7, 3
-    sw x7, 0(x6)            # enable GPIO pins 0 and 1
-    li x6, GPIO_OUTPUT_VAL  # address of OUTPUT_VAL register
-    sw x7, 0(x6)            # set GPIO pins 0 and 1 high to indicate failure
-1:
 
 # Convert hex number to ASCII string
 # a0: value to convert
@@ -221,4 +217,16 @@ end_failure_scratch:
 successstr:
     .string "Tests succeeded\n"
 failstr:
-    .string "Test failed: Instruction, Address, Register, Bad Value, Expected Value\n"
+    .string "\nTEST FAILED\nDEBUG INFORMATION FOLLOWS\n"
+inststr:
+    .string "Instruction: "
+addrstr:
+    .string "Address: "
+regstr:
+    .string "Register: "
+badvalstr:
+    .string "Bad Value: "
+expvalstr:
+    .string "Expected Value: "
+endstr:
+    .string "END OF DEBUG INFORMATION\n\n"
