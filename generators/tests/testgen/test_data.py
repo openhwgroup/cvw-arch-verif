@@ -21,7 +21,10 @@ class TestData:
         self.__xlen = xlen
         self.__flen = flen
 
-    # Regiester file accessors
+    def __repr__(self):
+        return f"TestData with xlen={self.__xlen}, flen={self.__flen}, int_regs={self._int_regs}, float_regs={self._float_regs}, sigupd_count={self._sigupd_count}, sigupd_count_float={self._sigupd_count_float}"
+
+    # Register file accessors
     @property
     def int_regs(self):
         return self._int_regs

@@ -9,7 +9,11 @@
 Register management for cvw-arch-verif test generation.
 """
 
+import logging
 import random
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def select_registers(num_regs: int, reg_list: list[int]) -> list[int]:
@@ -39,7 +43,7 @@ class RegisterFile:
         self, num_regs: int, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None
     ) -> list[int]:
         """Get a specified number of unique registers from the register file."""
-        # Handle exclusions and range limitations
+        # Handle exclusions and range limitations)
         if exclude_reg is None:
             exclude_reg = []
         if reg_range is not None:
@@ -49,6 +53,7 @@ class RegisterFile:
         selected_regs = select_registers(num_regs, available_regs)
         for reg in selected_regs:
             self.reg_list.remove(reg)
+        logger.debug(f"Getting {num_regs} registers from available {available_regs}, excluding {exclude_reg}. Selected: {selected_regs}")
         return selected_regs
 
     def get_register(self, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> int:
@@ -60,6 +65,7 @@ class RegisterFile:
         self.reg_list.extend(regs)
         self.reg_list = list(set(self.reg_list))  # Ensure uniqueness
         self.reg_list.sort()
+        logger.debug(f"Returned registers: {regs}. Available registers after return: {self.reg_list}")
 
     def return_register(self, reg: int) -> None:
         """Mark a single register as available again."""
@@ -67,6 +73,7 @@ class RegisterFile:
 
     def consume_registers(self, regs: list[int]) -> str | None:
         """Mark registers as used/unavailable."""
+        logger.debug(f"Consuming registers: {regs}")
         for reg in regs:
             if reg in self.reg_list:
                 self.reg_list.remove(reg)
@@ -83,8 +90,7 @@ class IntegerRegisterFile(RegisterFile):
     """
 
     # Limit legal link/temp registers to simplify failure handler
-    link_regs = (4, 7, 14)
-    temp_regs = (5, 8, 15)
+    link_regs = (4, 7, 12)
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -93,7 +99,7 @@ class IntegerRegisterFile(RegisterFile):
         # Default special registers
         self._sig_reg = 3
         self._link_reg = 4
-        self._temp_reg = 5
+        self._temp_reg = self._link_reg + 1  # temp register is always the next register after the link register
         super().consume_registers([self._sig_reg, self._link_reg, self._temp_reg])
 
     # Access to special registers
@@ -151,12 +157,10 @@ class IntegerRegisterFile(RegisterFile):
             old_sig_reg = self._sig_reg
             self.return_register(self._sig_reg)
 
-        if link_conflict:
+        if link_conflict or temp_conflict:
             old_link_reg = self._link_reg
-            self.return_register(self._link_reg)
-
-        if temp_conflict:
             old_temp_reg = self._temp_reg
+            self.return_register(self._link_reg)
             self.return_register(self._temp_reg)
 
         # Consume requested registers
@@ -167,17 +171,16 @@ class IntegerRegisterFile(RegisterFile):
             self._sig_reg = self.get_register(exclude_reg=[0])
             asm_code += f"\nmv x{self._sig_reg}, x{old_sig_reg} # switch signature pointer register to avoid conflict with test\n"
 
-        if link_conflict:
+        if link_conflict or temp_conflict:
             # Restrict link register to specific set
-            self._link_reg = self.get_register(reg_range=list(self.link_regs))
+            available_link_regs = [reg for reg in self.link_regs if reg + 1 in self.reg_list]
+            self._link_reg = self.get_register(reg_range=available_link_regs)
+            self._temp_reg = self._link_reg + 1  # temp register is always the next register after the link register
+            super().consume_registers([self._temp_reg]) # Use super to avoid recursive checking for special reg conflicts
             asm_code += (
                 f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
+                f"\nmv x{self._temp_reg}, x{old_temp_reg} # switch temp pointer register to avoid conflict with test\n"
             )
-
-        if temp_conflict:
-            # Restrict temp register to specific set
-            self._temp_reg = self.get_register(reg_range=list(self.temp_regs))
-            asm_code += f"\nmv x{self._temp_reg}, x{old_temp_reg} # switch temp pointer register to avoid conflict with test\n"
 
         return asm_code
 
