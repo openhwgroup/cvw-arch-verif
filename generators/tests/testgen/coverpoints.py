@@ -35,6 +35,15 @@ from testgen.instruction_params import generate_random_params
 from testgen.load_templates import insert_test_template
 from testgen.test_data import TestData
 
+SKIP_COVERPOINTS = frozenset(
+    {
+        "cp_imm_edges_6bit_n0",  # Used only for cross products
+        "cp_rd_sign",            # Already covered by rd_edges
+        "cmp_rd_rs1_eqval",      # Already covered by cr_rs1_rs2_edges
+        "cmp_rd_rs2_eqval",      # Already covered by cr_rs1_rs2_edges
+    }
+)
+
 
 def select_coverpoint_generator(coverpoint: str) -> Callable[[str, str, str, TestData], list[str]]:
     """Select the appropriate coverpoint generator function based on coverpoint name. Matches using prefix matching."""
@@ -42,6 +51,9 @@ def select_coverpoint_generator(coverpoint: str) -> Callable[[str, str, str, Tes
         if coverpoint.startswith(pattern):
             return handler
     raise ValueError(f"No coverpoint generator found for coverpoint: {coverpoint}")
+
+
+# Coverpoints that don't need dedicated test generation
 
 
 def generate_tests_for_coverpoint(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> str:
@@ -57,6 +69,10 @@ def generate_tests_for_coverpoint(instr_name: str, instr_type: str, coverpoint: 
     Returns:
         List of test code lines
     """
+    # Skip coverpoints that don't need test generation
+    if coverpoint in SKIP_COVERPOINTS:
+        return ""
+
     # Get the coverpoint specific generator
     coverpoint_handler = select_coverpoint_generator(coverpoint)
 

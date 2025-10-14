@@ -123,20 +123,8 @@ def generate_tests_for_instruction(
     # Extract relevant data
     test_lines: list[str] = []
 
-    # Coverpoints that don't need dedicated test generation
-    skip_coverpoints = {
-        "cp_imm_edges_6bit_n0",  # Used only for cross products
-        "cp_rd_sign",  # Already covered by rd_edges
-        "cmp_rd_rs1_eqval",  # Already covered by cr_rs1_rs2_edges
-        "cmp_rd_rs2_eqval",  # Already covered by cr_rs1_rs2_edges
-    }
-
     # Iterate through each coverpoint and generate tests
     for coverpoint in coverpoints:
-        # Skip coverpoints that don't need test generation
-        if coverpoint in skip_coverpoints:
-            continue
-
         # If cp_asm_count is the only coverpoint, generate a trivial test:
         if coverpoint == "cp_asm_count":
             if len(coverpoints) == 1:
