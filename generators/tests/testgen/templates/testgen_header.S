@@ -22,10 +22,10 @@ rvtest_entry_point:
 RVMODEL_BOOT
 RVTEST_CODE_BEGIN
 
-RVTEST_SIGBASE( x3,signature_base)
+RVTEST_SIGBASE(x3,signature_base)
 
 #ifdef SELFCHECK
   # Check CANARY in signature
   LI(T1, CANARY_VALUE)
-  RVTEST_SIGUPD(x3, T1)  # sig_begin_canary
+  RVTEST_SIGUPD(x3, x4, x5, T1)  # sig_begin_canary
 #endif

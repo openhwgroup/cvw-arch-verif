@@ -82,8 +82,9 @@ class IntegerRegisterFile(RegisterFile):
     Automatically handles special registers like signature pointer and link register.
     """
 
-    # Limit legal link registers to simplify failure handler
+    # Limit legal link/temp registers to simplify failure handler
     link_regs = (4, 7, 14)
+    temp_regs = (5, 8, 15)
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -92,7 +93,8 @@ class IntegerRegisterFile(RegisterFile):
         # Default special registers
         self._sig_reg = 3
         self._link_reg = 4
-        super().consume_registers([self._sig_reg, self._link_reg])
+        self._temp_reg = 5
+        super().consume_registers([self._sig_reg, self._link_reg, self._temp_reg])
 
     # Access to special registers
     @property
@@ -102,6 +104,10 @@ class IntegerRegisterFile(RegisterFile):
     @property
     def link_reg(self) -> int:
         return self._link_reg
+
+    @property
+    def temp_reg(self) -> int:
+        return self._temp_reg
 
     def move_sig_reg(self, new_reg: int) -> str:
         """Move the signature register to a specified register.
@@ -135,8 +141,10 @@ class IntegerRegisterFile(RegisterFile):
         # Check for conflicts with special registers
         sig_conflict = self._sig_reg in regs
         link_conflict = self._link_reg in regs
+        temp_conflict = self._temp_reg in regs
         old_sig_reg = -1
         old_link_reg = -1
+        old_temp_reg = -1
 
         # Return special registers to pool if they conflict
         if sig_conflict:
@@ -146,6 +154,10 @@ class IntegerRegisterFile(RegisterFile):
         if link_conflict:
             old_link_reg = self._link_reg
             self.return_register(self._link_reg)
+
+        if temp_conflict:
+            old_temp_reg = self._temp_reg
+            self.return_register(self._temp_reg)
 
         # Consume requested registers
         super().consume_registers(regs)
@@ -161,6 +173,11 @@ class IntegerRegisterFile(RegisterFile):
             asm_code += (
                 f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
             )
+
+        if temp_conflict:
+            # Restrict temp register to specific set
+            self._temp_reg = self.get_register(reg_range=list(self.temp_regs))
+            asm_code += f"\nmv x{self._temp_reg}, x{old_temp_reg} # switch temp pointer register to avoid conflict with test\n"
 
         return asm_code
 

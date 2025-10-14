@@ -221,29 +221,25 @@
   /* exceed offset limit is 16 below Breg-add # to allow for alignment across different register sizes */
   /* 2032 as Breg add amount to avoid max 2048 add*/
   /* an option is to pre-incr offset if there was a previous signature store */
-#ifdef LOCKSTEP
-  #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)
-#else
+#define CHK_OFFSET(_BREG, _SZ, _PRE_INC)    ;\
+  .if (_PRE_INC!=0)          ;\
+    .set offset, offset+_SZ        ;\
+  .endif            ;\
+  .if offset >= 2016          ;\
+    addi   _BREG,  _BREG,   2032     ;\
+    .set   offset, 0    ;\
+  .endif
+  // TODO: Original version is as follows. Why was this change necessary?
+  /*
   #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)    ;\
-    .if (_PRE_INC!=0)          ;\
-      .set offset, offset+_SZ        ;\
-    .endif            ;\
-    .if offset >= 2016          ;\
-      addi   _BREG,  _BREG,   2032     ;\
-      .set   offset, 0    ;\
-    .endif
-    // TODO: Original version is as follows. Why was this change necessary?
-    /*
-    #define CHK_OFFSET(_BREG, _SZ, _PRE_INC)    ;\
-    .if (_PRE_INC!=0)          ;\
-      .set offset, offset+_SZ        ;\
-    .endif            ;\
-    .if offset >= 2048          ;\
-      addi   _BREG,  _BREG,   (2048 - _SZ)    ;\
-      .set   offset, offset - (2048 - _SZ)    ;\
-    .endif
-    */
-#endif
+  .if (_PRE_INC!=0)          ;\
+    .set offset, offset+_SZ        ;\
+  .endif            ;\
+  .if offset >= 2048          ;\
+    addi   _BREG,  _BREG,   (2048 - _SZ)    ;\
+    .set   offset, offset - (2048 - _SZ)    ;\
+  .endif
+  */
 
  /* automatically adjust base and offset if offset gets too big, resetting offset         */
  /* RVTEST_SIGUPD(basereg, sigreg)    stores sigreg at offset(basereg) and updates offset by regwidth   */
@@ -253,7 +249,7 @@ infloop:    j write_tohost
 
 
 #ifdef SELFCHECK
-    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _R, ...)                \
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _TEMP_REG, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1        ;\
           .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))  ;\
         .endif            ;\
@@ -264,12 +260,15 @@ infloop:    j write_tohost
         1:      nop     ;\
         .set offset,offset+REGWIDTH
 #else
-    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _R, ...)                \
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _TEMP_REG, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1        ;\
           .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))  ;\
         .endif            ;\
         CHK_OFFSET(_SIG_BASE, REGWIDTH,0)        ;\
         SREG _R,offset(_SIG_BASE)          ;\
+        nop         ;\
+        nop         ;\
+        nop         ;\
         .set offset,offset+REGWIDTH
 #endif
 /* RVTEST_SIGUPD_F(basereg, sigreg,flagreg,newoff)       */
