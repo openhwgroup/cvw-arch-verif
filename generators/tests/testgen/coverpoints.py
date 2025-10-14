@@ -26,6 +26,7 @@ from random import seed
 from testgen.common import myhash, write_sigupd
 from testgen.edges import (
     IMMEDIATE_EDGES,
+    MEMORY_EDGES,
     get_general_edges,
     get_orcb_edges,
 )
@@ -408,6 +409,29 @@ def make_cp_uimm(instr_name: str, instr_type: str, coverpoint: str, test_data: T
     return test_lines
 
 
+def make_memval(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    if coverpoint == "cp_memval_byte":
+        memvals = MEMORY_EDGES.byte
+    elif coverpoint == "cp_memval_hword":
+        memvals = MEMORY_EDGES.hword
+    elif coverpoint == "cp_memval_word":
+        memvals = MEMORY_EDGES.word
+    elif coverpoint == "cp_memval_double":
+        memvals = MEMORY_EDGES.double
+    else:
+        raise ValueError(f"Unknown cp_memval coverpoint variant: {coverpoint} for {instr_name}")
+
+    test_lines: list[str] = []
+    for val in memvals:
+        test_lines.append("")
+        params = generate_random_params(test_data, instr_type, rs2val=val)
+        desc = f"{coverpoint} (memory value = {val:#x})"
+        test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
+        test_data.int_regs.return_registers(params.used_int_regs)
+
+    return test_lines
+
+
 def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     # Extract hazard class from suffix (e.g., cp_gpr_hazard_r -> 'r')
     parts = coverpoint.split("_")
@@ -653,6 +677,7 @@ COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] =
     # Special coverpoints
     "cp_offset": make_offset,
     "cp_align": make_align,
+    "cp_memval": make_memval,
     "cp_custom": make_custom,
     # Hazard coverpoints
     "cp_gpr_hazard": make_cp_gpr_hazard,

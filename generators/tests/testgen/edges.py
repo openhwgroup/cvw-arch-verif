@@ -243,9 +243,9 @@ class MEMORY_EDGES:
     """Edge values for memory operations of various widths."""
 
     byte = (0, 1, 0x7F, 0x80, 0xFF)
-    halfword = (0, 1, 0x7FFF, 0x8000, 0xFFFF)
+    hword = (0, 1, 0x7FFF, 0x8000, 0xFFFF)
     word = (0, 1, 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF)
-    doubleword = (0, 1, 0x7FFFFFFFFFFFFFFF, 0x8000000000000000, 0xFFFFFFFFFFFFFFFF)
+    double = (0, 1, 0x7FFFFFFFFFFFFFFF, 0x8000000000000000, 0xFFFFFFFFFFFFFFFF)
 
 
 # ==============================================================================
