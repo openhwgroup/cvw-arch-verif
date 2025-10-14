@@ -97,8 +97,8 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         f"\t{config.ref_model_exe} --trace-all \\\n"
         f"\t\t--config {config.dut_include_dir}/sail.json \\\n"  # TODO: don't hardcode sail config file
         f"\t\t{elf} \\\n"
-        f"\t\t--trace-output {sail_trace}\\\n"
-        f"\t\t&> {sail_trace}.log\\\n"
+        f"\t\t--trace-output {sail_trace} \\\n"
+        f"\t\t&> {sail_trace}.log\n"
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_trace}\n"
