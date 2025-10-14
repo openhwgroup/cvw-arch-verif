@@ -37,7 +37,6 @@ def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 6
     fp_data_base_reg = 2  # Assumes that x2 is loaded with the base address to avoid repeated `la` instructions
     temp_reg = test_data.int_regs.get_register()
     test_lines = [f"LA(x{fp_data_base_reg}, scratch)"]
-    test_data.int_regs.return_registers([temp_reg])
     if precision > test_data.xlen:
         test_lines.extend(
             [
@@ -56,6 +55,7 @@ def load_float_reg(name: str, reg: int, val: float, precision: Literal[16, 32, 6
                 f"{loadop} f{reg}, 0(x{fp_data_base_reg}) # load {formatstr.format(val)} from memory into f{reg}"
             ]
         )
+    test_data.int_regs.return_registers([temp_reg])
     return "\n".join(test_lines)
 
 

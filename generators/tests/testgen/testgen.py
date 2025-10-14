@@ -143,7 +143,7 @@ def generate_tests_for_instruction(
             continue
         # Get the coverpoint specific handler and generate tests
         else:
-            test_lines.extend(generate_tests_for_coverpoint(instr_name, instr_type, coverpoint, test_data))
+            test_lines.append(generate_tests_for_coverpoint(instr_name, instr_type, coverpoint, test_data))
 
     # Combine test lines into a single string
     return "\n".join(test_lines) + "\n"

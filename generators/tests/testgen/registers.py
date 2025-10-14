@@ -103,6 +103,26 @@ class IntegerRegisterFile(RegisterFile):
     def link_reg(self) -> int:
         return self._link_reg
 
+    def move_sig_reg(self, new_reg: int) -> str:
+        """Move the signature register to a specified register.
+
+        Args:
+            new_reg: The register number to move the signature pointer to.
+
+        Returns:
+            The assembly code needed to move the value from the old register to the new one.
+        """
+        if new_reg == 0:
+            raise ValueError("Cannot move signature register to x0.")
+
+        old_sig_reg = self._sig_reg
+        self.return_register(self._sig_reg)
+        if new_reg in self.reg_list:
+            self.consume_registers([new_reg])
+        self._sig_reg = new_reg
+        asm_code = f"mv x{self._sig_reg}, x{old_sig_reg} # move signature pointer register"
+        return asm_code
+
     def consume_registers(self, regs: list[int]) -> str:
         """Mark registers as used/unavailable, handling special register conflicts.
 

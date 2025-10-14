@@ -277,28 +277,39 @@ def format_s_type(
     assert params.rd is not None
     assert params.immval is not None
     scaled_imm = modify_imm(params.immval, 12)
+
+    # Ensure rs1 is not x0 (base address)
+    if params.rs1 == 0:
+        test_data.int_regs.return_register(params.rs1)
+        params.rs1 = test_data.int_regs.get_register(exclude_reg=[0])
+
+    # Save rs1 for use in assembly generation, but clear it from params so it's not returned
+    # (since it's now the signature register)
     setup = [
         load_int_reg("rs2", params.rs2, params.rs2val, test_data),
-        f"LA(x{params.rs1}, scratch) # load base address",
+        test_data.int_regs.move_sig_reg(params.rs1),
     ]
+    sig_reg = test_data.int_regs.sig_reg
+    params.rs1 = None
+    check: list[str] = []
 
     # Handle special case where offset is -2048
     if params.immval == -2048:
         setup.extend(
             [
-                f"addi x{params.rs1}, x{params.rs1}, 2047 # increment by 2047",
-                f"addi x{params.rs1}, x{params.rs1}, 1 # increment by 1 more for total +2048",
+                f"addi x{sig_reg}, x{sig_reg}, 2047 # increment by 2047",
+                f"addi x{sig_reg}, x{sig_reg}, 1 # increment by 1 more for total +2048",
             ]
         )
+        check.append(f"addi x{sig_reg}, x{sig_reg}, -2048 # restore base address")
     else:
         neg_scaled_imm = modify_imm(-params.immval, 12)
-        setup.append(f"addi x{params.rs1}, x{params.rs1}, {neg_scaled_imm} # adjust base address for offset")
+        setup.append(f"addi x{sig_reg}, x{sig_reg}, {neg_scaled_imm} # adjust base address for offset")
+        check.append(f"addi x{sig_reg}, x{sig_reg}, {-neg_scaled_imm} # restore base address")
 
-    test = [f"{instr_name} x{params.rs2}, {scaled_imm}(x{params.rs1}) # perform store"]
-    check = [
-        f"LREG x{params.rd}, {scaled_imm}(x{params.rs1}) # load back to verify",
-        write_sigupd(params.rd, test_data, "int"),
-    ]
+    test = [f"{instr_name} x{params.rs2}, {scaled_imm}(x{sig_reg}) # perform store"]
+    check.append(f"addi x{sig_reg}, x{sig_reg}, REGWIDTH # increment signature pointer")
+    test_data.sigupd_count += 1
     return (setup, test, check)
 
 
