@@ -23,7 +23,7 @@
 from collections.abc import Callable
 from random import seed
 
-from testgen.common import myhash, write_sigupd
+from testgen.common import load_int_reg, myhash, write_sigupd
 from testgen.edges import (
     IMMEDIATE_EDGES,
     MEMORY_EDGES,
@@ -285,6 +285,8 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     if coverpoint == "cr_rs1_rs2_edges":
         edges1 = get_general_edges(test_data.xlen)
         edges2 = get_general_edges(test_data.xlen)
+    elif coverpoint.endswith("_offset"):
+        return make_cr_rs1_rs2_edges_offset(instr_name, instr_type, coverpoint, test_data)
     else:
         raise ValueError(f"Unknown cr_rs1_rs2_edges coverpoint variant: {coverpoint} for {instr_name}")
 
@@ -311,6 +313,9 @@ def make_cp_imm_edges(instr_name: str, instr_type: str, coverpoint: str, test_da
     elif coverpoint.endswith("_branch"):
         # Branch edges coverpoint is special, use dedicated function
         return make_cp_imm_edges_branch(instr_name, instr_type, coverpoint, test_data)
+    elif coverpoint.endswith("_jal"):
+        # jal edges coverpoint is special, use dedicated function
+        return make_cp_imm_edges_jal(instr_name, instr_type, coverpoint, test_data)
     else:
         raise ValueError(f"Unknown cp_imm_edges coverpoint variant: {coverpoint} for {instr_name}")
 
@@ -389,6 +394,7 @@ def make_align(instr_name: str, instr_type: str, coverpoint: str, test_data: Tes
         test_data.int_regs.return_registers(params.used_int_regs)
 
     return test_lines
+
 
 def make_cp_uimm(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     if coverpoint == "cp_uimm":
@@ -534,9 +540,12 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_da
 # SPECIAL COVERPOINT HANDLERS
 # ============================================================================
 
+
 def make_custom(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     """Generate tests for custom coverpoints using a template file."""
-    test_lines, sigupd_count_increment = insert_test_template(f"{instr_name}.S", test_data.xlen, test_data.int_regs.sig_reg)
+    test_lines, sigupd_count_increment = insert_test_template(
+        f"{instr_name}.S", test_data.xlen, test_data.int_regs.sig_reg
+    )
     test_data.sigupd_count += sigupd_count_increment
     return [test_lines]
 
@@ -590,6 +599,143 @@ def make_cp_imm_edges_branch(instr_name: str, instr_type: str, coverpoint: str, 
     return test_lines
 
 
+def make_cp_imm_edges_jal(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    test_lines: list[str] = []
+    if instr_name == "c.jal":
+        test_data.int_regs.consume_registers([1])
+        params = generate_random_params(test_data, instr_type, rd=1)  # c.jal always uses x1
+    elif instr_name == "c.j":
+        params = generate_random_params(test_data, instr_type, rd=0)  # c.j always uses x0
+    else:
+        params = generate_random_params(test_data, instr_type)
+    assert params.rs1 is not None and params.rs2 is not None and params.rd is not None
+
+    # Adjust min/max range based on instruction type
+    if instr_name == "jal":
+        minrng = 3
+        maxrng = 14  # testing all 20 bits of immediate is too much code
+    else:
+        test_lines.append(".align 2 # Start at an address multiple of 4. Required for covering 2 byte jump.")
+        minrng = 2
+        maxrng = 13
+
+    # Test smallest offset as a special case
+    test_lines = [
+        "",
+        f"# Testcase cp_imm_edges_jal (imm = {minrng - 1})",
+        f".align {maxrng} # Start all tests on a multiple of the largest offset",
+        f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} 1f # jump to aligned address to stress immediate",
+        "1: # alignment too small to test with sigupd",
+        f"{instr_name} {f'x{params.rs1},' if instr_name == 'jal' else ''} f{minrng}_{instr_name} # jump to aligned address to stress immediate",
+    ]
+
+    # Test all other offsets
+    for val in range(minrng, maxrng):
+        test_lines.extend(
+            [
+                "",
+                f"# Testcase cp_imm_edges_jal (imm = {val})",
+                f".align {val - 1}",
+                f"b{val - 1}_{instr_name}:",
+            ]
+        )
+        if instr_name == "jal":
+            if val >= 6:
+                # Can only fit signature logic if jump is greater than 32 bytes (val + 1 = 6)
+                test_lines.extend(
+                    [
+                        load_int_reg("rs1", params.rs1, val, test_data),
+                        write_sigupd(params.rd, test_data),
+                        write_sigupd(params.rs1, test_data),
+                    ]
+                )
+            test_lines.append(
+                f"{instr_name} x{params.rd}, f{val + 1}_{instr_name} # jump to aligned address to stress immediate"
+            )
+        else:  # c.jal, c.j
+            if val >= 6:
+                # Can only fit signature logic if jump is greater than 32 bytes (val + 1 = 6)
+                test_lines.extend(
+                    [
+                        write_sigupd(params.rd, test_data),  # checking if return address is correct for c.jal
+                        f"c.li x{params.rs1}, {val}",
+                        write_sigupd(params.rs1, test_data),
+                    ]
+                )
+            test_lines.append(f"{instr_name} f{val + 1}_{instr_name} # jump to aligned address to stress immediate")
+
+        if val >= 6:
+            test_lines.extend(
+                [
+                    f"LI(x{params.rs1}, {val})" if instr_name == "jal" else f"c.li x{params.rs1}, {val}",
+                    write_sigupd(params.rd, test_data),
+                    write_sigupd(params.rs1, test_data),
+                ]
+            )
+
+        test_lines.extend(
+            [
+                f".align {val - 1}",
+                f"f{val}_{instr_name}:",
+            ]
+        )
+
+        if val >= 6:
+            test_lines.extend(
+                [
+                    f"LI(x{params.rs1}, {val})" if instr_name == "jal" else f"c.li x{params.rs1}, {val}",
+                    write_sigupd(params.rd, test_data),
+                    write_sigupd(params.rs1, test_data),
+                ]
+            )
+
+        if instr_name == "jal":
+            test_lines.append(
+                f"{instr_name} x{params.rd}, b{val - 1}_{instr_name} # jump to aligned address to stress immediate"
+            )
+            if val >= 6:
+                # Can only fit signature logic if jump is greater than 32 bytes (val + 1 = 6)
+                test_lines.extend(
+                    [
+                        load_int_reg("rs1", params.rs1, val, test_data),
+                        write_sigupd(params.rd, test_data),
+                        write_sigupd(params.rs1, test_data),
+                    ]
+                )
+        else:  # c.jal, c.j
+            if val == 12:  # temporary fix for bug in binutils
+                if instr_name == "c.j":
+                    test_lines.append(
+                        ".half 0xB001 # backward c.j by -2048 to b12; GCC is not generating this compressed branch properly per https://github.com/riscv-collab/riscv-gnu-toolchain/issues/1647"
+                    )
+                elif instr_name == "c.jal":
+                    test_lines.append(
+                        ".half 0x3001 # backward jal by -2048 to b12; GCC is not generating this compressed branch properly per https://github.com/riscv-collab/riscv-gnu-toolchain/issues/1647"
+                    )
+            else:
+                test_lines.append(f"{instr_name} b{val - 1}_{instr_name} # jump to aligned address to stress immediate")
+            if val >= 6:
+                # Can only fit signature logic if jump is greater than 32 bytes (val + 1 = 6)
+                test_lines.extend(
+                    [
+                        f"c.li x{params.rs1}, {val}",
+                        write_sigupd(params.rd, test_data),  # checking if return address is correct for c.jal
+                        write_sigupd(params.rs1, test_data),
+                    ]
+                )
+
+    # End of test
+    test_lines.extend(
+        [
+            f".align {maxrng - 1}",
+            f"f{maxrng}_{instr_name}:",
+        ]
+    )
+
+    test_data.int_regs.return_registers(params.used_int_regs)
+    return test_lines
+
+
 def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     """
     Generate tests for cp_offset coverpoint (backward branch negative offsets).
@@ -631,21 +777,55 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
     if instr_type in ["JR", "CJR", "CJALR"]:
         test_lines.append(f"LA(x{params.rs2}, 1b) # load backward branch target")
     elif instr_type == "CB":
-        branch_val = 0 if instr_name == "c.beqz" else 1 # set value to ensure branch is taken
+        branch_val = 0 if instr_name == "c.beqz" else 1  # set value to ensure branch is taken
         test_lines.append(f"LI({params.rs1}, {branch_val}) # initialize {params.rs1} to {branch_val} for taken branch")
-    test_lines.extend([
-        f"LI(x{check_reg}, 1) # branch is taken",
-        branch_instr,
-        f"LI(x{check_reg}, 0) # branch is not taken",
-        "3: # done with sequence",
-        write_sigupd(check_reg, test_data),
-        write_sigupd(params.rd, test_data) if instr_type in ["JR", "CJR", "CJALR"] else "",
-    ])
+    test_lines.extend(
+        [
+            f"LI(x{check_reg}, 1) # branch is taken",
+            branch_instr,
+            f"LI(x{check_reg}, 0) # branch is not taken",
+            "3: # done with sequence",
+            write_sigupd(check_reg, test_data),
+            write_sigupd(params.rd, test_data) if instr_type in ["JR", "CJR", "CJALR"] else "",
+        ]
+    )
 
     test_data.int_regs.return_register(check_reg)
     test_data.int_regs.return_registers(params.used_int_regs)
     return test_lines
 
+def make_cr_rs1_rs2_edges_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+    edges1 = get_general_edges(test_data.xlen)
+    edges2 = get_general_edges(test_data.xlen)
+
+    test_lines: list[str] = []
+
+    for edge_val1 in edges1:
+        for edge_val2 in edges2:
+            test_lines.append("")
+            params = generate_random_params(test_data, instr_type, rs1val=edge_val1, rs2val=edge_val2)
+            assert params.rs1 is not None and params.rs2 is not None
+            test_lines.extend([
+                f"{coverpoint} (Test source rs1 = {test_data.xlen_format_str.format(edge_val1)} rs2 = {test_data.xlen_format_str.format(edge_val2)})",
+                load_int_reg("rs1", params.rs1, edge_val1, test_data),
+                load_int_reg("rs2", params.rs2, edge_val2, test_data),
+                "0: # destination for backwards branch that is never taken",
+                f"{instr_name} x{params.rs1}, x{params.rs2}, 3f # forward branch, if taken",
+                "1: # goes here if not taken",
+                f"{instr_name} x{params.rs1}, x{params.rs2}, 0b # backward branch, never taken",
+                write_sigupd(0, test_data),  # signature 0 for not taken
+                "j 4f # done with test",
+                "2: # goes here during backward branch if taken",
+                f"LI(x{params.rs1}, 1)",
+                write_sigupd(params.rs1, test_data) + " # signature 1 for taken",
+                "j 4f # done with test",
+                "3: # goes here during forward branch if taken",
+                f"{instr_name} x{params.rs1}, x{params.rs2}, 2b # backward branch, definitely taken",
+                "4: # done with test",
+            ])
+            test_data.int_regs.return_registers(params.used_int_regs)
+
+    return test_lines
 
 # ============================================================================
 # COVERPOINT HANDLER REGISTRY
