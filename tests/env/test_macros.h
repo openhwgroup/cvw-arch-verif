@@ -254,9 +254,9 @@ infloop:    j write_tohost
           .set offset,_ARG1(__VA_OPT__(__VA_ARGS__,0))  ;\
         .endif            ;\
         CHK_OFFSET(_SIG_BASE, REGWIDTH,0)        ;\
-        LREG _LINK_REG,offset(_SIG_BASE)          ;\
-        beq _LINK_REG, _R, 1f          ;\
-        j  infloop       ;\
+        LREG _TEMP_REG,offset(_SIG_BASE)          ;\
+        beq _TEMP_REG, _R, 1f          ;\
+        jal _LINK_REG, failedtest_##_LINK_REG##_##_TEMP_REG ;\
         1:      nop     ;\
         .set offset,offset+REGWIDTH
 #else
