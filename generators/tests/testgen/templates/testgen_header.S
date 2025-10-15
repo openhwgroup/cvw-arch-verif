@@ -15,6 +15,7 @@
 
 #include "model_test.h"
 #include "arch_test.h"
+#include "failure_code.h"
 
 .section .text.init
 .globl rvtest_entry_point
