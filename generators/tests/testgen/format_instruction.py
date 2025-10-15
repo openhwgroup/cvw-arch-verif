@@ -173,13 +173,30 @@ def format_jr_type(
     """Format JR-type instruction (jalr)."""
     assert params.rs1 is not None and params.rs2 is not None and params.rd is not None
     assert params.immval is not None
-    scaled_imm = modify_imm(params.immval, 12, restrict_offset=True)
-    neg_scaled_imm = modify_imm(-params.immval, 12, restrict_offset=True)
+    scaled_imm = modify_imm(params.immval, 12)
+
+    # Ensure rs1 is not x0 (base address)
+    if params.rs1 == 0:
+        test_data.int_regs.return_register(params.rs1)
+        params.rs1 = test_data.int_regs.get_register(exclude_reg=[0])
+
     setup = [
         f"LA(x{params.rs1}, 1f) # load jump target address",
-        f"addi x{params.rs1}, x{params.rs1}, {neg_scaled_imm} # subtract offset to compensate",
         f"LI(x{params.rs2}, 1) # initialize indicator to 1 (jump taken)",
     ]
+
+    # Handle special case where offset is -2048 (can't represent +2048 in 12 bits)
+    if scaled_imm == -2048:
+        setup.extend(
+            [
+                f"addi x{params.rs1}, x{params.rs1}, 2047 # increment by 2047",
+                f"addi x{params.rs1}, x{params.rs1}, 1 # increment by 1 more for total +2048",
+            ]
+        )
+    else:
+        neg_scaled_imm = -scaled_imm
+        setup.append(f"addi x{params.rs1}, x{params.rs1}, {neg_scaled_imm} # adjust base address for offset")
+
     test = [
         f"{instr_name} x{params.rd}, x{params.rs1}, {scaled_imm} # perform jump with offset",
     ]
@@ -243,13 +260,19 @@ def format_l_type(
     assert params.rd is not None
     assert params.immval is not None
     scaled_imm = modify_imm(params.immval, 12)
+
+    # Ensure rs1 is not x0 (base address)
+    if params.rs1 == 0:
+        test_data.int_regs.return_register(params.rs1)
+        params.rs1 = test_data.int_regs.get_register(exclude_reg=[0])
+
     setup = [
         load_int_reg("rs2", params.rs2, params.rs2val, test_data),
         f"LA(x{params.rs1}, scratch) # load base address",
     ]
 
     # Handle special case where offset is -2048 (can't represent +2048 in 12 bits)
-    if params.immval == -2048:
+    if scaled_imm == -2048:
         setup.extend(
             [
                 f"addi x{params.rs1}, x{params.rs1}, 2047 # increment by 2047",
@@ -257,7 +280,7 @@ def format_l_type(
             ]
         )
     else:
-        neg_scaled_imm = modify_imm(-params.immval, 12)
+        neg_scaled_imm = -scaled_imm
         setup.append(f"addi x{params.rs1}, x{params.rs1}, {neg_scaled_imm} # adjust base address for offset")
 
     setup.append(f"SREG x{params.rs2}, {scaled_imm}(x{params.rs1}) # store test value to memory")
@@ -294,7 +317,7 @@ def format_s_type(
     check: list[str] = []
 
     # Handle special case where offset is -2048
-    if params.immval == -2048:
+    if scaled_imm == -2048:
         setup.extend(
             [
                 f"addi x{sig_reg}, x{sig_reg}, 2047 # increment by 2047",
@@ -303,7 +326,7 @@ def format_s_type(
         )
         check.append(f"addi x{sig_reg}, x{sig_reg}, -2048 # restore base address")
     else:
-        neg_scaled_imm = modify_imm(-params.immval, 12)
+        neg_scaled_imm = -scaled_imm
         setup.append(f"addi x{sig_reg}, x{sig_reg}, {neg_scaled_imm} # adjust base address for offset")
         check.append(f"addi x{sig_reg}, x{sig_reg}, {-neg_scaled_imm} # restore base address")
 

@@ -481,6 +481,10 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
                     params_b = generate_random_params(test_data, instr_type, rs1=params_a.rd)
                 else:
                     params_b = generate_random_params(test_data, instr_type, rs2=params_a.rd)
+                # For loads, we must add 0 to avoid messing up the address calculation
+                if instr_type in ["L", "JR"]:
+                    params_a.rs1 = params_a.rd
+                    params_a.rs2 = 0
             elif haz_type == "waw":
                 # Write-After-Write: B writes same register as A
                 params_b = generate_random_params(test_data, instr_type, rd=params_a.rd)
