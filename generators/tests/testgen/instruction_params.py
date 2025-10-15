@@ -64,7 +64,7 @@ class InstructionParams:
         return regs
 
 
-def generate_random_params(test_data: TestData, instr_type: str, **fixed_params) -> InstructionParams:
+def generate_random_params(test_data: TestData, instr_type: str, allow_x0:bool = True, **fixed_params) -> InstructionParams:
     """
     Generate random parameters for an instruction.
 
@@ -74,6 +74,7 @@ def generate_random_params(test_data: TestData, instr_type: str, **fixed_params)
     Args:
         test_data: Test data context (xlen, register allocators, etc.)
         instr_type: Instruction type (e.g., 'R', 'I', 'L') to determine needed parameters
+        allow_x0: Whether to allow x0 as one of the selected registers. Defaults to True.
         **fixed_params: Fixed parameter values (e.g., rd=5, rs1val=0x100)
 
     Returns:
@@ -84,18 +85,19 @@ def generate_random_params(test_data: TestData, instr_type: str, **fixed_params)
         >>> # rd=5 and rs1val=0x100 are fixed, others are random
     """
     params = InstructionParams(**fixed_params)
+    exclude_regs = [0] if not allow_x0 else []
 
     # Fill in missing integer register parameters
     if params.rd is None:
-        params.rd = test_data.int_regs.get_register()
+        params.rd = test_data.int_regs.get_register(exclude_reg=exclude_regs)
 
     if params.rs1 is None:
-        params.rs1 = test_data.int_regs.get_register()
+        params.rs1 = test_data.int_regs.get_register(exclude_reg=exclude_regs)
     if params.rs1val is None:
         params.rs1val = gen_random_imm(test_data.xlen)
 
     if params.rs2 is None:
-        params.rs2 = test_data.int_regs.get_register()
+        params.rs2 = test_data.int_regs.get_register(exclude_reg=exclude_regs)
     if params.rs2val is None:
         params.rs2val = gen_random_imm(test_data.xlen)
 

@@ -311,7 +311,7 @@ def make_cr_rs1_rs2_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     for edge_val1 in edges1:
         for edge_val2 in edges2:
             test_lines.append("")
-            params = generate_random_params(test_data, instr_type, rs1val=edge_val1, rs2val=edge_val2)
+            params = generate_random_params(test_data, instr_type, allow_x0=False, rs1val=edge_val1, rs2val=edge_val2)
             desc = f"{coverpoint} (Test source rs1 = {test_data.xlen_format_str.format(edge_val1)} rs2 = {test_data.xlen_format_str.format(edge_val2)})"
             test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
             test_data.int_regs.return_registers(params.used_int_regs)
@@ -369,7 +369,7 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     for reg_edge_val in edges_reg:
         for imm_edge_val in edges_imm:
             test_lines.append("")
-            params = generate_random_params(test_data, instr_type, rs1val=reg_edge_val, immval=imm_edge_val)
+            params = generate_random_params(test_data, instr_type, allow_x0=False, rs1val=reg_edge_val, immval=imm_edge_val)
             desc = f"{coverpoint} (rs1 = {test_data.xlen_format_str.format(reg_edge_val)}, imm = {imm_edge_val})"
             test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
             test_data.int_regs.return_registers(params.used_int_regs)
