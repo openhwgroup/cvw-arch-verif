@@ -17,7 +17,7 @@ rol,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 rolw,R,,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 ror,R,x,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 rori,IS,x,x,x,x,,x,x,,,,x,,,x,rw
-roriw,IS,,x,x,x,,x,x,,,,x,,,5,rw
+roriw,ISW,,x,x,x,,x,x,,,,x,,,5,rw
 rorw,R,,x,x,x,x,x,x,x,x,x,x,x,x,,rw
 sext.b,I1,x,x,x,x,,x,x,,,,x,,,,rw
 sext.h,I1,x,x,x,x,,x,x,,,,x,,,,rw
