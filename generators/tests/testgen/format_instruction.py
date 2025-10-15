@@ -200,12 +200,16 @@ def format_jr_type(
     test = [
         f"{instr_name} x{params.rd}, x{params.rs1}, {scaled_imm} # perform jump with offset",
     ]
+    temp_reg = test_data.int_regs.get_register(exclude_reg=[0])
     check = [
         f"LI(x{params.rs2}, 0) # should not execute (jump not taken)",
         "1:",
+        f"auipc x{temp_reg}, 0 # get current PC",
+        f"sub x{params.rd}, x{params.rd}, x{temp_reg} # subtract current PC to make position-independent",
         write_sigupd(params.rd, test_data, "int"),
         write_sigupd(params.rs2, test_data, "int"),
     ]
+    test_data.int_regs.return_register(temp_reg)
     return (setup, test, check)
 
 

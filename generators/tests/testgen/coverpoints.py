@@ -808,9 +808,18 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
             f"LI(x{check_reg}, 0) # branch is not taken",
             "3: # done with sequence",
             write_sigupd(check_reg, test_data),
-            write_sigupd(params.rd, test_data) if instr_type in ["JR", "CJR", "CJALR"] else "",
         ]
     )
+    # For jalr, check return address too
+    if instr_type in ["JR", "CJR", "CJALR"]:
+        temp_reg = test_data.int_regs.get_register(exclude_reg=[0])
+        test_lines.extend(
+            [
+                f"auipc x{temp_reg}, 0 # get current PC",
+                f"sub x{params.rd}, x{params.rd}, x{temp_reg} # subtract PC to make position-independent",
+                write_sigupd(params.rd, test_data)
+            ]
+        )
 
     test_data.int_regs.return_register(check_reg)
     test_data.int_regs.return_registers(params.used_int_regs)
