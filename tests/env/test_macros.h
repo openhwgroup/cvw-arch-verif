@@ -245,9 +245,22 @@
  /* RVTEST_SIGUPD(basereg, sigreg)    stores sigreg at offset(basereg) and updates offset by regwidth   */
  /* RVTEST_SIGUPD(basereg, sigreg,newoff) stores sigreg at newoff(basereg) and updates offset to regwidth+newoff */
 
-infloop:    j write_tohost
+#ifdef SELFCHECK
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _TEMP_REG, _R)                \
+        LREG _TEMP_REG,offset(_SIG_BASE)          ;\
+        beq _TEMP_REG, _R, 1f          ;\
+        jal _LINK_REG, failedtest_##_LINK_REG##_##_TEMP_REG ;\
+        1:                   ;\
+        addi _SIG_BASE, _SIG_BASE, REGWIDTH
+#else
+    #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _TEMP_REG, _R)                \
+        SREG _R,offset(_SIG_BASE)          ;\
+        nop         ;\
+        nop         ;\
+        addi _SIG_BASE, _SIG_BASE, REGWIDTH
+#endif
 
-
+/* OLD VERSION of SIGUPD
 #ifdef SELFCHECK
     #define RVTEST_SIGUPD(_SIG_BASE, _LINK_REG, _TEMP_REG, _R, ...)                \
         .if NARG(__VA_ARGS__) == 1        ;\
@@ -271,6 +284,7 @@ infloop:    j write_tohost
         nop         ;\
         .set offset,offset+REGWIDTH
 #endif
+*/
 /* RVTEST_SIGUPD_F(basereg, sigreg,flagreg,newoff)       */
 /* This macro is used to store the signature values of (32 & 64) F and D */
 /* teats which use TEST_(FPSR_OP, FPIO_OP, FPRR_OP, FPR4_OP) opcodes   */
