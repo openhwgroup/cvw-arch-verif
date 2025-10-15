@@ -462,7 +462,7 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
     test_lines: list[str] = []
 
     # Determine which hazard types to test
-    hazard_types: list[str] = []
+    hazard_types: list[str] = ["nohaz"]
     if "r" in haz_class:
         hazard_types.append("raw")
     if "w" in haz_class:
@@ -494,6 +494,9 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
                     params_b = generate_random_params(test_data, instr_type, rd=params_a.rs1)
                 else:
                     params_b = generate_random_params(test_data, instr_type, rd=params_a.rs2)
+            elif haz_type == "nohaz":
+                # No hazard: use completely independent registers
+                params_b = generate_random_params(test_data, instr_type)
             else:
                 raise ValueError(f"Unknown hazard type: {haz_type}")
 
