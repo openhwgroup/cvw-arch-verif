@@ -15,37 +15,42 @@
         .align 8; .global end_regstate; end_regstate:                   \
         .word 4;
 
-//RV_COMPLIANCE_HALT
 #define RVMODEL_HALT    \
   li x1, 1                ;\
   write_tohost:           ;\
     sw x1, tohost, t0     ;\
     j write_tohost        ;\
 
+#define RVMODEL_HALT_FAIL \
+  li x1, 3                ;\
+  write_tohost_fail:      ;\
+    sw x1, tohost, t0     ;\
+    j write_tohost_fail   ;\
+
 #define RVMODEL_BOOT
 
-//RV_COMPLIANCE_DATA_BEGIN
 #define RVMODEL_DATA_BEGIN                        \
   RVMODEL_DATA_SECTION                            \
   .align 4;                                       \
   .global begin_signature; begin_signature:
 
-//RV_COMPLIANCE_DATA_END
 #define RVMODEL_DATA_END                           \
   .align 4; .global end_signature; end_signature:
 
-//RVTEST_IO_INIT
 #define RVMODEL_IO_INIT
-//RVTEST_IO_WRITE_STR
-#define RVMODEL_IO_WRITE_STR(_R, _STR)
-//RVTEST_IO_CHECK
-#define RVMODEL_IO_CHECK()
-//RVTEST_IO_ASSERT_GPR_EQ
-#define RVMODEL_IO_ASSERT_GPR_EQ(_S, _R, _I)
-//RVTEST_IO_ASSERT_SFPR_EQ
-#define RVMODEL_IO_ASSERT_SFPR_EQ(_F, _R, _I)
-//RVTEST_IO_ASSERT_DFPR_EQ
-#define RVMODEL_IO_ASSERT_DFPR_EQ(_D, _R, _I)
+
+# Prints a null-terminated string (_STR) using a DUT specific
+# mechanism. _R can be used as a temporary register if needed.
+# Do not modify any other registers (or make sure to restore them).
+#define RVMODEL_IO_WRITE_STR(_R, _STR)               \
+  la x30, _STR                ;/* Load string addr */ \
+1:                           ;\
+  lbu a0, 0(x30)              ;/* Load byte */        \
+  beqz a0, 2f                ;/* Exit if null */     \
+  call htif_putc             ;/* Print char */       \
+  addi x30, x30, 1             ;/* Next char */        \
+  j 1b                       ;/* Loop */             \
+2:
 
 #define RVMODEL_SET_MSW_INT
 
@@ -55,5 +60,12 @@
 
 #define RVMODEL_CLEAR_MEXT_INT
 
+htif_putc:
+    la x31, tohost
+    sw a0, 0(x31)
+    // device=1 (terminal), cmd=1 (output)
+    li a0, 0x01010000
+    sw a0, 4(x31)
+    ret
 
 #endif // _COMPLIANCE_MODEL_H

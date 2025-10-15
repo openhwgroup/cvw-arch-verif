@@ -60,14 +60,6 @@
 
 #define RVMODEL_CLEAR_MEXT_INT
 
-# htif_printstr:
-#     lb a1, 0(a0)    # fetch a character
-#     beqz a1, 1f     # terminate if null
-#     jal a2, failedtest_putch   # print the character
-#     addi a1, a1, 1  # move to next character
-#     j failedtest_printstr
-# 1:  ret             # return from function call
-
 htif_putc:
     la x31, tohost
     sw a0, 0(x31)
