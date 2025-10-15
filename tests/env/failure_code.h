@@ -25,7 +25,7 @@ failedtest_x7_x8:
     SREG x4, 32(x8) # save x4
     SREG x5, 40(x8) # save x5
     mv x4, x7       # move return address into x4
-    mv x5, x8       # move signature base into x5
+    mv x5, x8       # move scratch base into x5
     # now x4 has the return address of jal from the failure and x5 is a vacant temporary register.
     j failedtest_saveregs
 
@@ -36,11 +36,11 @@ failedtest_x12_x13:
     SREG x4, 32(x13)  # save x4
     SREG x5, 40(x13)  # save x5
     mv x4, x12        # move return address into x4
-    mv x5, x13        # move signature base into x5
+    mv x5, x13        # move scratch base into x5
     # now x4 has the return address of jal from the failure and x5 is a vacant temporary register.
     j failedtest_saveregs
 
-# for the rest of this code, x4 contains return address of jal from the failure, x5 points to signature
+# for the rest of this code, x4 contains return address of jal from the failure, x5 points to scratch space
 failedtest_saveregs:
     SREG x1, 8(x5)
     SREG x2, 16(x5)
@@ -83,29 +83,45 @@ failedtest_saveresults:
     slli x6, x6, 16     # reassemble
     or x6, x6, x7
     sw x6, 256(x5)      # record 32 bits of failing instruction.  Actual instruction might be top half
+
+    # Reconstruct and extract information from the beq
     # branch might be on 16-byte boundary, so fetch with halfword
-    lhu x6, -10(x4)      # get upper half of the the beq that compared good and bad registers
-    lhu x7, -12(x4)      # get lower half of the beq
+    lhu x6, -6(x4)     # get upper half of the the beq that compared good and bad registers
+    lhu x7, -8(x4)     # get lower half of the beq
     slli x6, x6, 16     # reassemble beq
     or x6, x6, x7
-    # extract rs1 and rs2 from branch
-    srli x6, x4, 15
-    andi x7, x6, 31     # x7 = rs1 of branch
-    sw x7, 260(x5)      # record id of failing register
-    srli x6, x6, 5
-    andi x8, x6, 31     # x8 = rs2 of branch
-    # save bad value form rs1
-    slli x6, x7, 3      # rs1 * 8
-    add  x6, x5, x6     # address of signature memory containing rs1
-    LREG x6, 0(x6)      # value of rs1 (bad result of operation)
-    SREG x6, 272(x5)    # record bad value
-    # save expected value from rs2
+    # extract rs1 and rs2 from branch (beq format: rs2[24:20] rs1[19:15])
+    srli x7, x6, 15
+    andi x7, x7, 31     # x7 = rs1 of branch
+    srli x8, x6, 20
+    andi x8, x8, 31     # x8 = rs2 of branch
+    sw x8, 260(x5)      # record id of failing register (rs2 of beq)
+    # save bad value from rs2
     slli x6, x8, 3      # rs2 * 8
-    add x6, x5, x6      # address of signature memory containing rs2
-    LREG x6, 0(x6)      # value of rs2 (expected result of operation)
+    add  x6, x5, x6     # address of scratch memory containing rs2
+    LREG x6, 0(x6)      # value of rs2 (bad result of operation)
+    SREG x6, 272(x5)    # record bad value
+
+    # Reconstruct and extract information from the load
+    # The ld loads from an offset of a base register, extract base register and offset
+    lhu x6, -10(x4)     # get upper half of the ld instruction
+    lhu x7, -12(x4)     # get lower half of the ld
+    slli x6, x6, 16     # reassemble ld
+    or x6, x6, x7
+    # ld format: imm[11:0] at bits [31:20], rs1 at bits [19:15]
+    srai x7, x6, 20     # extract immediate (sign-extended)
+    srli x6, x6, 15
+    andi x6, x6, 31     # extract rs1 (base register)
+    # Load the value of the sig_base register from saved state
+    slli x6, x6, 3      # rs1 * 8
+    add x6, x5, x6      # address of sig_base register
+    LREG x6, 0(x6)      # get sig_base register value
+    add x6, x6, x7      # sig_base + offset = address of expected value
+    LREG x6, 0(x6)      # load expected value
     SREG x6, 280(x5)    # record expected value
+
     # Save failing address
-    addi x6, x4, -12    # address of the failing instruction (possibly including half of previous instruction)
+    addi x6, x4, -16    # address of the failing instruction (possibly including half of previous instruction)
     SREG x6, 264(x5)
 
 failedtest_report:
@@ -154,18 +170,16 @@ failedtest_terminate:
 
 
 
-# Convert hex number to ASCII string
+# Convert hex number to ASCII string and store result in ascii_buffer
 # a0: value to convert
 # a1: number of bits (32 or 64)
-# Returns: a0 pointing to ascii_buffer with null-terminated hex string
 failedtest_hex_to_str:
-    la a2, ascii_buffer     # buffer pointer
-    li a3, '0'
+    LA(a2, ascii_buffer)     # buffer pointer
+    LI(a3, '0')
     sb a3, 0(a2)            # write '0'
-    li a3, 'x'
+    LI(a3, 'x')
     sb a3, 1(a2)            # write 'x'
     addi a2, a2, 2          # move past "0x"
-
     mv a3, a1               # a3 = bit count
 failedtest_hex_to_str_loop:
     addi a3, a3, -4         # move to next nibble
@@ -173,7 +187,7 @@ failedtest_hex_to_str_loop:
     andi a4, a4, 15         # mask to get nibble
 
     # Convert nibble to ASCII
-    li a5, 10
+    LI(a5, 10)
     blt a4, a5, failedtest_hex_to_str_digit
     # It's a letter (A-F)
     addi a4, a4, 87         # 'a' - 10 = 87
@@ -187,11 +201,10 @@ failedtest_hex_to_str_write:
     bnez a3, failedtest_hex_to_str_loop
 
     # Add newline and null terminator
-    li a3, 10               # '\n'
+    LI(a3, 10)              # '\n'
     sb a3, 0(a2)
     sb zero, 1(a2)          # null terminator
 
-    la a0, ascii_buffer     # return buffer address
     ret
 
 .data
