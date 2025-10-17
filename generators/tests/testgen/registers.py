@@ -53,7 +53,9 @@ class RegisterFile:
         selected_regs = select_registers(num_regs, available_regs)
         for reg in selected_regs:
             self.reg_list.remove(reg)
-        logger.debug(f"Getting {num_regs} registers from available {available_regs}, excluding {exclude_reg}. Selected: {selected_regs}")
+        logger.debug(
+            f"Getting {num_regs} registers from available {available_regs}, excluding {exclude_reg}. Selected: {selected_regs}"
+        )
         return selected_regs
 
     def get_register(self, *, exclude_reg: list[int] | None = None, reg_range: list[int] | None = None) -> int:
@@ -89,8 +91,9 @@ class IntegerRegisterFile(RegisterFile):
     Automatically handles special registers like signature pointer and link register.
     """
 
-    # Limit legal link/temp registers to simplify failure handler
-    link_regs = (4, 7, 12)
+    default_sig_reg = 3
+    default_link_reg = 4
+    link_regs = (4, 7, 12)  # Limit legal link/temp registers to simplify failure handler
 
     def __init__(self, e_register_file: bool = False):
         # Use default RegisterFile functions but set register count based on E
@@ -135,6 +138,34 @@ class IntegerRegisterFile(RegisterFile):
         asm_code = f"mv x{self._sig_reg}, x{old_sig_reg} # move signature pointer register"
         return asm_code
 
+    def reset_special_registers(self) -> str:
+        """Reset special registers to their default locations.
+
+        Returns:
+            The assembly code needed to move the values back to the default registers.
+        """
+        asm_code = ""
+        # Reset signature register
+        if self._sig_reg != self.default_sig_reg:
+            asm_code += self.move_sig_reg(self.default_sig_reg) + "\n"
+        # Reset link and temp registers
+        if self._link_reg != self.default_link_reg:
+            old_link_reg = self._link_reg
+            old_temp_reg = self._temp_reg
+            self.return_register(self._link_reg)
+            self.return_register(self._temp_reg)
+            self._link_reg = 4
+            self._temp_reg = 5
+            # Use super to avoid recursive checking for special reg conflicts
+            super().consume_registers([self._link_reg, self._temp_reg])
+            asm_code += (
+                f"mv x{self._link_reg}, x{old_link_reg} # reset link register to default\n"
+                f"mv x{self._temp_reg}, x{old_temp_reg} # reset temp register to default\n"
+            )
+        if asm_code != "":
+            asm_code = "# Reset special registers to default locations\n" + asm_code
+        return asm_code
+
     def consume_registers(self, regs: list[int]) -> str:
         """Mark registers as used/unavailable, handling special register conflicts.
 
@@ -176,7 +207,8 @@ class IntegerRegisterFile(RegisterFile):
             available_link_regs = [reg for reg in self.link_regs if reg + 1 in self.reg_list]
             self._link_reg = self.get_register(reg_range=available_link_regs)
             self._temp_reg = self._link_reg + 1  # temp register is always the next register after the link register
-            super().consume_registers([self._temp_reg]) # Use super to avoid recursive checking for special reg conflicts
+            # Use super to avoid recursive checking for special reg conflicts
+            super().consume_registers([self._temp_reg])
             asm_code += (
                 f"\nmv x{self._link_reg}, x{old_link_reg} # switch link pointer register to avoid conflict with test\n"
                 f"\nmv x{self._temp_reg}, x{old_temp_reg} # switch temp pointer register to avoid conflict with test\n"

@@ -12,6 +12,8 @@ Insert templates into test files.
 import importlib.resources
 import re
 
+from testgen.test_data import TestData
+
 
 def insert_setup_template(
     template_name: str, xlen: int, extension: str, test_file: str, signatureWords: int = 0
@@ -32,10 +34,15 @@ def insert_setup_template(
     return template
 
 
-def insert_test_template(template_name: str, xlen: int, sig_reg: int) -> tuple[str, int]:
+def insert_test_template(template_name: str, xlen: int, test_data: TestData) -> tuple[str, int]:
     """Insert a custom test template into the test file, handling signature pointer updates."""
     with importlib.resources.open_text("testgen.templates", template_name) as template_file:
         template = template_file.read()
+    # Extract test data
+    test_lines = test_data.int_regs.reset_special_registers()
+    sig_reg = test_data.int_regs.sig_reg
+    link_reg = test_data.int_regs.link_reg
+    temp_reg = test_data.int_regs.temp_reg
     # Initialize return variables
     sigupd_count_increment = 0
     # Count SIGUPD macros
@@ -44,7 +51,11 @@ def insert_test_template(template_name: str, xlen: int, sig_reg: int) -> tuple[s
     sig_pointer_incr_matches = list(re.finditer(r"SIG_POINTER_INCREMENT\((\d+)\)", template))
     # Move sig pointer to x3 for use in custom template
     # Handle RVTEST_SIGUPD macros
-    template = template.replace("SIGPOINTER", "x3")
+    template = (
+        template.replace("SIGPOINTER", f"x{sig_reg}")
+        .replace("LINKREG", f"x{link_reg}")
+        .replace("TEMPREG", f"x{temp_reg}")
+    )
     sigupd_count_increment += sigupd_count_custom
     # Handle SIG_POINTER_INCREMENT(n) macros
     if sig_pointer_incr_matches:
@@ -57,7 +68,7 @@ def insert_test_template(template_name: str, xlen: int, sig_reg: int) -> tuple[s
     elif "SIG_POINTER_INCREMENT" in template and not sig_pointer_incr_matches:
         raise ValueError(f"Invalid or missing SIG_POINTER_INCREMENT(n) in '{template_name}'.")
     # Return test text and sigupd count increment
-    template = f"mv x3, x{sig_reg}  # Move signature pointer to x3 for use in custom template\n" + template
+    test_lines += template
     return template, sigupd_count_increment
 
 
