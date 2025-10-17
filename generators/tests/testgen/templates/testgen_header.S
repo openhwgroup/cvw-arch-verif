@@ -25,8 +25,14 @@ RVTEST_CODE_BEGIN
 
 RVTEST_SIGBASE(x3,signature_base)
 
+# Check CANARY in signature
+LI(T1, CANARY_VALUE)
 #ifdef SELFCHECK
-  # Check CANARY in signature
-  LI(T1, CANARY_VALUE)
   RVTEST_SIGUPD(x3, x4, x5, T1)  # sig_begin_canary
+#else
+  # nops to match selfchecking test length
+  nop
+  nop
+  nop
+  nop
 #endif
