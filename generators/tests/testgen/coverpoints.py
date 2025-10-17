@@ -38,9 +38,9 @@ from testgen.test_data import TestData
 SKIP_COVERPOINTS = frozenset(
     {
         "cp_imm_edges_6bit_n0",  # Used only for cross products
-        "cp_rd_sign",            # Already covered by rd_edges
-        "cmp_rd_rs1_eqval",      # Already covered by cr_rs1_rs2_edges
-        "cmp_rd_rs2_eqval",      # Already covered by cr_rs1_rs2_edges
+        "cp_rd_sign",  # Already covered by rd_edges
+        "cmp_rd_rs1_eqval",  # Already covered by cr_rs1_rs2_edges
+        "cmp_rd_rs2_eqval",  # Already covered by cr_rs1_rs2_edges
     }
 )
 
@@ -369,7 +369,9 @@ def make_cr_rs1_imm_edges(instr_name: str, instr_type: str, coverpoint: str, tes
     for reg_edge_val in edges_reg:
         for imm_edge_val in edges_imm:
             test_lines.append("")
-            params = generate_random_params(test_data, instr_type, allow_x0=False, rs1val=reg_edge_val, immval=imm_edge_val)
+            params = generate_random_params(
+                test_data, instr_type, allow_x0=False, rs1val=reg_edge_val, immval=imm_edge_val
+            )
             desc = f"{coverpoint} (rs1 = {test_data.xlen_format_str.format(reg_edge_val)}, imm = {imm_edge_val})"
             test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
             test_data.int_regs.return_registers(params.used_int_regs)
@@ -521,42 +523,42 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
     return test_lines
 
 
-def make_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
-    """
-    Generate tests for cp_mem_hazard coverpoint.
+# def make_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+#     """
+#     Generate tests for cp_mem_hazard coverpoint.
 
-    Tests memory hazards (load-use, store-load dependencies).
+#     Tests memory hazards (load-use, store-load dependencies).
 
-    Args:
-        instr_name: Instruction mnemonic
-        instr_type: Instruction type
-        coverpoint: Coverpoint name (unused, for compatibility)
-        test_data: Test data context
+#     Args:
+#         instr_name: Instruction mnemonic
+#         instr_type: Instruction type
+#         coverpoint: Coverpoint name (unused, for compatibility)
+#         test_data: Test data context
 
-    Returns:
-        List of test code lines
-    """
-    # TODO: Implement memory hazard testing
-    return ["# TODO: Implement cp_mem_hazard"]
+#     Returns:
+#         List of test code lines
+#     """
+#     # TODO: Implement memory hazard testing
+#     return ["# TODO: Implement cp_mem_hazard"]
 
 
-def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
-    """
-    Generate tests for cp_f_mem_hazard coverpoint.
+# def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
+#     """
+#     Generate tests for cp_f_mem_hazard coverpoint.
 
-    Tests floating-point memory hazards.
+#     Tests floating-point memory hazards.
 
-    Args:
-        instr_name: Instruction mnemonic
-        instr_type: Instruction type
-        coverpoint: Coverpoint name (unused, for compatibility)
-        test_data: Test data context
+#     Args:
+#         instr_name: Instruction mnemonic
+#         instr_type: Instruction type
+#         coverpoint: Coverpoint name (unused, for compatibility)
+#         test_data: Test data context
 
-    Returns:
-        List of test code lines
-    """
-    # TODO: Implement floating-point memory hazard testing
-    return ["# TODO: Implement cp_f_mem_hazard"]
+#     Returns:
+#         List of test code lines
+#     """
+#     # TODO: Implement floating-point memory hazard testing
+#     return ["# TODO: Implement cp_f_mem_hazard"]
 
 
 # ============================================================================
@@ -566,9 +568,7 @@ def make_f_mem_hazard(instr_name: str, instr_type: str, coverpoint: str, test_da
 
 def make_custom(instr_name: str, instr_type: str, coverpoint: str, test_data: TestData) -> list[str]:
     """Generate tests for custom coverpoints using a template file."""
-    test_lines, sigupd_count_increment = insert_test_template(
-        f"{instr_name}.S", test_data.xlen, test_data.int_regs.sig_reg
-    )
+    test_lines, sigupd_count_increment = insert_test_template(f"{instr_name}.S", test_data.xlen, test_data)
     test_data.sigupd_count += sigupd_count_increment
     return [test_lines]
 
@@ -820,7 +820,7 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
             [
                 f"auipc x{temp_reg}, 0 # get current PC",
                 f"sub x{params.rd}, x{params.rd}, x{temp_reg} # subtract PC to make position-independent",
-                write_sigupd(params.rd, test_data)
+                write_sigupd(params.rd, test_data),
             ]
         )
 
@@ -900,6 +900,6 @@ COVERPOINT_HANDLERS: dict[str, Callable[[str, str, str, TestData], list[str]]] =
     # Hazard coverpoints
     "cp_gpr_hazard": make_cp_gpr_hazard,
     "cp_fpr_hazard": make_cp_gpr_hazard,  # Same handler for now
-    "cp_mem_hazard": make_mem_hazard,
-    "cp_f_mem_hazard": make_f_mem_hazard,
+    # "cp_mem_hazard": make_mem_hazard,
+    # "cp_f_mem_hazard": make_f_mem_hazard,
 }

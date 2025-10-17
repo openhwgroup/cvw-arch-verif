@@ -1,5 +1,0 @@
-    // Custom coverpoints for pause
-
-    cp_custom_pause : coverpoint ins.current.insn  {
-        bins pause = {32'h0100000F}; // pause, for Zihintpause
-    }

@@ -110,6 +110,9 @@
 `ifdef ZIFENCEI_COVERAGE
   `include "Zifencei_coverage.svh"
 `endif
+`ifdef ZIHINTPAUSE_COVERAGE
+  `include "Zihintpause_coverage.svh"
+`endif
 `ifdef ZCA_COVERAGE
   `include "Zca_coverage.svh"
 `endif

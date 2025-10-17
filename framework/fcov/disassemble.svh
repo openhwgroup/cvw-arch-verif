@@ -97,8 +97,9 @@ function string disassemble (logic [31:0] instrRaw);
   automatic string  ma    = get_vtype_ma_name(instr[26]);
 
   casez (instr)
+    // Hints
+    PAUSE:   $sformat(decoded, "pause");
     // Base Instructions
-
     ADD:     $sformat(decoded, "add %s, %s, %s", rd, rs1, rs2);
     SUB:     $sformat(decoded, "sub %s, %s, %s", rd, rs1, rs2);
     AND:     $sformat(decoded, "and %s, %s, %s", rd, rs1, rs2);
