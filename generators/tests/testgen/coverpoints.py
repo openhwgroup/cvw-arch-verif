@@ -838,7 +838,7 @@ def make_cr_rs1_rs2_edges_offset(instr_name: str, instr_type: str, coverpoint: s
     for edge_val1 in edges1:
         for edge_val2 in edges2:
             test_lines.append("")
-            params = generate_random_params(test_data, instr_type, rs1val=edge_val1, rs2val=edge_val2)
+            params = generate_random_params(test_data, instr_type, allow_x0=False, rs1val=edge_val1, rs2val=edge_val2)
             assert params.rs1 is not None and params.rs2 is not None
             test_lines.extend(
                 [
