@@ -2,7 +2,7 @@
 """Coverpoint test generation with automatic generator discovery."""
 
 # Re-export the public API from coverpoints module
-from testgen.coverpoints.coverpoints import (
+from testgen.coverpoints._coverpoints import (
     add_coverpoint_generator,
     generate_tests_for_coverpoint,
 )

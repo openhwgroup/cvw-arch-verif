@@ -1,8 +1,8 @@
 # testgen/coverpoints/compare.py
 """Compare register coverpoint generators (cmp_rd_rs1, cmp_rd_rs2, cmp_rs1_rs2, cmp_rd_rs1_rs2)."""
 
-from testgen.coverpoints.coverpoints import add_coverpoint_generator
-from testgen.format_instruction import format_single_test
+from testgen.coverpoints import add_coverpoint_generator
+from testgen.instruction_formatters import format_single_test
 from testgen.instruction_params import generate_random_params
 from testgen.test_data import TestData
 

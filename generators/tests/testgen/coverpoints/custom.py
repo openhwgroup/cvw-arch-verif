@@ -1,7 +1,7 @@
 # testgen/coverpoints/special/custom.py
 """Custom coverpoint generator (cp_custom)."""
 
-from testgen.coverpoints.coverpoints import add_coverpoint_generator
+from testgen.coverpoints import add_coverpoint_generator
 from testgen.load_templates import insert_test_template
 from testgen.test_data import TestData
 
