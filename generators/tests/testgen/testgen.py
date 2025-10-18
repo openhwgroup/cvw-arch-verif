@@ -130,7 +130,6 @@ def generate_tests_for_instruction(
             if len(coverpoints) == 1:
                 test_lines.extend(["# Testcase cp_asm_count", f"{instr_name}"])
             continue
-        # Get the coverpoint specific handler and generate tests
         else:
             test_lines.append(f"{coverpoint}_tests:")
             test_lines.append(generate_tests_for_coverpoint(instr_name, instr_type, coverpoint, test_data))
