@@ -66,3 +66,8 @@ class TestData:
     @property
     def flen_format_str(self) -> str:
         return f"0x{{:0{int(self.__flen / 4)}x}}"
+
+    def destroy(self) -> None:
+        """Clean up resources used by TestData."""
+        self._int_regs.destroy()
+        self._float_regs.destroy()

@@ -35,6 +35,11 @@ class RegisterFile:
     def __repr__(self):
         return f"Register File with the following registers available: {self.reg_list}"
 
+    def destroy(self) -> None:
+        """Clean up resources used by RegisterFile."""
+        if len(self.reg_list) != self._reg_count:
+            raise RuntimeError("Cannot destroy RegisterFile: some registers are still in use.")
+
     @property
     def reg_count(self):
         return self._reg_count
@@ -104,6 +109,10 @@ class IntegerRegisterFile(RegisterFile):
         self._link_reg = 4
         self._temp_reg = self._link_reg + 1  # temp register is always the next register after the link register
         super().consume_registers([self._sig_reg, self._link_reg, self._temp_reg])
+
+    def destroy(self) -> None:
+        self.return_registers([self._sig_reg, self._link_reg, self._temp_reg])
+        super().destroy()
 
     # Access to special registers
     @property

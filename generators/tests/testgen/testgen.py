@@ -103,6 +103,9 @@ def generate_all_tests(
                         test_file.write_text(test_string)
                         print(f"Updated {test_file}")
 
+                    # Clean up test data
+                    test_data.destroy()
+
 
 def generate_tests_for_instruction(
     instr_name: str, instr_type: str, coverpoints: list[str], test_data: TestData
