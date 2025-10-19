@@ -6,10 +6,10 @@ sha256sum1,I1,x,x,x,x,,x,x,,,,x,,,rw
 sha512sig0,I1,,x,x,x,,x,x,,,,x,,,rw
 sha512sig0h,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
 sha512sig0l,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
-sha512sig1,R,,x,x,x,,x,x,,,,x,,,rw
+sha512sig1,I1,,x,x,x,,x,x,,,,x,,,rw
 sha512sig1h,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
 sha512sig1l,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
-sha512sum0,R,,x,x,x,,x,x,,,,x,,,rw
+sha512sum0,I1,,x,x,x,,x,x,,,,x,,,rw
 sha512sum0r,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
-sha512sum1,R,,x,x,x,,x,x,,,,x,,,rw
+sha512sum1,I1,,x,x,x,,x,x,,,,x,,,rw
 sha512sum1r,R,x,,x,x,x,x,x,x,x,x,x,x,x,rw
