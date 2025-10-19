@@ -54,11 +54,13 @@ def _discover_and_import_instruction_formatters() -> None:
 _discover_and_import_instruction_formatters()
 
 
-def _select_instruction_formatter(instr_type: str) -> InstructionFormatter:
+def _select_instruction_formatter(instr_name: str, instr_type: str) -> InstructionFormatter:
     """Select the appropriate instruction formatter based on instruction type (exact match)."""
     if instr_type in _INSTRUCTION_FORMATTERS:
         return _INSTRUCTION_FORMATTERS[instr_type]
-    raise ValueError(f"No instruction formatter found for instruction type: {instr_type}")
+    raise ValueError(
+        f"No instruction formatter found for instruction type: {instr_type}. Needed by instruction: {instr_name}."
+    )
 
 
 def format_instruction(
@@ -79,7 +81,7 @@ def format_instruction(
     Returns:
         Tuple of (setup_code, test_code, check_code) as strings
     """
-    formatter = _select_instruction_formatter(instr_type)
+    formatter = _select_instruction_formatter(instr_name, instr_type)
     setup, test, check = formatter(instr_name, test_data, params)
     return "\n".join(setup), "\n".join(test), "\n".join(check)
 

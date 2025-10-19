@@ -31,7 +31,6 @@ class TestPlanData:
     """
     Data structure for information on a single instruction parsed from a testplan.
     """
-
     instr_type: str
     rv32: bool
     rv64: bool
