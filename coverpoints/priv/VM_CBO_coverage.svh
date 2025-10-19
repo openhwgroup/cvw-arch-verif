@@ -171,12 +171,12 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
     }
 
     `ifdef XLEN64
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            bins non_existant_pa = {1};
+        d_phys_address_nonexistent: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            bins non_existent_pa = {1};
         }
     `else
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
-            bins non_existant_pa = {1};
+        d_phys_address_nonexistent: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+            bins non_existent_pa = {1};
         }
     `endif
 
@@ -270,42 +270,20 @@ covergroup VM_CBO_exceptions_cg with function sample(ins_t ins);
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_s);
     }
 
-<<<<<<<< HEAD:coverpoints/rv64_priv/RV64CBO_VM_coverage.svh
     // PTE points to a non existent physical address
-    leaf_PTE_to_nonexistant_pa_cbo_s: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_s {
-|||||||| 60f1f9f1:fcov/rv64_priv/RV64CBO_VM_coverage.svh
-    // PTE points to a non existent physical address
-    leaf_PTE_to_nonexistant_pa_cbo_s: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_s {
-========
-    // PTE points to a non existent physical address
-    leaf_PTE_to_nonexistant_pa_cbo_s: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, store_acc_fault, cbo_ins, priv_mode_s {
->>>>>>>> cff8828bd95201859eb262a7a4ce328dcd14a232:coverpoints/priv/VM_CBO_coverage.svh
+    leaf_PTE_to_nonexistent_pa_cbo_s: cross PTE_RWX_d, d_phys_address_nonexistent, PageType_d, store_acc_fault, cbo_ins, priv_mode_s {
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_u);
     }
-    leaf_PTE_to_nonexistant_pa_cbo_u: cross PTE_RWX_d, d_phys_address_nonexistant, PageType_d, store_acc_fault, cbo_ins, priv_mode_u {
+    leaf_PTE_to_nonexistent_pa_cbo_u: cross PTE_RWX_d, d_phys_address_nonexistent, PageType_d, store_acc_fault, cbo_ins, priv_mode_u {
         ignore_bins ig1 = binsof(PTE_RWX_d.leaflvl_s);
     }
 
-<<<<<<<< HEAD:coverpoints/rv64_priv/RV64CBO_VM_coverage.svh
-    // Non leaf PTE points to a non existent phys addr instead of next page table. Store access fault required during walk
-    // Example: Setup a giga page in sv48, lvl 3 pte (tera) should point to lvl2 page table, but it points to non existent PA
-    nonleaf_PTE_to_nonexistant_pa_cbo: cross pointer_PTE_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_su {
-        ignore_bins ig1 = binsof(PageType_d.tera);                          // Here PageType_d will be the type being pointed towards
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.giga);
-|||||||| 60f1f9f1:fcov/rv64_priv/RV64CBO_VM_coverage.svh
     // Non leaf PTE points to a non existatant phys addr instead of next page table. Store access fault required during walk
     // Example: Setup a giga page in sv48, lvl 3 pte (tera) should point to lvl2 page table, but it points to non existent PA
-    nonleaf_PTE_to_nonexistant_pa_cbo: cross pointer_PTE_d, d_phys_address_nonexistant, PageType_d, mode, store_acc_fault, cbo_ins, priv_mode_su {
-        ignore_bins ig1 = binsof(PageType_d.tera);                          // Here PageType_d will be the type being pointed towards
-        ignore_bins ig2 = binsof(mode.sv39) && binsof(PageType_d.giga);
-========
-    // Non leaf PTE points to a non existatant phys addr instead of next page table. Store access fault required during walk
-    // Example: Setup a giga page in sv48, lvl 3 pte (tera) should point to lvl2 page table, but it points to non existent PA
-    nonleaf_PTE_to_nonexistant_pa_cbo: cross pointer_PTE_d, d_phys_address_nonexistant, PageType_d, store_acc_fault, cbo_ins, priv_mode_su {
+    nonleaf_PTE_to_nonexistent_pa_cbo: cross pointer_PTE_d, d_phys_address_nonexistent, PageType_d, store_acc_fault, cbo_ins, priv_mode_su {
         `ifdef SV48     ignore_bins ig1 = binsof(PageType_d.sv48_tera); `endif     // Here PageType_d will be the page being pointed towards
         `ifdef SV39     ignore_bins ig2 = binsof(PageType_d.sv39_giga); `endif
         `ifdef XLEN32   ignore_bins ig3 = binsof(PageType_d.sv32_mega); `endif
->>>>>>>> cff8828bd95201859eb262a7a4ce328dcd14a232:coverpoints/priv/VM_CBO_coverage.svh
     }
 
     PTE_nonleaf_DAU_cbo: cross PTE_DAU_d, PageType_d, store_page_fault, cbo_ins, priv_mode_su {

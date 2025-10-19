@@ -36,11 +36,11 @@ covergroup ExceptionsVMZaamo_cg with function sample(ins_t ins);
         // auto fill valid bit 0/1
     }
     `ifdef XLEN64 // Number of physical address bits is different by XLEN, either 34 or 56
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+        d_phys_address_nonexistent: coverpoint ({ins.current.phys_adr_d[55:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `else
-        d_phys_address_nonexistant: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
+        d_phys_address_nonexistent: coverpoint ({ins.current.phys_adr_d[33:2], 2'b00} == `ACCESS_FAULT_ADDRESS) {
             // auto fill 1/0 for the physical address being valid
         }
     `endif
@@ -72,11 +72,11 @@ covergroup ExceptionsVMZaamo_cg with function sample(ins_t ins);
     }
 
     // main coverpoints
-    cp_misaligned_priority_m:        cross priv_mode_m, amemops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_m:        cross priv_mode_m, amemops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistent;
     cp_medeleg_m:                    cross priv_mode_m, amemops,  d_page_table_entry_invalid, medeleg_walk;
-    cp_misaligned_priority_s:        cross priv_mode_s, amemops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_s:        cross priv_mode_s, amemops, d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistent;
     cp_medeleg_s:                    cross priv_mode_s, amemops, d_page_table_entry_invalid, medeleg_walk;
-    cp_misaligned_priority_u:        cross priv_mode_u, amemops,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistant;
+    cp_misaligned_priority_u:        cross priv_mode_u, amemops,  d_virt_adr_misaligned, d_page_table_entry_invalid, d_phys_address_nonexistent;
     cp_medeleg_u:                    cross priv_mode_u, amemops,  d_page_table_entry_invalid, medeleg_walk;
 
 endgroup
