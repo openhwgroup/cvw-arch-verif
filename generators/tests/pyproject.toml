@@ -1,6 +1,6 @@
 [project]
 name = "testgen"
-version = "0.2.0"
+version = "0.3.0"
 description = "RISC-V Architecture Compatibility Test Generator"
 # readme = "README.md"
 authors = [
@@ -14,8 +14,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyright>=1.1.406",
-    "ruff>=0.14.0",
-    "ty>=0.0.1a22",
+    "ruff>=0.14.1",
+    "ty>=0.0.1a23",
 ]
 
 [project.scripts]
