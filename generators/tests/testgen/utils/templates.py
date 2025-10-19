@@ -12,7 +12,7 @@ Insert templates into test files.
 import importlib.resources
 import re
 
-from testgen.test_data import TestData
+from testgen.data.test_data import TestData
 
 
 def insert_setup_template(

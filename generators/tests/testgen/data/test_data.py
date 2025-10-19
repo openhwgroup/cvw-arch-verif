@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 ##################################
 
-from testgen.registers import FloatRegisterFile, IntegerRegisterFile
+from testgen.data.registers import FloatRegisterFile, IntegerRegisterFile
 
 
 class TestData:

@@ -1,12 +1,12 @@
 # testgen/coverpoints/reg_edges.py
 """Register edge value coverpoint generators (cp_rs1_edges, cp_rs2_edges)."""
 
-from testgen.common import load_int_reg, write_sigupd
 from testgen.coverpoints.coverpoints import add_coverpoint_generator
-from testgen.edges import get_general_edges, get_orcb_edges
+from testgen.data.instruction_params import generate_random_params
+from testgen.data.test_data import TestData
 from testgen.instruction_formatters import format_single_test
-from testgen.instruction_params import generate_random_params
-from testgen.test_data import TestData
+from testgen.utils.common import load_int_reg, write_sigupd
+from testgen.utils.edges import get_general_edges, get_orcb_edges
 
 
 @add_coverpoint_generator("cp_rs1_edges")

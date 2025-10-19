@@ -14,11 +14,11 @@ from typing import Annotated
 
 import typer
 
-from testgen.common import get_sig_space
 from testgen.coverpoints import generate_tests_for_coverpoint
-from testgen.load_templates import insert_setup_template
-from testgen.test_data import TestData
-from testgen.testplans import get_extensions, read_testplan
+from testgen.data.test_data import TestData
+from testgen.utils.common import get_sig_space
+from testgen.utils.templates import insert_setup_template
+from testgen.utils.testplans import get_extensions, read_testplan
 
 testgen_app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
 

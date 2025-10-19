@@ -7,8 +7,8 @@
 
 from dataclasses import dataclass
 
-from testgen.immediates import gen_random_imm
-from testgen.test_data import TestData
+from testgen.data.test_data import TestData
+from testgen.utils.immediates import gen_random_imm
 
 
 @dataclass

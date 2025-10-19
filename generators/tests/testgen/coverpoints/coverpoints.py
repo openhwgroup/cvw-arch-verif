@@ -6,8 +6,8 @@ from importlib import import_module
 from pathlib import Path
 from random import seed
 
-from testgen.common import myhash
-from testgen.test_data import TestData
+from testgen.data.test_data import TestData
+from testgen.utils.common import myhash
 
 # Type alias for coverpoint generator functions
 CoverpointGenerator = Callable[[str, str, str, TestData], list[str]]

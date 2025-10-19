@@ -5,8 +5,8 @@ from collections.abc import Callable
 from importlib import import_module
 from pathlib import Path
 
-from testgen.instruction_params import InstructionParams
-from testgen.test_data import TestData
+from testgen.data.instruction_params import InstructionParams
+from testgen.data.test_data import TestData
 
 # Type alias for instruction formatter functions
 InstructionFormatter = Callable[[str, TestData, InstructionParams], tuple[list[str], list[str], list[str]]]

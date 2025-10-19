@@ -11,8 +11,8 @@ Common utilities for cvw-arch-verif test generation.
 
 from typing import Literal
 
-from testgen.immediates import modify_imm
-from testgen.test_data import TestData
+from testgen.data.test_data import TestData
+from testgen.utils.immediates import modify_imm
 
 
 def load_int_reg(name: str, reg: int, val: int, test_data: TestData) -> str:

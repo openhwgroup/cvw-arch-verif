@@ -2,8 +2,8 @@
 """Custom coverpoint generator (cp_custom)."""
 
 from testgen.coverpoints.coverpoints import add_coverpoint_generator
-from testgen.load_templates import insert_test_template
-from testgen.test_data import TestData
+from testgen.data.test_data import TestData
+from testgen.utils.templates import insert_test_template
 
 
 @add_coverpoint_generator("cp_custom")
