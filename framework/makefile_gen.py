@@ -75,7 +75,7 @@ def gen_compile_targets(
         f"\t\t{test_path}\n"
         # Objdump
         f"{
-            f'\n\t{config.objdump_exe} -Sd -M no-aliases \\\n\t\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
+            f'\n\t{config.objdump_exe} -Stsxd -M no-aliases,numeric \\\n\t\t{final_elf} \\\n\t\t> {final_elf}.objdump\n'
             if config.objdump_exe is not None
             else '# skipping objdump generation\n'
         }"
