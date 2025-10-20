@@ -7,7 +7,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 minimum_pre_commit_version: "4.0.0"
-exclude: "^_old-priv-tests/"
+exclude: "^_archive/"
 repos:
   # Standard pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks

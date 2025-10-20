@@ -1,43 +1,16 @@
-[project]
-name = "cvw-arch-verif"
-version = "0.2.0"
-description = "RISC-V Architecture Compatibility Test Framework"
-readme = "README.md"
-authors = [
-    { name = "Jordan Carlin", email = "jcarlin@hmc.edu" }
-]
-requires-python = ">=3.12"
-dependencies = [
-    "pydantic>=2.11.9",
-    "ruamel-yaml>=0.18.15",
-]
+[tool.uv.workspace]
+members = ["framework", "generators/tests/testgen"]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.13.0",
+    "pyright>=1.1.406",
+    "ruff>=0.14.1",
 ]
 
-[project.scripts]
-act = "framework.act:main"
-sail-to-rvvi = "framework.sail_to_rvvi:main"
-coverreport = "framework.coverreport:main"
-sig_modify = "framework.sig_modify:main"
-
-##### BUILD #####
-
-[build-system]
-requires = ["uv_build>=0.8.14,<0.9.0"]
-build-backend = "uv_build"
-
-[tool.uv.build-backend]
-module-root = ""
-module-name = "framework"
-
 ###### RUFF CONFIG #####
-
 [tool.ruff]
 line-length = 120
-extend-exclude = ["riscv-unified-db"]
+extend-exclude = ["external", "_archive"]
 
 [tool.ruff.lint]
 select = [
@@ -62,3 +35,7 @@ ignore = [
   "RUF005",         # iterable unpacking in list
   "E701",           # multiple statements on one line # TODO: Remove this when autoformatter is in place
 ]
+
+##### PYRIGHT CONFIG #####
+[tool.pyright]
+exclude = ["external", "_archive"]
