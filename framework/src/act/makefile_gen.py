@@ -144,8 +144,8 @@ def generate_common_makefile(
     common_build_dir = common_wkdir / "build"
 
     # Makefile targets
-    directory_set = set()
-    test_targets = []
+    directory_set: set[str] = set()
+    test_targets: list[Path] = []
     makefile_lines = [
         MAKEFILE_HEADER,
         f"CFLAGS += -O0 -g -mcmodel=medany -nostartfiles -I{tests_dir}/env -I{tests_dir}/priv/headers",
@@ -188,8 +188,8 @@ def generate_config_makefile(
     common_elf_dir = common_wkdir / "elfs"
 
     # Makefile targets
-    directory_set = set()
-    test_targets = []
+    directory_set: set[str] = set()
+    test_targets: list[Path] = []
     coverage_targets: dict[Path, list[Path]] = {}
     makefile_lines = [
         MAKEFILE_HEADER,
@@ -263,7 +263,7 @@ def gen_coverage_targets(
     """Generate coverage targets and tracelists."""
     # Generate tracelist file for each extension/test group and a target to generate the UCDB coverage file
     makefile_lines = ["#################### Coverage targets ####################\n"]
-    coverage_reports = []
+    coverage_reports: list[Path] = []
     for coverage_group, traces in coverage_targets.items():
         # Define paths
         base_name = base_dir / coverage_group / coverage_group.stem
@@ -314,7 +314,7 @@ def gen_coverage_targets(
 
 
 def generate_makefiles(
-    configs: list[dict],
+    configs: list[dict[str, Config | TestMetadata | Path | int]],
     rv32_common_tests: dict[str, TestMetadata],
     rv64_common_tests: dict[str, TestMetadata],
     tests_dir: Path,
@@ -325,8 +325,8 @@ def generate_makefiles(
     rv32_common_generated = False
     rv64_common_generated = False
     top_makefile_lines = [MAKEFILE_HEADER]
-    compile_targets = []
-    coverage_targets = []
+    compile_targets: list[str] = []
+    coverage_targets: list[str] = []
 
     for config_data in configs:
         # Unpack config data

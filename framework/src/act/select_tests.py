@@ -24,7 +24,7 @@ def select_tests(
     test_dict: dict[str, TestMetadata], implemented_extensions: set[str], config_params: dict[str, Any]
 ) -> dict[str, TestMetadata]:
     """Select tests that match the UDB configuration."""
-    selected_tests = {}
+    selected_tests: dict[str, TestMetadata] = {}
     for test_name, test_metadata in test_dict.items():
         # Check if all required extensions are implemented
         required_exts = set(test_metadata.implemented_extensions)
@@ -38,7 +38,7 @@ def select_tests(
 
 def get_common_tests(test_dict: dict[str, TestMetadata], xlen: int) -> dict[str, TestMetadata]:
     "Get tests that do not depend on configuration and match the given XLEN."
-    common_tests = {}
+    common_tests: dict[str, TestMetadata] = {}
     for test_name, test_metadata in test_dict.items():
         if not test_metadata.config_dependent and test_metadata.mxlen == xlen:
             common_tests[test_name] = test_metadata

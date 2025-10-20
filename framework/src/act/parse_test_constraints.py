@@ -18,8 +18,8 @@ class TestMetadata(BaseModel):
     """Metadata for a RISC-V test case extracted from YAML configuration."""
 
     test_path: FilePath
-    implemented_extensions: set[str] = Field(min_length=1, whitespace_strip=True)
-    march: str = Field(alias="MARCH", whitespace_strip=True, pattern=r"rv(?:32|64|\$\{XLEN\})[ieg].*")
+    implemented_extensions: set[str] = Field(min_length=1)
+    march: str = Field(alias="MARCH", pattern=r"rv(?:32|64|\$\{XLEN\})[ieg].*")
     config_dependent: bool = Field(alias="CONFIG_DEPENDENT")
     params: dict[str, Any] = Field(default_factory=dict)
 
@@ -61,7 +61,7 @@ def extract_yaml_config(file: Path) -> TestMetadata:
     yaml_section = content[start_pos:end_pos]
 
     # Process lines to remove comment prefixes
-    yaml_lines = []
+    yaml_lines: list[str] = []
     for line in yaml_section.split("\n"):
         line = line.lstrip("#")
         yaml_lines.append(line)
@@ -77,7 +77,7 @@ def generate_test_dict(tests_dir: Path) -> dict[str, TestMetadata]:
     if not tests_dir.is_dir():
         raise ValueError(f"tests_dir is not a directory: {tests_dir}")
 
-    test_list = {}
+    test_list: dict[str, TestMetadata] = {}
 
     for test_file in tests_dir.rglob("*.S"):
         config = extract_yaml_config(test_file)
