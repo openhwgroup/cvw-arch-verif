@@ -7,7 +7,7 @@
         .align 8; .global fromhost; fromhost: .dword 0;                 \
         .popsection;
 
-#define RVMODEL_HALT    \
+#define RVMODEL_HALT_PASS  \
   li x1, 1                ;\
   write_tohost:           ;\
     sw x1, tohost, t0     ;\

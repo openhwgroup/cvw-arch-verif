@@ -90,7 +90,7 @@
     add     T1, T1, T4            // construct sig seg end
     LI(     T1, 0xBAD0DAD0)       // early abort signature value at sig_end, independent of mtrap_sigptr
     SREG    T1, -4(T4)            // save into last signature canary
-    j     exit_cleanup            // skip around handlers, go to RVMODEL_HALT
+    j       exit_cleanup          // skip around handlers, go to RVMODEL_HALT
 
   // Instantiate trap handlers for each priv mode
   INSTANTIATE_MODE_MACRO RVTEST_TRAP_HANDLER
@@ -100,7 +100,10 @@
 
   // Terminate test
   exit_cleanup:
-    RVMODEL_HALT
+    # RVMODEL_IO_INIT
+    # LA(T1, successstr)
+    # RVMODEL_IO_WRITE_STR(T1, successstr)
+    RVMODEL_HALT_PASS
   .option pop
 .endm
 /******************************** end of RVTEST_CODE_END ***********************************/
