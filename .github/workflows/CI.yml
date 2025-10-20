@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Setup UDB container
       - name: Checkout UDB submodule only
@@ -41,7 +41,7 @@ jobs:
         run: ./external/riscv-unified-db/bin/setup
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Install RISCV-GNU Toolchain
         run: |

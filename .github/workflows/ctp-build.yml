@@ -29,7 +29,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: "recursive"
 
@@ -57,7 +57,7 @@ jobs:
           path: docs/ctp/build/ctp.html
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: github-pages
 
@@ -67,13 +67,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download PDF
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ctp.pdf
           path: ./
 
       - name: Download HTML
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ctp.html
           path: ./
@@ -84,7 +84,7 @@ jobs:
           echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
 
       - name: Create Release
-        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631
+        uses: softprops/action-gh-release@v2.4.1
         with:
           draft: false
           prerelease: ${{ ! (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true') }}
