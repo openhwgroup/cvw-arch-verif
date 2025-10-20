@@ -9,7 +9,7 @@
 
 from typing import Any
 
-from framework.parse_test_constraints import TestMetadata
+from act.parse_test_constraints import TestMetadata
 
 
 def check_test_params(test_params: dict[str, Any], config_params: dict[str, Any]) -> bool:

@@ -10,8 +10,8 @@
 import importlib.resources
 from pathlib import Path
 
-from framework.config import Config
-from framework.parse_test_constraints import TestMetadata
+from act.config import Config
+from act.parse_test_constraints import TestMetadata
 
 # Makefile templates
 MAKEFILE_HEADER = """
@@ -283,8 +283,8 @@ def gen_coverage_targets(
 
         # Add UCDB file to the list
         with (
-            importlib.resources.path("framework", "fcov") as fcov_path,
-            importlib.resources.path("framework", "cvw-arch-verif.do") as vsim_do_path,
+            importlib.resources.path("act", "fcov") as fcov_path,
+            importlib.resources.path("act", "cvw-arch-verif.do") as vsim_do_path,
         ):
             makefile_lines.append(
                 f"# Generate UCDB file for {coverage_group.stem}\n"

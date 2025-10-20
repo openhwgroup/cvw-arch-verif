@@ -1,0 +1,20 @@
+[project]
+name = "testgen"
+version = "0.3.0"
+description = "RISC-V Architecture Compatibility Test Generator"
+# readme = "README.md"
+authors = [
+    { name = "Jordan Carlin", email = "jcarlin@hmc.edu" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.19.2",
+]
+
+[project.scripts]
+testgen = "testgen.testgen:main"
+
+##### BUILD #####
+[build-system]
+requires = ["uv_build>=0.8.14,<0.10.0"]
+build-backend = "uv_build"

@@ -35,7 +35,7 @@ endif
 
 .DEFAULT_GOAL := elfs
 
-# Test compilation targets
+###### Test compilation targets ######
 .PHONY: elfs
 elfs: generate_makefiles
 	$(MAKE) -C $(WORKDIR) compile
@@ -48,7 +48,7 @@ generate_makefiles: # too many dependencies to track; always regenerate Makefile
 clean:
 	rm -rf $(WORKDIR)
 
-# Test generation targets
+###### Test generation targets ######
 .PHONY: covergroupgen
 covergroupgen: $(STAMP_DIR)/covergroupgen.stamp
 $(STAMP_DIR)/covergroupgen.stamp: generators/coverage/covergroupgen.py $(COV_TEMPLATES) $(TESTPLANS) | $(STAMP_DIR)
@@ -57,8 +57,8 @@ $(STAMP_DIR)/covergroupgen.stamp: generators/coverage/covergroupgen.py $(COV_TEM
 
 .PHONY: testgen
 testgen:  $(STAMP_DIR)/testgen.stamp
-$(STAMP_DIR)/testgen.stamp: $(STAMP_DIR)/covergroupgen.stamp generators/tests/testgen.py $(TEST_TEMPLATES) | $(STAMP_DIR)
-	$(UV_RUN) generators/tests/testgen.py
+$(STAMP_DIR)/testgen.stamp: $(TEST_TEMPLATES) | $(STAMP_DIR)
+	$(UV_RUN) testgen testplans -o tests
 	rm -rf $(SRCDIR64)/E $(SRCDIR32)/E
 	touch $@
 
@@ -74,7 +74,7 @@ $(STAMP_DIR)/illegalinstrtests.stamp: generators/tests/illegalinstrtests.py | $(
 	touch $@
 
 .PHONY: tests
-tests: testgen privheaders
+tests: covergroupgen testgen privheaders
 
 .PHONY: clean-tests
 clean-tests:
@@ -85,7 +85,7 @@ clean-tests:
 $(PRIVHEADERSDIR) $(STAMP_DIR):
 	mkdir -p $@
 
-# TODO: Coverage targets
+###### Coverage targets ######
 .PHONY: coverage
 coverage: generate_makefiles
 	$(MAKE) -C $(WORKDIR) coverage
@@ -94,10 +94,7 @@ coverage: generate_makefiles
 .PHONY: lint
 lint:
 	$(UV_RUN) ruff check
-
-.PHONY: lint-fix
-lint-fix:
-	$(UV_RUN) ruff check --fix
+	$(UV_RUN) pyright
 
 .PHONY: format
 format:

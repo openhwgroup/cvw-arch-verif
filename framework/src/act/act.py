@@ -13,11 +13,11 @@ from pathlib import Path
 # import filecmp
 # import shutil
 # import subprocess
-from framework.config import load_config
-from framework.makefile_gen import generate_makefiles
-from framework.parse_test_constraints import generate_test_dict
-from framework.parse_udb_config import generate_udb_files, get_config_params, get_implemented_extensions
-from framework.select_tests import get_common_tests, select_tests
+from act.config import load_config
+from act.makefile_gen import generate_makefiles
+from act.parse_test_constraints import generate_test_dict
+from act.parse_udb_config import generate_udb_files, get_config_params, get_implemented_extensions
+from act.select_tests import get_common_tests, select_tests
 
 
 def main():
