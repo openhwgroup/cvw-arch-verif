@@ -1,17 +1,3 @@
-
-
-
-
-# Expects a SiFive-compatible GPIO
-# Change these addresses to match your memory map
-.EQU GPIO_ENABLED, 1
-.EQU GPIO_BASE_ADDR, 0x10060000
-.EQU GPIO_OUTPUT_EN, (GPIO_BASE_ADDR + 4)
-.EQU GPIO_OUTPUT_VAL, (GPIO_BASE_ADDR + 8)
-
-# self-checking test extracts the address of the failing test
-# and the actual and expected values
-
 # Log failure. x4 contains return address of jal from the failure and x5 is a vacant temporary register
 failedtest_x4_x5:
     la x5, begin_failure_scratch

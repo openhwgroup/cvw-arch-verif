@@ -562,22 +562,21 @@
      LI (x15, (0xFAB7FBB6FAB7FBB6 & MASK))
 #endif
 .endm
+
 /******************************************************************************/
 /**** this is a helper macro that conditionally instantiates the macros    ****/
 /**** PROLOG/HANDLER/EPILOG/SAVEAREA depending on test type & mode support ****/
 /******************************************************************************/
 .macro INSTANTIATE_MODE_MACRO MACRO_NAME
- #ifdef rvtest_mtrap_routine
-  \MACRO_NAME M         // actual m-mode prolog/epilog/handler code
-
-        #ifdef rvtest_strap_routine
-      \MACRO_NAME S     // actual s-mode prolog/epilog/handler code
-
-        #ifdef rvtest_vtrap_routine
-          \MACRO_NAME V // actual v-mode prolog/epilog/handler code
-        #endif
+  #ifdef rvtest_mtrap_routine
+    \MACRO_NAME M     // actual m-mode prolog/epilog/handler code
+    #ifdef rvtest_strap_routine
+      \MACRO_NAME S   // actual s-mode prolog/epilog/handler code
+      #ifdef rvtest_vtrap_routine
+        \MACRO_NAME V // actual v-mode prolog/epilog/handler code
+      #endif
     #endif
- #endif
+  #endif
 .endm
 
 /**************************************************************************/
@@ -1935,212 +1934,3 @@ rvtest_\__MODE__\()end:
 
 .option pop
 .endm                           // end of TRAP_SAVEAREA
-
-//==============================================================================
-// This section defines the required test format spec macros:
-// RVTEST_[CODE/DATA/SIG]_[BEGIN/END]
-//==============================================================================
-
-
-/**************************** CODE BEGIN w/ TRAP HANDLER START  *********************/
-/**** instantiate prologs using RVTEST_TRAP_PROLOG() if rvtests_xtrap_routine is ****/
-/**** is defined, then initializes regs & defines rvtest_code_begin global label ****/
-/************************************************************************************/
-.macro RVTEST_CODE_BEGIN
- .option push
- .option rvc
- .align UNROLLSZ
- .option norvc
- .section .text.init
- .globl  rvtest_init
- .global rvtest_code_begin              //define the label and make it available
-
-rvtest_init:                            //instantiate prologs here
-  INSTANTIATE_MODE_MACRO RVTEST_TRAP_PROLOG
-rvtest_entrypoint:
-// RVMODEL_BOOT                        // Commenting this one as temporary fix
-  RVTEST_INIT_GPRS                      // 0xF0E1D2C3B4A59687
-rvtest_code_begin:
- .option pop
-.endm                                   //end of RVTEST_CODE_BEGIN
-/*********************** end of RVTEST_CODE_BEGIN ***********************************/
-
-/************************************************************************************/
-/****        The above is instantiated at the start of the actual test           ****/
-/****                    So the test is here                                     ****/
-/****        the below is instantiated at the end   of the actual test           ****/
-/************************************************************************************/
-/*                ----------------> test inserted here <----------------             */
-/**************************************************************************************/
-/**** RVTEST_CODE_END macro  defines end of test code: saves regs, transitions to  ****/
-/**** Mmode, & instantiates epilog using RVTEST_TRAP_EPILOG() macros. Test code    ****/
-/**** falls through to this else must branch to label rvtest_code_end. This must   ****/
-/**** branch to a RVMODEL_HALT macro at the end. The actual trap handlers for each ****/
-/**** mode are instantiated immediately following with RVTEST_TRAP_HANDLER() macro ****/
-/**************************************************************************************/
-
-.macro RVTEST_CODE_END          // test is ended, but in no particular mode
-  .option push
-  .option norvc
-  .global rvtest_code_end       // define the label and make it available
-  .global cleanup_epilogs       // ****ALERT: tests must populate x1 with a point to the end of regular sig area
-/**** MPRV must be clear here !!! ****/
-rvtest_code_end:                // RVMODEL_HALT should get here
-  #ifdef rvtest_gpr_save        // gpr_save area is instantiated at end of signature
-    RVTEST_SAVE_GPRS  x1        gpr_save
-  #endif
-    RVTEST_GOTO_MMODE           // if only Mmode used by tests, this has no effect
-cleanup_epilogs:                // jump here to quit, will restore state for each mode
-#ifdef RVTEST_ENAB_INSTRET_CNT
-     csrr  x15, CSR_MINSTRET
-     csrr  x14, CSR_MSCRATCH
-     LREG  x13, tramp_sz+4*8(x14)       // initial instret point stored here
-     sub   x15, x15, x13                // calc instret delta
-     SREG  x13, tramp_sz+4*8(x14)       //put it back in the signature
-#endif
-
-//restore xTVEC, trampoline, regs for each mode in opposite order that they were saved
-#ifdef rvtest_mtrap_routine
-    #ifdef rvtest_strap_routine
-        #ifdef rvtest_vtrap_routine
-          RVTEST_TRAP_EPILOG V  // actual v-mode prolog/epilog/handler code
-        #endif
-      RVTEST_TRAP_EPILOG S      // actual s-mode prolog/epilog/handler code
-    #endif
-   RVTEST_TRAP_EPILOG M         // actual m-mode prolog/epilog/handler code
-#endif
-
-/************* test done, epilog has restored everying, jump to halt ****************/
-  j     exit_cleanup            //skip around handlers, go to RVMODEL_HALT
-
-abort_tests:
-  LREG    T4, sig_bgn_off(sp)   // calculate Mmode sig_end addr in handler's mode
-  LREG    T1, sig_seg_siz(sp)
-  add     T1, T1, T4            // construct sig seg end
-  LI(     T1, 0xBAD0DAD0)       // early abort signature value at sig_end, independent of mtrap_sigptr
-  SREG    T1, -4(T4)            // save into last signature canary
-  j     exit_cleanup            // skip around handlers, go to RVMODEL_HALT
-/********************** trap handlers inserted here ***********************************/
-
-    INSTANTIATE_MODE_MACRO RVTEST_TRAP_HANDLER
-
-exit_cleanup:                   // *** RVMODEL_HALT MUST follow this***, then data
-//RVMODEL_HALT
-  .option pop
-.endm                           // end of RVTEST_CODE_END
-
-/*===================================data section starts here========================*/
-
-/************************************************************************************/
-/**** RVTEST_DATA_BEGIN macro defines end of input data & rvtest_data_end label  ****/
-/**** this is a data area, so we instantiate trap save areas for each mode here  ****/
-/************************************************************************************/
-
-.macro RVTEST_DATA_BEGIN
-.data
-
-.align 4        //ensure dbl alignment
-/**************************************************************************************/
-/**** this is the pointer to the current trap signature part of the signature area ****/
-/**** it is shared by all trap modes, but shouldn't be instantiated unless at least****/
-/**** 1 trap mode is defined (which is covered if m-mode trap handlers are defined ****/
-/**************************************************************************************/
-
-/**** now instantiate separate save areas for each modes state     ****/
-/**** strictly speaking, should only be needed for reentrant traps ****/
-
-        INSTANTIATE_MODE_MACRO RVTEST_TRAP_SAVEAREA
-
-/************************************************************************************/
-/**************** end of RVTEST_DATA_BEGIN; input data should follow ****************/
-/************************************************************************************/
-
-.global rvtest_data_begin
-rvtest_data_begin:
-.endm
-
-/************************************************************************************/
-/*            ----------------> test data inserted here <----------------           */
-/************************************************************************************/
-
-/************************************************************************************/
-/**************** RVTEST_DATA_END macro; defines global label rvtest_data_end    ****/
-/************************************************************************************/
-.macro RVTEST_DATA_END
-.global rvtest_data_end
-
-/**** create identity mapped page tables here if mmu is present ****/
-.align 12
-
-#ifndef RVTEST_NO_IDENTY_MAP
-  #ifdef rvtest_strap_routine
-//this is a valid global pte entry w/ all permissions. IF at root level, it forms an identity map.
-    rvtest_Sroot_pg_tbl:
-    RVTEST_PTE_IDENT_MAP(0,LVLS,RVTEST_ALLPERMS)
-
-    #ifdef rvtest_vtrap_routine
-      rvtest_Vroot_pg_tbl:
-      RVTEST_PTE_IDENT_MAP(0,LVLS,RVTEST_ALLPERMS)
-    #endif
-  #endif
-#endif
-rvtest_data_end:
-.endm
-
-/********************* REQUIRED FOR NEW TESTS *************************/
-/**** new macro encapsulating RVMODEL_DATA_BEGIN (signature area)  ****/
-/**** defining rvtest_sig_begin: label to enabling direct stores   ****/
-/**** into the signature area to be properly relocated             ****/
-/**********************************************************************/
-.macro RVTEST_SIG_BEGIN
-.global rvtest_sig_begin        /* defines beginning of signature area */
-    RVMODEL_DATA_BEGIN          /* model specific stuff                */
-sig_begin_canary:
-CANARY
-rvtest_sig_begin:
-.endm
-
-// Tests allocate normal signature space here, then define
-// the mtrap_sigptr: label to separate normal and trap
-// signature space, then allocate trap signature space
-
-/********************* REQUIRED FOR NEW TESTS *************************/
-/**** new macro defining start of trap signature area              ****/
-/**** defining rvtest_sig_end: label to enabling direct stores     ****/
-/**** into the signature area to be properLY relocated             ****/
-/**********************************************************************/
-//.macro RVTEST_TSIG_BEGIN
-.macro RVTEST_SIG_END
-.global rvtest_tsig_begin     /* defines beginning of trap sig area   */
-
-tsig_begin_canary:
-   CANARY
-mtrap_sigptr:
-  #ifndef rvtest_mtrap_routine /* install dummy or dflt trap sig area */
-    .fill  3*(XLEN/32),4,0xdeadbeef
-  #else
-    .fill 64*(XLEN/32),4,0xdeadbeef
-  #endif
-tsig_end_canary:
-   CANARY
-//.endm
-
-/********************* REQUIRED FOR NEW TESTS *************************/
-/**** new macro encapsulating RVMODEL_SIG_END (signature area)     ****/
-/**** defining rvtest_sig_end: label to enabling direct stores     ****/
-/**** into the signature area to be properLY relocated             ****/
-/**********************************************************************/
-//.macro RVTEST_SIG_END
-.global rvtest_sig_end  /* defines beginning of trap sig area         */
-
-#ifdef rvtest_gpr_save
-gpr_save:
-  .fill 32*(XLEN/32),4,0xdeadbeef
-#endif
-
-sig_end_canary:
-  CANARY
-  CANARY                /* add one extra word of guardband            */
-rvtest_sig_end:
-RVMODEL_DATA_END        /* model specific stuff                       */
-.endm

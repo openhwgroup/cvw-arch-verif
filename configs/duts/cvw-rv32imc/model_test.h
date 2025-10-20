@@ -7,11 +7,7 @@
         .pushsection .tohost,"aw",@progbits;                            \
         .align 8; .global tohost; tohost: .dword 0;                     \
         .align 8; .global fromhost; fromhost: .dword 0;                 \
-        .popsection;                                                    \
-        .align 8; .global begin_regstate; begin_regstate:               \
-        .word 128;                                                      \
-        .align 8; .global end_regstate; end_regstate:                   \
-        .word 4;
+        .popsection;
 
 #define RVMODEL_HALT    \
   li x1, 1                ;\
@@ -26,14 +22,6 @@
     j write_tohost_fail   ;\
 
 #define RVMODEL_BOOT
-
-#define RVMODEL_DATA_BEGIN                        \
-  RVMODEL_DATA_SECTION                            \
-  .align 4;                                       \
-  .global begin_signature; begin_signature:
-
-#define RVMODEL_DATA_END                           \
-  .align 4; .global end_signature; end_signature:
 
 #define RVMODEL_IO_INIT
 

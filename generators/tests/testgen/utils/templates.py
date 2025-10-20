@@ -16,7 +16,7 @@ from testgen.data.test_data import TestData
 
 
 def insert_setup_template(
-    template_name: str, xlen: int, extension: str, test_file: str, signatureWords: int = 0
+    template_name: str, xlen: int, extension: str, test_file: str
 ) -> str:
     """Insert a header/footer template file into the test file."""
     ext_components, march = canonicalize_extension(extension, xlen)
@@ -29,7 +29,6 @@ def insert_setup_template(
         .replace("@MARCH@", march.lower())
         .replace("@XLEN@", str(xlen))
         .replace("@CONFIG_DEPENDENT@", "false")  # TODO: Make this configurable for some tests (e.g. Zimop)
-        .replace("sigupd_count", str(signatureWords))
     )
     return template
 
