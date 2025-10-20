@@ -39,4 +39,4 @@ ignore = [
 ##### PYRIGHT CONFIG #####
 [tool.pyright]
 exclude = ["external", "_archive", "**/__pycache__", ".venv", "docs"]
-# strict = ["**"]
+typeCheckingMode = "standard"

@@ -92,9 +92,7 @@ def generate_all_tests(
                     )
 
                     # Test footer
-                    test_lines.append(
-                        insert_setup_template("testgen_footer.S", xlen, extension, test_file_relative)
-                    )
+                    test_lines.append(insert_setup_template("testgen_footer.S", xlen, extension, test_file_relative))
 
                     # Write test file if different from existing file
                     sig_words = get_sig_space(test_data)

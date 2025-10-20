@@ -14,7 +14,7 @@ def format_ir_type(
     """Format IR-type instruction."""
     assert params.rs1 is not None and params.rs1val is not None and params.rd is not None
     assert params.immval is not None
-    rnum = modify_imm(params.immval, 0xB, modulo=True) # rnum values above 0xA are reserved
+    rnum = modify_imm(params.immval, 0xB, modulo=True)  # rnum values above 0xA are reserved
     setup = [
         load_int_reg("rs1", params.rs1, params.rs1val, test_data),
     ]

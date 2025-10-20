@@ -51,4 +51,5 @@ def format_jr_type(
         write_sigupd(params.rs2, test_data, "int"),
     ]
     test_data.int_regs.return_register(temp_reg)
+    test_data.int_regs.return_registers(params.used_int_regs)
     return (setup, test, check)

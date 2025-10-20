@@ -7,11 +7,14 @@ import sys
 def transpose_csv(rows):
     return list(map(list, zip(*rows))) if rows else []
 
+
 def is_blank_column(col):
-    return all(cell.strip() == '' for cell in col)
+    return all(cell.strip() == "" for cell in col)
+
 
 def is_blank_row_excluding_first(row):
-    return all(cell.strip() == '' for cell in row[1:])
+    return all(cell.strip() == "" for cell in row[1:])
+
 
 def split_columns_with_blanks(transposed, max_columns):
     if not transposed:
@@ -49,9 +52,10 @@ def split_columns_with_blanks(transposed, max_columns):
 
     return chunks
 
+
 def write_asciidoc(filepath, tables):
     """Write all tables directly into .adoc file."""
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         for table in tables:
             f.write("[options=header]\n")
             f.write("[%autofit]\n")
@@ -61,10 +65,11 @@ def write_asciidoc(filepath, tables):
                 f.write(",".join(row) + "\n")
             f.write(",===\n\n")
 
+
 def process_csv_file_to_adoc(source_path, dest_dir, max_columns):
     base_name = os.path.splitext(os.path.basename(source_path))[0]
 
-    with open(source_path, newline='', encoding='utf-8') as infile:
+    with open(source_path, newline="", encoding="utf-8") as infile:
         reader = csv.reader(infile)
         rows = list(reader)
 
@@ -73,6 +78,7 @@ def process_csv_file_to_adoc(source_path, dest_dir, max_columns):
 
     adoc_path = os.path.join(dest_dir, f"{base_name}.adoc")
     write_asciidoc(adoc_path, chunks)
+
 
 def main():
     if len(sys.argv) != 4:
@@ -96,7 +102,7 @@ def main():
     os.makedirs(dest_dir, exist_ok=True)
 
     for filename in os.listdir(source_dir):
-        if filename.lower().endswith('.csv'):
+        if filename.lower().endswith(".csv"):
             source_path = os.path.join(source_dir, filename)
             print(f"Processing {filename}...")
             try:
@@ -105,6 +111,7 @@ def main():
                 print(f"Error processing {filename}: {e}")
 
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

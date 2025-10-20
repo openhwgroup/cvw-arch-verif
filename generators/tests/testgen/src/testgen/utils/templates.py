@@ -15,9 +15,7 @@ import re
 from testgen.data.test_data import TestData
 
 
-def insert_setup_template(
-    template_name: str, xlen: int, extension: str, test_file: str
-) -> str:
+def insert_setup_template(template_name: str, xlen: int, extension: str, test_file: str) -> str:
     """Insert a header/footer template file into the test file."""
     ext_components, march = canonicalize_extension(extension, xlen)
     with importlib.resources.open_text("testgen.templates", template_name) as template_file:
