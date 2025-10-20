@@ -14,7 +14,6 @@
 ##### END_TEST_CONFIG #####
 
 #define SIGUPD_COUNT @SIGUPD_COUNT_FROM_TESTGEN@
-#include "model_test.h"
 #include "riscv_arch_test.h"
 
 // Set up test environment and declare main entry point
