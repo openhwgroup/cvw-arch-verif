@@ -42,7 +42,7 @@ elfs: generate_makefiles
 
 .PHONY: generate_makefiles
 generate_makefiles: # too many dependencies to track; always regenerate Makefile
-	$(UV_RUN) act --config $(CONFIG_FILE) --workdir $(WORKDIR) --test-dir $(TESTDIR)
+	$(UV_RUN) act $(CONFIG_FILE) --workdir $(WORKDIR) --test-dir $(TESTDIR)
 
 .PHONY: clean
 clean:

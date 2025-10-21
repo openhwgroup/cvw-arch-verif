@@ -21,12 +21,14 @@ source = { editable = "framework" }
 dependencies = [
     { name = "pydantic" },
     { name = "ruamel-yaml" },
+    { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2.11.9" },
     { name = "ruamel-yaml", specifier = ">=0.18.15" },
+    { name = "typer", specifier = ">=0.19.2" },
 ]
 
 [[package]]

@@ -7,8 +7,10 @@
 # Main entry point for RISC-V architecture verification framework
 ##################################
 
-import argparse
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from act.config import load_config
 from act.makefile_gen import generate_makefiles
@@ -16,26 +18,36 @@ from act.parse_test_constraints import generate_test_dict
 from act.parse_udb_config import generate_udb_files, get_config_params, get_implemented_extensions
 from act.select_tests import get_common_tests, select_tests
 
+# CLI interface setup
+act_app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="RISC-V Architecture Verification Framework")
-    parser.add_argument("-c", "--config", type=Path, nargs="+", help="Path to configuration file(s)", required=True)
-    parser.add_argument("--test-dir", type=Path, help="Path to tests directory", default=Path("tests"))
-    parser.add_argument("--coverpoint-dir", type=Path, help="Path to coverpoint directory", default=Path("coverpoints"))
-    parser.add_argument("--workdir", type=Path, help="Path to working directory", default=Path.cwd() / "work")
-    args = parser.parse_args()
 
+@act_app.command()
+def run_act(
+    config_files: Annotated[
+        list[Path], typer.Argument(exists=True, file_okay=True, dir_okay=False, help="Path to configuration file(s)")
+    ],
+    test_dir: Annotated[
+        Path, typer.Option("--test-dir", "-t", exists=True, file_okay=False, help="Path to tests directory")
+    ] = Path("tests"),
+    coverpoint_dir: Annotated[
+        Path, typer.Option("--coverpoint-dir", "-c", exists=True, file_okay=False, help="Path to coverpoint directory")
+    ] = Path("coverpoints"),
+    workdir: Annotated[Path | None, typer.Option("--workdir", "-w", help="Path to working directory")] = None,
+) -> None:
+    if workdir is None:
+        workdir = Path.cwd() / "work"
     # Generate test list
-    full_test_dict = generate_test_dict(args.test_dir)
+    full_test_dict = generate_test_dict(test_dir)
     rv32_common_tests = get_common_tests(full_test_dict, 32)
     rv64_common_tests = get_common_tests(full_test_dict, 64)
 
     configs = []
-    for config_file in args.config:
+    for config_file in config_files:
         # Load configuration
         config = load_config(config_file)
         udb_config_file = config.udb_config
-        config_dir = args.workdir / config.udb_config.stem
+        config_dir = workdir / config.udb_config.stem
         config_dir.mkdir(parents=True, exist_ok=True)
 
         # UDB integration
@@ -54,12 +66,16 @@ def main() -> None:
         configs,
         rv32_common_tests,
         rv64_common_tests,
-        args.test_dir.absolute(),
-        args.coverpoint_dir.absolute(),
-        args.workdir.absolute(),
+        test_dir.absolute(),
+        coverpoint_dir.absolute(),
+        workdir.absolute(),
     )
-    print(f"Makefiles generated in {args.workdir}")
-    print(f"Run make -C {args.workdir} compile to build all tests.")
+    print(f"Makefiles generated in {workdir}")
+    print(f"Run make -C {workdir} compile to build all tests.")
+
+
+def main() -> None:
+    act_app()
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ from testgen.utils.common import get_sig_space
 from testgen.utils.templates import insert_setup_template
 from testgen.utils.testplans import get_extensions, read_testplan
 
+# CLI interface setup
 testgen_app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
 
 
