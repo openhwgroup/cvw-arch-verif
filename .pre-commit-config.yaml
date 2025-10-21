@@ -29,17 +29,29 @@ repos:
       - id: check-toml
       - id: check-yaml
 
-  # Ruff python linter
+  # Ruff Python linter
   - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
     rev: v0.14.1
     hooks:
       # Run the linter.
       - id: ruff-check
         args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
+
+  # Pyright Python type checker
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: uv run pyright
+        language: system
+        types: [python]
 
   # Ensure uv lock file is up to date
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.8.16
+    rev: 0.9.4
     hooks:
       - id: uv-lock
 

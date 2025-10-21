@@ -25,7 +25,6 @@ select = [
   "B",    # bugbear rules
   "A",    # shadow builtins
   "EXE",  # Executable file shebangs
-  "Q",    # Quotes consistency
   "ANN",  # type annotation rules
   "RUF",  # Ruff specific rules
   "PTH",  # Pathlib usage
@@ -34,11 +33,19 @@ select = [
 
 ignore = [
   # handled by formatter
-  "E501",
-  "D203",
-  "D211",
-  "D213",
+  "W191",
+  "E111",
+  "E114",
+  "E117",
+  "D206",
+  "D300",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
   "COM812",
+  "COM819",
+  "E501",
 ]
 
 [tool.ty.src]
