@@ -59,7 +59,7 @@ def gen(comment, template, length=32, exclusion=None):
 
 # setup
 seed(0)  # make tests reproducible
-ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", "..", ".."))
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ExceptionInstr-Tests.h"
 outfile = open(pathname, "w")
 sys.stdout = outfile

@@ -65,12 +65,12 @@ $(STAMP_DIR)/testgen.stamp: $(TEST_TEMPLATES) | $(STAMP_DIR)
 .PHONY: privheaders
 privheaders: $(STAMP_DIR)/csrtests.stamp $(STAMP_DIR)/illegalinstrtests.stamp
 
-$(STAMP_DIR)/csrtests.stamp: generators/tests/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) generators/tests/csrtests.py
+$(STAMP_DIR)/csrtests.stamp: generators/tests/scripts/csrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) generators/tests/scripts/csrtests.py
 	touch $@
 
-$(STAMP_DIR)/illegalinstrtests.stamp: generators/tests/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
-	$(UV_RUN) generators/tests/illegalinstrtests.py
+$(STAMP_DIR)/illegalinstrtests.stamp: generators/tests/scripts/illegalinstrtests.py | $(PRIVHEADERSDIR) $(STAMP_DIR)
+	$(UV_RUN) generators/tests/scripts/illegalinstrtests.py
 	touch $@
 
 .PHONY: tests

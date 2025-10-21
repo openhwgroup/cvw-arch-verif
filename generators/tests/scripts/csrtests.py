@@ -468,7 +468,7 @@ mCsrSkip = (
     list(range(0x7A0, 0x7B0)) + list(range(0x7C0, 0x800)) + list(range(0xBC0, 0xC00)) + list(range(0xFC0, 0x1000))
 )
 
-ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", ".."))
+ARCH_VERIF = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), "..", "..", ".."))
 
 pathname = f"{ARCH_VERIF}/tests/priv/headers/ZicsrM-CSR-Tests.h"
 csrtests(pathname, mCsrSkip + sCsrSkip + uCsrSkip)
