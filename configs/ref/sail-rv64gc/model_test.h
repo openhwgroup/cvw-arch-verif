@@ -5,7 +5,7 @@
         .pushsection .tohost,"aw",@progbits;                \
         .align 8; .global tohost; tohost: .dword 0;         \
         .align 8; .global fromhost; fromhost: .dword 0;     \
-        .popsection;
+        .popsection
 
 #define RVMODEL_HALT_PASS  \
   li x1, 1                ;\
@@ -27,12 +27,12 @@
 # mechanism. _R can be used as a temporary register if needed.
 # Do not modify any other registers (or make sure to restore them).
 #define RVMODEL_IO_WRITE_STR(_R, _STR)               \
-  la x30, _STR                ;/* Load string addr */ \
-1:                           ;\
-  lbu a0, 0(x30)              ;/* Load byte */        \
+  la x30, _STR               ;/* Load string addr */ \
+1:                           ;                       \
+  lbu a0, 0(x30)             ;/* Load byte */        \
   beqz a0, 2f                ;/* Exit if null */     \
   call htif_putc             ;/* Print char */       \
-  addi x30, x30, 1             ;/* Next char */        \
+  addi x30, x30, 1           ;/* Next char */        \
   j 1b                       ;/* Loop */             \
 2:
 
