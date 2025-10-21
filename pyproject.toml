@@ -10,7 +10,10 @@ dev = [
 ###### RUFF CONFIG #####
 [tool.ruff]
 line-length = 120
-extend-exclude = ["external", "_archive"]
+extend-exclude = [
+  "external", "_archive", "docs",
+  "generators/coverage", "generators/tests/scripts" # Old scripts that still need to be updated
+]
 
 [tool.ruff.lint]
 select = [
@@ -22,21 +25,30 @@ select = [
   "B",    # bugbear rules
   "A",    # shadow builtins
   "EXE",  # Executable file shebangs
-  "Q003", # Avoidable escaped quotes
-  "Q004", # Unnecessary escape character
+  "Q",    # Quotes consistency
+  "ANN",  # type annotation rules
   "RUF",  # Ruff specific rules
+  "PTH",  # Pathlib usage
+  "SIM",  # Simplifications
 ]
 
 ignore = [
-  "E501",           # line too long
-  "E741",           # ambiguous variable name
-  "B007",           # loop control variable not used
-  "B9",             # overly opinionated rules
-  "RUF005",         # iterable unpacking in list
-  "E701",           # multiple statements on one line # TODO: Remove this when autoformatter is in place
+  # handled by formatter
+  "E501",
+  "D203",
+  "D211",
+  "D213",
+  "COM812",
 ]
+
+[tool.ty.src]
+exclude = ["external", "_archive"]
 
 ##### PYRIGHT CONFIG #####
 [tool.pyright]
-exclude = ["external", "_archive", "**/__pycache__", ".venv", "docs"]
+exclude = [
+  "**/__pycache__", ".venv",
+  "external", "_archive", "docs",
+  "generators/coverage", "generators/tests/scripts" # Old scripts that still need to be updated
+]
 typeCheckingMode = "standard"

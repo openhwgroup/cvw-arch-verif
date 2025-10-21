@@ -10,9 +10,6 @@
 import argparse
 from pathlib import Path
 
-# import filecmp
-# import shutil
-# import subprocess
 from act.config import load_config
 from act.makefile_gen import generate_makefiles
 from act.parse_test_constraints import generate_test_dict
@@ -20,7 +17,7 @@ from act.parse_udb_config import generate_udb_files, get_config_params, get_impl
 from act.select_tests import get_common_tests, select_tests
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="RISC-V Architecture Verification Framework")
     parser.add_argument("-c", "--config", type=Path, nargs="+", help="Path to configuration file(s)", required=True)
     parser.add_argument("--test-dir", type=Path, help="Path to tests directory", default=Path("tests"))

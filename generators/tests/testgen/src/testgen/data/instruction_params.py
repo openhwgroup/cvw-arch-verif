@@ -65,7 +65,7 @@ class InstructionParams:
 
 
 def generate_random_params(
-    test_data: TestData, instr_type: str, allow_x0: bool = True, **fixed_params
+    test_data: TestData, instr_type: str, allow_x0: bool = True, **fixed_params: int | str | bool | None
 ) -> InstructionParams:
     """
     Generate random parameters for an instruction.

@@ -160,7 +160,7 @@ def write_instrs(
     arch: str,
     hasRV32: bool,
     hasRV64: bool,
-):
+) -> None:
     """Write the instructions if they match the RV32/RV64 criteria."""
     for instr in k:
         cps = tp[instr]
@@ -237,7 +237,7 @@ def write_instruction_sample_function(
     arch: str,
     hasRV32: bool,
     hasRV64: bool,
-):
+) -> None:
     for instr in k:
         cps = tp[instr]
         match32 = ("RV32" in cps) ^ (not hasRV32)
@@ -371,7 +371,7 @@ def write_covergroups(
 ##################################
 
 
-def main(testplan_dir: Path, output_dir: Path):
+def main(testplan_dir: Path, output_dir: Path) -> None:
     test_plans, arch_sources = read_testplans(testplan_dir)
     covergroup_templates = read_covergroup_templates(Path(__file__).parent / "templates")
     write_covergroups(test_plans, covergroup_templates, arch_sources, output_dir)

@@ -35,11 +35,8 @@ def modify_imm(
         modulo: If True, apply modulo operation instead of bit mask
                 (used for shift amounts constrained by register width)
     """
-    # Scale immediate
-    if modulo:
-        value = value % bits
-    else:  # Reduce to bit width
-        value = value % (2**bits)
+    # Scale immediate/reduce to bit width
+    value = value % bits if modulo else value % (2**bits)
 
     # Convert to signed if requested
     if signed:

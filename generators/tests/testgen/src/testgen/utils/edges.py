@@ -58,13 +58,13 @@ class IMMEDIATE_EDGES:
     imm_32_c = (1, 2, 3, 4, 8, 14, 15, 16, 17, 30, 31)
 
     # 64-bit compressed shift immediates
-    imm_64_c = imm_32_c + (32, 33, 48, 62, 63)
+    imm_64_c = (*imm_32_c, 32, 33, 48, 62, 63)
 
     # Unsigned immediate for word operations
     imm_uimmw = (0, 1, 19, 30, 31)
 
     # Unsigned immediate for doubleword operations
-    imm_uimm = imm_uimmw + (32, 33, 45, 62, 63)
+    imm_uimm = (*imm_uimmw, 32, 33, 45, 62, 63)
 
 
 # ==============================================================================

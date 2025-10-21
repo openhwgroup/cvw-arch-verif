@@ -114,7 +114,7 @@ def write_makefile(
     directory_set: set[str],
     makefile_lines: list[str],
 ) -> None:
-    """Helper function to write out a Makefile."""
+    """Write out a Makefile."""
     # Create top-level targets
     for variable_name, targets, command in main_targets:
         makefile_lines.append(f"{variable_name} = \\")

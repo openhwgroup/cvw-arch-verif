@@ -28,11 +28,11 @@ def select_registers(num_regs: int, reg_list: list[int]) -> list[int]:
 class RegisterFile:
     """Class to represent a register file and provide methods to select registers."""
 
-    def __init__(self, reg_count: int):
+    def __init__(self, reg_count: int) -> None:
         self._reg_count = reg_count
         self.reg_list = list(range(reg_count))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Register File with the following registers available: {self.reg_list}"
 
     def destroy(self) -> None:
@@ -41,7 +41,7 @@ class RegisterFile:
             raise RuntimeError("Cannot destroy RegisterFile: some registers are still in use.")
 
     @property
-    def reg_count(self):
+    def reg_count(self) -> int:
         return self._reg_count
 
     def get_registers(
@@ -100,7 +100,7 @@ class IntegerRegisterFile(RegisterFile):
     default_link_reg = 4
     link_regs = (4, 7, 12)  # Limit legal link/temp registers to simplify failure handler
 
-    def __init__(self, e_register_file: bool = False):
+    def __init__(self, e_register_file: bool = False) -> None:
         # Use default RegisterFile functions but set register count based on E
         reg_count = 16 if e_register_file else 32
         super().__init__(reg_count)
@@ -229,6 +229,6 @@ class IntegerRegisterFile(RegisterFile):
 class FloatRegisterFile(RegisterFile):
     """Class to represent a floating point register file."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # There are always 32 floating point registers
         super().__init__(32)

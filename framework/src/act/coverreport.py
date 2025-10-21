@@ -19,7 +19,6 @@ COVERGROUP_PREFIX = "/RISCV_coverage_pkg/RISCV_coverage__1/"
 
 def remove_duplicates_after_second_header(file_path: Path) -> None:
     """Remove duplicates that appear after the second summary header."""
-
     unique_lines_before_header: set[str] = set()
     header_count = 0
     output_lines: list[str] = []
@@ -43,7 +42,6 @@ def remove_duplicates_after_second_header(file_path: Path) -> None:
 
 def report_to_summary(report_path: Path, summary_path: Path) -> None:
     """Convert a detailed coverage report into a condensed summary."""
-
     lines = report_path.read_text().splitlines()
     entries: list[tuple[str, str, str, str, str]] = []
 

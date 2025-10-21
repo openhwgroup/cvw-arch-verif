@@ -15,7 +15,7 @@ InstructionFormatter = Callable[[str, TestData, InstructionParams], tuple[list[s
 _INSTRUCTION_FORMATTERS: dict[str, InstructionFormatter] = {}
 
 
-def add_instruction_formatter(*instruction_types: str):
+def add_instruction_formatter(*instruction_types: str) -> Callable[[InstructionFormatter], InstructionFormatter]:
     """
     Decorator to register an instruction formatter for one or more instruction types.
 
@@ -45,7 +45,7 @@ def _discover_and_import_instruction_formatters() -> None:
         if module_file.stem != "instruction_formatters" and not module_file.stem.startswith("_"):
             # Convert file path to module path
             relative_path = module_file.relative_to(package_dir)
-            module_parts = list(relative_path.parts[:-1]) + [relative_path.stem]
+            module_parts = [*list(relative_path.parts[:-1]), relative_path.stem]
             module_name = "testgen.instruction_formatters." + ".".join(module_parts)
             import_module(module_name)
 

@@ -16,7 +16,7 @@ CoverpointGenerator = Callable[[str, str, str, TestData], list[str]]
 _COVERPOINT_GENERATORS: list[tuple[str, CoverpointGenerator]] = []
 
 
-def add_coverpoint_generator(*patterns: str):
+def add_coverpoint_generator(*patterns: str) -> Callable[[CoverpointGenerator], CoverpointGenerator]:
     """
     Decorator to register a generator for one or more coverpoint patterns.
 
@@ -55,7 +55,7 @@ def _discover_and_import_coverpoint_generators() -> None:
         if module_file.stem != "coverpoints" and not module_file.stem.startswith("_"):
             # Convert file path to module path (e.g., special/branch.py -> testgen.coverpoints.special.branch)
             relative_path = module_file.relative_to(package_dir)
-            module_parts = list(relative_path.parts[:-1]) + [relative_path.stem]
+            module_parts = [*list(relative_path.parts[:-1]), relative_path.stem]
             module_name = "testgen.coverpoints." + ".".join(module_parts)
             import_module(module_name)
 

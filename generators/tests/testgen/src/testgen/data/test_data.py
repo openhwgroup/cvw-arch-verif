@@ -21,16 +21,16 @@ class TestData:
         self.__xlen = xlen
         self.__flen = flen
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"TestData with xlen={self.__xlen}, flen={self.__flen}, int_regs={self._int_regs}, float_regs={self._float_regs}, sigupd_count={self._sigupd_count}, sigupd_count_float={self._sigupd_count_float}"
 
     # Register file accessors
     @property
-    def int_regs(self):
+    def int_regs(self) -> IntegerRegisterFile:
         return self._int_regs
 
     @property
-    def float_regs(self):
+    def float_regs(self) -> FloatRegisterFile:
         return self._float_regs
 
     # Make sigupd_count variables available as properties so they can be accessed and modified directly
