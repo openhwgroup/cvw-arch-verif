@@ -179,6 +179,12 @@
 `ifdef VM_PMP_CBO_COVERAGE
   `include "VM_PMP_CBO_coverage.svh"
 `endif
+`ifdef SVADE_COVERAGE
+  `include "Svade_coverage.svh"
+`endif
+`ifdef SVADU_COVERAGE
+  `include "Svadu_coverage.svh"
+`endif
 `ifdef RV64PMP_COVERAGE
   `include "PMPM_coverage.svh"
   `include "PMPU_coverage.svh"
