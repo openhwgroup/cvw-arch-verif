@@ -116,6 +116,7 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
                 write_sigupd(params.rd, test_data),
             ]
         )
+        test_data.int_regs.return_register(temp_reg)
 
     test_data.int_regs.return_register(check_reg)
     test_data.int_regs.return_registers(params.used_int_regs)

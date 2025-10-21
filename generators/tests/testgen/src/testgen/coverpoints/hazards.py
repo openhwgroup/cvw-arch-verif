@@ -28,6 +28,7 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
         for i in range(2):  # 2 test cases per hazard type
             # Generate first instruction (add) with random registers
             params_a = generate_random_params(test_data, "R")
+            assert params_a.rs1 is not None and params_a.rs2 is not None and params_a.rd is not None
 
             # Generate second instruction with hazard relationship to A
             if haz_type == "raw":
@@ -38,6 +39,7 @@ def make_cp_gpr_hazard(instr_name: str, instr_type: str, coverpoint: str, test_d
                     params_b = generate_random_params(test_data, instr_type, rs2=params_a.rd)
                 # For loads, we must add 0 to avoid messing up the address calculation
                 if instr_type in ["L", "JR"]:
+                    test_data.int_regs.return_registers([params_a.rs1, params_a.rs2])
                     params_a.rs1 = params_a.rd
                     params_a.rs2 = 0
             elif haz_type == "waw":

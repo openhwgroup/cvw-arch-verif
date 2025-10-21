@@ -94,15 +94,17 @@ def generate_all_tests(
                     # Test footer
                     test_lines.append(insert_setup_template("testgen_footer.S", xlen, extension, test_file_relative))
 
-                    # Write test file if different from existing file
+                    # Generate final test string with signature size
                     sig_words = get_sig_space(test_data)
                     test_string = "\n".join(test_lines).replace("@SIGUPD_COUNT_FROM_TESTGEN@", str(sig_words))
-                    if not (test_file.exists()) or test_file.read_text() != test_string:
-                        test_file.write_text(test_string)
-                        print(f"Updated {test_file}")
 
                     # Clean up test data
                     test_data.destroy()
+
+                    # Write test file if different from existing file
+                    if not (test_file.exists()) or test_file.read_text() != test_string:
+                        test_file.write_text(test_string)
+                        print(f"Updated {test_file}")
 
 
 def generate_tests_for_instruction(
