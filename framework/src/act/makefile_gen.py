@@ -61,7 +61,7 @@ def gen_compile_targets(
         f"\t\t--config {config.dut_include_dir}/sail.json \\\n"  # TODO: don't hardcode sail config file
         f"\t\t{ref_model_sig_flags} \\\n"
         f"\t\t{sig_elf} \\\n"
-        f"\t\t&> {sig_log_file}\n"
+        f"\t\t> {sig_log_file} 2>&1\n"
         f"\n"
         f"# Modify sig file for inclusion in assembly\n"
         f"{result_file}: {sig_file}\n"
@@ -99,7 +99,7 @@ def gen_rvvi_targets(test_name: Path, base_dir: Path, config: Config) -> str:
         f"\t\t--config {config.dut_include_dir}/sail.json \\\n"  # TODO: don't hardcode sail config file
         f"\t\t{elf} \\\n"
         f"\t\t--trace-output {sail_trace} \\\n"
-        f"\t\t&> {sail_trace}.log\n"
+        f"\t\t> {sail_trace}.log 2>&1\n"
         f"\n"
         "# Generate RVVI trace\n"
         f"{rvvi_trace}: {sail_trace}\n"
@@ -303,7 +303,7 @@ def gen_coverage_targets(
                 f"\t\t{fcov_path.absolute()}\\\n"
                 f"\t\t{coverpoint_dir}\\\n"
                 f"\t\t{dut_header_dir}\\\n"
-                f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" &> {ucdb_file}.log\n'
+                f'\t\t{{{coverage_group.stem.upper()}_COVERAGE}}" > {ucdb_file}.log 2>&1\n'
             )
 
         # Generate coverage report
