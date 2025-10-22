@@ -14,6 +14,7 @@
 
   // Include model specific boot code
   RVMODEL_BOOT
+  RVMODEL_IO_INIT
 
   // Disable assembler/linker optimizations
   .option push
@@ -100,7 +101,6 @@
 
   // Terminate test
   exit_cleanup:
-    # RVMODEL_IO_INIT
     # LA(T1, successstr)
     # RVMODEL_IO_WRITE_STR(T1, successstr)
     RVMODEL_HALT_PASS

@@ -17,16 +17,18 @@
         .popsection;
 
 #define RVMODEL_HALT_PASS  \
-  li x1, 1                ;\
-  write_tohost:           ;\
+  write_tohost_pass:      ;\
+    li x1, 1              ;\
     sw x1, tohost, t0     ;\
-    j write_tohost        ;\
+  self_loop_pass:         ;\
+    j self_loop_pass      ;\
 
 #define RVMODEL_HALT_FAIL \
-  li x1, 3                ;\
   write_tohost_fail:      ;\
+    li x1, 3              ;\
     sw x1, tohost, t0     ;\
-    j write_tohost_fail   ;\
+  self_loop_fail:         ;\
+    j self_loop_fail      ;\
 
 #define RVMODEL_BOOT
 

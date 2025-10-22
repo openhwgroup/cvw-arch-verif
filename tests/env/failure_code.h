@@ -111,7 +111,7 @@ failedtest_saveresults:
     SREG x6, 264(x5)
 
 failedtest_report:
-    RVMODEL_IO_INIT
+    # RVMODEL_IO_INIT
     RVMODEL_IO_WRITE_STR(a0, failstr)
 
     # Print failing instruction (32-bit)
