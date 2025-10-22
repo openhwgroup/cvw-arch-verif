@@ -7,7 +7,7 @@
 # Parse UDB configuration file
 ##################################
 
-import filecmp
+# import filecmp
 import shutil
 import subprocess
 from pathlib import Path
@@ -57,11 +57,16 @@ def get_implemented_extensions(extension_list_file: Path) -> set[str]:
 def generate_udb_files(udb_config_file: Path, output_dir: Path) -> None:
     # TODO: Figure out a more robust way to handle UDB validation
     # Currently only works if using docker as container runtime and requires copying UDB config into riscv-unified-db directory
-    copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{udb_config_file.name}")
-    if not copied_udb_config.exists() or not filecmp.cmp(udb_config_file, copied_udb_config):
-        shutil.copy(udb_config_file, copied_udb_config)
-        validate_udb_config(udb_config_file)
-    generate_extension_list(udb_config_file, output_dir)
+
+    # NOTE: UDB container runtime does not work well inside of nested containers, so it is bypassed for the demo.
+    # copied_udb_config = Path(f"./external/riscv-unified-db/cfgs/{udb_config_file.name}")
+    # if not copied_udb_config.exists() or not filecmp.cmp(udb_config_file, copied_udb_config):
+    #     shutil.copy(udb_config_file, copied_udb_config)
+    #     validate_udb_config(udb_config_file)
+    # generate_extension_list(udb_config_file, output_dir)
+    extensions_file_input = udb_config_file.parent / "extensions.txt"
+    extensions_file_output = output_dir / "extensions.txt"
+    shutil.copy(extensions_file_input, extensions_file_output)
 
     # TODO: Generate DUT specific header file from UDB
 
