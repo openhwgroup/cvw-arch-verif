@@ -90,7 +90,7 @@ $(PRIVHEADERSDIR) $(STAMP_DIR):
 ###### Coverage targets ######
 .PHONY: generate-makefiles-ref
 generate-makefiles-ref: # too many dependencies to track; always regenerate Makefile
-	$(UV_RUN) act $(REF_CONFIG_FILES) --workdir $(REF_WORKDIR) --test-dir $(TESTDIR)
+	$(UV_RUN) act $(REF_CONFIG_FILES) --workdir $(REF_WORKDIR) --test-dir $(TESTDIR) --coverage
 .PHONY: coverage
 
 coverage: generate-makefiles-ref
