@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
 
 # Directories and files
-CONFIG_FILE ?= configs/duts/cvw-rv64gc/test_config.yaml configs/duts/cvw-rv32gc/test_config.yaml
+CONFIG_FILE ?= configs/duts/cvw/cvw-rv64gc/test_config.yaml configs/duts/cvw/cvw-rv32gc/test_config.yaml
+REF_CONFIG_FILES ?= configs/ref/sail-rv64gc/test_config.yaml configs/ref/sail-rv32gc/test_config.yaml
 WORKDIR     ?= work
+REF_WORKDIR ?= work-ref
 
 TESTDIR        := tests
 SRCDIR64       := $(TESTDIR)/rv64
@@ -37,11 +39,11 @@ endif
 
 ###### Test compilation targets ######
 .PHONY: elfs
-elfs: generate_makefiles
+elfs: generate-makefiles-dut
 	$(MAKE) -C $(WORKDIR) compile
 
-.PHONY: generate_makefiles
-generate_makefiles: # too many dependencies to track; always regenerate Makefile
+.PHONY: generate-makefiles-dut
+generate-makefiles-dut: # too many dependencies to track; always regenerate Makefile
 	$(UV_RUN) act $(CONFIG_FILE) --workdir $(WORKDIR) --test-dir $(TESTDIR)
 
 .PHONY: clean
@@ -86,9 +88,18 @@ $(PRIVHEADERSDIR) $(STAMP_DIR):
 	mkdir -p $@
 
 ###### Coverage targets ######
+.PHONY: generate-makefiles-ref
+generate-makefiles-ref: # too many dependencies to track; always regenerate Makefile
+	$(UV_RUN) act $(REF_CONFIG_FILES) --workdir $(REF_WORKDIR) --test-dir $(TESTDIR)
 .PHONY: coverage
-coverage: generate_makefiles
-	$(MAKE) -C $(WORKDIR) coverage
+
+coverage: generate-makefiles-ref
+	$(MAKE) -C $(REF_WORKDIR) coverage
+
+.PHONY: clean-ref
+clean-ref:
+	rm -rf $(REF_WORKDIR)/common $(REF_WORKDIR)/**/coverage $(REF_WORKDIR)/**/elfs $(REF_WORKDIR)/**/build $(REF_WORKDIR)/**/reports $(REF_WORKDIR)/**/Makefile $(REF_WORKDIR)/stamps
+	rm -rf temp-tests/rv64 temp-tests/rv32
 
 # Dev targets
 .PHONY: lint
