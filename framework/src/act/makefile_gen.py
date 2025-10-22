@@ -177,6 +177,7 @@ def generate_config_makefile(
     config_name: str,
     xlen: int,
     mabi: str,
+    coverage_enabled: bool,
 ) -> None:
     """Generate a Makefile to compile the config-specific tests."""
     # Define paths
@@ -228,27 +229,32 @@ def generate_config_makefile(
             makefile_lines.append(gen_compile_targets(test_name, test_metadata, config_wkdir, xlen, mabi, config))
 
         # Generate coverage trace targets
-        if trace_path.parent not in coverage_targets:
-            coverage_targets[trace_path.parent] = []
-        coverage_targets[trace_path.parent].append(trace_path.absolute())
-        makefile_lines.append(gen_rvvi_targets(test_name, config_wkdir, config))
-        makefile_lines.append("\n")
+        if coverage_enabled:
+            if trace_path.parent not in coverage_targets:
+                coverage_targets[trace_path.parent] = []
+            coverage_targets[trace_path.parent].append(trace_path.absolute())
+            makefile_lines.append(gen_rvvi_targets(test_name, config_wkdir, config))
+            makefile_lines.append("\n")
+
+    main_targets = [("ELFS", test_targets, "compile")]
 
     # Generate coverage targets
-    coverage_makefile_lines, coverage_reports = gen_coverage_targets(
-        coverage_targets,
-        coverpoint_dir,
-        config_coverage_dir,
-        config_report_dir,
-        config.dut_include_dir,  # TODO: coverage config dir should be generated from UDB
-    )
-    makefile_lines.append(coverage_makefile_lines)
+    if coverage_enabled:
+        coverage_makefile_lines, coverage_reports = gen_coverage_targets(
+            coverage_targets,
+            coverpoint_dir,
+            config_coverage_dir,
+            config_report_dir,
+            config.dut_include_dir,  # TODO: coverage config dir should be generated from UDB
+        )
+        makefile_lines.append(coverage_makefile_lines)
+        main_targets.append(("COVERAGE_REPORTS", coverage_reports, "coverage"))
 
     # Write out Makefile
     makefile_path = config_wkdir / "Makefile"
     write_makefile(
         makefile_path,
-        [("ELFS", test_targets, "compile"), ("COVERAGE_REPORTS", coverage_reports, "coverage")],
+        main_targets,
         directory_set,
         makefile_lines,
     )
@@ -329,6 +335,7 @@ def generate_makefiles(
     tests_dir: Path,
     coverpoint_dir: Path,
     workdir: Path,
+    coverage_enabled: bool,
 ) -> None:
     """Generate Makefiles for multiple configurations with shared common directories."""
     rv32_common_generated = False
@@ -355,11 +362,17 @@ def generate_makefiles(
             [
                 f"{config_name}-compile: common-rv{xlen}-compile",
                 f"\t$(MAKE) -C {config_name} compile",
-                f"{config_name}-coverage: {config_name}-compile",
-                f"\t$(MAKE) -C {config_name} coverage",
                 "",
             ]
         )
+        if coverage_enabled:
+            top_makefile_lines.extend(
+                [
+                    f"{config_name}-coverage: {config_name}-compile",
+                    f"\t$(MAKE) -C {config_name} coverage",
+                    "",
+                ]
+            )
 
         # Generate config-specific Makefile
         generate_config_makefile(
@@ -372,6 +385,7 @@ def generate_makefiles(
             config_name,
             xlen,
             mabi,
+            coverage_enabled,
         )
 
         # Generate architecture-specific common Makefiles using first config of each XLEN
@@ -387,6 +401,7 @@ def generate_makefiles(
 
     # Write top-level Makefile
     top_makefile_lines.append(f"compile: {' '.join(compile_targets)}")
-    top_makefile_lines.append(f"coverage: {' '.join(coverage_targets)}")
+    if coverage_enabled:
+        top_makefile_lines.append(f"coverage: {' '.join(coverage_targets)}")
     top_makefile = workdir / "Makefile"
     top_makefile.write_text("\n".join(top_makefile_lines))

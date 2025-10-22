@@ -34,6 +34,9 @@ def run_act(
         Path, typer.Option("--coverpoint-dir", "-c", exists=True, file_okay=False, help="Path to coverpoint directory")
     ] = Path("coverpoints"),
     workdir: Annotated[Path | None, typer.Option("--workdir", "-w", help="Path to working directory")] = None,
+    coverage: Annotated[
+        bool, typer.Option("--coverage/--no-coverage", help="Enable or disable coverage generation")
+    ] = False,
 ) -> None:
     if workdir is None:
         workdir = Path.cwd() / "work"
@@ -69,6 +72,7 @@ def run_act(
         test_dir.absolute(),
         coverpoint_dir.absolute(),
         workdir.absolute(),
+        coverage,
     )
     print(f"Makefiles generated in {workdir}")
     print(f"Run make -C {workdir} compile to build all tests.")
