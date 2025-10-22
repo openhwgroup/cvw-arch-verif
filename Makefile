@@ -60,7 +60,7 @@ $(STAMP_DIR)/covergroupgen.stamp: generators/coverage/covergroupgen.py $(COV_TEM
 .PHONY: testgen
 testgen:  $(STAMP_DIR)/testgen.stamp
 $(STAMP_DIR)/testgen.stamp: $(TEST_TEMPLATES) | $(STAMP_DIR)
-	$(UV_RUN) testgen testplans -o tests
+	$(UV_RUN) testgen testplans -o tests -e M
 	rm -rf $(SRCDIR64)/E $(SRCDIR32)/E
 	touch $@
 
