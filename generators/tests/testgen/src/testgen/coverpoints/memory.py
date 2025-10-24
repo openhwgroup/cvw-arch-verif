@@ -26,7 +26,7 @@ def make_memval(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
     test_lines: list[str] = []
     for val in memvals:
         test_lines.append("")
-        params = generate_random_params(test_data, instr_type, rs2val=val)
+        params = generate_random_params(test_data, instr_type, allow_x0=False, rs2val=val)
         desc = f"{coverpoint} (memory value = {val:#x})"
         test_lines.append(format_single_test(instr_name, instr_type, test_data, params, desc))
         test_data.int_regs.return_registers(params.used_int_regs)
@@ -71,6 +71,9 @@ def make_offset(instr_name: str, instr_type: str, coverpoint: str, test_data: Te
     elif instr_type == "JR":
         # JR-type: jalr
         branch_instr = f"{instr_name} x{params.rd}, x{params.rs2}, 0 # backward jalr"
+    elif instr_type == "J":
+        # J-type: jal
+        branch_instr = f"{instr_name} x{params.rd}, 1b # backward jump"
     elif instr_type in ["CJR", "CJALR"]:
         # Compressed register jumps
         if instr_name == "c.jalr":
