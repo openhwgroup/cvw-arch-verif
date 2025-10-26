@@ -1,4 +1,9 @@
 # cvw-arch-verif
+
+## This reposistory has been deprecated. Tests, coverage, and an updated framework have been migrated to https://github.com/riscv-non-isa/riscv-arch-test. All further development will take place in that repository.
+
+# Original README Follows:
+
 The purpose of the repo is to support CORE-V Wally architectural verification.
 
 This document contains guidelines for setup and running of RISC-V Architecture Functional Verification project. It contains commands and formats needed to generate and execute tests, write test plans and collect and analyze coverage. The following sections have been covered:
@@ -208,29 +213,3 @@ regression-wally \--fcov
 make
 
 Analyze the coverage report by checking out the covergroups in covSummary.html file (in the work dir) to make sure that 100% Functional Coverage has been achieved. In case there are misses, it is indicative of missing tests or possible faults in the design. Carefully examine the coverage report to find the exact hole.
-
-# **Teams**
-
-**Harvey Mudd College:**
-
-* Vikram Krishna
-* David Harris
-* Corey Hickson
-* Ahlyssa Santillana
-* Hamza Jamal
-
-**Habib University:**
-
-* Muhammad Shaheer
-* Shahjahan
-* Ehzem Farhan Sheikh
-* Daniyal Areshia
-* Sher Ali
-* Ahmed Abdullah Mujtaba
-
-**UET:**
-
-* Muhammad Zain
-* Muhammad Ahmad
-* Muhammad Abdullah
-* Hamza Ali
